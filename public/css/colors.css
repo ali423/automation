@@ -1,0 +1,20 @@
+:root {
+
+    /* default #6e00ff (search --chart color code)*/
+    --chart:#ffc103;
+
+    /* default #6e00ff */
+    --customThemeColor: #eaa400;
+
+    /* default rgba(110, 0, 255, 0.08) */
+    --menuActiveBtn: rgba(255, 174, 0, 0.08);
+
+    /* default #5e00d9 */
+    --btnPrimaryHover: #ff4500;
+
+    /* default #5800cc */
+    --btnPrimaryBorder: #ffa500;
+
+    /* default #f0f3ff */
+    --inputBackground: rgba(255, 174, 0, 0.08);
+}

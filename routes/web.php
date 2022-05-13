@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,8 +24,11 @@ Route::middleware('guest')->group(function () {
 
 
 Route::middleware('auth')->group(function () {
+
     Route::get('/logout',[LoginController::class,'logout'])->name('logout');
     Route::get('/',[DashboardController::class,'index'])->name('home');
+    Route::resource('user',UserController::class);
+    Route::resource('role',RoleController::class);
 });
 
 
