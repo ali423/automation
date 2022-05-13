@@ -9,8 +9,6 @@
 @section('content')
 
 <!-- Main Content Area -->
-<div class="main-content">
-    <div class="container-fluid">
         <div class="row">
             <!-- Single Widget -->
             <div class="col-sm-6 col-xl-3 box-margin height-card">
@@ -638,7 +636,7 @@
                 </div>
             </div>
         </div>
-    </div>
+
 
 @endsection
 

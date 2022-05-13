@@ -6,11 +6,17 @@
         <nav>
             <ul class="sidebar-menu" data-widget="tree">
                 <li class="treeview">
-                    <a href="javascript:void(0)"><i class="icon_building"></i> <span>تجزیه و تحلیل</span> <i class="fa fa-angle-left"></i></a>
+                    <a href="javascript:void(0)"><i class="fa fa-user"></i> <span>کاربران</span> <i class="fa fa-angle-left"></i></a>
                     <ul class="treeview-menu">
-                        <li><a href="analytic-dashboard.html">داشبورد</a></li>
-                        <li><a href="analytic-customer.html">مشتریان</a></li>
-                        <li><a href="analytic-report.html">گزارش ها</a></li>
+                        <li><a href="{{ route('user.index') }}">لیست کاربران</a></li>
+                        <li><a href="{{ route('user.create') }}">افزودن کاربر جدید</a></li>
+                    </ul>
+                </li>
+                <li class="treeview">
+                    <a href="javascript:void(0)"><i class="fa fa-id-card-o"></i> <span>نقش ها</span> <i class="fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        <li><a href="{{ route('role.index') }}">لیست نقش ها</a></li>
+                        <li><a href="{{ route('role.create') }}">افزودن نقش جدید</a></li>
                     </ul>
                 </li>
                 <li class="treeview active">

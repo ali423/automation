@@ -1,4 +1,4 @@
-
+</div>
 <!-- Footer Area -->
 <div class="container-fluid">
     <div class="row">
