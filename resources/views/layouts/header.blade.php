@@ -188,7 +188,7 @@
                             <i class="zmdi zmdi-sort-amount-desc"></i>
                         </div>
                         <div class="mobile-menu-open" id="mobileMenuOpen">
-                            <i class="zmdi zmdi-menu"></i>
+                            <i class="zmdi zmdi-sort-amount-desc"></i>
                         </div>
                     </div>
                 </div>

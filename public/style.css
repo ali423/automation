@@ -1166,7 +1166,7 @@ div.tagsinput span.tag a {
   right: 0;
   width: 220px;
   border-bottom: 1px solid #edf2f9;
-  border-left: 1px solid #edf2f9;
+  /* border-left: 1px solid #edf2f9; */
   text-align: center;
   height: 70px;
   -webkit-transition-duration: 500ms;
@@ -1228,8 +1228,10 @@ div.tagsinput span.tag a {
   -o-transition-duration: 500ms;
   transition-duration: 500ms;
   padding: 0 30px 0 15px;
-  -webkit-box-shadow: -1px 0 10px 1px rgba(63, 77, 103, 0.1);
-  box-shadow: -1px 0 10px 1px rgba(63, 77, 103, 0.1); }
+  /* -webkit-box-shadow: -1px 0 10px 1px rgba(63, 77, 103, 0.1);
+  box-shadow: -1px 0 10px 1px rgba(63, 77, 103, 0.1); */
+  border-right: 0;
+ }
 
 .menu-collasped {
   position: relative;
