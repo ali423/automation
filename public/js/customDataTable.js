@@ -51,7 +51,13 @@ $(document).ready(function() {
             },
             {
                 extend: 'csv',
-                className: 'btn btn-outline-primary'
+                className: 'btn btn-outline-primary',
+                exportOptions: {
+                    columns: [4, 3, 2, 1, 0],
+                    modifier: {
+                        page: 'current'
+                    }
+                }
             },
             {
                 extend: 'print',
