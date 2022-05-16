@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Title -->
-    <title>@yield('title',env('comp_name')) - سیستم اتوماسیون </title>
+    <title>@yield('title', env('comp_name')) - سیستم اتوماسیون </title>
 </head>
 
 @include('layouts.styles')
@@ -164,9 +164,9 @@
         <div class="ecaps-sidemenu-area">
             <!-- Desktop Logo -->
             <div class="ecaps-logo">
-                <a href="index.html"><img class="desktop-logo" src="{{ asset('img/core-img/logo.png') }}"
-                        alt="لوگوی دسک تاپ"> <img class="small-logo"
-                        src="{{ asset('img/core-img/small-logo.png') }}" alt="آرم موبایل"></a>
+                <a href="index.html"><img class="desktop-logo" src="{{ asset('img/logo/darklogo.png') }}"
+                        alt="لوگوی دسکتاپ"> <img class="small-logo" src="{{ asset('img/logo/icon.png') }}"
+                        alt="آرم موبایل"></a>
             </div>
             @include('layouts.sidebar')
         </div>
@@ -178,8 +178,7 @@
                 <div class="left-side-content-area d-flex align-items-center">
                     <!-- Mobile Logo -->
                     <div class="mobile-logo mr-3 mr-sm-4">
-                        <a href="index.html"><img src="{{ asset('img/core-img/small-logo.png') }}"
-                                alt="آرم موبایل"></a>
+                        <a href="index.html"><img src="{{ asset('img/logo/icon.png') }}" alt="آرم موبایل"></a>
                     </div>
 
                     <!-- Triggers -->
