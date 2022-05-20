@@ -70,6 +70,7 @@
 @foreach($errors->all() as $error)
     <div id="error" class="danger">
         <strong>خطا! </strong>{{$error}}
+
     </div>
 @endforeach
 

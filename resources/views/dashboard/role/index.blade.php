@@ -1,6 +1,5 @@
 @extends('layouts.main')
 @section('title', 'داشبورد')
-
 @section('page_styles')
     <!-- These plugins only need for the run this page -->
     <link rel="stylesheet" href="{{ asset('css/default-assets/datatables.bootstrap4.css') }}">
@@ -8,6 +7,7 @@
     <link rel="stylesheet" href="{{ asset('css/default-assets/buttons.bootstrap4.css') }}">
     <link rel="stylesheet" href="{{ asset('css/default-assets/select.bootstrap4.css') }}">
     <link rel="stylesheet" href="{{ asset('css/datatables-td.css') }}">
+
 @endsection
 
 @section('content')
@@ -45,12 +45,12 @@
                             @endforeach
                         </tbody>
                     </table>
+
                 </div> <!-- end card body-->
             </div> <!-- end card -->
         </div><!-- end col-->
     </div>
 @endsection
-
 
 @section('page_scripts')
 

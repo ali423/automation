@@ -42,6 +42,7 @@
                             <div class="invalid-feedback">
                                 رمز عبور حداقل باید از 8 کاراکتر بیشتر و از اعداد و حروف انگلیسی تشکیل شده باشد.
                             </div>
+
                         </div>
                         <div class="d-flex flex-column flex-md-row justify-content-between">
                             <div class="mb-4 form-check form-switch">
@@ -61,9 +62,9 @@
             </div>
         </div>
     </div>
-
     <script src="{{ asset('js/login/bootstrap.bundle.min.js') }}"></script>
     <script src='{{ asset('js/login/script.js') }}'></script>
+
 </body>
 
 </html>

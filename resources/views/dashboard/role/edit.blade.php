@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title', 'داشبورد')
+@section('title','داشبورد')
 
 @section('page_styles')
 
@@ -46,6 +46,7 @@
                                     @endforeach
                                 </div>
                             </div>
+
                             <button type="submit" class="btn btn-primary mr-2">ثبت</button>
                             <a href="{{ route('role.index') }}" class="btn btn-danger">انصراف</a>
                         </form>
@@ -60,3 +61,4 @@
     <!-- These plugins only need for the run this page -->
     <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
 @endsection
+
