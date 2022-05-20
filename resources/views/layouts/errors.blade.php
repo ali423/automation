@@ -69,13 +69,14 @@
 
 @foreach($errors->all() as $error)
     <div id="error" class="danger">
-        <strong>خطا!</strong>{{$error}}
+        <strong>خطا! </strong>{{$error}}
+
     </div>
 @endforeach
 
 @if(Session::get('successful')!=null)
     <div id="error" class="success">
-        <strong>انجام شد!</strong> {{Session::pull('successful')}}
+        <strong>انجام شد! </strong> {{Session::pull('successful')}}
     </div>
 @endif
 

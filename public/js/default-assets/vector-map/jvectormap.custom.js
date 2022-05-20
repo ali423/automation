@@ -7,7 +7,7 @@ jQuery('#world-map-markers').vectorMap({
     color: '#f4f3f0',
     regionStyle: {
         initial: {
-            fill: '#6e00ff'
+            fill: '#ffc103'
         }
     },
     markerStyle: {

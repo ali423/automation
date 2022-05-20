@@ -1,1 +1,3 @@
-document.getElementById('error').classList.add('close');
+if(document.getElementById('error')){
+    document.getElementById('error').classList.add('close');
+}
