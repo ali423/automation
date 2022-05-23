@@ -44,7 +44,7 @@
                                     @endforeach
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary mr-2">ویرایش نقش</button>
+                            <button type="submit" class="btn btn-primary mr-2">ثبت نقش</button>
                             <a href="{{ route('role.index') }}" class="btn btn-danger">انصراف</a>
                         </form>
 

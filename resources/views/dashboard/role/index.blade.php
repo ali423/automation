@@ -37,7 +37,11 @@
                                     <td>{{ $role->title }}</td>
                                     <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($role->created_at)) }}
                                     </td>
-                                    <td>ادمین</td>
+                                    @if(isset($role->creator_user))
+                                    <td>{{ $role->creator_user->name.' '. $role->creator_user->lastname }}</td>
+                                    @else
+                                        <td>سیستم</td>
+                                    @endif
                                     <td><a href="{{ route('role.show', $role) }}"><i class="fa fa-object-group"></i></a>
                                     </td>
                                 </tr>
