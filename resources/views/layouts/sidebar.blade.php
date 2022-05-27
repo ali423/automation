@@ -19,6 +19,12 @@
                         <li><a href="{{ route('role.create') }}">افزودن نقش جدید</a></li>
                     </ul>
                 </li>
+                <li class="treeview">
+                    <a href="javascript:void(0)"><i class="fa fa-id-card-o"></i> <span>فعایت ها</span> <i class="fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        <li><a href="{{ route('activity.index') }}">لیست فعالیت ها</a></li>
+                    </ul>
+                </li>
                 <li class="treeview active">
                     <a href="javascript:void(0)"><i class="icon_piechart"></i> <span>CRM</span> <i class="fa fa-angle-left"></i></a>
                     <ul class="treeview-menu">

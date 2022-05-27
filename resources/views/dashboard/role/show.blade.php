@@ -14,17 +14,18 @@
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label for="exampleInputEmail111"> نام نقش (فارسی)</label>
+                                <label for="exampleInputEmail111"> {{  __('fields.name') }}(فارسی)</label>
                                 <input type="text" name="name" value="{{ $role->name }}" class="form-control"
                                        id="exampleInputEmail111" placeholder="حسابدار" autocomplete="off" readonly>
                             </div>
                             <div class="form-group col-md-6">
-                                <label for="exampleInputEmail111"> عنوان نقش (انگلیسی)</label>
+                                <label for="exampleInputEmail111"> {{  __('fields.title') }}(انگلیسی)</label>
                                 <input type="text" name="title" value="{{ $role->title }}" class="form-control" readonly
                                        id="exampleInputEmail111" placeholder="accountant">
                             </div>
                         </div>
                         <div class="form-group">
+                            <label for="exampleInputEmail111"> {{  __('fields.permissions') }}</label>
                             <div class="row col-md-12">
                                 @foreach($role->permissions as $permission)
                                     <div class="col-md-3">
@@ -38,6 +39,11 @@
                             </div>
                         </div>
                         <div class="row">
+                              <a href="{{route('activity.index',[
+                             'object_id'=>$role->id,
+                             'object_type'=>class_basename($role),
+                               ],
+)}}" class="btn btn-primary mr-2">لیست تغییرات صورت گرفته  </a>
                             <a href="{{route('role.edit',$role)}}" class="btn btn-primary mr-2">ویرایش نقش</a>
                             <form method="post" action="{{route('role.destroy',$role)}}">
                                 @csrf

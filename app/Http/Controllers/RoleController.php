@@ -7,6 +7,7 @@ use App\Http\Requests\RoleUpdateRequest;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RoleController extends Controller
 {
@@ -17,7 +18,7 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $role=Role::query()->paginate(20);
+        $role=Role::query()->orderBy('id', 'DESC')->get();
         return view('dashboard.role.index',
             [
                 'roles'=>$role,
@@ -46,11 +47,13 @@ class RoleController extends Controller
     public function store(RoleRequest $request)
     {
         $data=$request->validationData();
-        $role=Role::query()->create([
-            'name'=>$data['name'],
-            'title'=>$data['title'],
-        ]);
-        $role->permissions()->attach($data['permissions']);
+        DB::transaction(function () use ($data) {
+            $role = Role::query()->create([
+                'name' => $data['name'],
+                'title' => $data['title'],
+            ]);
+            $role->permissions()->attach($data['permissions']);
+        });
         return redirect(route('role.index'))->with('successful', 'اطلاعات ثبت شد.');
     }
 
@@ -93,11 +96,13 @@ class RoleController extends Controller
     public function update(RoleUpdateRequest $request, Role $role)
     {
         $data=$request->validationData();
-        $role->update([
-            'name'=>$data['name'],
-            'title'=>$data['title'],
-        ]);
-        $role->permissions()->sync($data['permissions']);
+        DB::transaction(function () use ($data,$role){
+            $role->permissions()->sync($data['permissions']);
+            $role->update([
+                'name'=>$data['name'],
+                'title'=>$data['title'],
+            ]);
+        });
         return redirect(route('role.index'))->with('successful', 'ویرایش انجام شد.');
     }
 
@@ -112,8 +117,10 @@ class RoleController extends Controller
         if ($role->users()->exists()){
             return redirect()->back()->withErrors('ابتدا کاربرانی که این نقش را دارند اصلاح کنید');
         }
-        $role->Permissions()->detach();
-        $role->delete();
+        DB::transaction(function () use ($role) {
+            $role->Permissions()->detach();
+            $role->delete();
+        });
         return redirect(route('role.index'))->with('successful', 'حذف اطلاعات انجام شد.');
 
     }
