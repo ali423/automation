@@ -18,9 +18,13 @@
                             @csrf
                             <div class="form-row">
                                 <div class="form-group col-md-6">
-                                    <label for="exampleInputEmail111"> {{  __('fields.name') }}(فارسی)</label>
+                                    <label for="name"> {{  __('fields.name') }}(فارسی)</label>
                                     <input type="text" name="name" value="{{ $role->name }}" class="form-control"
-                                        id="exampleInputEmail111" placeholder="حسابدار" autocomplete="off" required="">
+                                        id="name" pattern="[\u0600-\u0605 ؐ-ؚ\u061Cـ ۖ-\u06DD ۟-ۤ ۧ ۨ ۪-ۭ ً-ٕ ٟ ٖ-ٞ ٰ ، ؍ ٫ ٬ ؛ ؞ ؟ ۔ ٭ ٪ ؉ ؊ ؈ ؎ ؏
+                                    ۞ ۩ ؆ ؇ ؋ ٠۰0 ١۱1 ٢۲2 ٣۳3 ٤۴4 ٥۵5 ٦۶6 ٧۷7 ٨۸8 ٩۹9 ءٴ۽ آ أ ٲ ٱ ؤ إ ٳ ئ ا ٵ ٮ ب ٻ پ ڀ
+                                    ة-ث ٹ ٺ ټ ٽ ٿ ج ڃ ڄ چ ڿ ڇ ح خ ځ ڂ څ د ذ ڈ-ڐ ۮ ر ز ڑ-ڙ ۯ س ش ښ-ڜ ۺ ص ض ڝ ڞ
+                                    ۻ ط ظ ڟ ع غ ڠ ۼ ف ڡ-ڦ ٯ ق ڧ ڨ ك ک-ڴ ػ ؼ ل ڵ-ڸ م۾ ن ں-ڽ ڹ ه ھ ہ-ۃ ۿ ەۀ وۥ ٶ
+                                    ۄ-ۇ ٷ ۈ-ۋ ۏ ى يۦ ٸ ی-ێ ې ۑ ؽ-ؿ ؠ ے ۓ \u061D]+" autocomplete="off" required="">
                                     <div class="invalid-feedback">
                                         لطفاً نام نقش را وارد کنید.
                                     </div>
@@ -28,7 +32,7 @@
                                 <div class="form-group col-md-6">
                                     <label for="exampleInputEmail111"> {{  __('fields.title') }}(انگلیسی)</label>
                                     <input type="text" name="title" value="{{ $role->title }}" class="form-control"
-                                        id="exampleInputEmail111" placeholder="accountant" pattern="[a-zA-Z]+" required="">
+                                        id="title" placeholder="accountant" pattern="[a-zA-Z0-9 . - _]+" required="">
                                     <div class="invalid-feedback">
                                         لطفاً عنوان نقش را وارد کنید.
                                     </div>

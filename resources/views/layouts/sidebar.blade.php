@@ -20,7 +20,7 @@
                     </ul>
                 </li>
                 <li class="treeview">
-                    <a href="javascript:void(0)"><i class="fa fa-id-card-o"></i> <span>فعایت ها</span> <i class="fa fa-angle-left"></i></a>
+                    <a href="javascript:void(0)"><i class="fa fa-id-card-o"></i> <span>فعالیت ها</span> <i class="fa fa-angle-left"></i></a>
                     <ul class="treeview-menu">
                         <li><a href="{{ route('activity.index') }}">لیست فعالیت ها</a></li>
                     </ul>
