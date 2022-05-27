@@ -17,6 +17,13 @@ trait ActivityTrait
         return $this->morphMany(Activity::class, 'record_change');
     }
 
+    public function getModelDetailAttribute()
+    {
+        return config('enums.model')[class_basename($this)];
+    }
+
+
+
     public function getCreatorUserAttribute()
     {
         return $this->activities()->where('action', 'create')->first()->user ?? null;
@@ -126,10 +133,12 @@ trait ActivityTrait
                         'previous_activity_id' => end($previous_activities)['id'],
                         'record_change_id' => $item->id,
                         'record_change_type' => get_class($item),
+                        'relation_model'=>get_class($item->$relationName->first()),
                         'user_id' => auth()->user()->id,
                         'relation_name' => $relationName,
                         'action' => 'sync',
-                        'data' => json_encode($pivotIdsAttributes),
+                        'data'=>json_encode($item->toArray()),
+                        'pivot_data' => json_encode($pivotIdsAttributes),
                     ];
                     Activity::query()->insert($data);
                 }
@@ -154,10 +163,12 @@ trait ActivityTrait
                         'previous_activity_id' => end($previous_activities)['id'],
                         'record_change_id' => $item->id,
                         'record_change_type' => get_class($item),
+                        'relation_model'=>get_class($item->$relationName->first()),
                         'user_id' => auth()->user()->id,
                         'relation_name' => $relationName,
                         'action' => 'attach',
-                        'data' => json_encode($pivotIdsAttributes),
+                        'data'=>json_encode($item->toArray()),
+                        'pivot_data' => json_encode($pivotIdsAttributes),
                     ];
                     Activity::query()->insert($data);
                 }
@@ -182,10 +193,12 @@ trait ActivityTrait
                         'previous_activity_id' => end($previous_activities)['id'],
                         'record_change_id' => $item->id,
                         'record_change_type' => get_class($item),
+                        'relation_model'=>get_class($item->$relationName->first()),
                         'user_id' => auth()->user()->id,
                         'relation_name' => $relationName,
                         'action' => 'detach',
-                        'data' => json_encode($pivotIdsAttributes),
+                        'data'=>json_encode($item->toArray()),
+                        'pivot_data' => json_encode($pivotIdsAttributes),
                     ];
                     Activity::query()->insert($data);
                 }
@@ -210,9 +223,11 @@ trait ActivityTrait
                         'record_change_id' => $item->id,
                         'record_change_type' => get_class($item),
                         'user_id' => auth()->user()->id,
+                        'relation_model'=>get_class($item->$relationName->first()),
                         'relation_name' => $relationName,
                         'action' => 'pivot_update',
-                        'data' => json_encode($pivotIdsAttributes),
+                        'data'=>json_encode($item->toArray()),
+                        'pivot_data' => json_encode($pivotIdsAttributes),
                     ];
                     Activity::query()->insert($data);
                 }

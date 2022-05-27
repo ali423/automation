@@ -20,8 +20,11 @@ class CreateActivitiesTable extends Migration
             $table->integer('record_change_id');
             $table->string('record_change_type');
             $table->string('relation_name')->nullable();
+            $table->string('relation_model')->nullable();
             $table->enum('action',['create','update','delete','sync','attach','detach','pivot_update']);
             $table->json('data')->nullable();
+            $table->json('pivot_data')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

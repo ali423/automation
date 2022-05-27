@@ -18,7 +18,7 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $role=Role::query()->paginate(20);
+        $role=Role::query()->orderBy('id', 'DESC')->get();
         return view('dashboard.role.index',
             [
                 'roles'=>$role,

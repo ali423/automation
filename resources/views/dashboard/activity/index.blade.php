@@ -15,34 +15,30 @@
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-2">لیست نقش ها</h4>
+                    <h4 class="card-title mb-2">لیست فعالیت ها</h4>
                     <table id="datatable-buttons" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                             <tr>
                                 <th>ردیف</th>
-                                <th> {{ __('fields.name') }}</th>
-                                <th> {{ __('fields.title') }}</th>
-                                <th>{{ __('fields.created_at') }}</th>
-                                <th>{{ __('fields.creator') }}</th>
-                                <th>{{ __('fields.details') }}</th>
+                                <th>کاربر انجام دهنده</th>
+                                <th>مرجع فعالیت</th>
+                                <th>نوع تغییر</th>
+                                <th>زمان</th>
+                                <th>جزئیات</th>
                             </tr>
                         </thead>
 
                         <tbody class="text-center">
                             @php($i = 1)
-                            @foreach ($roles as $role)
+                            @foreach ($activities as $activity)
                                 <tr>
                                     <td>{{ $i }}</td>
-                                    <td>{{ $role->name }}</td>
-                                    <td>{{ $role->title }}</td>
-                                    <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($role->created_at)) }}
+                                    <td>{{ $activity->user->full_name }}</td>
+                                    <td>{{ $activity->recordChange->model_name }}</td>
+                                    <td>{{ $activity->action }}</td>
+                                    <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d H:i:s', strtotime($activity->created_at)) }}
                                     </td>
-                                    @if(isset($role->creator_user))
-                                    <td>{{ $role->creator_user->name.' '. $role->creator_user->lastname }}</td>
-                                    @else
-                                        <td>سیستم</td>
-                                    @endif
-                                    <td><a href="{{ route('role.show', $role) }}"><i class="fa fa-object-group"></i></a>
+                                    <td><a href="{{ route('activity.show', $activity) }}"><i class="fa fa-object-group"></i></a>
                                     </td>
                                 </tr>
                                 @php($i++)

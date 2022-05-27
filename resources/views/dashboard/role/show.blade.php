@@ -14,17 +14,18 @@
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label for="exampleInputEmail111"> نام نقش (فارسی)</label>
+                                <label for="exampleInputEmail111"> {{  __('fields.name') }}(فارسی)</label>
                                 <input type="text" name="name" value="{{ $role->name }}" class="form-control"
                                        id="exampleInputEmail111" placeholder="حسابدار" autocomplete="off" readonly>
                             </div>
                             <div class="form-group col-md-6">
-                                <label for="exampleInputEmail111"> عنوان نقش (انگلیسی)</label>
+                                <label for="exampleInputEmail111"> {{  __('fields.title') }}(انگلیسی)</label>
                                 <input type="text" name="title" value="{{ $role->title }}" class="form-control" readonly
                                        id="exampleInputEmail111" placeholder="accountant">
                             </div>
                         </div>
                         <div class="form-group">
+                            <label for="exampleInputEmail111"> {{  __('fields.permissions') }}</label>
                             <div class="row col-md-12">
                                 @foreach($role->permissions as $permission)
                                     <div class="col-md-3">

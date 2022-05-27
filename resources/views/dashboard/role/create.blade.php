@@ -16,7 +16,7 @@
                             @csrf
                             <div class="form-row">
                                 <div class="form-group col-md-6">
-                                    <label for="exampleInputEmail111"> نام نقش (فارسی)</label>
+                                    <label for="exampleInputEmail111"> {{  __('fields.name') }}(فارسی)</label>
                                     <input type="text" name="name" value="{{ old('name') }}" class="form-control"
                                         id="exampleInputEmail111" placeholder="حسابدار" autocomplete="off" required="">
                                     <div class="invalid-feedback">
@@ -24,7 +24,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label for="exampleInputEmail111"> عنوان نقش (انگلیسی)</label>
+                                    <label for="exampleInputEmail111"> {{  __('fields.title') }}(انگلیسی)</label>
                                     <input type="text" name="title" value="{{ old('title') }}" class="form-control"
                                         id="exampleInputEmail111" placeholder="accountant" pattern="[a-zA-Z]+" required="">
                                     <div class="invalid-feedback">
@@ -33,6 +33,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
+                                <label for="exampleInputEmail111"> {{  __('fields.permissions') }}</label>
                                 <div class="row col-md-12">
                                     @foreach ($permissions as $permission)
                                         <div class="col-md-3">

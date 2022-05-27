@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RoleController;
@@ -29,6 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/',[DashboardController::class,'index'])->name('home');
     Route::resource('user',UserController::class);
     Route::resource('role',RoleController::class);
+    Route::resource('activity',ActivityController::class)->only('show','index');
 });
 
 
