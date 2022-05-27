@@ -23,7 +23,7 @@
                                 <th>کاربر انجام دهنده</th>
                                 <th>مرجع فعالیت</th>
                                 <th>نوع تغییر</th>
-                                <th>زمان</th>
+                                <th>زمان انجام</th>
                                 <th>جزئیات</th>
                             </tr>
                         </thead>
@@ -34,8 +34,8 @@
                                 <tr>
                                     <td>{{ $i }}</td>
                                     <td>{{ $activity->user->full_name }}</td>
-                                    <td>{{ $activity->recordChange->model_name }}</td>
-                                    <td>{{ $activity->action }}</td>
+                                    <td>{{ $activity->recordChange->model_detail['fa_name']}}</td>
+                                    <td>{{ $activity->action_persian_name }}</td>
                                     <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d H:i:s', strtotime($activity->created_at)) }}
                                     </td>
                                     <td><a href="{{ route('activity.show', $activity) }}"><i class="fa fa-object-group"></i></a>

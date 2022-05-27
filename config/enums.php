@@ -1,12 +1,19 @@
 <?php
 
 return [
-    'model' => [
-        'Role' => [
+    'models' => [
+        'App\Models\Role' => [
             'fa_name' => 'نقش',
             'url' => 'role',
             'relations'=>[
                 'permissions'=>'دسترسی ها'
+            ]
+        ],
+        'App\Models\User' => [
+            'fa_name' => 'کاربران',
+            'url' => 'user',
+            'relations'=>[
+
             ]
         ],
     ],

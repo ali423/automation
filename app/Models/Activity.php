@@ -42,7 +42,7 @@ class Activity extends Model
 
     public function getRelationPersianNameAttribute()
     {
-        return config('enums.model')[class_basename($this->recordChange)]['relations'][$this->relation_name] ?? null;
+        return config('enums.models')[$this->record_change_type]['relations'][$this->relation_name] ?? null;
     }
     public function getChangesAttribute(){
         switch ($this->action) {

@@ -39,6 +39,11 @@
                             </div>
                         </div>
                         <div class="row">
+                              <a href="{{route('activity.index',[
+                             'object_id'=>$role->id,
+                             'object_type'=>class_basename($role),
+                               ],
+)}}" class="btn btn-primary mr-2">لیست تغییرات صورت گرفته  </a>
                             <a href="{{route('role.edit',$role)}}" class="btn btn-primary mr-2">ویرایش نقش</a>
                             <form method="post" action="{{route('role.destroy',$role)}}">
                                 @csrf

@@ -3,9 +3,7 @@
 namespace App\Traits;
 
 use App\Models\Activity;
-use App\Models\Role;
 use GeneaLabs\LaravelPivotEvents\Traits\PivotEventTrait;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 
 trait ActivityTrait
@@ -19,10 +17,8 @@ trait ActivityTrait
 
     public function getModelDetailAttribute()
     {
-        return config('enums.model')[class_basename($this)];
+        return config('enums.models')[get_class($this)];
     }
-
-
 
     public function getCreatorUserAttribute()
     {

@@ -78,10 +78,10 @@
                                 </div>
 
                             @endforeach
-                        @elseif(isset($activity->changes['attached']) || $activity->changes['detached'])
-                            @if(($activity->changes['attached']) != null)
+                        @else
+                            @if((!empty($activity->changes['attached'])))
                                 <h2> الصاق
-                                    کردن {{ $activity->recordChange->model_detail['relations'][$activity->relation_name] }} </h2>
+                                    کردن {{ $activity->relation_persian_name}} </h2>
                                 <div class="form-row col-md-12">
                                     @foreach($activity->changes['attached'] as $key=>$value)
                                         <div class="form-group col-md-2">
@@ -93,9 +93,9 @@
                                     @endforeach
                                 </div>
                             @endif
-                            @if($activity->changes['detached'] != null )
+                            @if(!empty($activity->changes['detached']) )
                                 <h2> حذف
-                                    کردن {{ $activity->recordChange->model_detail['relations'][$activity->relation_name] }} </h2>
+                                    کردن {{ $activity->relation_persian_name }} </h2>
                                 <div class="form-row col-md-12">
                                     @foreach($activity->changes['detached'] as $key=>$value)
                                         <div class="form-group col-md-2">
