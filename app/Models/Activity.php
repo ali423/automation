@@ -19,6 +19,7 @@ class Activity extends Model
         'previous_activity_id',
         'pivot_data',
         'relation_model',
+        'relation_name',
     ];
 
     public function user(){
@@ -51,10 +52,10 @@ class Activity extends Model
             case "update":
                 $old_value=json_decode($this->perviousActivity->data,true);
                 $new_value=json_decode($this->data,true);
+                unset($old_value[$this->relation_name],$old_value['updated_at']);
+                unset($new_value[$this->relation_name],$new_value['updated_at']);
                 $old_diff=array_diff($old_value,$new_value);
                 $new_diff=array_diff($new_value,$old_value);
-                unset($new_diff['updated_at']);
-                unset($old_diff['updated_at']);
                return [
                    'old_value'=>$old_diff,
                    'new_value'=>$new_diff,
