@@ -67,6 +67,7 @@ trait ActivityTrait
                     $data = [
                         'previous_activity_id' => end($previous_activities)['id'],
                         'user_id' => auth()->user()->id,
+                        'relation_name' => end($previous_activities)['relation_name'],
                         'action' => 'update',
                         'data' => json_encode($item->toArray()),
                     ];

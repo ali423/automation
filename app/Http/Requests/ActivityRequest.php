@@ -23,10 +23,7 @@ class ActivityRequest extends FormRequest
      */
     public function rules()
     {
-        $models=array_map(function ($item){
-            return  substr($item, 11);
-        },array_keys(config('enums.models')));
-        $items=implode($models,',');
+        $items=implode(getSystemModelsSymbol(),',');
         return [
             'action'=>['nullable','array'],
             'action.*'=>['in:'.$items],
