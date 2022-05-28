@@ -10,11 +10,15 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
     public function index()
     {
-        //
+        $users=User::query()->orderBy('id', 'DESC')->get();
+        return view('dashboard.user.index',
+            [
+                'users'=>$users,
+            ]);
     }
 
     /**
@@ -42,11 +46,14 @@ class UserController extends Controller
      * Display the specified resource.
      *
      * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
     public function show(User $user)
     {
-        //
+        return view('dashboard.user.show',
+            [
+                'user'=>$user,
+            ]);
     }
 
     /**
