@@ -9,44 +9,78 @@
     <div class="row">
         <div class="col-xl-12 box-margin height-card">
             <div class="card card-body">
-                <h4 class="card-title">نقش جدید</h4>
+                <h4 class="card-title">کاربر جدید</h4>
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
-                        <form method="post" action="{{ route('role.store') }}" class="needs-validation" novalidate="">
+                        <form method="post" action="{{ route('user.store') }}" class="needs-validation" novalidate="">
                             @csrf
-                            <div class="form-row">
+                            <div class="form-row col-md-12">
                                 <div class="form-group col-md-6">
-                                    <label for="exampleInputEmail111"> {{  __('fields.name') }}(فارسی)</label>
+                                    <label for="exampleInputEmail111"> {{  __('fields.name') }}</label>
                                     <input type="text" name="name" value="{{ old('name') }}" class="form-control"
-                                        id="exampleInputEmail111" placeholder="حسابدار" autocomplete="off" required="">
-                                    <div class="invalid-feedback">
-                                        لطفاً نام نقش را وارد کنید.
-                                    </div>
+                                           id="exampleInputEmail111" placeholder="{{  __('fields.name')  }}"
+                                           autocomplete="off"
+                                    >
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label for="exampleInputEmail111"> {{  __('fields.title') }}(انگلیسی)</label>
-                                    <input type="text" name="title" value="{{ old('title') }}" class="form-control"
-                                        id="exampleInputEmail111" placeholder="accountant" pattern="[a-zA-Z]+" required="">
-                                    <div class="invalid-feedback">
-                                        لطفاً عنوان نقش را وارد کنید.
-                                    </div>
+                                    <label for="exampleInputEmail111"> {{  __('fields.lastname') }}</label>
+                                    <input type="text" name="lastname" value="{{ old('lastname') }}"
+                                           class="form-control"
+                                           id="exampleInputEmail111" placeholder="{{  __('fields.lastname') }}"
+                                           autocomplete="off"
+                                    >
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="exampleInputEmail111"> {{  __('fields.permissions') }}</label>
-                                <div class="row col-md-12">
-                                    @foreach ($permissions as $permission)
-                                        <div class="col-md-3">
-                                            <div class="form-group"><input type="checkbox"
-                                                    @if (old('permissions') && in_array($permission->id, old('permissions'))) checked @endif name="permissions[]"
-                                                    value="{{ $permission->id }}" class="">
-                                                {{ $permission->name }} </div>
-                                        </div>
-                                    @endforeach
+                            <div class="form-row col-md-12">
+                                <div class="form-group col-md-6">
+                                    <label for="exampleInputEmail111"> {{  __('fields.user_name') }}</label>
+                                    <input type="text" name="user_name" value="{{ old('user_name') }}"
+                                           class="form-control"
+                                           id="exampleInputEmail111" placeholder="{{  __('fields.user_name') }}"
+                                           autocomplete="off"
+                                    >
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="inputState"> {{  __('fields.role.name') }}</label>
+                                    <select id="inputState" class="form-control" name="role">
+                                        <option>انتخاب کنید</option>
+                                        @foreach($roles as $role)
+                                            <option value="{{$role->id}}"
+                                                    @if(old('role')== $role->id)
+                                                    selected
+                                                @endif
+                                            >{{$role->name}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                            </div>
+                            <div class="form-row col-md-12">
+                                <div class="form-group col-md-4">
+                                    <label for="exampleInputEmail111"> {{  __('fields.status') }}</label>
+                                    <select id="inputState" class="form-control" name="status">
+
+                                        <option selected value="active">فعال</option>
+                                        <option value="inactive">غیر فعال</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="exampleInputEmail111"> {{  __('fields.password') }}</label>
+                                    <input type="password" name="password" class="form-control"
+                                           id="exampleInputEmail111" placeholder="{{  __('fields.password') }}"
+                                           autocomplete="off"
+                                    ></div>
+                                <div class="form-group col-md-4">
+                                    <label for="exampleInputEmail111"> {{  __('fields.c_password') }}</label>
+                                    <input type="password" name="password_confirmation" class="form-control"
+                                           id="exampleInputEmail111" placeholder="{{  __('fields.c_password') }}"
+                                           autocomplete="off"
+                                    >
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary mr-2">ثبت نقش</button>
-                            <a href="{{ route('role.index') }}" class="btn btn-danger">انصراف</a>
+
+                            <button type="submit" class="btn btn-primary mr-2">ثبت کاربر</button>
+                            <a href="{{ route('user.index') }}" class="btn btn-danger">انصراف</a>
                         </form>
 
                     </div>

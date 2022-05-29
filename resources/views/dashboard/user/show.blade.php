@@ -13,19 +13,27 @@
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-row col-md-12">
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-6">
                                 <label for="exampleInputEmail111"> {{  __('fields.name') }}</label>
                                 <input type="text" name="name" value="{{ $user->name }}" class="form-control"
                                        id="exampleInputEmail111" placeholder="{{  __('fields.name') }}"
                                        autocomplete="off" readonly>
                             </div>
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-6">
                                 <label for="exampleInputEmail111"> {{  __('fields.lastname') }}</label>
                                 <input type="text" name="name" value="{{ $user->lastname }}" class="form-control"
                                        id="exampleInputEmail111" placeholder="{{  __('fields.lastname') }}"
                                        autocomplete="off" readonly>
                             </div>
-                            <div class="form-group col-md-4">
+                        </div>
+                        <div class="form-row col-md-12">
+                            <div class="form-group col-md-6">
+                                <label for="exampleInputEmail111"> {{  __('fields.user_name') }}</label>
+                                <input type="text" name="user_name" value="{{ $user->user_name }}" class="form-control"
+                                       id="exampleInputEmail111" placeholder="{{  __('fields.user_name') }}"
+                                       autocomplete="off" readonly>
+                            </div>
+                            <div class="form-group col-md-6">
                                 <label for="exampleInputEmail111"> {{  __('fields.role.name') }}</label>
                                 <a href="{{ route('role.show',$user->role) }}"> <input type="text" name="name"
                                                                                        value="{{ $user->role->name }}"
