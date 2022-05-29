@@ -6,11 +6,15 @@
     /* default #6e00ff */
     --customThemeColor: #eaa400;
 
+
+    --defaultThemeColor: #6e00ff;
+    --defaultThemHover: #5e00d9;
+
     /* default rgba(110, 0, 255, 0.08) */
     --menuActiveBtn: rgba(255, 174, 0, 0.08);
 
     /* default #5e00d9 */
-    --btnPrimaryHover: #ff4500;
+    --btnPrimaryHover: #ffa600;
 
     /* default #5800cc */
     --btnPrimaryBorder: #ffa500;

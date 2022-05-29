@@ -25,7 +25,7 @@
                         <li><a href="{{ route('activity.index') }}">لیست فعالیت ها</a></li>
                     </ul>
                 </li>
-                <li class="treeview active">
+                {{-- <li class="treeview active">
                     <a href="javascript:void(0)"><i class="icon_piechart"></i> <span>CRM</span> <i class="fa fa-angle-left"></i></a>
                     <ul class="treeview-menu">
                         <li class="active"><a href="crm-dashboard.html">داشبورد</a></li>
@@ -191,7 +191,7 @@
                         </li>
 
                     </ul>
-                </li>
+                </li> --}}
             </ul>
         </nav>
     </div>

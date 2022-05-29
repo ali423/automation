@@ -18,7 +18,7 @@ return [
         ],
     ],
     'activity_types' => [
-        'create' => 'ایجاد',
+        'create' => 'کاربر',
         'update' => 'ویرایش',
         'delete' => 'حذف',
         'sync' => 'ویرایش گزینه ها',
