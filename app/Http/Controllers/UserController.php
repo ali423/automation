@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
+use App\Http\Requests\UserRestorePasswordRequest;
+use App\Http\Requests\UserUpdateRequest;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\UserService;
@@ -73,11 +75,22 @@ class UserController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
     public function edit(User $user)
     {
-        //
+        return view('dashboard.user.edit',
+            [
+                'user'=>$user,
+                'roles'=>Role::all(),
+            ]);
+    }
+
+    public function resetPassword(User $user){
+        return view('dashboard.user.restore-password',
+            [
+                'user'=>$user,
+            ]);
     }
 
     /**
@@ -85,11 +98,18 @@ class UserController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
-    public function update(Request $request, User $user)
+    public function update(UserUpdateRequest $request, User $user)
     {
-        //
+        $this->service->update($user,$request->validationData());
+        return redirect(route('user.show',$user))->with('successful', 'اطلاعات ویرایش شد.');
+    }
+
+    public function resetPasswordStore(UserRestorePasswordRequest $request, User $user)
+    {
+        $this->service->restorePassword($user,$request->validationData());
+        return redirect(route('user.show',$user))->with('successful', 'کلمه عبور ویرایش شد.');
     }
 
     /**

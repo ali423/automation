@@ -86,6 +86,8 @@
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger">حذف کاربر</button>
                             </form>
+                            <a href="{{route('reset-password.store',$user)}}" class="btn btn-success mr-2">تغییر کلمه عبور</a>
+
                         </div>
 
                     </div>
