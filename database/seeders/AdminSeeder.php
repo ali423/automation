@@ -29,7 +29,7 @@ class AdminSeeder extends Seeder
                 'name' => 'نوید',
                 'user_name' => 'admin',
                 'status' => 'active',
-                'lastname' => 'ظهماسبی',
+                'lastname' => 'طهماسبی',
                 'email' => 'ali_mokhtari72@yahoo.com',
                 'password' => bcrypt('a13760406'),
             ]);

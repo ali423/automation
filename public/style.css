@@ -3451,7 +3451,19 @@ input::-ms-input-placeholder {
 .btn-primary:hover {
   color: #fff;
   background-color: var(--btnPrimaryHover);
-  border-color: var(--btnPrimaryBorder);
+  border-color: var(--btnPrimaryHover);
+}
+
+.btn-dfprimary {
+  background-color: var(--defaultThemeColor);
+  border-color: var(--defaultThemeColor);
+  color: #fff;
+}
+
+.btn-dfprimary:hover {
+  color: #fff;
+  background-color: var(--defaultThemHover);
+  border-color: var(--defaultThemHover);
 }
 
 .btn-facebook {
@@ -3596,6 +3608,17 @@ input::-ms-input-placeholder {
 .btn-outline-primary:hover {
   background-color: var(--customThemeColor);
   border-color: var(--customThemeColor);
+}
+
+.btn-outline-dfprimary {
+  color: var(--defaultThemeColor);
+  border-color: var(--defaultThemeColor);
+}
+
+.btn-outline-dfprimary:hover {
+  background-color: var(--defaultThemeColor);
+  border-color: var(--defaultThemeColor);
+  color: #fff;
 }
 
 .bg-light {
@@ -14527,4 +14550,11 @@ a.mytooltip {
 
 i.icon_map_alt.font-12.font-weight-bold {
   padding: 5px;
+}
+
+
+/* custom style */
+.dataTables_filter{
+  margin-top:10px;
+  margin-bottom:10px;
 }

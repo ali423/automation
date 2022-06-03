@@ -18,10 +18,10 @@ return [
         ],
     ],
     'activity_types' => [
-        'create' => 'ایجاد',
+        'create' => 'کاربر',
         'update' => 'ویرایش',
         'delete' => 'حذف',
-        'sync' => 'ویراش گزینه ها',
+        'sync' => 'ویرایش گزینه ها',
         'attach' => 'ضمیمه کردن',
         'detach' => 'حذف گزینه ها',
         'pivot_update' => 'ویرایش متغیر',

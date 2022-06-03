@@ -19,6 +19,13 @@
                     <table id="datatable-buttons" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                             <tr>
+                                <th colspan="6">
+                                    {{-- to set active change btn-outline-dfprimary ==> btn-dfprimary --}}
+                                    <a href="?action[]=Role" class="btn btn-outline-dfprimary shadow">Role<span> &#8595;&#8593;</span></a>
+                                    <a href="?action[]=User" class="btn btn-outline-dfprimary shadow">User<span> &#8595;&#8593;</span></a>
+                                </th>
+                            </tr>
+                            <tr>
                                 <th>ردیف</th>
                                 <th>کاربر انجام دهنده</th>
                                 <th>مرجع فعالیت</th>
@@ -38,14 +45,13 @@
                                     <td>{{ $activity->action_persian_name }}</td>
                                     <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d H:i:s', strtotime($activity->created_at)) }}
                                     </td>
-                                    <td><a href="{{ route('activity.show', $activity) }}"><i class="fa fa-object-group"></i></a>
+                                    <td><a href="{{ route('activity.show', $activity) }}"><i class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>
                                 @php($i++)
                             @endforeach
                         </tbody>
                     </table>
-
                 </div> <!-- end card body-->
             </div> <!-- end card -->
         </div><!-- end col-->
