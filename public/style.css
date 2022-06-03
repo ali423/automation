@@ -14554,7 +14554,27 @@ i.icon_map_alt.font-12.font-weight-bold {
 
 
 /* custom style */
-.dataTables_filter{
-  margin-top:10px;
-  margin-bottom:10px;
+.dataTables_filter {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.rolename-icon {
+  position: absolute;
+  left: 10px;
+  bottom: 4px;
+  font-size: 16px;
+  text-decoration: none;
+  color: white;
+  background-color: #00aeef;
+  padding: 7px 7px 0 7px;
+  border-radius: 50%;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+}
+.rolename-icon:hover {
+  background-color: #0085d7;
+  color: #fff;
 }

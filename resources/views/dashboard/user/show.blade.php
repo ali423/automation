@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title','داشبورد')
+@section('title', 'داشبورد')
 
 @section('page_styles')
 
@@ -14,80 +14,79 @@
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-row col-md-12">
                             <div class="form-group col-md-6">
-                                <label for="exampleInputEmail111"> {{  __('fields.name') }}</label>
+                                <label for="exampleInputEmail111"> {{ __('fields.name') }}</label>
                                 <input type="text" name="name" value="{{ $user->name }}" class="form-control"
-                                       id="exampleInputEmail111" placeholder="{{  __('fields.name') }}"
-                                       autocomplete="off" readonly>
+                                    id="exampleInputEmail111" placeholder="{{ __('fields.name') }}" autocomplete="off"
+                                    disabled>
                             </div>
                             <div class="form-group col-md-6">
-                                <label for="exampleInputEmail111"> {{  __('fields.lastname') }}</label>
+                                <label for="exampleInputEmail111"> {{ __('fields.lastname') }}</label>
                                 <input type="text" name="name" value="{{ $user->lastname }}" class="form-control"
-                                       id="exampleInputEmail111" placeholder="{{  __('fields.lastname') }}"
-                                       autocomplete="off" readonly>
+                                    id="exampleInputEmail111" placeholder="{{ __('fields.lastname') }}" autocomplete="off"
+                                    disabled>
                             </div>
                         </div>
                         <div class="form-row col-md-12">
                             <div class="form-group col-md-6">
-                                <label for="exampleInputEmail111"> {{  __('fields.user_name') }}</label>
+                                <label for="exampleInputEmail111"> {{ __('fields.user_name') }}</label>
                                 <input type="text" name="user_name" value="{{ $user->user_name }}" class="form-control"
-                                       id="exampleInputEmail111" placeholder="{{  __('fields.user_name') }}"
-                                       autocomplete="off" readonly>
+                                    id="exampleInputEmail111" placeholder="{{ __('fields.user_name') }}"
+                                    autocomplete="off" disabled>
                             </div>
-                            <div class="form-group col-md-6">
-                                <label for="exampleInputEmail111"> {{  __('fields.role.name') }}</label>
-                                <a href="{{ route('role.show',$user->role) }}"> <input type="text" name="name"
-                                                                                       value="{{ $user->role->name }}"
-                                                                                       class="form-control"
-                                                                                       id="exampleInputEmail111"
-                                                                                       placeholder="{{  __('fields.role.name') }}"
-                                                                                       autocomplete="off" readonly></a>
+                            <div class="form-group col-md-6 position-relative">
+                                <label for="exampleInputEmail111"> {{ __('fields.role.name') }}</label>
+                                <input type="text" name="name" value="{{ $user->role->name }}" class="form-control"
+                                    id="exampleInputEmail111" placeholder="{{ __('fields.role.name') }}"
+                                    autocomplete="off" disabled>
+                                <a href="{{ route('role.show', $user->role) }}" class="rolename-icon">
+                                    <i class="ti-arrow-left"></i>
+                                </a>
                             </div>
                         </div>
                         <div class="form-row col-md-12">
                             <div class="form-group col-md-4">
-                                <label for="exampleInputEmail111"> {{  __('fields.status') }}</label>
-                                <input type="text" name="name" value="{{ __('fields.user.status')[$user->status]  }}"
-                                       class="form-control"
-                                       id="exampleInputEmail111" placeholder="{{  __('fields.status') }}"
-                                       autocomplete="off" readonly>
+                                <label for="exampleInputEmail111"> {{ __('fields.status') }}</label>
+                                <input type="text" name="name" value="{{ __('fields.user.status')[$user->status] }}"
+                                    class="form-control" id="exampleInputEmail111"
+                                    placeholder="{{ __('fields.status') }}" autocomplete="off" disabled>
                             </div>
                             <div class="form-group col-md-4">
-                                <label for="exampleInputEmail111"> {{  __('fields.created_at') }}</label>
+                                <label for="exampleInputEmail111"> {{ __('fields.created_at') }}</label>
                                 <input type="text" name="name"
-                                       value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($user->created_at)) }}"
-                                       class="form-control"
-                                       id="exampleInputEmail111" placeholder="{{  __('fields.created_at') }}"
-                                       autocomplete="off" readonly>
+                                    value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($user->created_at)) }}"
+                                    class="form-control" id="exampleInputEmail111"
+                                    placeholder="{{ __('fields.created_at') }}" autocomplete="off" disabled>
                             </div>
                             <div class="form-group col-md-4">
-                                <label for="exampleInputEmail111"> {{  __('fields.creator') }}</label>
+                                <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
                                 <input type="text" name="name"
-                                       @if(isset($user->creator_user))
-                                       value="{{ $user->creator_user->name.' '. $user->creator_user->lastname }}"
+                                    @if (isset($user->creator_user)) value="{{ $user->creator_user->name . ' ' . $user->creator_user->lastname }}"
                                        @else
-                                       value="سیستم"
-                                       @endif
-                                       class="form-control"
-                                       id="exampleInputEmail111" placeholder="{{  __('fields.creator') }}"
-                                       autocomplete="off" readonly>
+                                       value="سیستم" @endif
+                                    class="form-control" id="exampleInputEmail111"
+                                    placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
                             </div>
                         </div>
-
 
                         <div class="row">
-                            <a href="{{route('activity.index',[
-                             'object_id'=>$user->id,
-                             'object_type'=>class_basename($user),
-                               ],
-)}}" class="btn btn-primary mr-2">لیست تغییرات صورت گرفته </a>
-                            <a href="{{route('user.edit',$user)}}" class="btn btn-primary mr-2">ویرایش کاربر</a>
-                            <form method="post" action="{{route('user.destroy',$user)}}">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger">حذف کاربر</button>
-                            </form>
-                            <a href="{{route('reset-password.store',$user)}}" class="btn btn-success mr-2">تغییر کلمه عبور</a>
-
+                            <div class="col-md-6">
+                                <a href="{{ route('user.edit', $user) }}" class="btn btn-primary">ویرایش</a>
+                                <form method="post" action="{{ route('user.destroy', $user) }}" class="d-inline w-50">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('آیا از حذف این نقش مطمئن هستید؟');">حذف</button>
+                                </form>
+                            </div>
+                            <div class="col-md-6 text-md-right">
+                                <a href="{{ route('reset-password.store', $user) }}" class="btn btn-success px-2 px-md-4 my-1 m-md-0">تغییر
+                                    کلمه
+                                    عبور</a>
+                                <a href="{{ route('activity.index', [
+                                    'object_id' => $user->id,
+                                    'object_type' => class_basename($user),
+                                ]) }}"
+                                    class="btn btn-dfprimary px-2 px-md-4 m-md-0">تاریخچه تغییرات</a>
+                            </div>
                         </div>
 
                     </div>
@@ -99,8 +98,5 @@
 
 @section('page_scripts')
     <!-- These plugins only need for the run this page -->
-    <script src="{{asset('js/default-assets/basic-form.js')}}"></script>
+    <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
 @endsection
-
-
-

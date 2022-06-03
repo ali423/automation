@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title','داشبورد')
+@section('title', 'داشبورد')
 
 @section('page_styles')
 
@@ -9,26 +9,28 @@
     <div class="row">
         <div class="col-xl-12 box-margin height-card">
             <div class="card card-body">
-                <h4 class="card-title">ویرایش کاربر</h4>
+                <h4 class="card-title">تغییر کلمه عبور</h4>
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <form method="post" action="{{ route('reset-password.store', $user) }}" class="needs-validation"
-                              novalidate="">
+                            novalidate="">
                             @method('PATCH')
                             @csrf
                             <div class="form-row col-md-12">
                                 <div class="form-group col-md-6">
-                                    <label for="exampleInputEmail111"> {{  __('fields.password') }}</label>
-                                    <input type="password" name="password" class="form-control"
-                                           id="exampleInputEmail111" placeholder="{{  __('fields.password') }}"
-                                           autocomplete="off"
-                                    ></div>
+                                    <label for="exampleInputEmail111"> {{ __('fields.password') }}</label>
+                                    <input type="password" name="password" class="form-control" id="userpass"
+                                        placeholder="{{ __('fields.password') }}" autocomplete="off"
+                                        pattern="[a-zA-Z0-9]+" minlength="8" maxlength="16" required>
+                                    <div class="invalid-feedback">این فیلد حداقل باید از 8 کاراکتر تشکیل شده باشد. (از حروف
+                                        انگلیسی استفاده کنید)</div>
+                                </div>
                                 <div class="form-group col-md-6">
-                                    <label for="exampleInputEmail111"> {{  __('fields.c_password') }}</label>
+                                    <label for="exampleInputEmail111"> {{ __('fields.c_password') }}</label>
                                     <input type="password" name="password_confirmation" class="form-control"
-                                           id="exampleInputEmail111" placeholder="{{  __('fields.c_password') }}"
-                                           autocomplete="off"
-                                    >
+                                        id="userpass_confirmation" placeholder="{{ __('fields.c_password') }}"
+                                        autocomplete="off" minlength="8" maxlength="16" required>
+                                    <div class="invalid-feedback">رمز عبور هم خوانی ندارد.</div>
                                 </div>
                             </div>
 
@@ -45,5 +47,5 @@
 @section('page_scripts')
     <!-- These plugins only need for the run this page -->
     <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
+    <script src="{{ asset('js/passConfirmation.js') }}"></script>
 @endsection
-
