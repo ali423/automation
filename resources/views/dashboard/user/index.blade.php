@@ -44,7 +44,7 @@
                                     @else
                                         <td>سیستم</td>
                                     @endif
-                                    <td><a href="{{ route('user.show', $user) }}"><i class="fa fa-object-group"></i></a>
+                                    <td><a href="{{ route('user.show', $user) }}"><i class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>
                                 @php($i++)
