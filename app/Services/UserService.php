@@ -19,7 +19,7 @@ class UserService
             'name' => $data['name'],
             'lastname' => $data['lastname'],
             'status' => $data['status'],
-            'password' => $data['password'],
+            'password' => bcrypt($data['password']),
         ]);
     }
 
