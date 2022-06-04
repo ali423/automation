@@ -16,9 +16,16 @@ return [
 
             ]
         ],
+        'App\Models\Commodity' => [
+            'fa_name' => 'کالا ها',
+            'url' => 'commodity',
+            'relations'=>[
+
+            ]
+        ],
     ],
     'activity_types' => [
-        'create' => 'کاربر',
+        'create' => 'ایجاد',
         'update' => 'ویرایش',
         'delete' => 'حذف',
         'sync' => 'ویرایش گزینه ها',
@@ -26,5 +33,8 @@ return [
         'detach' => 'حذف گزینه ها',
         'pivot_update' => 'ویرایش متغیر',
     ],
+    'db_enums'=>[
+
+    ]
 
 ];

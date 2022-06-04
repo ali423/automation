@@ -2,7 +2,9 @@
 
 return [
     'name' => 'نام',
-    'lastname'=>'نام خانوادگی',
+    'type' => 'نوع',
+    'amount'=>'قیمت فروش (تومان)',
+    'lastname' => 'نام خانوادگی',
     'full_name' => 'نام نام خانوادگی',
     'title' => 'عنوان',
     'status' => 'وضعیت',
@@ -21,6 +23,13 @@ return [
         'status' => [
             'active' => 'فعال',
             'inactive' => 'غیر فعال',
+        ],
+    ],
+    'commodity' => [
+        'number' => 'شماره کالا',
+        'types' => [
+            'material' => 'ماده اولیه',
+            'product' => 'فرآورده',
         ],
     ]
 ];

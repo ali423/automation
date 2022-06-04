@@ -71,11 +71,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <a href="{{ route('user.edit', $user) }}" class="btn btn-primary">ویرایش</a>
-                                <form method="post" action="{{ route('user.destroy', $user) }}" class="d-inline w-50">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger" onclick="return confirm('آیا از حذف این نقش مطمئن هستید؟');">حذف</button>
-                                </form>
+
                             </div>
                             <div class="col-md-6 text-md-right">
                                 <a href="{{ route('reset-password.store', $user) }}" class="btn btn-success px-2 px-md-4 my-1 m-md-0">تغییر
