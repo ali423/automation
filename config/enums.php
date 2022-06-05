@@ -23,6 +23,13 @@ return [
 
             ]
         ],
+        'App\Models\Warehouse' => [
+            'fa_name' => 'انبار ها',
+            'url' => 'warehouse',
+            'relations'=>[
+
+            ]
+        ],
     ],
     'activity_types' => [
         'create' => 'ایجاد',

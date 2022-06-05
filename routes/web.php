@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WarehouseController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -37,6 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('activity',ActivityController::class)->only('show','index');
 
     Route::resource('commodity',CommodityController::class);
+    Route::resource('warehouse',WarehouseController::class);
 
 });
 
