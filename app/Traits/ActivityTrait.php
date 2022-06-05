@@ -179,11 +179,8 @@ trait ActivityTrait
     protected static function pivotDetachActivity()
     {
         try {
-            static::pivotDetaching(function () {
+            static::pivotDetaching(function ($item, $model, $relationName, $pivotIdsAttributes) {
                 DB::beginTransaction();
-            });
-
-            static::pivotDetached(function ($item, $model, $relationName, $pivotIdsAttributes) {
                 $previous_activities=$item->activities()->get()->toArray();
                 if (auth()->check()) {
                     $data = [
@@ -200,6 +197,10 @@ trait ActivityTrait
                     Activity::query()->insert($data);
                 }
                 DB::commit();
+            });
+
+            static::pivotDetached(function ($item, $model, $relationName, $pivotIdsAttributes) {
+
             });
         } catch (\Exception $e) {
             DB::rollback();
