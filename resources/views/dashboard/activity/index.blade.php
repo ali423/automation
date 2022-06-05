@@ -41,7 +41,7 @@
                                 <tr>
                                     <td>{{ $i }}</td>
                                     <td>{{ $activity->user->full_name }}</td>
-                                    <td>{{ $activity->recordChange->model_detail['fa_name']}}</td>
+                                    <td>{{ $activity->recordChange->model_detail['fa_name']}} </td>
                                     <td>{{ $activity->action_persian_name }}</td>
                                     <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d H:i:s', strtotime($activity->created_at)) }}
                                     </td>
