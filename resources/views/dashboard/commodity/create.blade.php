@@ -34,8 +34,9 @@
                                 </div>
                                 <div class="form-group col-md-4">
                                     <label for="amount"> {{  __('fields.amount') }}</label>
-                                    <input type="number" min="1" name="amount" value="{{ old('amount') }}" class="form-control"
-                                           id="amount" placeholder="قیمت فروش فراورده (تومان)" >
+                                    <input type="number" min="100" name="amount" value="{{ old('amount') }}" class="form-control"
+                                           id="amount" placeholder="قیمت فروش فراورده (تومان)" required disabled>
+                                           <div class="invalid-feedback">حداقل قیمت 100 تومان می باشد</div>
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-primary mr-2">ثبت کالا</button>
@@ -52,5 +53,6 @@
 @section('page_scripts')
     <!-- These plugins only need for the run this page -->
     <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
+    <script src="{{ asset('js/commodity.js') }}"></script>
 @endsection
 

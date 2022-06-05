@@ -6,34 +6,34 @@
         <nav>
             <ul class="sidebar-menu" data-widget="tree">
                 <li class="treeview">
-                    <a href="javascript:void(0)"><i class="fa fa-user"></i> <span>کاربران</span> <i class="fa fa-angle-left"></i></a>
+                    <a href="javascript:void(0)"><i class="icon-profile-male"></i> <span>کاربران</span> <i class="fa fa-angle-left"></i></a>
                     <ul class="treeview-menu">
                         <li><a href="{{ route('user.index') }}">لیست کاربران</a></li>
                         <li><a href="{{ route('user.create') }}">افزودن کاربر جدید</a></li>
                     </ul>
                 </li>
                 <li class="treeview">
-                    <a href="javascript:void(0)"><i class="fa fa-id-card-o"></i> <span>نقش ها</span> <i class="fa fa-angle-left"></i></a>
+                    <a href="javascript:void(0)"><i class="icon_id"></i> <span>نقش ها</span> <i class="fa fa-angle-left"></i></a>
                     <ul class="treeview-menu">
                         <li><a href="{{ route('role.index') }}">لیست نقش ها</a></li>
                         <li><a href="{{ route('role.create') }}">افزودن نقش جدید</a></li>
                     </ul>
                 </li>
                 <li class="treeview">
-                    <a href="javascript:void(0)"><i class="fa fa-id-card-o"></i> <span>فعالیت ها</span> <i class="fa fa-angle-left"></i></a>
+                    <a href="javascript:void(0)"><i class="icon-search"></i> <span>فعالیت ها</span> <i class="fa fa-angle-left"></i></a>
                     <ul class="treeview-menu">
                         <li><a href="{{ route('activity.index') }}">لیست فعالیت ها</a></li>
                     </ul>
                 </li>
                 <li class="treeview">
-                    <a href="javascript:void(0)"><i class="fa fa-user"></i> <span>کالا های سیستم</span> <i class="fa fa-angle-left"></i></a>
+                    <a href="javascript:void(0)"><i class="icon-layers"></i> <span>کالا های سیستم</span> <i class="fa fa-angle-left"></i></a>
                     <ul class="treeview-menu">
                         <li><a href="{{ route('commodity.index') }}">لیست کالا ها</a></li>
                         <li><a href="{{ route('commodity.create') }}">افزودن کالا جدید</a></li>
                     </ul>
                 </li>
                 <li class="treeview">
-                    <a href="javascript:void(0)"><i class="fa fa-user"></i> <span>انبار ها</span> <i class="fa fa-angle-left"></i></a>
+                    <a href="javascript:void(0)"><i class="ti-home"></i> <span>انبار ها</span> <i class="fa fa-angle-left"></i></a>
                     <ul class="treeview-menu">
                         <li><a href="{{ route('warehouse.index') }}">لیست انبار ها</a></li>
                         <li><a href="{{ route('warehouse.create') }}">افزودن انبار جدید</a></li>

@@ -26,7 +26,7 @@
                                 <div class="form-group col-md-6">
                                     <label for="capacity"> {{  __('fields.capacity') }}</label>
                                     <input type="number" min="1" name="capacity" value="{{ old('capacity') }}" class="form-control"
-                                           id="capacity" autocomplete="off" placeholder="{{  __('fields.capacity') }}"  required="">
+                                           id="capacity" autocomplete="off" placeholder="{{  __('fields.capacity') }}" pattern="[0-9 .]"  required="">
                                     <div class="invalid-feedback">
                                         لطفاً ظرفیت انبار را وارد کنید.
                                     </div>
