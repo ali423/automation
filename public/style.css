@@ -14509,7 +14509,7 @@ a.mytooltip {
 }
 
 .sidebar-color .ecaps-page-wrapper .ecaps-sidemenu-area .slimScrollDiv .sidebar-menu li a {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 1);
 }
 
 .sidebar-color .ecaps-page-wrapper .ecaps-sidemenu-area .slimScrollDiv .sidebar-menu>li.active>a,
