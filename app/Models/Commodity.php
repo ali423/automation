@@ -17,4 +17,11 @@ class Commodity extends Model
         'amount',
         'type',
     ];
+
+    public function Warehouses()
+    {
+        return $this->belongsToMany(Warehouse::class, 'commodity_warehouse', 'commodity_id', 'warehouse_id')
+            ->withPivot('commodity_amount')
+            ->withTimestamps();
+    }
 }
