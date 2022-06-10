@@ -25,9 +25,8 @@ class ImportationCommodityRequest extends FormRequest
     {
         return [
             'commodity_id'=>['required','exists:commodities,id'],
-            'warehouse_id'=>['required','exists:warehouses,id'],
             'unit'=>['required','in:'.implode(',',array_keys( __('fields.commodity.units')))],
-            'capacity'=>['required','integer'],
+            'amount'=>['required','integer'],
             'file' => ['nullable', 'mimes:jpg,jpeg,png,bmp,svg,pdf,zip,rar', 'max:8192'],
         ];
     }

@@ -36,16 +36,11 @@ class ImportationCommodityController extends Controller
     public function create()
     {
         $commodities=Commodity::query()->get();
-        $warehouses=Warehouse::query()->where('status','active')->get();
         if (count($commodities) < 1){
             return redirect(route('commodity.create'))->withErrors('ابتدا حداقل یک کالا ثبت کنید .');
         }
-        if (count($warehouses) < 1){
-            return redirect(route('warehouse.create'))->withErrors('ابتدا حداقل یک انبار ثبت کنید .');
-        }
         return view('dashboard.processes.importation-commodity.create',[
             'commodities'=>Commodity::query()->get(),
-            'warehouses'=>Warehouse::query()->where('status','active')->get(),
         ]);
     }
 
@@ -53,13 +48,13 @@ class ImportationCommodityController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
     public function store(ImportationCommodityRequest $request)
     {
-        $data=$request->only('commodity_id', 'warehouse_id', 'unit', 'capacity');
-        if ($request->hasFile('logo')) {
-            $file = $request->file('logo');
+        $data=$request->only('commodity_id', 'unit', 'amount');
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
         }
         $this->service->create($data,$file ?? null);
         return redirect(route('warehouse.index'))->with('successful', 'اطلاعات ثبت شد.');
