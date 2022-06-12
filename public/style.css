@@ -14578,3 +14578,39 @@ i.icon_map_alt.font-12.font-weight-bold {
   background-color: #0085d7;
   color: #fff;
 }
+
+/* store chart */
+#mychart{
+  direction: ltr;
+  margin: 0 30px;
+}
+#mychart .col{
+  position: relative;
+  text-align: center;
+  max-width: 80px;
+}
+#mychart .col .full-size{
+  position: relative;
+  min-height: 100px;
+  background-color: #eee;
+  border-radius: 4px 4px 0 0;
+  -webkit-border-radius: 4px 4px 0 0;
+  -moz-border-radius: 4px 4px 0 0;
+  -ms-border-radius: 4px 4px 0 0;
+  -o-border-radius: 4px 4px 0 0;
+}
+#mychart .col .current-size{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  color: #fff;
+}
+
+#mychart .size{
+  font-size: 10px;
+  white-space: nowrap;
+}
