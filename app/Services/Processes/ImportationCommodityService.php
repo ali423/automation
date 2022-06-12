@@ -18,20 +18,20 @@ class ImportationCommodityService
        return ImportationCommodity::query()->create($data);
     }
 
-    protected function calculateAmountBySelectedUnit($amount,$unit){
-        switch ($unit) {
-            case 'kg':
-               return $amount;
-            case 'keg':
-                code to be executed if n=label2;
-    break;
-            case label3:
-                code to be executed if n=label3;
-    break;
-    ...
-            default:
-                code to be executed if n is different from all labels;
-        }
-
-    }
+//    protected function calculateAmountBySelectedUnit($amount,$unit){
+//        switch ($unit) {
+//            case 'kg':
+//               return $amount;
+//            case 'keg':
+//                code to be executed if n=label2;
+//    break;
+//            case label3:
+//                code to be executed if n=label3;
+//    break;
+//    ...
+//            default:
+//                code to be executed if n is different from all labels;
+//        }
+//
+//    }
 }
