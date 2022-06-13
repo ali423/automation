@@ -34,13 +34,13 @@
                                 </div>
                                 <div id="sales_price" class="form-group col-md-4">
                                     <label for="sales_price"> {{ __('fields.sales_price') }}</label>
-                                    <input type="number" min="100" name="sales_price" value="{{ old('sales_price') }}"
+                                    <input type="number" step="0.01" min="100" name="sales_price" value="{{ old('sales_price') }}"
                                         class="form-control" placeholder="{{ __('fields.sales_price') }}" required>
                                     <div class="invalid-feedback">حداقل قیمت 100 تومان می باشد</div>
                                 </div>
                                 <div id="purchase_price" class="form-group col-md-4">
                                     <label for="purchase_price"> {{ __('fields.purchase_price') }}</label>
-                                    <input type="number" min="100" name="purchase_price"
+                                    <input type="number" step="0.01" min="100" name="purchase_price"
                                         value="{{ old('purchase_price') }}" class="form-control"
                                         placeholder="{{ __('fields.purchase_price') }}" required>
                                     <div class="invalid-feedback">حداقل قیمت 100 تومان می باشد</div>
@@ -64,7 +64,7 @@
                                     </div>
                                     <div class="form-group col-md-5">
                                         <label for="material_amount">{{ __('fields.commodity.material_amount') }}</label>
-                                            <input type="number" name="material_amount[0]" class="form-control"
+                                            <input type="number" step="0.01" name="material_amount[0]" class="form-control"
                                                 id="material_amount"
                                                 placeholder="{{ __('fields.commodity.material_amount') }}" min="1"
                                                 max="100" onchange="percentage(this)" required="">
@@ -93,7 +93,7 @@
     <script type="text/javascript">
         // add row
         $("#addRow").click(function() {
-            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"><div class="form-group col-md-5"><label for="materials"> {{ __("fields.commodity.material_type") }}</label><select id="materials" class="form-control" name="materials[1]" required><option value="">انتخاب کنید...</option>@foreach ($materials as $material)<option value="{{ $material->id }}">{{ $material->title }}</option>@endforeach</select><div class="invalid-feedback">{{ __("fields.commodity.material_type") }} را انتخاب کنید</div></div><div class="form-group col-md-5"><label for="material_amount">{{ __("fields.commodity.material_amount") }}</label><input type="number" name="material_amount[0]" class="form-control"id="material_amount"placeholder="{{ __("fields.commodity.material_amount") }}" min="1"max="100" onchange="percentage(this)" required=""><div class="invalid-feedback">لطفاً {{ __("fields.commodity.material_amount") }} را وارد کنید</div></div><div class="form-group col-sm-auto"><label for="" class="d-none d-md-block">&nbsp;</label><button id="removeRow" type="submit" class="btn btn-danger btn-block py-2">حذف</button></div></div>';
+            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"><div class="form-group col-md-5"><label for="materials"> {{ __("fields.commodity.material_type") }}</label><select id="materials" class="form-control" name="materials[1]" required><option value="">انتخاب کنید...</option>@foreach ($materials as $material)<option value="{{ $material->id }}">{{ $material->title }}</option>@endforeach</select><div class="invalid-feedback">{{ __("fields.commodity.material_type") }} را انتخاب کنید</div></div><div class="form-group col-md-5"><label for="material_amount">{{ __("fields.commodity.material_amount") }}</label><input type="number" step="0.01" name="material_amount[0]" class="form-control"id="material_amount"placeholder="{{ __("fields.commodity.material_amount") }}" min="1"max="100" onchange="percentage(this)" required=""><div class="invalid-feedback">لطفاً {{ __("fields.commodity.material_amount") }} را وارد کنید</div></div><div class="form-group col-sm-auto"><label for="" class="d-none d-md-block">&nbsp;</label><button id="removeRow" type="submit" class="btn btn-danger btn-block py-2">حذف</button></div></div>';
 
             $('#newRow').append(html);
 
