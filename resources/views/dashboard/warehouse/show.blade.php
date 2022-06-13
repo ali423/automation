@@ -9,49 +9,47 @@
     <div class="row">
         <div class="col-xl-12 box-margin height-card">
             <div class="card card-body">
-                <h4 class="card-title">مشخصات کالا</h4>
+                <h4 class="card-title">مشخصات انبار</h4>
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-row col-md-12">
                             <div class="form-group col-md-4">
-                                <label for="exampleInputEmail111"> {{ __('fields.title') }}</label>
-                                <input type="text" name="name" value="{{ $commodity->title }}" class="form-control"
+                                <label for="fields"> {{ __('fields.title') }}</label>
+                                <input type="text" name="fields" value="{{ $warehouse->title }}" class="form-control"
                                        id="exampleInputEmail111" autocomplete="off"
                                        disabled>
                             </div>
                             <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.type') }}</label>
-                                <input type="text" name="type" value="{{ __('fields.commodity.types') [$commodity->type] }}" class="form-control"
+                                <input type="text" name="type" value="{{ __('fields.warehouse.types') [$warehouse->type] }}" class="form-control"
                                        id="exampleInputEmail111" autocomplete="off"
                                        disabled>
                             </div>
-                            @if(!empty($commodity->sales_price))
                                 <div class="form-group col-md-4">
-                                    <label for="exampleInputEmail111"> {{ __('fields.sales_price') }}</label>
-                                    <input type="text" name="amount" value="{{ number_format($commodity->sales_price) }}" class="form-control"
+                                    <label for="capacity"> {{ __('fields.capacity') }}</label>
+                                    <input type="text" name="capacity" value="{{ number_format($warehouse->capacity) }}" class="form-control"
                                            id="exampleInputEmail111" autocomplete="off"
                                            disabled>
                                 </div>
-                                @endif
                         </div>
                         <div class="form-row col-md-12">
                             <div class="form-group col-md-4">
-                                <label for="exampleInputEmail111"> {{ __('fields.commodity.number') }}</label>
-                                <input type="text" name="number" value="{{$commodity->number }}"
+                                <label for="exampleInputEmail111"> {{ __('fields.status') }}</label>
+                                <input type="text" name="name" value="{{ __('fields.warehouse.status')[$warehouse->status] }}"
                                        class="form-control" id="exampleInputEmail111"
-                                      disabled>
+                                       placeholder="{{ __('fields.status') }}" autocomplete="off" disabled>
                             </div>
                             <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.created_at') }}</label>
                                 <input type="text" name="name"
-                                       value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($commodity->created_at)) }}"
+                                       value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($warehouse->created_at)) }}"
                                        class="form-control" id="exampleInputEmail111"
                                        placeholder="{{ __('fields.created_at') }}" autocomplete="off" disabled>
                             </div>
                             <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
                                 <input type="text" name="name"
-                                       @if (isset($commodity->creator_user)) value="{{ $commodity->creator_user->full_name }}"
+                                       @if (isset($warehouse->creator_user)) value="{{ $warehouse->creator_user->full_name }}"
                                        @else
                                        value="سیستم" @endif
                                        class="form-control" id="exampleInputEmail111"
@@ -61,18 +59,18 @@
 
                         <div class="row">
                             <div class="col-md-6">
-                                <a href="{{ route('commodity.edit', $commodity) }}" class="btn btn-primary">ویرایش</a>
-                                <form method="post" action="{{ route('commodity.destroy', $commodity) }}" class="d-inline w-50">
+                                <a href="{{ route('warehouse.edit', $warehouse) }}" class="btn btn-primary">ویرایش</a>
+                                <form method="post" action="{{ route('warehouse.destroy', $warehouse) }}" class="d-inline w-50">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger"
-                                            onclick="return confirm('آیا از حذف این کالا مطمئن هستید؟');">حذف کالا</button>
+                                            onclick="return confirm('آیا از حذف این انبار مطمئن هستید؟');">حذف انبار</button>
                                 </form>
                             </div>
                             <div class="col-md-6 text-md-right">
                                 <a href="{{ route('activity.index', [
-                                    'object_id' => $commodity->id,
-                                    'object_type' => class_basename($commodity),
+                                    'object_id' => $warehouse->id,
+                                    'object_type' => class_basename($warehouse),
                                 ]) }}"
                                    class="btn btn-dfprimary px-2 px-md-4 m-md-0">تاریخچه تغییرات</a>
                             </div>

@@ -30,7 +30,7 @@ class Activity extends Model
 
     public function recordChange()
     {
-        return $this->morphTo();
+        return $this->morphTo()->withTrashed();
     }
 
     public function perviousActivity()

@@ -35,9 +35,10 @@
                                 </div>
                                 <div class="form-group col-md-4">
                                     <label for="sales_price"> {{  __('fields.sales_price') }}</label>
-                                    <input type="number" min="1" name="sales_price" value="{{ old('sales_price') }}"
+                                    <input type="number" min="100" name="sales_price" value="{{ old('sales_price') }}"
                                            class="form-control"
-                                           id="sales_price" placeholder="{{  __('fields.sales_price') }}">
+                                           id="sales_price" placeholder="{{  __('fields.sales_price') }}" required disabled>
+                                           <div class="invalid-feedback">حداقل قیمت 100 تومان می باشد</div>
                                 </div>
                             </div>
                             <div class="form-row">
@@ -123,5 +124,6 @@
     </script>
     <!-- These plugins only need for the run this page -->
     <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
+    <script src="{{ asset('js/commodity.js') }}"></script>
 @endsection
 

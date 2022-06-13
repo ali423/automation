@@ -5,6 +5,7 @@ return [
     'type' => 'نوع',
     'sales_price'=>'قیمت فروش (تومان)',
     'purchase_price'=>'قیمت خرید (تومان)',
+    'capacity'=>'گنجایش (لیتر)',
     'lastname' => 'نام خانوادگی',
     'full_name' => 'نام نام خانوادگی',
     'title' => 'عنوان',
@@ -33,6 +34,16 @@ return [
         'types' => [
             'material' => 'ماده اولیه',
             'product' => 'فرآورده',
+        ],
+    ],
+    'warehouse' => [
+        'types' => [
+            'tank' => 'مخزن تانکر',
+            'hall' => 'سالن',
+        ],
+        'status' => [
+            'active' => 'فعال',
+            'inactive' => 'غیر فعال',
         ],
     ]
 ];

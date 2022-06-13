@@ -15,43 +15,45 @@
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-2">لیست فعالیت ها</h4>
+                    <h4 class="card-title mb-2">لیست انبار ها</h4>
                     <table id="datatable-buttons" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                             <tr>
-                                <th colspan="6">
-                                    {{-- to set active change btn-outline-dfprimary ==> btn-dfprimary --}}
-                                    <a href="?action[]=Role" class="btn btn-outline-dfprimary shadow">Role<span> &#8595;&#8593;</span></a>
-                                    <a href="?action[]=User" class="btn btn-outline-dfprimary shadow">User<span> &#8595;&#8593;</span></a>
-                                </th>
-                            </tr>
-                            <tr>
                                 <th>ردیف</th>
-                                <th>کاربر انجام دهنده</th>
-                                <th>مرجع فعالیت</th>
-                                <th>نوع تغییر</th>
-                                <th>زمان انجام</th>
-                                <th>جزئیات</th>
+                                <th> {{ __('fields.title') }}</th>
+                                <th> {{ __('fields.type') }}</th>
+                                <th> {{ __('fields.status') }}</th>
+                                <th> {{ __('fields.capacity') }}</th>
+                                <th>{{ __('fields.created_at') }}</th>
+                                <th>{{ __('fields.creator') }}</th>
+                                <th>{{ __('fields.details') }}</th>
                             </tr>
                         </thead>
 
                         <tbody class="text-center">
                             @php($i = 1)
-                            @foreach ($activities as $activity)
+                            @foreach ($warehouses as $warehouse)
                                 <tr>
                                     <td>{{ $i }}</td>
-                                    <td>{{ $activity->user->full_name }}</td>
-                                    <td>{{ $activity->recordChange->model_detail['fa_name']}} </td>
-                                    <td>{{ $activity->action_persian_name }}</td>
-                                    <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d H:i:s', strtotime($activity->created_at)) }}
+                                    <td>{{ $warehouse->title }}</td>
+                                    <td>{{ __('fields.warehouse.types') [$warehouse->type] }}</td>
+                                    <td>{{__('fields.warehouse.status')[$warehouse->status]  }}</td>
+                                    <td>{{ $warehouse->capacity }}</td>
+                                    <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($warehouse->created_at)) }}
                                     </td>
-                                    <td><a href="{{ route('activity.show', $activity) }}"><i class="ti-more-alt font-24"></i></a>
+                                    @if(isset($warehouse->creator_user))
+                                    <td>{{ $warehouse->creator_user->full_name }}</td>
+                                    @else
+                                        <td>سیستم</td>
+                                    @endif
+                                    <td><a href="{{ route('warehouse.show', $warehouse) }}" class=""><i class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>
                                 @php($i++)
                             @endforeach
                         </tbody>
                     </table>
+
                 </div> <!-- end card body-->
             </div> <!-- end card -->
         </div><!-- end col-->
