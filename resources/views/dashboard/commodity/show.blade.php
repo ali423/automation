@@ -25,10 +25,10 @@
                                        id="exampleInputEmail111" autocomplete="off"
                                        disabled>
                             </div>
-                            @if(!empty($commodity->amount))
+                            @if(!empty($commodity->sales_price))
                                 <div class="form-group col-md-4">
-                                    <label for="exampleInputEmail111"> {{ __('fields.amount') }}</label>
-                                    <input type="text" name="amount" value="{{ number_format($commodity->amount) }}" class="form-control"
+                                    <label for="exampleInputEmail111"> {{ __('fields.sales_price') }}</label>
+                                    <input type="text" name="amount" value="{{ number_format($commodity->sales_price) }}" class="form-control"
                                            id="exampleInputEmail111" autocomplete="off"
                                            disabled>
                                 </div>

@@ -14,7 +14,15 @@ class Commodity extends Model
     protected $fillable = [
         'number',
         'title',
-        'amount',
+        'sales_price',
         'type',
+        'purchase_price',
     ];
+
+    public function materials()
+    {
+        return $this->belongsToMany(Commodity::class, 'product_formula', 'product_id', 'material_id')
+            ->withPivot('percentage')
+            ->withTimestamps();
+    }
 }

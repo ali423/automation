@@ -42,9 +42,9 @@
                                     <div class="invalid-feedback">نوع کالا را انتخاب کنید</div>
                                 </div>
                                 <div class="form-group col-md-4">
-                                    <label for="amount"> {{  __('fields.amount') }}</label>
-                                    <input type="number" min="1" name="amount" value="{{ $commodity->amount  }}" class="form-control"
-                                           id="amount" placeholder="قیمت فروش فراورده (تومان)" >
+                                    <label for="sales_price"> {{  __('fields.sales_price') }}</label>
+                                    <input type="number" min="1" name="sales_price" value="{{ $commodity->sales_price  }}" class="form-control"
+                                           id="sales_price" placeholder="{{ $commodity->sales_price  }}" >
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-primary mr-2">ویرایش</button>
