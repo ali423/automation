@@ -3,7 +3,8 @@
 return [
     'name' => 'نام',
     'type' => 'نوع',
-    'amount'=>'قیمت فروش (تومان)',
+    'sales_price'=>'قیمت فروش (تومان)',
+    'purchase_price'=>'قیمت خرید (تومان)',
     'capacity'=>'گنجایش (لیتر)',
     'lastname' => 'نام خانوادگی',
     'full_name' => 'نام نام خانوادگی',
@@ -28,6 +29,8 @@ return [
     ],
     'commodity' => [
         'number' => 'شماره کالا',
+        'material_type'=>'ماده اولیه تشکیل دهنده',
+        'material_amount'=>'مقدار در صد کیلوگرم فرآورد',
         'types' => [
             'material' => 'ماده اولیه',
             'product' => 'فرآورده',

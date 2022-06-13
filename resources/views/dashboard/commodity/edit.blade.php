@@ -39,10 +39,9 @@
                                     <div class="invalid-feedback">نوع کالا را انتخاب کنید</div>
                                 </div>
                                 <div class="form-group col-md-4">
-                                    <label for="amount"> {{ __('fields.amount') }}</label>
-                                    <input id="amount" type="number" min="100" name="amount"
-                                        value="{{ $commodity->amount }}" class="form-control" id="amount"
-                                        placeholder="قیمت فروش فراورده (تومان)" required>
+                                    <label for="sales_price"> {{  __('fields.sales_price') }}</label>
+                                    <input type="number" min="100" name="sales_price" value="{{ $commodity->sales_price  }}" class="form-control"
+                                           id="sales_price" placeholder="{{ $commodity->sales_price  }}"  required>
                                     <div class="invalid-feedback">حداقل قیمت 100 تومان می باشد</div>
                                 </div>
                             </div>

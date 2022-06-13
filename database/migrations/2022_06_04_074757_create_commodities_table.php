@@ -17,7 +17,8 @@ class CreateCommoditiesTable extends Migration
             $table->id();
             $table->integer('number')->unique();
             $table->string('title')->unique();
-            $table->double('amount')->nullable();
+            $table->double('sales_price')->nullable();
+            $table->double('purchase_price')->nullable();
             $table->enum('type',['material','product']);
             $table->softDeletes();
             $table->timestamps();
