@@ -28,11 +28,18 @@
                             @if(!empty($commodity->sales_price))
                                 <div class="form-group col-md-4">
                                     <label for="exampleInputEmail111"> {{ __('fields.sales_price') }}</label>
-                                    <input type="text" name="amount" value="{{ number_format($commodity->sales_price) }}" class="form-control"
+                                    <input type="text" name="sales_price" value="{{ number_format($commodity->sales_price) }}" class="form-control"
                                            id="exampleInputEmail111" autocomplete="off"
                                            disabled>
                                 </div>
-                                @endif
+                               @elseif(!empty($commodity->purchase_price))
+                                <div class="form-group col-md-4">
+                                    <label for="exampleInputEmail111"> {{ __('fields.purchase_price') }}</label>
+                                    <input type="text" name="purchase_price" value="{{ number_format($commodity->purchase_price) }}" class="form-control"
+                                           id="exampleInputEmail111" autocomplete="off"
+                                           disabled>
+                                </div>
+                            @endif
                         </div>
                         <div class="form-row col-md-12">
                             <div class="form-group col-md-4">
@@ -56,6 +63,25 @@
                                        value="سیستم" @endif
                                        class="form-control" id="exampleInputEmail111"
                                        placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
+                            </div>
+                        </div>
+
+                        <div id="product_formul" class="col-lg-12">
+                            <p>فرمول ساخت برای صد کیلوگرم فراورده</p>
+                            <div id="inputFormRow" class="form-row shadow p-4 mb-3">
+                                @foreach ($materials as $material)
+                                <div class="form-group col-md-5">
+                                    <label for="materials"> {{ __('fields.commodity.material_type') }}</label>
+                                    <input type="text" value="{{$material->title}}" class="form-control" id="materials" disabled>
+                                </div>
+                                <div class="form-group col-md-5">
+                                    <label for="material_amount">{{ __('fields.commodity.material_amount') }}</label>
+                                    <input type="number" step="0.01" name="material_amount[0]" class="form-control"
+                                           id="material_amount" value="{{ $material->pivot->percentage }}"
+                                           placeholder="{{ __('fields.commodity.material_amount') }}" min="1"
+                                           max="100" onchange="percentage(this)" disabled>
+                                </div>
+                                @endforeach
                             </div>
                         </div>
 

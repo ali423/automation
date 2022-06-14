@@ -63,8 +63,10 @@ class CommodityController extends Controller
      */
     public function show(Commodity $commodity)
     {
+        $materials=$commodity->materials;
         return view('dashboard.commodity.show',[
             'commodity'=>$commodity,
+            'materials'=>$materials,
         ]);
     }
 
@@ -76,8 +78,12 @@ class CommodityController extends Controller
      */
     public function edit(Commodity $commodity)
     {
+        $used_materials=$commodity->materials;
+
         return view('dashboard.commodity.edit',[
             'commodity'=>$commodity,
+            'materials'=>Commodity::all(),
+            'used_materials'=>$used_materials,
         ]);
     }
 
