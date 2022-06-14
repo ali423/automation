@@ -30,7 +30,7 @@ return [
     'commodity' => [
         'number' => 'شماره کالا',
         'material_type'=>'ماده اولیه تشکیل دهنده',
-        'material_amount'=>'مقدار در صد کیلوگرم فرآورد',
+        'material_amount'=>'مقدار درصد کیلوگرم فرآورده',
         'types' => [
             'material' => 'ماده اولیه',
             'product' => 'فرآورده',
