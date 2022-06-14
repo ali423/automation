@@ -2,7 +2,6 @@
 @section('title', 'داشبورد')
 
 @section('page_styles')
-
 @endsection
 
 @section('content')

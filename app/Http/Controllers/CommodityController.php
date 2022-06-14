@@ -38,7 +38,9 @@ class CommodityController extends Controller
      */
     public function create()
     {
-        return view('dashboard.commodity.create');
+        return view('dashboard.commodity.create',[
+            'materials'=>Commodity::all(),
+        ]);
     }
 
     /**
