@@ -42,17 +42,15 @@ class CommodityRequest extends FormRequest
             }
             $materials=$this->get('materials');
             $material_amount=$this->get('material_amount');
-    
+
             if (count($materials) != count($material_amount) || count(array_intersect_key($materials,$material_amount)) != count($materials) ){
                 throw \Illuminate\Validation\ValidationException::withMessages([
                     'materials' => ['اطلاعات نوع ماده و مقدار آن باید متناظر باشند.'],
                 ]);
             }
-
         }else{
             $rules['purchase_price']=['required','integer'];
         }
-
         return  $rules;
     }
 }
