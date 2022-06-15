@@ -1,0 +1,43 @@
+@media screen {#invoice{display: none;}}
+@media print {
+    .top-header-area {
+        display: none !important;
+    }
+
+    .ecaps-page-content {
+        padding-top: 0;
+        margin-right: 0;
+    }
+
+    div:not(#invoice, #invoice *, .container-fluid, .row, .main-content, .ecaps-page-content, .ecaps-page-wrapper) {
+        display: none;
+    }
+
+    body {
+        background-color: #fff
+    }
+
+    #invoice img {
+        width: 15%;
+    }
+
+    #invoice table {
+        width: 100%;
+        text-align: center;
+        border-collapse: collapse;
+        border: 3px solid black ;
+    }
+
+    #invoice table td,
+    #invoice table tr,
+    #invoice table th {
+        border: 1px solid #000 ;
+        padding: 10px;
+    }
+
+    #invoice .pelak{
+        display: inline-block;
+        border: 1px solid #ddd;
+        padding: 10px;
+    }
+}
