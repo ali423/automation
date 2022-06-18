@@ -4,6 +4,7 @@ use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\CommodityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\Processes\ImportationCommodityController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
@@ -39,6 +40,8 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('commodity',CommodityController::class);
     Route::resource('warehouse',WarehouseController::class);
+
+    Route::resource('importation_commodity',ImportationCommodityController::class);
 
 });
 
