@@ -66,11 +66,33 @@
                                         </div>
                                         <div class="p-2">
                                             @foreach ($activity->changes['attached'] as $key => $value)
-                                                <div class="text-success">+ {{ $value['name'] }}</div>
-                                            @endforeach
+                                                <div class="text-success">+ {{ $value['name'] ?? $value['title'] }}</div>
+                                            @if(isset($value['pivots']))
+                                               @foreach($value['pivots'] as $key_2=>$value_2)
+                                                    <div class="text-primary">* {{ $activity->pivotName($key_2) }}  = {{ $value_2 }}</div>
+                                                @endforeach
+                                                @endif
+                                                    @endforeach
                                         </div>
                                     </div>
                                 @endif
+                                    @if (!empty($activity->changes['updated']))
+                                        <div class="card-body">
+                                            <div>
+                                                ویرایش گزینه های  {{ $activity->relation_persian_name }}
+                                            </div>
+                                            <div class="p-2">
+                                                @foreach ($activity->changes['updated'] as $key => $value)
+                                                    <div class="text-success">+ {{ $value['name'] ?? $value['title'] }}</div>
+                                                    @if(isset($value['pivots']))
+                                                        @foreach($value['pivots'] as $key_2=>$value_2)
+                                                            <div class="text-primary">* {{ $activity->pivotName($key_2) }}  = {{ $value_2 }}</div>
+                                                        @endforeach
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
                                 @if (!empty($activity->changes['detached']))
                                     <div class="card-body">
                                         <div>

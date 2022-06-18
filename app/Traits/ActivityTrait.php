@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\Activity;
+use App\Models\Commodity;
 use GeneaLabs\LaravelPivotEvents\Traits\PivotEventTrait;
 use Illuminate\Support\Facades\DB;
 
@@ -123,8 +124,10 @@ trait ActivityTrait
                 DB::beginTransaction();
             });
             static::pivotSynced(function ($item, $model, $relationName, $pivotIdsAttributes) {
+                $pivot_res['attached']=self::getRelatedData($item,$relationName,$pivotIdsAttributes['attached']);
+                $pivot_res['detached']=self::getRelatedData($item,$relationName,$pivotIdsAttributes['detached']);
+                $pivot_res['updated']=self::getRelatedData($item,$relationName,$pivotIdsAttributes['updated']);
                 $previous_activities=$item->activities()->get()->toArray();
-
                 if (auth()->check()) {
                     $data = [
                         'previous_activity_id' => end($previous_activities)['id'],
@@ -135,7 +138,7 @@ trait ActivityTrait
                         'relation_name' => $relationName,
                         'action' => 'sync',
                         'data'=>json_encode($item->toArray()),
-                        'pivot_data' => json_encode($pivotIdsAttributes),
+                        'pivot_data' => json_encode($pivot_res),
                     ];
                     Activity::query()->insert($data);
                 }
@@ -152,8 +155,8 @@ trait ActivityTrait
             static::pivotAttaching(function () {
                 DB::beginTransaction();
             });
-
             static::pivotAttached(function ($item, $model, $relationName, $pivotIdsAttributes) {
+                 $pivot_res=self::getRelatedData($item,$relationName,$pivotIdsAttributes);
                 $previous_activities=$item->activities()->get()->toArray();
                 if (auth()->check()) {
                     $data = [
@@ -165,7 +168,7 @@ trait ActivityTrait
                         'relation_name' => $relationName,
                         'action' => 'attach',
                         'data'=>json_encode($item->toArray()),
-                        'pivot_data' => json_encode($pivotIdsAttributes),
+                        'pivot_data' => json_encode($pivot_res),
                     ];
                     Activity::query()->insert($data);
                 }
@@ -181,6 +184,7 @@ trait ActivityTrait
         try {
             static::pivotDetaching(function ($item, $model, $relationName, $pivotIdsAttributes) {
                 DB::beginTransaction();
+                $pivot_res=self::getRelatedData($item,$relationName,$pivotIdsAttributes);
                 $previous_activities=$item->activities()->get()->toArray();
                 if (auth()->check()) {
                     $data = [
@@ -192,7 +196,7 @@ trait ActivityTrait
                         'relation_name' => $relationName,
                         'action' => 'detach',
                         'data'=>json_encode($item->toArray()),
-                        'pivot_data' => json_encode($pivotIdsAttributes),
+                        'pivot_data' => json_encode($pivot_res),
                     ];
                     Activity::query()->insert($data);
                 }
@@ -214,6 +218,7 @@ trait ActivityTrait
                 DB::beginTransaction();
             });
             static::pivotUpdated(function ($item, $model, $relationName, $pivotIdsAttributes) {
+                $pivot_res=self::getRelatedData($item,$relationName,$pivotIdsAttributes);
                 $previous_activities=$item->activities()->get()->toArray();
                 if (auth()->check()) {
                     $data = [
@@ -225,7 +230,7 @@ trait ActivityTrait
                         'relation_name' => $relationName,
                         'action' => 'pivot_update',
                         'data'=>json_encode($item->toArray()),
-                        'pivot_data' => json_encode($pivotIdsAttributes),
+                        'pivot_data' => json_encode($pivot_res),
                     ];
                     Activity::query()->insert($data);
                 }
@@ -234,5 +239,21 @@ trait ActivityTrait
         } catch (\Exception $e) {
             DB::rollback();
         }
+    }
+
+    static function getRelatedData($item,$relationName,$pivotIdsAttributes){
+        $changed_relations=array_column($item->$relationName()->whereIn('id',$pivotIdsAttributes)->get()->toArray(),'pivot');
+        $relation_data=config('enums.models')[get_class($item)]['relations'][$relationName] ?? null;
+        $pivot_exits=$relation_data['pivots'] ?? null;
+        if (!empty($pivot_exits)){
+            foreach ($changed_relations as $value){
+                foreach (array_keys($pivot_exits) as $pivot){
+                    $pivot_res[$value[$relation_data['primary_key']]]['pivots'][$pivot]=$value[$pivot];
+                }
+            }
+        }else{
+            $pivot_res=$pivotIdsAttributes;
+        }
+        return $pivot_res ?? null;
     }
 }
