@@ -5,28 +5,34 @@ return [
         'App\Models\Role' => [
             'fa_name' => 'نقش',
             'url' => 'role',
-            'relations'=>[
-                'permissions'=>'دسترسی ها'
+            'relations' => [
+                'permissions' => 'دسترسی ها'
             ]
         ],
         'App\Models\User' => [
             'fa_name' => 'کاربران',
             'url' => 'user',
-            'relations'=>[
+            'relations' => [
 
             ]
         ],
         'App\Models\Commodity' => [
             'fa_name' => 'کالا ها',
             'url' => 'commodity',
-            'relations'=>[
-
+            'relations' => [
+                'materials' =>[
+                    'fa_name'=>'فرمول ساخت',
+                    'primary_key'=>'material_id',
+                    'pivots'=>[
+                        'percentage'=>'درصد تشکیل دهنده'
+                    ],
+                ],
             ]
         ],
         'App\Models\Warehouse' => [
             'fa_name' => 'انبار ها',
             'url' => 'warehouse',
-            'relations'=>[
+            'relations' => [
 
             ]
         ],
@@ -40,7 +46,7 @@ return [
         'detach' => 'حذف گزینه ها',
         'pivot_update' => 'ویرایش متغیر',
     ],
-    'db_enums'=>[
+    'db_enums' => [
 
     ]
 

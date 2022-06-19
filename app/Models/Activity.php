@@ -38,6 +38,10 @@ class Activity extends Model
         return $this->belongsTo(Activity::class, 'previous_activity_id');
     }
 
+    public function pivotName($pivot){
+       return config('enums.models')[$this->record_change_type]['relations'][$this->relation_name]['pivots'][$pivot];
+    }
+
     public function getActionPersianNameAttribute()
     {
         return config('enums.activity_types')[$this->action];
@@ -45,7 +49,7 @@ class Activity extends Model
 
     public function getRelationPersianNameAttribute()
     {
-        return config('enums.models')[$this->record_change_type]['relations'][$this->relation_name] ?? null;
+        return config('enums.models')[$this->record_change_type]['relations'][$this->relation_name]['fa_name'] ?? null;
     }
 
     public function getChangesAttribute()
@@ -79,28 +83,37 @@ class Activity extends Model
                 ];
             case "attach":
                 $value = json_decode($this->pivot_data, true);
-                $data['attached'] = array_map(function ($item) {
-                    return $this->relation_model::where('id', $item)->first()->toArray();
-                }, $value);
-                return $data;
+                $data['attached']=$this->calculatePivotValues($value);
+                return $data ?? null;
             case "sync":
                 $value = json_decode($this->pivot_data, true);
-                $data['attached'] = array_map(function ($item) {
-                    return $this->relation_model::where('id', $item)->first()->toArray();
-                }, $value['attached']);
-                $data['detached'] = array_map(function ($item) {
-                    return $this->relation_model::where('id', $item)->first()->toArray();
-                }, $value['detached']);
+                $data['attached']=$this->calculatePivotValues($value['attached']);
+                $data['detached']=$this->calculatePivotValues($value['detached']);
+                $data['updated']=$this->calculatePivotValues($value['updated']);
                 return $data;
             case "detach":
                 $value = json_decode($this->pivot_data, true);
-                $data['detached'] = array_map(function ($item) {
-                    return $this->relation_model::where('id', $item)->first()->toArray();
-                }, $value);
+                $data['detached']=$this->calculatePivotValues($value);
                 return $data;
             default:
                 return null;
         }
 
+    }
+
+    protected function calculatePivotValues($items){
+        foreach ($items ?? array() as $key=>$value){
+            if (is_array($value)){
+                $search_obj=$key;
+            }else{
+                $search_obj=$value;
+            }
+            $result= $this->relation_model::where('id', $search_obj)->first()->toArray();
+            if (!empty($value['pivots'])){
+                $result['pivots']=$value['pivots'];
+            }
+            $data[] = $result;
+        }
+        return $data ?? null;
     }
 }
