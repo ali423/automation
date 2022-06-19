@@ -42,8 +42,8 @@
                 <li class="treeview">
                     <a href="javascript:void(0)"><i class="ti-home"></i> <span>درخواست ورود کالا به انبار</span> <i class="fa fa-angle-left"></i></a>
                     <ul class="treeview-menu">
-                        <li><a href="{{ route('importation_commodity.index') }}">لیست درخواست ها</a></li>
-                        <li><a href="{{ route('importation_commodity.create') }}">ثبت درخواست</a></li>
+                        <li><a href="{{ route('importing-request.index') }}">لیست درخواست ها</a></li>
+                        <li><a href="{{ route('importing-request.create') }}">ثبت درخواست</a></li>
                     </ul>
                 </li>
                 {{-- <li class="treeview active">
