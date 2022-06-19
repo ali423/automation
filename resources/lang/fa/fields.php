@@ -3,8 +3,9 @@
 return [
     'name' => 'نام',
     'type' => 'نوع',
-    'amount' => 'قیمت فروش (تومان)',
-    'capacity' => 'گنجایش (لیتر)',
+    'sales_price'=>'قیمت فروش (تومان)',
+    'purchase_price'=>'قیمت خرید (تومان)',
+    'capacity'=>'گنجایش (لیتر)',
     'lastname' => 'نام خانوادگی',
     'full_name' => 'نام نام خانوادگی',
     'title' => 'عنوان',
@@ -36,6 +37,8 @@ return [
             'keg' => 'بشکه',
             'twenty_liters' => 'بسته بیست لیتری',
         ],
+        'material_type'=>'ماده اولیه تشکیل دهنده',
+        'material_amount'=>'مقدار درصد کیلوگرم فرآورده',
         'types' => [
             'material' => 'ماده اولیه',
             'product' => 'فرآورده',

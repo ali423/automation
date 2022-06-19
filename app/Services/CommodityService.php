@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Commodity;
+use Illuminate\Support\Facades\DB;
 
 class CommodityService
 {
@@ -19,14 +20,25 @@ class CommodityService
                 'number' => $number,
                'title' => $data['title'],
                 'type' => $data['type'],
+               'purchase_price'=>$data['purchase_price'],
             ]);
         }else{
-          return  Commodity::query()->create([
-                'number' => $number,
-                'title' => $data['title'],
-                'amount' => $data['amount'],
-                'type' => $data['type'],
-            ]);
+            $materials=null;
+            foreach ($data['materials'] as $key=>$value){
+                $materials[$value]=[
+                    'percentage'=>$data['material_amount'][$key],
+                ];
+            }
+           return DB::transaction(function () use ($data,$number,$materials) {
+                $product = Commodity::query()->create([
+                    'number' => $number,
+                    'title' => $data['title'],
+                    'sales_price' => $data['sales_price'],
+                    'type' => $data['type'],
+                ]);
+                $product->materials()->attach($materials);
+                return true;
+            });
         }
     }
     public function update(Commodity $commodity,$data)
@@ -34,13 +46,13 @@ class CommodityService
         if ($data['type'] == 'material') {
             return $commodity->update([
                 'title' => $data['title'],
-                'amount' => null,
+                'sales_price' => null,
                 'type' => $data['type'],
             ]);
         }else{
             return  $commodity->update([
                 'title' => $data['title'],
-                'amount' => $data['amount'],
+                'sales_price' => $data['sales_price'],
                 'type' => $data['type'],
             ]);
         }
