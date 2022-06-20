@@ -7,7 +7,7 @@ trait FileTrait
 {
     public function files()
     {
-        return $this->morphMany(File::class, 'owner_change');
+        return $this->morphMany(File::class, 'owner');
     }
 
 }

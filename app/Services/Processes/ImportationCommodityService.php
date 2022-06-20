@@ -23,7 +23,7 @@ class ImportationCommodityService extends BaseService
             ];
         }
         $user = auth()->user();
-        DB::transaction(function () use ($data, $commodity, $user) {
+        DB::transaction(function () use ($data, $commodity, $user,$file) {
             $request = ImportingRequest::query()->create([
                 'status' => 'awaiting_approval'
             ]);
@@ -35,10 +35,10 @@ class ImportationCommodityService extends BaseService
                 ]);
             }
             if (!empty($file)) {
-                $data['file'] = $file->storeAs('public/upload/importing-commodity/', str_shuffle(time()) . $file->getClientOriginalName());
+                $data['file'] = $file->storeAs('public/upload/importing-commodity', str_shuffle(time()) . $file->getClientOriginalName());
                 $request->files()->create([
                     'user_id' => $user->id,
-                    'source' => $data['comment'],
+                    'source' => $data['file'],
                 ]);
             }
         });

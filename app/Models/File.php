@@ -12,9 +12,7 @@ class File extends Model
 
     protected $fillable = [
         'user_id',
-        'commentable_id',
-        'commentable_type',
-        'body',
+        'source',
     ];
 
     public function user()
