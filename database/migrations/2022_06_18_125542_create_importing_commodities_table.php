@@ -16,6 +16,7 @@ class CreateImportingCommoditiesTable extends Migration
         Schema::create('importing_commodities', function (Blueprint $table) {
             $table->foreignId('importation_id')->references('id')->on('importing_requests')->onDelete('cascade');
             $table->foreignId('commodity_id')->constrained();
+            $table->foreignId('warehouses_id')->constrained();
             $table->primary(['importation_id','commodity_id']);
             $table->integer('amount');
         });

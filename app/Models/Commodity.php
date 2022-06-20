@@ -22,7 +22,7 @@ class Commodity extends Model
     public function Warehouses()
     {
         return $this->belongsToMany(Warehouse::class, 'commodity_warehouse', 'commodity_id', 'warehouse_id')
-            ->withPivot('commodity_amount')
+            ->withPivot('commodity_amount');
   }
     public function materials()
     {

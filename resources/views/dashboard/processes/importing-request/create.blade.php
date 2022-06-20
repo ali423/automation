@@ -14,55 +14,54 @@
                     <div class="col-sm-12 col-xs-12">
                         <form method="post" action="{{ route('importing-request.store') }}" class="needs-validation forms-sample" enctype="multipart/form-data" novalidate="">
                             @csrf
-                            <div class="form-row">
-                                <div class="form-group col-md-6">
-                                    <label for="inputState"> {{ __('fields.commodity.name') }}</label>
-                                    <select id="inputState" class="form-control" name="commodity_id" required>
-                                        <option value="">انتخاب کنید</option>
-                                        @foreach ($commodities as $commodity)
-                                            <option value="{{ $commodity->id }}"
-                                                    @if (old('commodity_id') == $commodity->id) selected @endif>{{ $commodity->title }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label for="type"> {{ __('fields.unit') }}</label>
-                                    <select id="type" class="form-control" name="unit" required>
-                                        <option value="">انتخاب کنید...</option>
-                                        @foreach( __('fields.commodity.units') as $key=>$value)
-                                            <option value="{{$key}}"
-                                                    @if (old('unit') == $key) selected @endif
-                                            >{{$value}}</option>
-                                        @endforeach
-                                    </select>
-                                    <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group col-md-6">
-                                    <label for="inputState"> {{ __('fields.warehouse.name') }}</label>
-                                    <select id="inputState" class="form-control" name="warehouse_id" required>
-                                        <option value="">انتخاب کنید</option>
-                                        @foreach ($warehouses as $warehouse)
-                                            <option value="{{ $warehouse->id }}"
-                                                    @if (old('warehouse_id') == $warehouse->id) selected @endif>{{ $warehouse->title }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <div class="invalid-feedback">{{ __('fields.warehouse.name') }} را انتخاب کنید.</div>
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label for="capacity"> {{  __('fields.commodity.amount') }}</label>
-                                    <input type="number" min="1" name="amount" value="{{ old('amount') }}" class="form-control"
-                                           id="capacity" autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]"  required="">
-                                    <div class="invalid-feedback">
-                                        لطفاً {{  __('fields.commodity.amount') }} را وارد کنید.
+                            <div id="product_formul" class="col-lg-12">
+                                <p>اطلاعات ورد کالا به انبار</p>
+                                <div id="inputFormRow" class="form-row shadow p-4 mb-3">
+                                    <div class="form-group col-md-6">
+                                        <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
+                                        <select id="commodity_id" class="form-control" name="commodity_id[0]" required>
+                                            <option value="">انتخاب کنید</option>
+                                            @foreach ($commodities as $commodity)
+                                                <option value="{{ $commodity->id }}">{{ $commodity->title }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="unit"> {{ __('fields.unit') }}</label>
+                                        <select id="unit" class="form-control" name="unit[0]" required>
+                                            <option value="">انتخاب کنید...</option>
+                                            @foreach( __('fields.commodity.units') as $key=>$value)
+                                                <option value="{{$key}}"
+                                                >{{$value}}</option>
+                                            @endforeach
+                                        </select>
+                                        <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="warehouse_id"> {{ __('fields.warehouse.name') }}</label>
+                                        <select id="warehouse_id" class="form-control" name="warehouse_id[0]" required>
+                                            <option value="">انتخاب کنید</option>
+                                            @foreach ($warehouses as $warehouse)
+                                                <option value="{{ $warehouse->id }}">{{ $warehouse->title }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="invalid-feedback">{{ __('fields.warehouse.name') }} را انتخاب کنید.</div>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="amount"> {{  __('fields.commodity.amount') }}</label>
+                                        <input type="number" id="amount" min="1" name="amount[0]" class="form-control"
+                                               autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]"  required="">
+                                        <div class="invalid-feedback">
+                                            لطفاً {{  __('fields.commodity.amount') }} را وارد کنید.
+                                        </div>
                                     </div>
                                 </div>
 
+                                <div id="newRow"></div>
+                                <button id="addRow" type="button" class="btn btn-dfprimary mb-3">+ افزودن</button>
                             </div>
 
                             <div class="form-group">
@@ -74,6 +73,11 @@
                                                     <button class="file-upload-browse btn btn-primary" type="button">انتخاب فایل</button>
                                                 </span>
                                 </div>
+                            </div>
+
+                            <div class="form-group mb-20">
+                                <label for="comment">توضیحات</label>
+                                <textarea class="form-control rounded-0 form-control-md" name="comment" id="comment" rows="6">{{old('comment')}}</textarea>
                             </div>
 
                             <button type="submit" class="btn btn-primary mr-2">ثبت درخواست</button>
@@ -88,6 +92,29 @@
 @endsection
 
 @section('page_scripts')
+
+    <script type="text/javascript">
+        // add row
+        $("#addRow").click(function() {
+            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-6"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div> <div class="form-group col-md-6"> <label for="unit"> {{ __('fields.unit') }}</label> <select id="unit" class="form-control" name="unit[]" required> <option value="">انتخاب کنید...</option>@foreach( __('fields.commodity.units') as $key=>$value)<option value="{{$key}}">{{$value}}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div> </div> <div class="form-group col-md-6"> <label for="warehouse_id"> {{ __('fields.warehouse.name') }}</label> <select id="warehouse_id" class="form-control" name="warehouse_id[]" required> <option value="">انتخاب کنید</option>@foreach ($warehouses as $warehouse)<option value="{{ $warehouse->id }}">{{ $warehouse->title }}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.warehouse.name') }} را انتخاب کنید.</div> </div> <div class="form-group col-md-6"> <label for="amount"> {{  __('fields.commodity.amount') }}</label> <input type="number" min="1" name="amount[]" class="form-control"id="amount" autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]"  required=""> <div class="invalid-feedback">لطفاً {{  __('fields.commodity.amount') }} را وارد کنید. </div></div> <button id="removeRow" type="submit" class="btn btn-danger btn-block py-2">حذف</button></div></div>';
+            $('#newRow').append(html);
+            document.querySelectorAll('#inputFormRow').forEach((element,index) => {
+                element.querySelector('#commodity_id').setAttribute('name', 'commodity_id['+index+']');
+                element.querySelector('#unit').setAttribute('name', 'unit['+index+']');
+                element.querySelector('#warehouse_id').setAttribute('name', 'warehouse_id['+index+']');
+                element.querySelector('#amount').setAttribute('name', 'amount['+index+']');
+            });
+        });
+
+        // remove row
+        $(document).on('click', '#removeRow', function() {
+            $(this).closest('#inputFormRow').remove();
+            document.querySelectorAll('#inputFormRow').forEach((element,index) => {
+                element.querySelector('select').setAttribute('name', 'materials['+index+']');
+                element.querySelector('input').setAttribute('name', 'material_amount['+index+']');
+            });
+        });
+    </script>
     <!-- These plugins only need for the run this page -->
 
     <script src="{{ asset('js/default-assets/active.js') }}"></script>

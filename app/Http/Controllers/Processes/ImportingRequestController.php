@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Processes;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateImportingRequest;
 use App\Models\Commodity;
 use App\Models\ImportingRequest;
 use App\Models\Warehouse;
@@ -52,13 +53,13 @@ class ImportingRequestController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
-    public function store(Request $request)
+    public function store(CreateImportingRequest $request)
     {
-        $data=$request->only('commodity_id', 'warehouse_id', 'unit', 'capacity');
-        if ($request->hasFile('logo')) {
-            $file = $request->file('logo');
+        $data=$request->only('commodity_id', 'warehouse_id', 'unit', 'amount','comment');
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
         }
         $this->service->create($data,$file ?? null);
         return redirect(route('warehouse.index'))->with('successful', 'اطلاعات ثبت شد.');

@@ -18,4 +18,9 @@ class ImportingRequest extends Model
         'file',
         'status',
     ];
+    public function commodities()
+    {
+        return $this->belongsToMany(Commodity::class, 'importing_commodities', 'importation_id', 'commodity_id')
+            ->withPivot('amount','warehouses_id');
+    }
 }
