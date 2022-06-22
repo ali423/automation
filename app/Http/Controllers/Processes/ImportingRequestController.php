@@ -3,29 +3,33 @@
 namespace App\Http\Controllers\Processes;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CreateImportingRequest;
+use App\Http\Requests\Processes\CreateImportingRequest;
 use App\Models\Commodity;
 use App\Models\ImportingRequest;
 use App\Models\Warehouse;
-use App\Services\Processes\ImportationCommodityService;
+use App\Services\Processes\ImportingRequestService;
 use Illuminate\Http\Request;
 
 class ImportingRequestController extends Controller
 {
     protected $service;
 
-    public function __construct(ImportationCommodityService $service)
+    public function __construct(ImportingRequestService $service)
     {
         $this->service=$service;
     }
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
     public function index()
     {
-        //
+        $requests=ImportingRequest::query()->orderBy('id', 'DESC')->get();
+        return view('dashboard.processes.importing-request.index',
+            [
+                'requests'=>$requests,
+            ]);
     }
 
     /**
@@ -62,29 +66,36 @@ class ImportingRequestController extends Controller
             $file = $request->file('file');
         }
         $this->service->create($data,$file ?? null);
-        return redirect(route('warehouse.index'))->with('successful', 'اطلاعات ثبت شد.');
+        return redirect(route('importing-request.index'))->with('successful', 'اطلاعات ثبت شد.');
     }
 
     /**
      * Display the specified resource.
      *
      * @param  \App\Models\ImportingRequest  $importingRequest
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
     public function show(ImportingRequest $importingRequest)
     {
-        //
+        return view('dashboard.processes.importing-request.show',[
+            'request'=>$importingRequest,
+            'warehouses'=>Warehouse::all(),
+        ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\ImportingRequest  $importingRequest
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
     public function edit(ImportingRequest $importingRequest)
     {
-        //
+        return view('dashboard.processes.importing-request.edit',[
+            'request'=>$importingRequest,
+            'commodities'=>Commodity::query()->get(),
+            'warehouses'=>Warehouse::all(),
+        ]);
     }
 
     /**
@@ -92,21 +103,33 @@ class ImportingRequestController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\ImportingRequest  $importingRequest
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, ImportingRequest $importingRequest)
+    public function update(CreateImportingRequest $request, ImportingRequest $importingRequest)
     {
-        //
+        if ($importingRequest->status !='awaiting_approval'){
+            return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد .');
+        }
+        $data=$request->only('commodity_id', 'warehouse_id', 'unit', 'amount','comment');
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+        }
+        $this->service->update($importingRequest,$data,$file ?? null);
+        return redirect(route('importing-request.index'))->with('successful', 'اطلاعات درخواست ویرایش شد.');
     }
 
     /**
      * Remove the specified resource from storage.
      *
      * @param  \App\Models\ImportingRequest  $importingRequest
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(ImportingRequest $importingRequest)
     {
-        //
+        if ($importingRequest->status !='awaiting_approval'){
+            return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد .');
+        }
+        $this->service->delete($importingRequest);
+        return redirect(route('importing-request.index'))->with('successful', 'درخواست با موفقیت حذف شد.');
     }
 }

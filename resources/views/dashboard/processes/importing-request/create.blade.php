@@ -15,7 +15,7 @@
                         <form method="post" action="{{ route('importing-request.store') }}" class="needs-validation forms-sample" enctype="multipart/form-data" novalidate="">
                             @csrf
                             <div id="product_formul" class="col-lg-12">
-                                <p>اطلاعات ورد کالا به انبار</p>
+                                <p>اطلاعات ورود کالا به انبار</p>
                                 <div id="inputFormRow" class="form-row shadow p-4 mb-3">
                                     <div class="form-group col-md-6">
                                         <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
@@ -110,8 +110,10 @@
         $(document).on('click', '#removeRow', function() {
             $(this).closest('#inputFormRow').remove();
             document.querySelectorAll('#inputFormRow').forEach((element,index) => {
-                element.querySelector('select').setAttribute('name', 'materials['+index+']');
-                element.querySelector('input').setAttribute('name', 'material_amount['+index+']');
+                element.querySelector('#commodity_id').setAttribute('name', 'commodity_id['+index+']');
+                element.querySelector('#unit').setAttribute('name', 'unit['+index+']');
+                element.querySelector('#warehouse_id').setAttribute('name', 'warehouse_id['+index+']');
+                element.querySelector('#amount').setAttribute('name', 'amount['+index+']');
             });
         });
     </script>

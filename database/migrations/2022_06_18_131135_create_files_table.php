@@ -19,6 +19,9 @@ class CreateFilesTable extends Migration
             $table->integer('owner_id');
             $table->string('owner_type');
             $table->string('source');
+            $table->string('name')->nullable();
+            $table->string('format')->nullable();
+            $table->string('size')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

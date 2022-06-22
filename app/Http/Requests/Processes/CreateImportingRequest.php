@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Processes;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -24,10 +24,10 @@ class CreateImportingRequest extends FormRequest
     public function rules()
     {
         $rules= [
-            'commodity_id'=>['required','array'],
-            'unit'=>['required','array'],
-            'warehouse_id'=>['required','array'],
-            'amount'=>['required','array'],
+            'commodity_id'=>['required','array','min:1'],
+            'unit'=>['required','array','min:1'],
+            'warehouse_id'=>['required','array','min:1'],
+            'amount'=>['required','array','min:1'],
             'commodity_id.*'=>['required','exists:commodities,id','distinct'],
             'unit.*'=>['required','in:'.implode(',',array_keys(__('fields.commodity.units')))],
             'warehouse_id.*'=>['required','exists:warehouses,id'],
@@ -39,7 +39,6 @@ class CreateImportingRequest extends FormRequest
         $units=$this->get('unit');
         $amounts=$this->get('amount');
         $warehouses=$this->get('warehouse_id');
-
         $array_counts=[
             count($commodities),
             count($units),

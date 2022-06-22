@@ -6,6 +6,8 @@ return [
     'sales_price'=>'قیمت فروش  هر کیلوگرم(تومان)',
     'purchase_price'=>'قیمت خرید هر کیلوگرم (تومان)',
     'capacity'=>'گنجایش (لیتر)',
+    'comment'=>'توضیحات',
+    'file'=>'فایل',
     'lastname' => 'نام خانوادگی',
     'full_name' => 'نام نام خانوادگی',
     'title' => 'عنوان',
@@ -55,7 +57,7 @@ return [
             'inactive' => 'غیر فعال',
         ],
     ],
-    'commodity_importing' => [
+    'importing_request' => [
         'status' => [
             'awaiting_approval' => 'در انتظار تایید',
             'approvaled' => 'تایید شده',

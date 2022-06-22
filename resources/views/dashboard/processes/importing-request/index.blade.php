@@ -15,15 +15,12 @@
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-2">لیست انبار ها</h4>
+                    <h4 class="card-title mb-2">لیست درخواست های ورود کالا به انبار</h4>
                     <table id="datatable-buttons" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                             <tr>
                                 <th>ردیف</th>
-                                <th> {{ __('fields.title') }}</th>
-                                <th> {{ __('fields.type') }}</th>
                                 <th> {{ __('fields.status') }}</th>
-                                <th> {{ __('fields.capacity') }}</th>
                                 <th>{{ __('fields.created_at') }}</th>
                                 <th>{{ __('fields.creator') }}</th>
                                 <th>{{ __('fields.details') }}</th>
@@ -32,21 +29,18 @@
 
                         <tbody class="text-center">
                             @php($i = 1)
-                            @foreach ($warehouses as $warehouse)
+                            @foreach ($requests as $request)
                                 <tr>
                                     <td>{{ $i }}</td>
-                                    <td>{{ $warehouse->title }}</td>
-                                    <td>{{ __('fields.warehouse.types') [$warehouse->type] }}</td>
-                                    <td>{{__('fields.warehouse.status')[$warehouse->status]  }}</td>
-                                    <td>{{ $warehouse->capacity }}</td>
-                                    <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($warehouse->created_at)) }}
+                                    <td>{{__('fields.importing_request.status')[$request->status]  }}</td>
+                                    <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}
                                     </td>
-                                    @if(isset($warehouse->creator_user))
-                                    <td>{{ $warehouse->creator_user->full_name }}</td>
+                                    @if(isset($request->creator_user))
+                                    <td>{{ $request->creator_user->full_name }}</td>
                                     @else
                                         <td>سیستم</td>
                                     @endif
-                                    <td><a href="{{ route('warehouse.show', $warehouse) }}" class=""><i class="ti-more-alt font-24"></i></a>
+                                    <td><a href="{{ route('importing-request.show', $request) }}" class=""><i class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>
                                 @php($i++)

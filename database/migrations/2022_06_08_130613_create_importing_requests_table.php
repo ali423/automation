@@ -15,7 +15,8 @@ class CreateImportingRequestsTable extends Migration
     {
         Schema::create('importing_requests', function (Blueprint $table) {
             $table->id();
-            $table->enum('status',['awaiting_approval','approvaled','rejected','expired','done'])->default('awaiting_approval');
+            $table->enum('status', ['awaiting_approval', 'approvaled', 'rejected', 'expired', 'done'])->default('awaiting_approval');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
