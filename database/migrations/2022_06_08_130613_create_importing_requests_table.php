@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateImportationCommoditiesTable extends Migration
+class CreateImportingRequestsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,10 @@ class CreateImportationCommoditiesTable extends Migration
      */
     public function up()
     {
-        Schema::create('importation_commodities', function (Blueprint $table) {
+        Schema::create('importing_requests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('commodity_id')->constrained();
-            $table->foreignId('warehouse_id')->constrained();
-            $table->enum('status',['awaiting_approval','approvaled','rejected']);
+            $table->enum('status', ['awaiting_approval', 'approvaled', 'rejected', 'expired', 'done'])->default('awaiting_approval');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -29,6 +28,6 @@ class CreateImportationCommoditiesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('importation_commodities');
+        Schema::dropIfExists('importing_requests');
     }
 }
