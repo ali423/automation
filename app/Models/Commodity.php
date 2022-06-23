@@ -30,4 +30,19 @@ class Commodity extends Model
             ->withPivot('percentage')
             ->withTimestamps();
     }
+    public function getBasePriceAttribute(){
+        if ($this->type == 'product'){
+            $total_amount=0;
+            $materials=$this->materials()->get();
+            foreach ($materials as $material){
+                if ($material->type == 'material'){
+                    $total_amount=$total_amount+round(($material->pivot->percentage/100) *$material->purchase_price,2);
+                }else{
+                    $total_amount=$total_amount+round(($material->pivot->percentage/100) *$material->base_price,2);
+                }
+            }
+            return  $total_amount;
+        }
+        return $this->purchase_price;
+    }
 }

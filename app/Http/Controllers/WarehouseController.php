@@ -70,10 +70,13 @@ class WarehouseController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\Warehouse  $warehouse
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
      */
     public function edit(Warehouse $warehouse)
     {
+        if ($warehouse->Commodities()->exists() || $warehouse->empty_space != $warehouse->capacity){
+            return redirect()->back()->withErrors('قبل از ویرایش باید موجودی انبار خالی شود .');
+        }
         return view('dashboard.warehouse.edit',[
             'warehouse'=>$warehouse,
         ]);

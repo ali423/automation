@@ -19,7 +19,7 @@ class CreateImportingCommoditiesTable extends Migration
             $table->foreignId('warehouses_id')->constrained();
             $table->enum('unit',['kg','keg','twenty_liters']);
             $table->primary(['importation_id','commodity_id']);
-            $table->integer('amount');
+            $table->double('amount');
         });
     }
 

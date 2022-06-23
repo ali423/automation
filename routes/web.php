@@ -43,6 +43,10 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('importing-request',ImportingRequestController::class);
 
+    Route::get('importing-request/approval/{id}',[ImportingRequestController::class,'approvalRequest'])->name('approval.importing');
+
+    Route::get('importing-request/reject/{id}',[ImportingRequestController::class,'rejectRequest'])->name('reject.importing');
+
 });
 
 

@@ -17,7 +17,7 @@ class CreateProductFormulaTable extends Migration
             $table->foreignId('product_id')->references('id')->on('commodities')->onDelete('cascade');
             $table->foreignId('material_id')->references('id')->on('commodities')->onDelete('cascade');
             $table->primary(['product_id','material_id']);
-            $table->string('percentage');
+            $table->double('percentage');
             $table->timestamps();
         });
     }
