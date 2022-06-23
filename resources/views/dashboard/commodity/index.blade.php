@@ -22,6 +22,7 @@
                                 <th>ردیف</th>
                                 <th> {{ __('fields.title') }}</th>
                                 <th> {{ __('fields.commodity.number') }}</th>
+                                <th> {{ __('fields.base_price') }}</th>
                                 <th> {{ __('fields.type') }}</th>
                                 <th>{{ __('fields.created_at') }}</th>
                                 <th>{{ __('fields.creator') }}</th>
@@ -36,6 +37,7 @@
                                     <td>{{ $i }}</td>
                                     <td>{{ $commodity->title }}</td>
                                     <td>{{ $commodity->number }}</td>
+                                    <td>{{ number_format($commodity->base_price) }}</td>
                                     <td>{{ __('fields.commodity.types') [$commodity->type] }}</td>
                                     <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($commodity->created_at)) }}
                                     </td>
