@@ -13,14 +13,21 @@
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-row col-md-12">
-                            <div class="form-group col-md-6">
+                            <div class="form-group col-md-4">
+                                <label for="exampleInputEmail111"> {{ __('fields.status') }}</label>
+                                <input type="text" name="status"
+                                       value="{{  __('fields.importing_request.status')[$request->status] }}"
+                                       class="form-control" id="exampleInputEmail111"
+                                       placeholder="{{ __('fields.status') }}" autocomplete="off" disabled>
+                            </div>
+                            <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.created_at') }}</label>
                                 <input type="text" name="name"
                                        value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}"
                                        class="form-control" id="exampleInputEmail111"
                                        placeholder="{{ __('fields.created_at') }}" autocomplete="off" disabled>
                             </div>
-                            <div class="form-group col-md-6">
+                            <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
                                 <input type="text" name="name"
                                        @if (isset($request->creator_user)) value="{{ $request->creator_user->full_name }}"
@@ -107,10 +114,15 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger"
-                                            onclick="return confirm('آیا از حذف این درخواست مطمئن هستید؟');">حذف انبار</button>
+                                            onclick="return confirm('آیا از حذف این درخواست مطمئن هستید؟');">حذف درخواست</button>
                                 </form>
                             </div>
                             <div class="col-md-6 text-md-right">
+                                @if($request->status == 'awaiting_approval')
+                                <a href="{{ route('approval.importing', $request) }}" class="btn btn-primary">تایید درخواست</a>
+                                    <a href="{{ route('reject.importing', $request) }}" class="btn btn-danger">رد درخواست</a>
+
+                                @endif
                                 <a href="{{ route('activity.index', [
                                     'object_id' => $request->id,
                                     'object_type' => class_basename($request),

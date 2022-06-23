@@ -17,7 +17,7 @@ class CreateCommodityWarehouseTable extends Migration
             $table->foreignId('commodity_id')->constrained();
             $table->foreignId('warehouse_id')->constrained();
             $table->primary(['commodity_id','warehouse_id']);
-            $table->integer('commodity_amount');
+            $table->double('commodity_amount');
             $table->timestamps();
         });
     }

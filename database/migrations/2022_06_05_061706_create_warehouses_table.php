@@ -16,7 +16,8 @@ class CreateWarehousesTable extends Migration
         Schema::create('warehouses', function (Blueprint $table) {
             $table->id();
             $table->string('title')->unique();
-            $table->integer('capacity');
+            $table->double('capacity');
+            $table->double('empty_space');
             $table->enum('status',['active','inactive']);
             $table->enum('type',['tank','hall']);
             $table->softDeletes();
