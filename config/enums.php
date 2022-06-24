@@ -20,11 +20,18 @@ return [
             'fa_name' => 'کالا ها',
             'url' => 'commodity',
             'relations' => [
-                'materials' =>[
-                    'fa_name'=>'فرمول ساخت',
-                    'primary_key'=>'material_id',
-                    'pivots'=>[
-                        'percentage'=>'درصد تشکیل دهنده'
+                'materials' => [
+                    'fa_name' => 'فرمول ساخت',
+                    'primary_key' => 'material_id',
+                    'pivots' => [
+                        'percentage' => 'درصد تشکیل دهنده'
+                    ],
+                ],
+                'warehouses' => [
+                    'fa_name' => 'انبار کالا',
+                    'primary_key' => 'commodity_id',
+                    'pivots' => [
+                        'commodity_amount' => 'مقدار کالا'
                     ],
                 ],
             ]
@@ -33,7 +40,28 @@ return [
             'fa_name' => 'انبار ها',
             'url' => 'warehouse',
             'relations' => [
-
+                'commodities' => [
+                    'fa_name' => 'کالای های موجود در انبار',
+                    'primary_key' => 'warehouse_id',
+                    'pivots' => [
+                        'commodity_amount' => 'مقدار کالا'
+                    ],
+                ],
+            ]
+        ],
+        'App\Models\ImportingRequest' => [
+            'fa_name' => 'درخواست ورود کالا',
+            'url' => 'importing-request',
+            'relations' => [
+                'commodities' => [
+                    'fa_name' => 'کالا ها',
+                    'primary_key' => 'importation_id',
+                    'pivots' => [
+                        'amount' => 'مقدار کالا',
+                        'warehouses_id' => 'انبار',
+                        'unit' => 'واحد اندازه گیری',
+                    ],
+                ],
             ]
         ],
     ],

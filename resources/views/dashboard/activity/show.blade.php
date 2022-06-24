@@ -83,7 +83,7 @@
                                             </div>
                                             <div class="p-2">
                                                 @foreach ($activity->changes['updated'] as $key => $value)
-                                                    <div class="text-success">+ {{ $value['name'] ?? $value['title'] }}</div>
+                                                    <div class="text-success">+ {{ $value['name'] ?? $value['title']?? null }}</div>
                                                     @if(isset($value['pivots']))
                                                         @foreach($value['pivots'] as $key_2=>$value_2)
                                                             <div class="text-primary">* {{ $activity->pivotName($key_2) }}  = {{ $value_2 }}</div>

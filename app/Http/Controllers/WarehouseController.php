@@ -74,9 +74,6 @@ class WarehouseController extends Controller
      */
     public function edit(Warehouse $warehouse)
     {
-        if ($warehouse->Commodities()->exists() || $warehouse->empty_space != $warehouse->capacity){
-            return redirect()->back()->withErrors('قبل از ویرایش باید موجودی انبار خالی شود .');
-        }
         return view('dashboard.warehouse.edit',[
             'warehouse'=>$warehouse,
         ]);

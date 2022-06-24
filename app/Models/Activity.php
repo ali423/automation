@@ -108,7 +108,8 @@ class Activity extends Model
             }else{
                 $search_obj=$value;
             }
-            $result= $this->relation_model::where('id', $search_obj)->first()->toArray();
+//            dd($this->record_change_type);
+            $result= $this->record_change_type::where('id', $search_obj)->first()->toArray();
             if (!empty($value['pivots'])){
                 $result['pivots']=$value['pivots'];
             }
