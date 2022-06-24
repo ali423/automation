@@ -14622,10 +14622,10 @@ i.icon_map_alt.font-12.font-weight-bold {
   margin-bottom: 20px;
   border: 1px solid #ddd;
   border-radius: 10px;
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  -ms-border-radius: 10px;
-  -o-border-radius: 10px;
+  -webkit-border-radius:;
+  -moz-border-radius:;
+  -ms-border-radius:;
+  -o-border-radius:;
 }
 #product_formul p{
   display: inline-block;
@@ -14635,8 +14635,20 @@ i.icon_map_alt.font-12.font-weight-bold {
   color: #fff;
   background-color: #eaa400;
   border-radius: 15px;
-  -webkit-border-radius: 15px;
-  -moz-border-radius: 15px;
-  -ms-border-radius: 15px;
-  -o-border-radius: 15px;
+  -webkit-border-radius:;
+  -moz-border-radius:;
+  -ms-border-radius:;
+  -o-border-radius:;
+}
+
+/* remove row btn (importing-request) */
+#inputFormRow{
+  position: relative;
+}
+#removeRow{
+  position: absolute;
+  font-size: 18px;
+  color: #dc3545;
+  top:8px;
+  left:8px;
 }
