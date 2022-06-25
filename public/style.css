@@ -14640,6 +14640,9 @@ i.icon_map_alt.font-12.font-weight-bold {
   -ms-border-radius:;
   -o-border-radius:;
 }
+#product_formul #inputFormRow:first-child{
+    background-color: red !important;
+}
 
 /* remove row btn (importing-request) */
 #inputFormRow{

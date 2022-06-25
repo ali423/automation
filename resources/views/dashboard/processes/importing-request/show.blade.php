@@ -41,7 +41,7 @@
                             <div id="inputFormRow" class="form-row shadow p-4 m-3">
                                 <div class="form-group col-md-6">
                                     <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
-                                    <select id="commodity_id" class="form-control" name="commodity_id[0]" required>
+                                    <select id="commodity_id" class="form-control" name="commodity_id[0]" disabled>
                                         <option value="{{ $commodity->id }}">{{ $commodity->title }}</option>
                                     </select>
                                     <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
@@ -54,7 +54,7 @@
                                 </div>
                                 <div class="form-group col-md-6">
                                     <label for="warehouse_id"> {{ __('fields.warehouse.name') }}</label>
-                                    <select id="warehouse_id" class="form-control" name="warehouse_id[0]" required>
+                                    <select id="warehouse_id" class="form-control" name="warehouse_id[0]" disabled>
                                         @foreach ($warehouses as $warehouse)
                                             @if ($warehouse->id == $commodity->pivot->warehouses_id)
                                                 <option value="{{ $warehouse->id }}">{{ $warehouse->title }}
@@ -107,7 +107,7 @@
                                             </div>
                                             <a href="{{ asset(str_replace('public', 'storage', $file->source)) }}"
                                                 download="proposed_file_name"
-                                                class="download-link badge badge-primary badge-pill">دانلود</a>
+                                                class="download-link badge badge-primary badge-pill p-2 font-16"><i class="ti-download"></i></a>
                                         </div>
                                     @endforeach
 
