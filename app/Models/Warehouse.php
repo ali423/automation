@@ -24,4 +24,10 @@ class Warehouse extends Model
             ->withPivot('commodity_amount')
             ->withTimestamps();
     }
+    public function getFullSpaceAttribute(){
+        return $this->capacity - $this->empty_space;
+    }
+    public function getFullSpacePercentageAttribute(){
+        return round(($this->full_space*100)/$this->capacity,2);
+    }
 }

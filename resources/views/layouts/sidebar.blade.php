@@ -46,6 +46,12 @@
                         <li><a href="{{ route('importing-request.create') }}">ثبت درخواست</a></li>
                     </ul>
                 </li>
+                <li class="treeview">
+                    <a href="javascript:void(0)"><i class="ti-home"></i> <span>موجودی انبار</span> <i class="fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        <li><a href="{{ route('inventory.index') }}">وضعیت موجودی انبار</a></li>
+                    </ul>
+                </li>
                 {{-- <li class="treeview active">
                     <a href="javascript:void(0)"><i class="icon_piechart"></i> <span>CRM</span> <i class="fa fa-angle-left"></i></a>
                     <ul class="treeview-menu">

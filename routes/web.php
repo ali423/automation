@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\CommodityController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Processes\ImportingRequestController;
 use App\Http\Controllers\RoleController;
@@ -46,6 +47,8 @@ Route::middleware('auth')->group(function () {
     Route::get('importing-request/approval/{id}',[ImportingRequestController::class,'approvalRequest'])->name('approval.importing');
 
     Route::get('importing-request/reject/{id}',[ImportingRequestController::class,'rejectRequest'])->name('reject.importing');
+
+    Route::resource('inventory',InventoryController::class);
 
 });
 
