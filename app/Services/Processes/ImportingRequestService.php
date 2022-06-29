@@ -83,10 +83,12 @@ class ImportingRequestService extends BaseService
         DB::transaction(function () use ($importing_request) {
             foreach ($importing_request->commodities as $value) {
                 $warehouse = Warehouse::query()->where('id', $value->pivot->warehouses_id)->firstOrFail();
-                $warehouses[] = $warehouse;
+                $commodity_amount=$this->calculateCommodityAmount($value->pivot->amount, $value->pivot->unit);
+                $add_amounts[$warehouse->id][]=$commodity_amount;
+                $warehouses[$warehouse->id] = $warehouse;
                 if ($warehouse->commodities->contains($value->id)) {
                     $exits_commodity = $warehouse->commodities->find($value->id);
-                    $new_amount = $exits_commodity->pivot->commodity_amount + $this->calculateCommodityAmount($value->pivot->amount, $value->pivot->unit);
+                    $new_amount = $exits_commodity->pivot->commodity_amount + $commodity_amount;
                     $warehouse->commodities()->updateExistingPivot($value->id, ['commodity_amount' => $new_amount], false);
                 } else {
                     $warehouse->commodities()->attach([

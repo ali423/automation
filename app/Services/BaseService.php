@@ -31,11 +31,10 @@ class BaseService
     }
     public function recalculateWarehousesEmptySpace($warehouses){
         DB::transaction(function () use ($warehouses) {
-
             foreach ($warehouses as $warehouse) {
-                $occupied_space = array_sum(array_column(array_column($warehouse->commodities->toArray(), 'pivot'), 'commodity_amount'));
+                $occupied_space = array_sum(array_column(array_column($warehouse->commodities()->get()->toArray(), 'pivot'), 'commodity_amount'));
                 $warehouse->update([
-                    'empty_space' => $warehouse->empty_space - $occupied_space,
+                    'empty_space' => $warehouse->capacity - $occupied_space,
                 ]);
             }
         });

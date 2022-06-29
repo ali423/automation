@@ -88,7 +88,10 @@ class WarehouseController extends Controller
      */
     public function update(WarehouseUpdateRequest $request, Warehouse $warehouse)
     {
-        $this->service->update($warehouse,$request->only('title','type','capacity','status'));
+        $res= $this->service->update($warehouse,$request->only('title','type','capacity','status'));
+        if (isset($res['success']) && $res['success']== false){
+            return redirect()->back()->withErrors($res['error']);
+        }
         return redirect(route('warehouse.show',$warehouse))->with('successful', 'اطلاعات ویرایش شدند.');
     }
 
