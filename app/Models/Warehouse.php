@@ -30,4 +30,7 @@ class Warehouse extends Model
     public function getFullSpacePercentageAttribute(){
         return round(($this->full_space*100)/$this->capacity,2);
     }
+    public function getEmptySpacePercentageAttribute(){
+        return round(($this->empty_space*100)/$this->capacity,2);
+    }
 }

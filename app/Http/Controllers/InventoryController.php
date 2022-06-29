@@ -2,11 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\InventoryEditRequest;
+use App\Http\Requests\InventoryUpdateRequest;
 use App\Models\Warehouse;
+use App\Services\InventoryService;
 use Illuminate\Http\Request;
 
 class InventoryController extends Controller
 {
+    protected $service;
+
+    public function __construct(InventoryService $service)
+    {
+        $this->service=$service;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -46,22 +55,31 @@ class InventoryController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
     public function show($id)
     {
-        //
+        $warehouse=Warehouse::query()->findOrFail($id);
+        return view('dashboard.inventory.show',[
+            'warehouse'=>$warehouse,
+            'commodities'=>$warehouse->commodities,
+        ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(InventoryEditRequest $request)
     {
-        //
+        $warehouse=Warehouse::query()->findOrFail($request->get('warehouse'));
+        $commodity=$warehouse->commodities()->where('commodity_id',$request->get('commodity'))->firstOrFail();
+        return view('dashboard.inventory.edit',[
+            'warehouse'=>$warehouse,
+            'commodity'=>$commodity,
+        ]);
     }
 
     /**
@@ -69,11 +87,16 @@ class InventoryController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
-    public function update(Request $request, $id)
+    public function update(InventoryUpdateRequest $request)
     {
-        //
+        $warehouse=Warehouse::query()->findOrFail($request->get('warehouse'));
+        $res=$this->service->updateAmount($warehouse,$request->only('commodity','commodity_amount'));
+        if (isset($res['success']) && $res['success']== false){
+            return redirect()->back()->withErrors($res['error']);
+        }
+        return redirect(route('inventory.show',$warehouse))->with('successful', 'اطلاعات ویرایش شدند.');
     }
 
     /**

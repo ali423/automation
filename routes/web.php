@@ -48,7 +48,13 @@ Route::middleware('auth')->group(function () {
 
     Route::get('importing-request/reject/{id}',[ImportingRequestController::class,'rejectRequest'])->name('reject.importing');
 
-    Route::resource('inventory',InventoryController::class);
+    Route::get('inventory/edit',[InventoryController::class,'edit'])->name('inventory.edit');
+
+    Route::patch('inventory/update',[InventoryController::class,'update'])->name('inventory.update');
+
+
+    Route::resource('inventory',InventoryController::class)->only('index','show');
+
 
 });
 

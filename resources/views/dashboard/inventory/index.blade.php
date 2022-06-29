@@ -23,7 +23,7 @@
                             @foreach($warehouses as $warehouse)
                             <div class="col mr-1 mt-5 mt-3">
                                 <span class="size">
-                                   کیلوگرم  {{ $warehouse->capacity }}
+                                   {{number_format($warehouse->capacity)  }} کیلوگرم
                                 </span>
                                 <div class="full-size">
                                     <span
@@ -68,9 +68,8 @@
                                 <th> {{ __('fields.type') }}</th>
                                 <th> {{ __('fields.status') }}</th>
                                 <th> {{ __('fields.capacity') }}</th>
-                                <th>{{ __('fields.created_at') }}</th>
-                                <th>{{ __('fields.creator') }}</th>
-                                <th>{{ __('fields.details') }}</th>
+                                <th> {{ __('fields.empty_space') }}</th>
+                                <th>{{ __('fields.commodities_list') }}</th>
                             </tr>
                         </thead>
 
@@ -82,15 +81,9 @@
                                     <td>{{ $warehouse->title }}</td>
                                     <td>{{ __('fields.warehouse.types') [$warehouse->type] }}</td>
                                     <td>{{__('fields.warehouse.status')[$warehouse->status]  }}</td>
-                                    <td>{{ $warehouse->capacity }}</td>
-                                    <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($warehouse->created_at)) }}
-                                    </td>
-                                    @if(isset($warehouse->creator_user))
-                                    <td>{{ $warehouse->creator_user->full_name }}</td>
-                                    @else
-                                        <td>سیستم</td>
-                                    @endif
-                                    <td><a href="{{ route('warehouse.show', $warehouse) }}" class=""><i class="ti-more-alt font-24"></i></a>
+                                    <td>{{ number_format($warehouse->capacity) }}</td>
+                                    <td>{{ number_format($warehouse->empty_space) }}</td>
+                                    <td><a href="{{ route('inventory.show', $warehouse) }}" class=""><i class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>
                                 @php($i++)
