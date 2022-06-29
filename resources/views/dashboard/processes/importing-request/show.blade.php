@@ -2,7 +2,7 @@
 @section('title', 'داشبورد')
 
 @section('page_styles')
-
+<link rel="stylesheet" href="{{ asset('css/imexport-print.css') }}">
 @endsection
 
 @section('content')
@@ -136,6 +136,70 @@
                                     'object_type' => class_basename($request),
                                 ]) }}"
                                     class="btn btn-dfprimary px-1 px-md-4 m-md-0">تاریخچه تغییرات</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="invoice" class="col-xl-12 box-margin height-card">
+                        <div class="card card-body">
+                            {{-- <h4 class="card-title"></h4> --}}
+                            <div class="row">
+                                <div class="col-sm-12 col-xs-12">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <img src="{{ asset('img/logo/darklogo.png') }}" class="logo" />
+                                        <h4>ورود و خروج کالا</h4>
+                                        <div>تاریخ: <span>1400/01/02</span></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>خریدار/ نماینده خریدار: <span>علیرضا مشایخی</span></div>
+                                        <div>شماره سفارش: <span>14000511</span></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <table class="table-borderless">
+                                            <colgroup>
+                                                <col span="1" style="width: 5%;">
+                                                <col span="1" style="width: 55%;">
+                                                <col span="1" style="width: 15%;">
+                                                <col span="1" style="width: 25%;">
+                                            </colgroup>
+                                            <tr class="table-header">
+                                                <th scope="col">ردیف</th>
+                                                <th scope="col">کالای ورودی</th>
+                                                <th scope="col">تعداد / مقدار</th>
+                                                <th scope="col">توضیحات</th>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">1</th>
+                                                <td>کالا 1</td>
+                                                <td>20</td>
+                                                <td></td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">2</th>
+                                                <td>کالا 2</td>
+                                                <td>30</td>
+                                                <td>رنگ زرد جایگزین شد</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">3</th>
+                                                <td>کالا 3</td>
+                                                <td>25</td>
+                                                <td></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="mb-5">
+                                        اینجانب <span>علیرضا مشایخی</span>
+                                        راننده خودرو به شماره پلاک <div class="pelak">77 الف 777</div>
+                                        <div class="pelak">77</div>
+                                        شماره تماس <span>091212121212</span>
+                                        محموله فوق را تحویل گرفتم.
+                                    </div>
+                                    <div class="d-flex justify-content-around align-items-center mb-3">
+                                        <h6>امضاء تحویل گیرنده کالا</h6>
+                                        <h6>امضاء متصدی شرکت</h6>
+                                    </div>
+            
+                                </div>
                             </div>
                         </div>
                     </div>
