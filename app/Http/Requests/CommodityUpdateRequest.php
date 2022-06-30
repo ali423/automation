@@ -25,6 +25,8 @@ class CommodityUpdateRequest extends FormRequest
     {
         $rules= [
             'title'=>['required','unique:commodities,title,'.$this->commodity->id],
+            'warning_limit'=>['required','numeric'],
+
         ];
         if ($this->commodity->type == 'product'){
             $rules['materials']=['required','array','min:1'];

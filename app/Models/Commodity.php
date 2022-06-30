@@ -17,6 +17,7 @@ class Commodity extends Model
         'sales_price',
         'type',
         'purchase_price',
+        'warning_limit',
     ];
 
     public function warehouses()

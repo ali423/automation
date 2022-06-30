@@ -18,7 +18,7 @@
                             @method('PATCH')
                             @csrf
                             <div class="form-row">
-                                <div class="form-group col-md-4">
+                                <div class="form-group col-md-6">
                                     <label for="title"> {{ __('fields.title') }}</label>
                                     <input type="text" name="title" value="{{ $commodity->title }}" class="form-control"
                                            id="title" placeholder="عنوان کالا" required="">
@@ -26,7 +26,7 @@
                                         لطفاً عنوان کالا را وارد کنید.
                                     </div>
                                 </div>
-                                <div class="form-group col-md-4">
+                                <div class="form-group col-md-6">
                                     <label for="type"> {{ __('fields.type') }}</label>
                                     <select id="type" class="form-control" name="type" disabled>
                                         @if ($commodity->type == 'material')
@@ -39,8 +39,17 @@
                                     </select>
                                     <div class="invalid-feedback">نوع کالا را انتخاب کنید</div>
                                 </div>
-                                @if(!empty($commodity->sales_price))
-                                    <div id="sales_price" class="form-group col-md-4">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="sales_price"> {{ __('fields.warning_limit') }}</label>
+                                    <input type="number" step="0.01" name="warning_limit"
+                                           value="{{ $commodity->warning_limit }}"
+                                           class="form-control" placeholder="{{ __('fields.warning_limit') }}" required>
+                                    <div class="invalid-feedback">{{ __('fields.warning_limit') }} را وارد کنید</div>
+                                </div>
+                            @if(!empty($commodity->sales_price))
+                                    <div id="sales_price" class="form-group col-md-6">
                                         <label for="sales_price"> {{ __('fields.sales_price') }}</label>
                                         <input type="number" step="0.01" min="100" name="sales_price"
                                                value="{{ $commodity->sales_price }}"
@@ -49,7 +58,7 @@
                                         <div class="invalid-feedback">حداقل قیمت 100 تومان می باشد</div>
                                     </div>
                                 @elseif(!empty($commodity->purchase_price))
-                                    <div id="purchase_price" class="form-group col-md-4">
+                                    <div id="purchase_price" class="form-group col-md-6">
                                         <label for="purchase_price"> {{ __('fields.purchase_price') }}</label>
                                         <input type="number" step="0.01" min="100" name="purchase_price"
                                                value="{{ $commodity->purchase_price }}" class="form-control"

@@ -74,8 +74,8 @@ class Activity extends Model
                     }
                 });
                 foreach ($res as $value) {
-                    $res_old_diff[$value] = $old_diff[$value];
-                    $res_new_diff[$value] = $new_diff[$value];
+                    $res_old_diff[$value]= $old_diff[$value]?? '(بدون مقدار)';
+                    $res_new_diff[$value] = $new_diff[$value]?? '(بدون مقدار)';
                 }
                 return [
                     'old_value' => $res_old_diff ?? null,

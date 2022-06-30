@@ -42,20 +42,26 @@
                             @endif
                         </div>
                         <div class="form-row col-md-12">
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <label for="exampleInputEmail111"> {{ __('fields.commodity.number') }}</label>
                                 <input type="text" name="number" value="{{$commodity->number }}"
                                        class="form-control" id="exampleInputEmail111"
                                       disabled>
                             </div>
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
+                                <label for="exampleInputEmail111"> {{ __('fields.warning_limit') }}</label>
+                                <input type="text" name="warning_limit" value="{{number_format($commodity->warning_limit) }}"
+                                       class="form-control" id="exampleInputEmail111"
+                                       disabled>
+                            </div>
+                            <div class="form-group col-md-3">
                                 <label for="exampleInputEmail111"> {{ __('fields.created_at') }}</label>
                                 <input type="text" name="name"
                                        value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($commodity->created_at)) }}"
                                        class="form-control" id="exampleInputEmail111"
                                        placeholder="{{ __('fields.created_at') }}" autocomplete="off" disabled>
                             </div>
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
                                 <input type="text" name="name"
                                        @if (isset($commodity->creator_user)) value="{{ $commodity->creator_user->full_name }}"
