@@ -18,17 +18,19 @@
                     <!-- Stacked Bar -->
                     <div id="panel-15" class="panel">
                         <h4 class="card-title">وضعیت انبار ها</h4>
-                        <div id="mychart" class="row">
-                            @php($i=1)
-                            @foreach($warehouses as $warehouse)
-                            <div class="col mr-1 mt-5 mt-3">
-                                <span class="size">
-                                   {{number_format($warehouse->capacity)  }} کیلوگرم
-                                </span>
-                                <div class="full-size">
-                                    <span
-                                    @switch($i)
-                                        @case(1)
+                        <div class="row">
+                            <div class="col-md-10">
+                                <div id="mychart" class="row">
+                                    @php($i = 1)
+                                    @foreach ($warehouses as $warehouse)
+                                        <div class="col mr-1 mt-5 mt-3">
+                                            <span class="size">
+                                                {{ number_format($warehouse->capacity) }} کیلوگرم
+                                            </span>
+                                            <div class="full-size">
+                                                <span></span>
+                                                <span
+                                                    @switch($i) @case(1)
                                           class="current-size bg-primary"
                                         @break
                                         @case(2)
@@ -43,14 +45,20 @@
                                     @case(5)
                                     class="current-size bg-warning"
                                     @php($i=0)
-                                    @break
-                                    @endswitch
-                                         data-current="{{ $warehouse->full_space_percentage }}"></span>
+                                    @break @endswitch
+                                                    data-current="{{ $warehouse->full_space_percentage }}"></span>
+                                            </div>
+                                            <span>
+                                                {{ $warehouse->title }}
+                                            </span>
+                                        </div>
+                                        @php($i++)
+                                    @endforeach
                                 </div>
                             </div>
-                                @php($i++)
-                            @endforeach
-
+                            <div class="col-md-2">
+                                <img src="{{ asset('img/ware-capacity/warechartex.png')}}" alt="">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -79,11 +87,12 @@
                                 <tr>
                                     <td>{{ $i }}</td>
                                     <td>{{ $warehouse->title }}</td>
-                                    <td>{{ __('fields.warehouse.types') [$warehouse->type] }}</td>
-                                    <td>{{__('fields.warehouse.status')[$warehouse->status]  }}</td>
+                                    <td>{{ __('fields.warehouse.types')[$warehouse->type] }}</td>
+                                    <td>{{ __('fields.warehouse.status')[$warehouse->status] }}</td>
                                     <td>{{ number_format($warehouse->capacity) }}</td>
                                     <td>{{ number_format($warehouse->empty_space) }}</td>
-                                    <td><a href="{{ route('inventory.show', $warehouse) }}" class=""><i class="ti-more-alt font-24"></i></a>
+                                    <td><a href="{{ route('inventory.show', $warehouse) }}" class=""><i
+                                                class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>
                                 @php($i++)
