@@ -47,6 +47,13 @@
                         <li><a href="{{ route('importing-request.create') }}">ثبت درخواست</a></li>
                     </ul>
                 </li>
+                <li class="treeview">
+                    <a href="javascript:void(0)"><i class="ti-home"></i> <span>مشتری ها</span> <i class="fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        <li><a href="{{ route('customer.index') }}">لیست مشتری ها</a></li>
+                        <li><a href="{{ route('customer.create') }}">ثبت مشتری</a></li>
+                    </ul>
+                </li>
             </ul>
         </nav>
     </div>
