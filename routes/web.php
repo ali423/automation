@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\CommodityController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LoginController;
@@ -41,7 +42,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('commodity',CommodityController::class);
     Route::resource('warehouse',WarehouseController::class);
-
+    Route::resource('customer',CustomerController::class);
     Route::resource('importing-request',ImportingRequestController::class);
 
     Route::get('importing-request/approval/{id}',[ImportingRequestController::class,'approvalRequest'])->name('approval.importing');

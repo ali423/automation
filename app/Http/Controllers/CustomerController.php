@@ -2,21 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CommodityRequest;
-use App\Http\Requests\CommodityUpdateRequest;
-use App\Models\Commodity;
-use App\Services\CommodityService;
+use App\Http\Requests\CustomerRequest;
+use App\Http\Requests\CustomerUpdateRequest;
+use App\Models\Customer;
+use App\Services\CustomerService;
 use Illuminate\Http\Request;
 
-class CommodityController extends Controller
+class CustomerController extends Controller
 {
     protected $service;
 
-    public function __construct(CommodityService $service)
+    public function __construct(CustomerService $service)
     {
         $this->service=$service;
     }
-
     /**
      * Display a listing of the resource.
      *
@@ -24,10 +23,10 @@ class CommodityController extends Controller
      */
     public function index()
     {
-        $commodities=Commodity::query()->orderBy('id', 'DESC')->get();
-        return view('dashboard.commodity.index',
+        $customers=Customer::query()->orderBy('id', 'DESC')->get();
+        return view('dashboard.customer.index',
             [
-                'commodities'=>$commodities,
+                'customers'=>$customers,
             ]);
     }
 
@@ -38,9 +37,7 @@ class CommodityController extends Controller
      */
     public function create()
     {
-        return view('dashboard.commodity.create',[
-            'materials'=>Commodity::all(),
-        ]);
+        return view('dashboard.customer.create');
     }
 
     /**
@@ -49,41 +46,36 @@ class CommodityController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
-    public function store(CommodityRequest $request)
+    public function store(CustomerRequest $request)
     {
-        $this->service->create($request->validationData());
-        return redirect(route('commodity.index'))->with('successful', 'اطلاعات ثبت شد.');
+        $data=$request->validated();
+        $this->service->create($data);
+        return redirect(route('customer.index'))->with('successful', 'اطلاعات ثبت شد.');
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Commodity  $commodity
+     * @param  \App\Models\Customer  $customer
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function show(Commodity $commodity)
+    public function show(Customer $customer)
     {
-        $materials=$commodity->materials;
-        return view('dashboard.commodity.show',[
-            'commodity'=>$commodity,
-            'materials'=>$materials,
+        return view('dashboard.customer.show',[
+            'customer'=>$customer,
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Commodity  $commodity
+     * @param  \App\Models\Customer  $customer
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function edit(Commodity $commodity)
+    public function edit(Customer $customer)
     {
-        $used_materials=$commodity->materials;
-
-        return view('dashboard.commodity.edit',[
-            'commodity'=>$commodity,
-            'materials'=>Commodity::all(),
-            'used_materials'=>$used_materials,
+        return view('dashboard.customer.edit',[
+            'customer'=>$customer,
         ]);
     }
 
@@ -91,24 +83,24 @@ class CommodityController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Commodity  $commodity
+     * @param  \App\Models\Customer  $customer
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
-    public function update(CommodityUpdateRequest $request, Commodity $commodity)
+    public function update(CustomerUpdateRequest $request, Customer $customer)
     {
-        $this->service->update($commodity,$request->validationData());
-        return redirect(route('commodity.show',$commodity))->with('successful', 'اطلاعات ویرایش شد.');
+        $this->service->update($customer,$request->validated());
+        return redirect(route('customer.show',$customer))->with('successful', 'اطلاعات ویرایش شد.');
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Commodity  $commodity
+     * @param  \App\Models\Customer  $customer
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
-    public function destroy(Commodity $commodity)
+    public function destroy(Customer $customer)
     {
-        $commodity->delete();
-        return redirect(route('commodity.index'))->with('successful', 'اطلاعات حذف شدند.');
+        $customer->delete();
+        return redirect(route('customer.index'))->with('successful', 'اطلاعات حذف شدند.');
     }
 }

@@ -64,6 +64,13 @@ return [
                 ],
             ]
         ],
+        'App\Models\Customer' => [
+            'fa_name' => 'مشتری ها',
+            'url' => 'customer',
+            'relations' => [
+
+            ]
+        ],
     ],
     'activity_types' => [
         'create' => 'ایجاد',
