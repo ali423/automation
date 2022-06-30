@@ -21,6 +21,7 @@ class CommodityService
                 'title' => $data['title'],
                 'type' => $data['type'],
                 'purchase_price' => $data['purchase_price'],
+                'warning_limit'=>$data['warning_limit'],
             ]);
         } else {
             $materials = null;
@@ -35,6 +36,7 @@ class CommodityService
                     'title' => $data['title'],
                     'sales_price' => $data['sales_price'],
                     'type' => $data['type'],
+                    'warning_limit'=>$data['warning_limit'],
                 ]);
                 $product->materials()->attach($materials);
                 return true;
@@ -48,6 +50,7 @@ class CommodityService
             return $commodity->update([
                 'title' => $data['title'],
                 'sales_price' => null,
+                'warning_limit'=>$data['warning_limit'],
             ]);
         } else {
             $materials = null;
@@ -60,6 +63,7 @@ class CommodityService
                 $commodity->update([
                     'title' => $data['title'],
                     'sales_price' => $data['sales_price'],
+                    'warning_limit'=>$data['warning_limit'],
                 ]);
                 $commodity->materials()->sync($materials);
                 return true;

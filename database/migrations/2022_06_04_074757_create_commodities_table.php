@@ -19,6 +19,7 @@ class CreateCommoditiesTable extends Migration
             $table->string('title')->unique();
             $table->double('sales_price')->nullable();
             $table->double('purchase_price')->nullable();
+            $table->double('warning_limit');
             $table->enum('type',['material','product']);
             $table->softDeletes();
             $table->timestamps();
