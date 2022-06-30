@@ -14640,9 +14640,9 @@ i.icon_map_alt.font-12.font-weight-bold {
   -ms-border-radius:;
   -o-border-radius:;
 }
-#product_formul #inputFormRow:first-child{
-    background-color: red !important;
-}
+/* #product_formul #inputFormRow:first-child #removeRow{
+  display: none;
+} */
 
 /* remove row btn (importing-request) */
 #inputFormRow{
@@ -14654,4 +14654,14 @@ i.icon_map_alt.font-12.font-weight-bold {
   color: #dc3545;
   top:8px;
   left:8px;
+}
+
+/* capacity input */
+#capacity{
+  width: 0;
+  padding: 0;
+  margin:0;
+  height: 0;
+  opacity: 0;
+  visibility: hidden;
 }
