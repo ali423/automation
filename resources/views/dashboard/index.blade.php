@@ -151,7 +151,7 @@
         </div>
     </div>
 
-    <div id="users-links" class="row">
+    <div id="users-links" class="row d-none d-md-flex">
         <div class="col box-margin height-card">
             <div class="card">
                 {{-- start user --}}
