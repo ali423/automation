@@ -10,6 +10,7 @@
         <div class="col-xl-12 box-margin height-card">
             <div class="card card-body">
                 <h4 class="card-title">ثبت درخواست ورود کالا به انبار</h4>
+                
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <form method="post" action="{{ route('importing-request.store') }}" class="needs-validation forms-sample" enctype="multipart/form-data" novalidate="">

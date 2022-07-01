@@ -201,13 +201,13 @@
                     <!-- Top Bar Nav -->
                     <ul class="right-side-content d-flex align-items-center">
                         <!-- Left Side Nav -->
-                        <li class="hide-phone app-search">
+                        {{-- <li class="hide-phone app-search">
                             <form role="search" class=""><input type="text" placeholder="جستجو..."
                                     class="form-control"> <button type="submit" class="mr-0"><i
                                         class="fa fa-search"></i></button></form>
-                        </li>
+                        </li> --}}
 
-                        <li class="nav-item dropdown">
+                        {{-- <li class="nav-item dropdown">
                             <button type="button" class="btn dropdown-toggle" data-toggle="dropdown"
                                 aria-haspopup="true" aria-expanded="false"><i class="fa fa-bell-o"
                                     aria-hidden="true"></i> <span class="active-status"></span></button>
@@ -245,16 +245,18 @@
                                     </div>
                                 </div>
                             </div>
-                        </li>
+                        </li> --}}
 
                         <li class="nav-item dropdown">
                             <button type="button" class="btn dropdown-toggle" data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false"><img
-                                    src="{{ asset('img/member-img/4.png') }}" alt=""></button>
+                                aria-haspopup="true" aria-expanded="false">
+                                {{-- <img src="{{ asset('img/member-img/4.png') }}" alt=""> --}}
+                                <i class="ti-user rounded-circle shadow p-3"></i>
+                            </button>
                             <div class="dropdown-menu dropdown-menu-right">
                                 <!-- User Profile Area -->
                                 <div class="user-profile-area">
-                                    <div class="user-profile-heading">
+                                    {{-- <div class="user-profile-heading">
                                         <!-- Thumb -->
                                         <div class="profile-img">
                                             <img class="chat-img mr-2" src="{{ asset('img/member-img/4.png') }}"
@@ -265,7 +267,7 @@
                                             <h6>نام کاربر</h6>
                                             <span>توسعه دهنده</span>
                                         </div>
-                                    </div>
+                                    </div> 
                                     <a href="#" class="dropdown-item"><i
                                             class="zmdi zmdi-account profile-icon bg-primary" aria-hidden="true"></i>
                                         پروفایل من</a>
@@ -280,9 +282,9 @@
                                         وظایف من</a>
                                     <a href="#" class="dropdown-item"><i
                                             class="zmdi zmdi-wifi-alt profile-icon bg-purple" aria-hidden="true"></i>
-                                        پشتیبانی</a>
+                                        پشتیبانی</a> --}}
                                     <a href="{{ route('logout') }}" class="dropdown-item"><i
-                                            class="ti-unlink profile-icon bg-warning" aria-hidden="true"></i> خروج از
+                                            class="ti-power-off profile-icon bg-warning" aria-hidden="true"></i> خروج از
                                         سیستم</a>
                                 </div>
                             </div>
