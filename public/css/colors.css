@@ -22,3 +22,29 @@
     /* default #f0f3ff */
     --inputBackground: rgba(255, 174, 0, 0.08);
 }
+
+.bg-blue{
+    color: #fff;
+    background-color: #00b6e4 !important;
+}
+.bg-blue:hover{
+    background-color: #41d9ff !important;
+}
+
+.bg-red{
+    color: #fff !important;
+    background-color: #ff4c70 ;
+}
+.bg-red:hover{
+    background-color: #ff738f ;
+}
+
+.btn-white{
+    background: #f8f8f8;
+}
+.btn-white:hover{
+    background: #ffffff;
+}
+
+.bg-green{background: #00e988;}
+.bg-green:hover{background: #08e589;}
