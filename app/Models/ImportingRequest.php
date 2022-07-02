@@ -17,6 +17,7 @@ class ImportingRequest extends Model
         'amount',
         'file',
         'status',
+        'number',
     ];
     public function commodities()
     {

@@ -13,21 +13,21 @@
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-row col-md-12">
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <label for="exampleInputEmail111"> {{ __('fields.status') }}</label>
                                 <input type="text" name="status"
                                     value="{{ __('fields.importing_request.status')[$request->status] }}"
                                     class="form-control" id="exampleInputEmail111" placeholder="{{ __('fields.status') }}"
                                     autocomplete="off" disabled>
                             </div>
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <label for="exampleInputEmail111"> {{ __('fields.created_at') }}</label>
                                 <input type="text" name="name"
                                     value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}"
                                     class="form-control" id="exampleInputEmail111"
                                     placeholder="{{ __('fields.created_at') }}" autocomplete="off" disabled>
                             </div>
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
                                 <input type="text" name="name"
                                     @if (isset($request->creator_user)) value="{{ $request->creator_user->full_name }}"
@@ -35,6 +35,13 @@
                                        value="سیستم" @endif
                                     class="form-control" id="exampleInputEmail111"
                                     placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="exampleInputEmail111"> {{ __('fields.importing_request.number') }}</label>
+                                <input type="text" name="status"
+                                       value="{{ $request->number}}"
+                                       class="form-control" id="exampleInputEmail111" placeholder="{{ __('fields.importing_request.number') }} }}"
+                                       autocomplete="off" disabled>
                             </div>
                         </div>
                         @foreach ($request->commodities as $commodity)
@@ -116,7 +123,7 @@
                                 </div>
                             </div>
                         </div>
-                        @if (!($request->status == 'awaiting_approval'))
+                        @if (($request->status == 'approvaled'))
                         <div class="col-xl-12 height-card box-margin">
                             <div class="card">
                                 <div class="card-body">
@@ -179,11 +186,11 @@
                                 <div class="d-none factor documentation">( رسید پرونده )</div>
                                 <div class="d-none factor warehouse">( رسید انبار )</div>
                             </div>
-                            <div>تاریخ: <span>1400/01/02</span></div>
+                            <div>تاریخ: <span>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}</span></div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>خریدار/ نماینده خریدار: <span>علیرضا مشایخی</span></div>
-                            <div>شماره سفارش: <span>14000511</span></div>
+                            <div>خریدار/ نماینده خریدار: <span>{{ $request->creator_user->full_name }}</span></div>
+                            <div>شماره درخواست: <span>{{$request->number}}</span></div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <table class="table-borderless">

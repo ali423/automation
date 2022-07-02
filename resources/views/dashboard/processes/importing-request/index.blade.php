@@ -21,6 +21,7 @@
                             <tr>
                                 <th>ردیف</th>
                                 <th> {{ __('fields.status') }}</th>
+                                <th> {{ __('fields.importing_request.number') }}</th>
                                 <th>{{ __('fields.created_at') }}</th>
                                 <th>{{ __('fields.creator') }}</th>
                                 <th>{{ __('fields.details') }}</th>
@@ -33,6 +34,7 @@
                                 <tr>
                                     <td>{{ $i }}</td>
                                     <td>{{__('fields.importing_request.status')[$request->status]  }}</td>
+                                    <td>{{$request->number }}</td>
                                     <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}
                                     </td>
                                     @if(isset($request->creator_user))

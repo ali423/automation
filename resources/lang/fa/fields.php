@@ -71,6 +71,7 @@ return [
         ],
     ],
     'importing_request' => [
+        'number'=>'شماره درخواست',
         'status' => [
             'awaiting_approval' => 'در انتظار تایید',
             'approvaled' => 'تایید شده',

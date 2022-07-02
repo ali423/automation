@@ -15,9 +15,10 @@ class CreateWithdrawalRequestsTable extends Migration
     {
         Schema::create('withdrawal_requests', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('customer_id')->constrained();
             $table->enum('status', ['awaiting_approval', 'approvaled', 'rejected', 'expired', 'done'])->default('awaiting_approval');
-            $table->softDeletes();
             $table->double('total_price')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
