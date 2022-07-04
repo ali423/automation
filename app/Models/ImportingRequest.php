@@ -13,9 +13,6 @@ class ImportingRequest extends Model
 {
     use HasFactory,SoftDeletes,ActivityTrait,FileTrait,CommentTrait;
     protected $fillable = [
-        'commodity_id',
-        'amount',
-        'file',
         'status',
         'number',
     ];

@@ -16,6 +16,7 @@ return [
     'file' => 'فایل',
     'base_price' => 'قیمت پایه هر کیلوگرم (تومان)',
     'lastname' => 'نام خانوادگی',
+    'customer'=>'خریدار',
     'full_name' => 'نام نام خانوادگی',
     'title' => 'عنوان',
     'status' => 'وضعیت',
@@ -31,6 +32,7 @@ return [
     'creator' => 'ایجاد کننده',
     'commodities_list' => 'لیست کالا ها',
     'details' => 'جزئیات',
+    'total_price'=>' مبلغ کل فاکتور(تومان)',
     'unit' => 'واحد اندازه گیری',
     'role' => [
         'name' => 'نام نقش',
@@ -71,6 +73,16 @@ return [
         ],
     ],
     'importing_request' => [
+        'number'=>'شماره درخواست',
+        'status' => [
+            'awaiting_approval' => 'در انتظار تایید',
+            'approvaled' => 'تایید شده',
+            'rejected' => 'رد شده',
+            'expired' => 'منقضی شده',
+            'done' => 'کامل شده',
+        ]
+    ],
+    'withdrawal-request' => [
         'number'=>'شماره درخواست',
         'status' => [
             'awaiting_approval' => 'در انتظار تایید',

@@ -20,6 +20,7 @@ class CreateWithdrawingCommoditiesTable extends Migration
             $table->enum('unit',['kg','keg','twenty_liters']);
             $table->primary(['withdrawal_id','commodity_id']);
             $table->double('amount');
+            $table->double('price')->nullable();
         });
     }
 
