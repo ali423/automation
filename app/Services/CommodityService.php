@@ -5,16 +5,12 @@ namespace App\Services;
 use App\Models\Commodity;
 use Illuminate\Support\Facades\DB;
 
-class CommodityService
+class CommodityService extends BaseService
 {
-    public function __construct()
-    {
-        //
-    }
 
     public function create($data)
     {
-        $number = $this->generateUniqueNumber();
+        $number = $this->generateUniqueNumber(Commodity::class,'number');
         if ($data['type'] == 'material') {
             return Commodity::query()->create([
                 'number' => $number,
@@ -69,14 +65,5 @@ class CommodityService
                 return true;
             });
         }
-    }
-
-    protected function generateUniqueNumber()
-    {
-        $number = rand(1000000, 9999999);
-        while (Commodity::query()->where('number', $number)->exists()) {
-            $number = rand(1000000, 9999999);
-        }
-        return $number;
     }
 }

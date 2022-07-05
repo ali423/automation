@@ -15,13 +15,15 @@
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-2">لیست درخواست های ورود کالا به انبار</h4>
+                    <h4 class="card-title mb-2">لیست درخواست فروش کالا</h4>
                     <table id="datatable-buttons" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                             <tr>
                                 <th>ردیف</th>
                                 <th> {{ __('fields.status') }}</th>
-                                <th> {{ __('fields.importing_request.number') }}</th>
+                                <th> {{ __('fields.withdrawal-request.number') }}</th>
+                                <th> {{ __('fields.customer') }}</th>
+                                <th> {{ __('fields.total_price') }}</th>
                                 <th>{{ __('fields.created_at') }}</th>
                                 <th>{{ __('fields.creator') }}</th>
                                 <th>{{ __('fields.details') }}</th>
@@ -33,8 +35,10 @@
                             @foreach ($requests as $request)
                                 <tr>
                                     <td>{{ $i }}</td>
-                                    <td>{{__('fields.importing_request.status')[$request->status]  }}</td>
+                                    <td>{{__('fields.withdrawal-request.status')[$request->status]  }}</td>
                                     <td>{{$request->number }}</td>
+                                    <td>{{$request->customer->name }}</td>
+                                    <td>{{ number_format($request->total_price) }}</td>
                                     <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}
                                     </td>
                                     @if(isset($request->creator_user))
@@ -42,7 +46,7 @@
                                     @else
                                         <td>سیستم</td>
                                     @endif
-                                    <td><a href="{{ route('importing-request.show', $request) }}" class=""><i class="ti-more-alt font-24"></i></a>
+                                    <td><a href="{{ route('withdrawal-request.show', $request) }}" class=""><i class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>
                                 @php($i++)

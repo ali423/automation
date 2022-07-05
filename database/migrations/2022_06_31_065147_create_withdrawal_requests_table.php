@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateImportingRequestsTable extends Migration
+class CreateWithdrawalRequestsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,11 @@ class CreateImportingRequestsTable extends Migration
      */
     public function up()
     {
-        Schema::create('importing_requests', function (Blueprint $table) {
+        Schema::create('withdrawal_requests', function (Blueprint $table) {
             $table->id();
-            $table->enum('status', ['awaiting_approval', 'approvaled', 'rejected', 'expired', 'done'])->default('awaiting_approval');
+            $table->foreignId('customer_id')->constrained();
             $table->bigInteger('number')->unique();
+            $table->enum('status', ['awaiting_approval', 'approvaled', 'rejected', 'expired', 'done'])->default('awaiting_approval');
             $table->softDeletes();
             $table->timestamps();
         });
@@ -29,6 +30,6 @@ class CreateImportingRequestsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('importing_requests');
+        Schema::dropIfExists('withdrawal_requests');
     }
 }

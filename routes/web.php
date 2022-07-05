@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Processes\ImportingRequestController;
+use App\Http\Controllers\Processes\WithdrawalRequestController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
@@ -44,6 +45,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('warehouse',WarehouseController::class);
     Route::resource('customer',CustomerController::class);
     Route::resource('importing-request',ImportingRequestController::class);
+
+    Route::resource('withdrawal-request',WithdrawalRequestController::class);
 
     Route::get('importing-request/approval/{id}',[ImportingRequestController::class,'approvalRequest'])->name('approval.importing');
 

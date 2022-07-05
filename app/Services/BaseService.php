@@ -39,4 +39,12 @@ class BaseService
             }
         });
     }
+    protected function generateUniqueNumber($model,$field)
+    {
+        $number = rand(1000000, 9999999);
+        while ($model::query()->where('number', $field)->exists()) {
+            $number = rand(1000000, 9999999);
+        }
+        return $number;
+    }
 }

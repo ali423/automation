@@ -25,10 +25,12 @@ class ImportingRequestService extends BaseService
                 'unit' => $data['unit'][$key],
             ];
         }
+        $number = $this->generateUniqueNumber(ImportingRequest::class,'number');
         $user = auth()->user();
-        DB::transaction(function () use ($data, $commodity, $user, $file) {
+        DB::transaction(function () use ($data, $commodity, $user, $file,$number) {
             $request = ImportingRequest::query()->create([
-                'status' => 'awaiting_approval'
+                'status' => 'awaiting_approval',
+                'number'=>$number,
             ]);
             $request->commodities()->attach($commodity);
             if (isset($data['comment'])) {

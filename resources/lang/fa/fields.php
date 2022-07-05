@@ -7,6 +7,7 @@ return [
     'comp_name' => 'نام شرکت',
     'address' => 'آدرس',
     'warning_limit' => 'حد هشدار موجودی(کیلوگرم)',
+    'sell-price' => 'قیمت فروش',
     'sales_price' => 'قیمت فروش  هر کیلوگرم(تومان)',
     'purchase_price' => 'قیمت خرید هر کیلوگرم (تومان)',
     'capacity' => 'گنجایش',
@@ -16,6 +17,7 @@ return [
     'file' => 'فایل',
     'base_price' => 'قیمت پایه هر کیلوگرم (تومان)',
     'lastname' => 'نام خانوادگی',
+    'customer'=>'خریدار',
     'full_name' => 'نام نام خانوادگی',
     'title' => 'عنوان',
     'status' => 'وضعیت',
@@ -31,6 +33,7 @@ return [
     'creator' => 'ایجاد کننده',
     'commodities_list' => 'لیست کالا ها',
     'details' => 'جزئیات',
+    'total_price'=>' مبلغ کل فاکتور(تومان)',
     'unit' => 'واحد اندازه گیری',
     'role' => [
         'name' => 'نام نقش',
@@ -50,7 +53,7 @@ return [
         'units' => [
             'kg' => 'کیلوگرم',
             'keg' => 'بشکه',
-            'twenty_liters' => 'بسته بیست لیتری',
+            'twenty_liters' => 'گالن (20 لیتری)',
         ],
         'material_type' => 'ماده اولیه تشکیل دهنده',
         'material_amount' => 'مقدار درصد کیلوگرم فرآورده',
@@ -71,6 +74,17 @@ return [
         ],
     ],
     'importing_request' => [
+        'number'=>'شماره درخواست',
+        'status' => [
+            'awaiting_approval' => 'در انتظار تایید',
+            'approvaled' => 'تایید شده',
+            'rejected' => 'رد شده',
+            'expired' => 'منقضی شده',
+            'done' => 'کامل شده',
+        ]
+    ],
+    'withdrawal-request' => [
+        'number'=>'شماره درخواست',
         'status' => [
             'awaiting_approval' => 'در انتظار تایید',
             'approvaled' => 'تایید شده',
