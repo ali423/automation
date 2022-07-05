@@ -18,7 +18,7 @@
                             <div id="product_formul" class="col-lg-12">
                                 <p>اطلاعات ورود کالا به انبار</p>
                                 <div id="inputFormRow" class="form-row shadow p-4 mb-3">
-                                    <div class="form-group col-md-6">
+                                    <div class="form-group col-md-4">
                                         <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
                                         <select id="commodity_id" class="form-control" name="commodity_id[0]" required>
                                             <option value="">انتخاب کنید</option>
@@ -29,7 +29,7 @@
                                         </select>
                                         <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
                                     </div>
-                                    <div class="form-group col-md-6">
+                                    <div class="form-group col-md-4">
                                         <label for="unit"> {{ __('fields.unit') }}</label>
                                         <select id="unit" class="form-control" name="unit[0]" required>
                                             <option value="">انتخاب کنید...</option>
@@ -40,24 +40,10 @@
                                         </select>
                                         <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
                                     </div>
-                                    <div class="form-group col-md-6">
-                                        <label for="warehouse_id"> {{ __('fields.warehouse.name') }}</label>
-                                        <select id="warehouse_id" class="form-control" name="warehouse_id[0]" required>
-                                            <option value="">انتخاب کنید</option>
-                                            @foreach ($warehouses as $warehouse)
-                                                <option value="{{ $warehouse->id }}">{{ $warehouse->title }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        <div class="invalid-feedback">{{ __('fields.warehouse.name') }} را انتخاب کنید.</div>
-                                    </div>
-                                    <div class="form-group col-md-6">
-                                        <label for="amount"> {{  __('fields.commodity.amount') }}</label>
-                                        <input type="number" id="amount" min="1" name="amount[0]" class="form-control"
-                                               autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]"  required="">
-                                        <div class="invalid-feedback">
-                                            لطفاً {{  __('fields.commodity.amount') }} را وارد کنید.
-                                        </div>
+                                    <div class="form-group col-md-4">
+                                        <label for="sell-price"> {{ __('fields.sell-price') }}</label>
+                                        <input type="text" id="sell-price" name="" class="form-control" placeholder="{{ __('fields.sell-price') }}" required>
+                                        <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
                                     </div>
                                 </div>
 

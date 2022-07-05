@@ -7,6 +7,7 @@ return [
     'comp_name' => 'نام شرکت',
     'address' => 'آدرس',
     'warning_limit' => 'حد هشدار موجودی(کیلوگرم)',
+    'sell-price' => 'قیمت فروش',
     'sales_price' => 'قیمت فروش  هر کیلوگرم(تومان)',
     'purchase_price' => 'قیمت خرید هر کیلوگرم (تومان)',
     'capacity' => 'گنجایش',
@@ -52,7 +53,7 @@ return [
         'units' => [
             'kg' => 'کیلوگرم',
             'keg' => 'بشکه',
-            'twenty_liters' => 'بسته بیست لیتری',
+            'twenty_liters' => 'گالن (20 لیتری)',
         ],
         'material_type' => 'ماده اولیه تشکیل دهنده',
         'material_amount' => 'مقدار درصد کیلوگرم فرآورده',
