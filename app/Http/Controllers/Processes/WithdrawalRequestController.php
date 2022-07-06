@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Processes;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateWithdrawalRequest;
 use App\Models\Commodity;
 use App\Models\Customer;
 use App\Models\Warehouse;
@@ -53,9 +54,19 @@ class WithdrawalRequestController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(CreateWithdrawalRequest $request)
     {
-        //
+        $data = $request->only('commodity_id', 'warehouse_id', 'unit', 'amount', 'comment','price','customer_id');
+        $inventory_check = $this->service->checkInventory($data);
+        if ($inventory_check['success'] == true) {
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+            }
+            $this->service->create($data, $file ?? null);
+        } else {
+            return redirect()->back()->withErrors($inventory_check['error']);
+        }
+        return redirect(route('importing-request.index'))->with('successful', 'اطلاعات ثبت شد.');
     }
 
     /**
