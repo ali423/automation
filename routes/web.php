@@ -59,6 +59,8 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('inventory',InventoryController::class)->only('index','show');
 
+    Route::get('inventory-ajax/{id}',[CommodityController::class,'inventory'])->name('inventory');
+
 
 });
 
