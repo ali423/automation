@@ -9,38 +9,50 @@
     <div class="row">
         <div class="col-xl-12 box-margin height-card">
             <div class="card card-body">
-                <h4 class="card-title">جزئیات درخواست ورود کالا به انبار</h4>
+                <h4 class="card-title">جزئیات درخواست فروش کالا</h4>
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-row col-md-12">
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-6">
                                 <label for="exampleInputEmail111"> {{ __('fields.status') }}</label>
                                 <input type="text" name="status"
-                                    value="{{ __('fields.importing_request.status')[$request->status] }}"
-                                    class="form-control" id="exampleInputEmail111" placeholder="{{ __('fields.status') }}"
-                                    autocomplete="off" disabled>
+                                       value="{{ __('fields.withdrawal-request.status')[$request->status] }}"
+                                       class="form-control" id="exampleInputEmail111"
+                                       placeholder="{{ __('fields.status') }}"
+                                       autocomplete="off" disabled>
                             </div>
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-6">
+                                <label for="exampleInputEmail111"> {{ __('fields.customer') }}</label>
+                                <input type="text" name="status"
+                                       value="{{ $request->customer->name}}"
+                                       class="form-control" id="exampleInputEmail111"
+                                       placeholder="{{ __('fields.customer') }} }}"
+                                       autocomplete="off" disabled>
+                            </div>
+                        </div>
+                        <div class="form-row col-md-12">
+                            <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.created_at') }}</label>
                                 <input type="text" name="name"
-                                    value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}"
-                                    class="form-control" id="exampleInputEmail111"
-                                    placeholder="{{ __('fields.created_at') }}" autocomplete="off" disabled>
+                                       value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}"
+                                       class="form-control" id="exampleInputEmail111"
+                                       placeholder="{{ __('fields.created_at') }}" autocomplete="off" disabled>
                             </div>
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
                                 <input type="text" name="name"
-                                    @if (isset($request->creator_user)) value="{{ $request->creator_user->full_name }}"
+                                       @if (isset($request->creator_user)) value="{{ $request->creator_user->full_name }}"
                                        @else
                                        value="سیستم" @endif
-                                    class="form-control" id="exampleInputEmail111"
-                                    placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
+                                       class="form-control" id="exampleInputEmail111"
+                                       placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
                             </div>
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.importing_request.number') }}</label>
                                 <input type="text" name="status"
                                        value="{{ $request->number}}"
-                                       class="form-control" id="exampleInputEmail111" placeholder="{{ __('fields.importing_request.number') }} }}"
+                                       class="form-control" id="exampleInputEmail111"
+                                       placeholder="{{ __('fields.importing_request.number') }} }}"
                                        autocomplete="off" disabled>
                             </div>
                         </div>
@@ -51,35 +63,23 @@
                                     <select id="commodity_id" class="form-control" name="commodity_id[0]" disabled>
                                         <option value="{{ $commodity->id }}">{{ $commodity->title }}</option>
                                     </select>
-                                    <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
+                                    <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.
+                                    </div>
                                 </div>
                                 <div class="form-group col-md-6">
                                     <label for="unit"> {{ __('fields.unit') }}</label>
                                     <input type="text"
-                                        value="{{ __('fields.commodity.units')[$commodity->pivot->unit] }}"
-                                        id="unit" name="unit" class="form-control" disabled>
-                                    <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label for="warehouse_id"> {{ __('fields.warehouse.name') }}</label>
-                                    <select id="warehouse_id" class="form-control" name="warehouse_id[0]" disabled>
-                                        @foreach ($warehouses as $warehouse)
-                                            @if ($warehouse->id == $commodity->pivot->warehouses_id)
-                                                <option value="{{ $warehouse->id }}">{{ $warehouse->title }}
-                                                </option>
-                                            @endif
-                                        @endforeach
-                                    </select>
-                                    <div class="invalid-feedback">{{ __('fields.warehouse.name') }} را انتخاب کنید.</div>
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label for="amount"> {{ __('fields.commodity.amount') }}</label>
-                                    <input type="number" value="{{ $commodity->pivot->amount }}" id="amount"
-                                        min="1" name="amount[0]" class="form-control" autocomplete="off"
-                                        placeholder="{{ __('fields.commodity.amount') }}" pattern="[0-9 .]" disabled>
-                                    <div class="invalid-feedback">
-                                        لطفاً {{ __('fields.commodity.amount') }} را وارد کنید.
+                                           value="{{ __('fields.commodity.units')[$commodity->pivot->unit] }}"
+                                           id="unit" name="unit" class="form-control" disabled>
+                                    <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.
                                     </div>
+                                </div>
+                                <div class="form-group col-md-12">
+                                    @foreach ($commodity->withdrawal_amount as $withdrawal_amount)
+                                        <p> مقدار {{ number_format($withdrawal_amount['amount']) .' '. __('fields.commodity.units')[$withdrawal_amount['unit']] }} از
+                                            انبار {{$withdrawal_amount['warehouse']['title']}}</p>
+                                        <br>
+                                    @endforeach
                                 </div>
                             </div>
                         @endforeach
@@ -87,7 +87,8 @@
                             <div class="form-group mb-20">
                                 <label for="comment"> {{ $comment->user->full_name }} در تاریخ :
                                     {{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d H:i:s', strtotime($comment->created_at)) }}</label>
-                                <textarea class="form-control rounded-0 form-control-md" name="comment" id="comment" rows="6" disabled>{{ $comment->body }}</textarea>
+                                <textarea class="form-control rounded-0 form-control-md" name="comment" id="comment"
+                                          rows="6" disabled>{{ $comment->body }}</textarea>
                             </div>
                         @endforeach
                         <div class="col-xl-12 height-card box-margin">
@@ -98,8 +99,8 @@
                                             <h5 class="card-title">فایل ضمیمه شده</h5>
                                         </div>
                                     </div>
-                                    @foreach ($request->files as $file)
-                                        <!-- Single Download File -->
+                                @foreach ($request->files as $file)
+                                    <!-- Single Download File -->
                                         <div
                                             class="widget-download-file d-flex align-items-center justify-content-between mb-4">
                                             <div class="d-flex align-items-center mr-3">
@@ -114,8 +115,8 @@
                                                 </div>
                                             </div>
                                             <a href="{{ asset(str_replace('public', 'storage', $file->source)) }}"
-                                                download="proposed_file_name"
-                                                class="download-link badge badge-primary badge-pill p-2 font-16"><i
+                                               download="proposed_file_name"
+                                               class="download-link badge badge-primary badge-pill p-2 font-16"><i
                                                     class="ti-download"></i></a>
                                         </div>
                                     @endforeach
@@ -124,47 +125,43 @@
                             </div>
                         </div>
                         @if (($request->status == 'approvaled'))
-                        <div class="col-xl-12 height-card box-margin">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="bg-transparent d-flex align-items-center justify-content-between">
-                                        <div class="widgets-card-title">
-                                            <h5 class="card-title">چاپ رسید کالای ورودی</h5>
+                            <div class="col-xl-12 height-card box-margin">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="bg-transparent d-flex align-items-center justify-content-between">
+                                            <div class="widgets-card-title">
+                                                <h5 class="card-title">چاپ رسید کالای ورودی</h5>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="d-md-flex justify-content-center">
-                                        <a href="#" class="factor customerbtn btn btn-secondary m-1"><i class="ti-printer font-18"></i> نسخه خریدار</a>
-                                        <a href="#" class="factor documentationbtn btn btn-secondary m-1"><i class="ti-printer font-18"></i> نسخه پرونده</a>
-                                        <a href="#" class="factor warehousebtn btn btn-secondary m-1"><i class="ti-printer font-18"></i> نسخه انبار</a>
+                                        <div class="d-md-flex justify-content-center">
+                                            <a href="#" class="factor customerbtn btn btn-secondary m-1"><i
+                                                    class="ti-printer font-18"></i> نسخه خریدار</a>
+                                            <a href="#" class="factor documentationbtn btn btn-secondary m-1"><i
+                                                    class="ti-printer font-18"></i> نسخه پرونده</a>
+                                            <a href="#" class="factor warehousebtn btn btn-secondary m-1"><i
+                                                    class="ti-printer font-18"></i> نسخه انبار</a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
                         @endif
                         <div class="row">
                             <div class="col-md-6 mb-1 mb-md-0">
-                                <a href="{{ route('importing-request.edit', $request) }}"
-                                    class="btn btn-primary">ویرایش</a>
-                                <form method="post" action="{{ route('importing-request.destroy', $request) }}"
-                                    class="d-inline w-50">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger"
-                                        onclick="return confirm('آیا از حذف این درخواست مطمئن هستید؟');">حذف</button>
-                                </form>
+                                @if ($request->status == 'awaiting_approval')
+                                    <a href="{{ route('approval.withdrawal', $request) }}"
+                                       class="btn btn-primary px-1">تایید درخواست</a>
+                                @endif
                             </div>
                             <div class="col-md-6 text-md-right">
                                 @if ($request->status == 'awaiting_approval')
-                                    <a href="{{ route('approval.importing', $request) }}"
-                                        class="btn btn-primary px-1">تایید درخواست</a>
-                                    <a href="{{ route('reject.importing', $request) }}" class="btn btn-danger px-1">رد
+                                    <a href="{{ route('reject.withdrawal', $request) }}" class="btn btn-danger px-1">رد
                                         درخواست</a>
                                 @endif
                                 <a href="{{ route('activity.index', [
                                     'object_id' => $request->id,
                                     'object_type' => class_basename($request),
                                 ]) }}"
-                                    class="btn btn-dfprimary px-1 px-md-4 m-md-0">تاریخچه تغییرات</a>
+                                   class="btn btn-dfprimary px-1 px-md-4 m-md-0">تاریخچه تغییرات</a>
                             </div>
                         </div>
                     </div>
@@ -177,7 +174,7 @@
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <img src="{{ asset('img/logo/darklogo.png') }}" class="logo" />
+                            <img src="{{ asset('img/logo/darklogo.png') }}" class="logo"/>
                             <div class="text-center">
                                 <h4>
                                     ورود کالا به انبار
@@ -186,7 +183,9 @@
                                 <div class="d-none factor documentation">( رسید پرونده )</div>
                                 <div class="d-none factor warehouse">( رسید انبار )</div>
                             </div>
-                            <div>تاریخ: <span>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}</span></div>
+                            <div>تاریخ:
+                                <span>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}</span>
+                            </div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div>خریدار/ نماینده خریدار: <span>{{ $request->creator_user->full_name }}</span></div>
@@ -209,19 +208,25 @@
                                     <th scope="col">توضیحات</th>
                                 </tr>
                                 @foreach ($request->commodities as $commodity)
-                                <tr>
-                                    <th scope="row"></th>
-                                    <td>{{ $commodity->title }}</td>
-                                    <td>{{ $warehouse->title }}</td>
-                                    <td>{{ $commodity->pivot->amount }} {{ __('fields.commodity.units')[$commodity->pivot->unit] }}</td>
-                                    <td></td>
-                                </tr>
+                                    @if(isset($commodity->withdrawal_amount))
+                                        @foreach($commodity->withdrawal_amount as $value)
+                                            <tr>
+                                                <th scope="row"></th>
+                                                <td>{{ $commodity->title }}</td>
+                                                <td>{{ $value['warehouse']->title }}</td>
+                                                <td>{{ $value['amount'] }} {{ __('fields.commodity.units')[$commodity->pivot->unit] }}</td>
+                                                <td></td>
+                                            </tr>
+                                        @endforeach
+                                    @endif
                                 @endforeach
                             </table>
                         </div>
                         <div class="mb-5">
-                            اینجانب <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000">&nbsp;</span>
-                            راننده خودرو به شماره پلاک <div class="pelak" style="width: 100px">&nbsp;</div>
+                            اینجانب <span
+                                style="display:inline-block;width: 100px;border-bottom:1px dashed #000">&nbsp;</span>
+                            راننده خودرو به شماره پلاک
+                            <div class="pelak" style="width: 100px">&nbsp;</div>
                             <div class="pelak">&nbsp;&nbsp;</div>
                             شماره تماس <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000">&nbsp;</span>
                             محموله فوق را تحویل گرفتم.

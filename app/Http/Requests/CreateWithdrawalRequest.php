@@ -23,7 +23,7 @@ class CreateWithdrawalRequest extends FormRequest
      */
     public function rules()
     {
-        $rules= [
+        return [
             'customer_id'=>['required','exists:customers,id'],
             'commodity_id'=>['required','array','min:1'],
             'unit'=>['required','array','min:1'],

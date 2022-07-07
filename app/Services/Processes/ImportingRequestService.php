@@ -90,7 +90,7 @@ class ImportingRequestService extends BaseService
                 $warehouses[$warehouse->id] = $warehouse;
                 if ($warehouse->commodities->contains($value->id)) {
                     $exits_commodity = $warehouse->commodities->find($value->id);
-                    $new_amount = $exits_commodity->pivot->commodity_amount + $commodity_amount;
+                    $new_amount = round($exits_commodity->pivot->commodity_amount + $commodity_amount,2);
                     $warehouse->commodities()->updateExistingPivot($value->id, ['commodity_amount' => $new_amount], false);
                 } else {
                     $warehouse->commodities()->attach([
@@ -169,17 +169,6 @@ class ImportingRequestService extends BaseService
            'status'=>'rejected',
         ]);
     }
-    public function checkExpiredRequest($importing_request){
-        if (Carbon::now()->diffInDays($importing_request->created_at) > 7){
-            $importing_request->update([
-                'status'=>'expired',
-            ]);
-            $data['success'] = false;
-            $data['error'] ='درخواست منقضی شده است';
-            return $data;
-        }
-        $data['success'] = true;
-        return $data;
-    }
+
 
 }

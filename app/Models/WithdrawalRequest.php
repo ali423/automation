@@ -20,9 +20,9 @@ class WithdrawalRequest extends Model
     public function commodities()
     {
         return $this->belongsToMany(Commodity::class, 'withdrawing_commodities', 'withdrawal_id', 'commodity_id')
-            ->withPivot('amount','warehouses_id','unit','price');
+            ->withPivot('amount','unit','price');
     }
-    public function role()
+    public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id');
     }

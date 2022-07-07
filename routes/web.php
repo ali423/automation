@@ -52,6 +52,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('importing-request/reject/{id}',[ImportingRequestController::class,'rejectRequest'])->name('reject.importing');
 
+    Route::get('withdrawal-request/approval/{id}',[WithdrawalRequestController::class,'approvalRequest'])->name('approval.withdrawal');
+
+    Route::get('withdrawal-request/reject/{id}',[WithdrawalRequestController::class,'rejectRequest'])->name('reject.withdrawal');
+
     Route::get('inventory/edit',[InventoryController::class,'edit'])->name('inventory.edit');
 
     Route::patch('inventory/update',[InventoryController::class,'update'])->name('inventory.update');
