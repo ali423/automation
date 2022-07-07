@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Warehouse;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class BaseService
@@ -32,6 +33,10 @@ class BaseService
     public function recalculateWarehousesEmptySpace($warehouses){
         DB::transaction(function () use ($warehouses) {
             foreach ($warehouses as $warehouse) {
+                $zero_commodities=$warehouse->commodities()->where('commodity_amount',0)->get()->toArray();
+                if (count($zero_commodities)>0){
+                    $warehouse->commodities()->detach(array_column($zero_commodities,'id'));
+                }
                 $occupied_space = array_sum(array_column(array_column($warehouse->commodities()->get()->toArray(), 'pivot'), 'commodity_amount'));
                 $warehouse->update([
                     'empty_space' => $warehouse->capacity - $occupied_space,
@@ -46,5 +51,17 @@ class BaseService
             $number = rand(1000000, 9999999);
         }
         return $number;
+    }
+    public function checkExpiredRequest($importing_request){
+        if (Carbon::now()->diffInDays($importing_request->created_at) > 7){
+            $importing_request->update([
+                'status'=>'expired',
+            ]);
+            $data['success'] = false;
+            $data['error'] ='درخواست منقضی شده است';
+            return $data;
+        }
+        $data['success'] = true;
+        return $data;
     }
 }
