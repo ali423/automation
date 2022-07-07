@@ -17,7 +17,7 @@
                               class="needs-validation forms-sample" enctype="multipart/form-data" novalidate="">
                             @csrf
                             <div id="product_formul" class="col-lg-12">
-                                <p>اطلاعات ورود کالا به انبار</p>
+                                <p>اطلاعات کالا</p>
                                 <div id="inputFormRow" class="form-row shadow p-4 mb-3">
                                     <div class="form-group col-md-4">
                                         <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
@@ -32,7 +32,7 @@
                                             کنید.
                                         </div>
                                     </div>
-                                    <div class="form-group col-md-4">
+                                    <div class="form-group col-md-2">
                                         <label for="unit"> {{ __('fields.unit') }}</label>
                                         <select id="unit" class="form-control" name="unit[0]" required>
                                             <option value="">انتخاب کنید...</option>
@@ -43,9 +43,15 @@
                                         </select>
                                         <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
                                     </div>
+                                    <div class="form-group col-md-2">
+                                        <label for="total">مجموع</label>
+                                        <input type="number" value="0" id="total-amount" name="totalamount[0]" class="form-control"
+                                        placeholder="{{ __('fields.sell-price') }}" required disabled>
+                                    </div>
+
                                     <div class="form-group col-md-4">
                                         <label for="sell-price"> {{ __('fields.sell-price') }}</label>
-                                        <input type="text" id="sell-price" name="" class="form-control"
+                                        <input type="text" id="sell-price" name="sell-price[0]" class="form-control"
                                                placeholder="{{ __('fields.sell-price') }}" required>
                                         <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
                                     </div>
@@ -91,13 +97,13 @@
     <script type="text/javascript">
         // add row
         $("#addRow").click(function () {
-            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-6"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div> <div class="form-group col-md-6"> <label for="unit"> {{ __('fields.unit') }}</label> <select id="unit" class="form-control" name="unit[]" required> <option value="">انتخاب کنید...</option>@foreach( __('fields.commodity.units') as $key=>$value)<option value="{{$key}}">{{$value}}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div> </div> <div class="form-group col-md-6"> <label for="warehouse_id"> {{ __('fields.warehouse.name') }}</label> <select id="warehouse_id" class="form-control" name="warehouse_id[]" required> <option value="">انتخاب کنید</option>@foreach ($warehouses as $warehouse)<option value="{{ $warehouse->id }}">{{ $warehouse->title }}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.warehouse.name') }} را انتخاب کنید.</div> </div> <div class="form-group col-md-6"> <label for="amount"> {{  __('fields.commodity.amount') }}</label> <input type="number" min="1" name="amount[]" class="form-control"id="amount" autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]"  required=""> <div class="invalid-feedback">لطفاً {{  __('fields.commodity.amount') }} را وارد کنید. </div></div> <i id="removeRow" type="submit" class="ti-close"></i></div></div>';
+            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-4"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div><div class="form-group col-md-2"><label for="unit"> {{ __('fields.unit') }}</label><select id="unit" class="form-control" name="unit[0]" required><option value="">انتخاب کنید...</option>@foreach( __('fields.commodity.units') as $key=>$value)<option value="{{$key}}">{{$value}}</option>@endforeach</select><div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div></div><div class="form-group col-md-2"><label for="total">مجموع</label><input type="number" value="0" id="total-amount" name="totalamount[0]" class="form-control"placeholder="{{ __('fields.sell-price') }}" required disabled></div><div class="form-group col-md-4"><label for="sell-price"> {{ __('fields.sell-price') }}</label><input type="text" id="sell-price" name="sell-price[0]" class="form-control"placeholder="{{ __('fields.sell-price') }}" required><div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div></div><i id="removeRow" type="submit" class="ti-close"></i></div></div>';
             $('#newRow').append(html);
             document.querySelectorAll('#inputFormRow').forEach((element, index) => {
                 element.querySelector('#commodity_id').setAttribute('name', 'commodity_id[' + index + ']');
+                element.querySelector('#sell-price').setAttribute('name', 'sell-price[' + index + ']');
                 element.querySelector('#unit').setAttribute('name', 'unit[' + index + ']');
-                element.querySelector('#warehouse_id').setAttribute('name', 'warehouse_id[' + index + ']');
-                element.querySelector('#amount').setAttribute('name', 'amount[' + index + ']');
+                element.querySelector('#total-amount').setAttribute('name', 'totalamount[' + index + ']');
             });
         });
 
@@ -106,35 +112,47 @@
             $(this).closest('#inputFormRow').remove();
             document.querySelectorAll('#inputFormRow').forEach((element, index) => {
                 element.querySelector('#commodity_id').setAttribute('name', 'commodity_id[' + index + ']');
+                element.querySelector('#sell-price').setAttribute('name', 'sell-price[' + index + ']');
                 element.querySelector('#unit').setAttribute('name', 'unit[' + index + ']');
-                element.querySelector('#warehouse_id').setAttribute('name', 'warehouse_id[' + index + ']');
-                element.querySelector('#amount').setAttribute('name', 'amount[' + index + ']');
+                element.querySelector('#total-amount').setAttribute('name', 'totalamount[' + index + ']');
             });
         });
     </script>
 
     <script type='text/javascript'>
         $(document).ready(function () {
-
-            $('#commodity_id').change(function () {
-
-                // Department id
-                var id = $(this).val();
-
-                // AJAX request
-                $.ajax({
-                    url: '/inventory-ajax/' + id,
-                    type: 'get',
-                    dataType: 'json',
-                    success: function (response) {
-                        var price = response['price'];
-                        var warehouses = response['warehouses'];
-                        // alert(warehouses['0']['title']);
-                        // alert(warehouses['0']['id']);
-                        // alert(warehouses['0']['amount']);
-                    }
-                });
-            });
+            let commodities = document.querySelectorAll('#commodity_id');
+            changecom(commodities);
+            function changecom(commodities){
+                commodities.forEach(element=>{
+                    // console.log(element);
+                    element.addEventListener('change',function () {
+                        // Department id
+                        var id = $(this).val();
+                        let thisForm = this.closest('#inputFormRow');
+                        thisForm.querySelectorAll('.wares').forEach(element => {
+                            element.remove();
+                        });
+                        // AJAX request
+                        $.ajax({
+                            url: '/inventory-ajax/' + id,
+                            type: 'get',
+                            dataType: 'json',
+                            success: function (response) {
+                                var price = response['price'];
+                                var warehouses = response['warehouses'];
+                                // alert(warehouses['0']['title']);
+                                // alert(warehouses['0']['id']);
+                                // alert(warehouses['0']['amount']);
+                                warehouses.forEach((ware,index)=>{
+                                    var wareTemplate='<div class="input-group mb-3 wares"><div class="input-group-prepend"><span class="input-group-text" id="'+ware['title']+'">'+ware['title']+'</span></div><input type="number" class="form-control" min="0" max="'+ware['amount']+'" name="'+ware['id']+'"><div class="input-group-append"><span class="input-group-text" id="ware-amount">'+'max: '+ware['amount']+'</span></div></div>';
+                                    thisForm.insertAdjacentHTML('beforeend', wareTemplate);
+                                })
+                            }
+                        });
+                    });
+                })
+            }
         });
     </script>
 
