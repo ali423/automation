@@ -188,7 +188,7 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>خریدار/ نماینده خریدار: <span>{{ $request->creator_user->full_name }}</span></div>
+                            <div>خریدار/ نماینده خریدار: <span>{{ $request->customer->name }}</span></div>
                             <div>شماره درخواست: <span>{{$request->number}}</span></div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">

@@ -21,10 +21,11 @@ class WithdrawalRequestService extends BaseService
                 $amount = $data['amount'][$commodity->id][$warehouse->id];
                 $unit = $data['unit'][$key];
                 $commodity_amount = $this->calculateCommodityAmount($amount, $unit);
-                $exits_amount = $commodity->warehouses->find($warehouse->id)->pivot->commodity_amount ?? null;
-                if ($exits_amount == null || $exits_amount < $commodity_amount) {
+                $exits_amount = $commodity->warehouses->find($warehouse->id)->pivot->commodity_amount ?? 0;
+                if ( $exits_amount < $commodity_amount) {
                     $data['success'] = false;
-                    $data['error'] = 'مقدار انتخابی برای کالای ' . $commodity->title . 'به اندازه کافی در انبار ' . $warehouse->title . 'وجود ندارد ';
+                    $data['error'] = ' مقدار انتخابی برای کالای ' . $commodity->title . ' به اندازه کافی در انبار ' . $warehouse->title . ' وجود ندارد ';
+                    return $data;
                 }
             }
         }
@@ -65,10 +66,12 @@ class WithdrawalRequestService extends BaseService
     public function checkInventoryApproval(WithdrawalRequest $request){
         foreach ($request->commodities as $commodity){
             foreach ($commodity->withdrawal_amount as $value){
+                $exits_inventory = $value['warehouse']->commodities->find($commodity->id)->pivot->commodity_amount ?? 0;
                 $amount=$this->calculateCommodityAmount($value['amount'],$value['unit']);
-                if ($amount > $value['warehouse']->empty_space){
+                if ($amount > $exits_inventory){
                     $data['success'] = false;
-                    $data['error'] = 'مقدار انتخابی برای کالای ' . $commodity->title . 'به اندازه کافی در انبار ' . $value['title'] . 'وجود ندارد ';
+                    $data['error'] = ' مقدار انتخابی برای کالای ' . $commodity->title . ' به اندازه کافی در انبار ' . $value['warehouse']['title'] . 'وجود ندارد ';
+                    return $data;
                 }
             }
         }
