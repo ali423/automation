@@ -2,7 +2,7 @@
 @section('title', 'داشبورد')
 
 @section('page_styles')
-    <link rel="stylesheet" href="{{ asset('css/imexport-print.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/imfactor-print.css') }}">
 @endsection
 
 @section('content')
@@ -173,68 +173,149 @@
                 {{-- <h4 class="card-title"></h4> --}}
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <img src="{{ asset('img/logo/darklogo.png') }}" class="logo"/>
-                            <div class="text-center">
-                                <h4>
-                                    ورود کالا به انبار
-                                </h4>
-                                <div class="d-none factor customer">( رسید خریدار )</div>
-                                <div class="d-none factor documentation">( رسید پرونده )</div>
-                                <div class="d-none factor warehouse">( رسید انبار )</div>
-                            </div>
-                            <div>تاریخ:
-                                <span>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}</span>
+                        <div class="d-flex justify-content-between">
+                            <div class="logo"><img src="{{ asset('img/logo/darklogo.png') }}" /></div>
+                            <div><h4>صورتحساب فروش کالا و خدمات</h4></div>
+                            <div>
+                                <p>شماره فاکتور: <span>12345555559</span></p>
+                                <p>تاریخ: <span>1399/9/9</span></p>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>خریدار/ نماینده خریدار: <span>{{ $request->customer->name }}</span></div>
-                            <div>شماره درخواست: <span>{{$request->number}}</span></div>
+                        <div class="d-flex justify-content-center border">
+                            <div class="text-dark p-1">مشخصات فروشنده</div>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <table class="table-borderless">
-                                <colgroup>
-                                    <col span="1" style="width: 5%;">
-                                    <col span="1" style="width: 30%;">
-                                    <col span="1" style="width: 25%;">
-                                    <col span="1" style="width: 15%;">
-                                    <col span="1" style="width: 25%;">
-                                </colgroup>
-                                <tr class="table-header">
-                                    <th scope="col">ردیف</th>
-                                    <th scope="col">کالای ورودی</th>
-                                    <th scope="col">انبار</th>
-                                    <th scope="col">تعداد / مقدار</th>
-                                    <th scope="col">توضیحات</th>
-                                </tr>
-                                @foreach ($request->commodities as $commodity)
-                                    @if(isset($commodity->withdrawal_amount))
-                                        @foreach($commodity->withdrawal_amount as $value)
-                                            <tr>
-                                                <th scope="row"></th>
-                                                <td>{{ $commodity->title }}</td>
-                                                <td>{{ $value['warehouse']->title }}</td>
-                                                <td>{{ $value['amount'] }} {{ __('fields.commodity.units')[$commodity->pivot->unit] }}</td>
-                                                <td></td>
-                                            </tr>
-                                        @endforeach
-                                    @endif
-                                @endforeach
-                            </table>
+                        <table class="table sellerspecs">
+                            <tbody>
+                              <tr>
+                                <td class="text-left">نام فروشنده: <span> </span></td>
+                                <td></td>
+                                <td></td>
+                                <td>شماره اقتصادی:</td>
+                                <td></td>
+                                <td>شماره ثبت/ شماره ملی:</td>
+                                <td></td>
+                              </tr>
+                              <tr>
+                                <td class="text-left">استان: <span> </span></td>
+                                <td>شهرستان:</td>
+                                <td></td>
+                                <td>کدپستی:</td>
+                                <td></td>
+                                <td>شهر:</td>
+                                <td></td>
+                              </tr>
+                              <tr>
+                                <td class="text-left">آدرس: <span> </span></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>تلفن:</td>
+                                <td></td>
+                              </tr>
+                            </tbody>
+                        </table>
+                        <div class="d-flex justify-content-center border">
+                            <div class="text-dark p-1">مشخصات خریدار</div>
                         </div>
-                        <div class="mb-5">
-                            اینجانب <span
-                                style="display:inline-block;width: 100px;border-bottom:1px dashed #000">&nbsp;</span>
-                            راننده خودرو به شماره پلاک
-                            <div class="pelak" style="width: 100px">&nbsp;</div>
-                            <div class="pelak">&nbsp;&nbsp;</div>
-                            شماره تماس <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000">&nbsp;</span>
-                            محموله فوق را تحویل گرفتم.
-                        </div>
-                        <div class="d-flex justify-content-around align-items-center mb-3">
-                            <h6>امضاء تحویل گیرنده کالا</h6>
-                            <h6>امضاء متصدی شرکت</h6>
-                        </div>
+                        <table class="table customerspecs">
+                            <tbody>
+                              <tr>
+                                <td class="text-left">نام فروشنده: <span> </span></td>
+                                <td></td>
+                                <td></td>
+                                <td>شماره اقتصادی:</td>
+                                <td></td>
+                                <td>شماره ثبت/ شماره ملی:</td>
+                                <td></td>
+                              </tr>
+                              <tr>
+                                <td class="text-left">استان: <span> </span></td>
+                                <td>شهرستان:</td>
+                                <td></td>
+                                <td>کدپستی:</td>
+                                <td></td>
+                                <td>شهر:</td>
+                                <td></td>
+                              </tr>
+                              <tr>
+                                <td class="text-left">آدرس: <span> </span></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>تلفن:</td>
+                                <td></td>
+                              </tr>
+                            </tbody>
+                        </table>
+
+                        <table class="factortable table table-bordered text-center">
+                            <thead>
+                              <tr class="table-secondary">
+                                <th scope="col">ردیف</th>
+                                <th scope="col">کد کالا</th>
+                                <th scope="col">نام کالا</th>
+                                <th scope="col">تعداد / مقدار</th>
+                                <th scope="col">واحد</th>
+                                <th scope="col">فی</th>
+                                <th scope="col">مبلغ کل</th>
+                                <th scope="col">تخفیف</th>
+                                <th scope="col">مبلغ کل پس از تخفیف</th>
+                                <th scope="col">مجموع مالیات</th>
+                                <th scope="col">جمع کل</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <th scope="row">1</th>
+                                <td>Mark</td>
+                                <td>Otto</td>
+                                <td>@mdo</td>
+                                <td>Mark</td>
+                                <td>Otto</td>
+                                <td>@mdo</td>
+                                <td>Mark</td>
+                                <td>Otto</td>
+                                <td>@mdo</td>
+                                <td>@mdo</td>
+                              </tr>
+                              <tr>
+                                <td colspan="3" class="text-right">جمع</td>
+                                <td>45</td>
+                                <td></td>
+                                <td></td>
+                                <td>1</td>
+                                <td>2</td>
+                                <td>3</td>
+                                <td>4</td>
+                                <td>5</td>
+                              </tr>
+                              <tr>
+                                <td colspan="5" rowspan="3" class="text-left" style="vertical-align: top">
+                                    <div class="d-flex justify-content-between">
+                                        <span>شرایط و نحوه تسویه: </span>
+                                        <span>نقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
+                                        <span>غیرنقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
+                                    </div>
+                                    <p>توضیحات:</p>
+                                </td>
+                                <td colspan="5" class="text-right">مبلغ هزینه</td>
+                                <td></td>
+                              </tr>
+                              <tr>
+                                <td colspan="5" class="text-right">جمع کل</td>
+                                <td></td>
+                              </tr>
+                              <tr>
+                                <td colspan="6" class="text-left">جمع کل به حروف:</td>
+                              </tr>
+                              <tr>
+                                <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
+                                <td colspan="6" class="text-left">مهر و امضای خریدار:</td>
+                              </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

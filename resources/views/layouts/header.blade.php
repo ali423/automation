@@ -65,7 +65,7 @@
             </div>
 
             <div class="quick-action p-3">
-                <h4 class="card-title font-16 text-center">اقدامات سریع </h4>
+                <h4 class="card-title font-16 text-center">نمایش داده ها بر اساس</h4>
                 <hr>
                 <div class="row">
                     <!-- Single Action -->
@@ -76,7 +76,7 @@
                             </div>
                             <div class="text">
                                 <a href="#">
-                                    <h5>سفارشات</h5>
+                                    <h5>کیلوگرم</h5>
                                 </a>
                             </div>
                         </div>
@@ -86,11 +86,11 @@
                     <div class="col-6">
                         <div class="action-area">
                             <div class="icon">
-                                <i class="fa fa-wifi"></i>
+                                <i class="ti-server"></i>
                             </div>
                             <div class="text">
                                 <a href="#">
-                                    <h5>آپلودها</h5>
+                                    <h5>بشکه</h5>
                                 </a>
                             </div>
                         </div>
@@ -100,11 +100,11 @@
                     <div class="col-6">
                         <div class="action-area">
                             <div class="icon">
-                                <i class="fa fa-shopping-cart"></i>
+                                <i class="ti-bag"></i>
                             </div>
                             <div class="text">
                                 <a href="#">
-                                    <h5> محصولات </h5>
+                                    <h5>گالن (20 لیتری)</h5>
                                 </a>
                             </div>
                         </div>

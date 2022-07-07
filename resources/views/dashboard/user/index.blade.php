@@ -16,7 +16,7 @@
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title mb-2">لیست کاربران</h4>
-                    <table id="datatable-buttons" class="table table-striped dt-responsive nowrap w-100">
+                    <table id="datatable-buttons-users" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                             <tr>
                                 <th>ردیف</th>
@@ -35,12 +35,12 @@
                                 <tr>
                                     <td>{{ $i }}</td>
                                     <td>{{ $user->full_name }}</td>
-                                    <td>{{__('fields.user.status')[$user->status]  }}</td>
+                                    <td>{{ __('fields.user.status')[$user->status] }}</td>
                                     <td>{{ $user->role->name }}</td>
                                     <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($user->created_at)) }}
                                     </td>
-                                    @if(isset($user->creator_user))
-                                    <td>{{ $user->creator_user->name.' '. $user->creator_user->lastname }}</td>
+                                    @if (isset($user->creator_user))
+                                        <td>{{ $user->creator_user->name . ' ' . $user->creator_user->lastname }}</td>
                                     @else
                                         <td>سیستم</td>
                                     @endif
@@ -71,6 +71,105 @@
     <script src="{{ asset('js/default-assets/buttons.html5.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/button.print.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/dataTables.sorting.persian.js') }}"></script>
-    <script src="{{ asset('js/default-assets/customDataTable.js') }}"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            pdfMake.fonts = {
+                Roboto: {
+                    normal: 'Roboto-Regular.ttf',
+                    bold: 'Roboto-Medium.ttf',
+                    italics: 'Roboto-Italic.ttf',
+                    bolditalics: 'Roboto-MediumItalic.ttf'
+                },
+                IRANSansWeb: {
+                    normal: "IRANSansWeb400.ttf",
+                    bold: "IRANSansWeb400.ttf",
+                    italics: "IRANSansWeb400.ttf",
+                    bolditalics: "IRANSansWeb400.ttf"
+                }
+            };
+
+            $('#datatable-buttons-users').DataTable({
+                dom: 'Bfrtip',
+                buttons: [{
+                        extend: 'copy',
+                        text: "کپی",
+                        className: 'btn btn-outline-primary',
+                        exportOptions: {
+                            columns: [5, 4, 3, 2, 1, 0],
+                            modifier: {
+                                page: 'current'
+                            },
+                            orthogonal: "rtlexport"
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        text: 'pdf',
+                        className: 'btn btn-outline-primary',
+                        exportOptions: {
+                            columns: [5, 4, 3, 2, 1, 0],
+                            modifier: {
+                                page: 'current'
+                            },
+                            orthogonal: "rtlexport"
+                        },
+                        customize: function(doc) {
+                            doc.defaultStyle.font = "IRANSansWeb";
+                            doc.content[1].table.widths = ['20%','20%', '20%', '20%', '20%', '20%'];
+                            doc.styles.tableBodyEven.alignment = 'center';
+                            doc.styles.tableBodyOdd.alignment = 'center';
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        className: 'btn btn-outline-primary',
+                        exportOptions: {
+                            columns: [5, 4, 3, 2, 1, 0],
+                            modifier: {
+                                page: 'current'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        className: 'btn btn-outline-primary',
+                        exportOptions: {
+                            columns: [5, 4, 3, 2, 1, 0],
+                            modifier: {
+                                page: 'current'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        text: "پرینت",
+                        className: 'btn btn-outline-primary',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5],
+                            modifier: {
+                                page: 'current'
+                            },
+                            orthogonal: "rtlexport"
+                        }
+                    }
+                ],
+                columnDefs: [{
+                    targets: '_all',
+                    render: function(data, type, row) {
+                        if (type === 'rtlexport') {
+                            return data.split(' ').reverse().join(' ');
+                        }
+                        return data;
+                    }
+                }],
+        "language": {
+            "paginate": {
+                "previous": "قبلی",
+                "next": "بعدی"
+            }
+        }
+            });
+        });
+    </script>
 
 @endsection
