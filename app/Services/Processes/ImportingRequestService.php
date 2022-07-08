@@ -25,12 +25,12 @@ class ImportingRequestService extends BaseService
                 'unit' => $data['unit'][$key],
             ];
         }
-        $number = $this->generateUniqueNumber(ImportingRequest::class,'number');
+        $number = $this->generateUniqueNumber(ImportingRequest::class, 'number');
         $user = auth()->user();
-        DB::transaction(function () use ($data, $commodity, $user, $file,$number) {
+        DB::transaction(function () use ($data, $commodity, $user, $file, $number) {
             $request = ImportingRequest::query()->create([
                 'status' => 'awaiting_approval',
-                'number'=>$number,
+                'number' => $number,
             ]);
             $request->commodities()->attach($commodity);
             if (isset($data['comment'])) {
@@ -85,12 +85,15 @@ class ImportingRequestService extends BaseService
         DB::transaction(function () use ($importing_request) {
             foreach ($importing_request->commodities as $value) {
                 $warehouse = Warehouse::query()->where('id', $value->pivot->warehouses_id)->firstOrFail();
-                $commodity_amount=$this->calculateCommodityAmount($value->pivot->amount, $value->pivot->unit);
-                $add_amounts[$warehouse->id][]=$commodity_amount;
+                $commodity_amount = $this->calculateCommodityAmount($value->pivot->amount, $value->pivot->unit);
+                if ($value->type == 'product') {
+                    $this->subtractingIngredients($value, $commodity_amount);
+                }
+                $add_amounts[$warehouse->id][] = $commodity_amount;
                 $warehouses[$warehouse->id] = $warehouse;
                 if ($warehouse->commodities->contains($value->id)) {
                     $exits_commodity = $warehouse->commodities->find($value->id);
-                    $new_amount = round($exits_commodity->pivot->commodity_amount + $commodity_amount,2);
+                    $new_amount = round($exits_commodity->pivot->commodity_amount + $commodity_amount, 2);
                     $warehouse->commodities()->updateExistingPivot($value->id, ['commodity_amount' => $new_amount], false);
                 } else {
                     $warehouse->commodities()->attach([
@@ -113,6 +116,18 @@ class ImportingRequestService extends BaseService
         foreach ($importing_request->commodities as $commodity) {
             $commodity['kg_amount'] = $this->calculateCommodityAmount($commodity->pivot->amount, $commodity->pivot->unit);
             $sort_warehouse[$commodity->pivot->warehouses_id][] = $commodity;
+            if ($commodity->type == 'product') {
+                foreach ($commodity->materials as $material) {
+                    $required_amount = round(($material->pivot->percentage / 100) * $commodity['kg_amount']);
+                    $exits_material_amount = array_column(array_column($material->warehouses->toArray(), 'pivot'), 'commodity_amount');
+                    $total_material_amount = array_sum($exits_material_amount);
+                    if ($required_amount > $total_material_amount) {
+                        $data['success'] = false;
+                        $data['error'] = $material->title . ' که یک از مواد تشکیل دهنده ' . $commodity->title . ' است به مقدار کافی در انبار وجود ندارد ';
+                        return $data;
+                    }
+                }
+            }
         }
         foreach ($sort_warehouse as $key => $value) {
             $warehouse = Warehouse::query()->where('id', $key)->firstOrFail();
@@ -164,10 +179,30 @@ class ImportingRequestService extends BaseService
         $data['success'] = true;
         return $data;
     }
-    public function rejectImporting($importing_request){
+
+    public function rejectImporting($importing_request)
+    {
         return $importing_request->update([
-           'status'=>'rejected',
+            'status' => 'rejected',
         ]);
+    }
+
+    public function subtractingIngredients($commodity, $commodity_amount)
+    {
+        foreach ($commodity->materials as $material) {
+            $required_amount = round(($material->pivot->percentage / 100) * $commodity_amount);
+            $material_warehouses = $material->warehouses()->orderBy('commodity_amount', 'DESC')->get();
+            foreach ($material_warehouses as $material_warehouse) {
+                if ($material_warehouse->pivot->commodity_amount >= $required_amount) {
+                    $material_new_amount = $material_warehouse->pivot->commodity_amount - $required_amount;
+                    $material_warehouse->commodities()->updateExistingPivot($material->id, ['commodity_amount' => $material_new_amount], false);
+                    break;
+                } else {
+                    $material_warehouse->commodities()->updateExistingPivot($material->id, ['commodity_amount' => 0], false);
+                    $required_amount = $required_amount - $material_warehouse->pivot->commodity_amount;
+                }
+            }
+        }
     }
 
 
