@@ -1,0 +1,52 @@
+@media screen {
+    #invoice {
+        display: none;
+    }
+}
+
+@media print {
+    /* print landscape mode */
+    /* @page {size: landscape} */
+    .top-header-area {
+        display: none !important;
+    }
+
+    .ecaps-page-content {
+        padding-top: 0;
+        margin-right: 0;
+    }
+
+    div:not(#invoice, #invoice *, .container-fluid, .row, .main-content, .ecaps-page-content, .ecaps-page-wrapper) {
+        display: none;
+    }
+
+    body {
+        background-color: #fff
+    }
+
+    .logo {
+        width: 15%;
+    }
+
+    td:nth-child(2n) {
+        text-align: right;
+    }
+
+    td:nth-child(2n-1) {
+        text-align: left;
+    }
+
+    .sellerspecs td,
+    .sellerspecs th,
+    .customerspecs td,
+    .customerspecs th {
+        border-top: 0;
+    }
+
+    .factortable td,
+    .factortable th {
+        text-align: center;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+}
