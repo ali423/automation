@@ -19,9 +19,11 @@
                             <div class="form-row m-3">
                                 <div class="form-group col">
                                     <label for="customer_id">نام مشتری</label>
-                                    <select id="customer_id" class="form-control" name="customer_id[0]" required>
+                                    <select id="customer_id" class="form-control" name="customer_id" required>
                                         <option value="">انتخاب کنید</option>
-                                        <option value="1">شانسی</option>
+                                        @foreach ($customers as $customer)
+                                        <option value="{{ $customer->id }}">{{$customer->name}}</option>
+                                        @endforeach
                                     </select>
                                     <div class="invalid-feedback">
                                        مشتری را انتخاب کنید
@@ -148,7 +150,9 @@
                 success: function (response) {
                     var price = response['price'];
                     var warehouses = response['warehouses'];
-                    
+                    var result = e.name.split('[');
+                    var result2 = result[1].split(']');
+                    $('input[name="price['+result2[0]+']"]').val(price);
                     warehouses.forEach((ware,index)=>{
                         var wareTemplate='<div class="input-group mb-3 wares"><div class="input-group-prepend"><span class="input-group-text" id="'+ware['title']+'">'+ware['title']+'</span></div><input type="number" class="ware-amount form-control" min="0" max="'+ware['amount']+'" value="0" name="amount['+commodity_id+']['+ware['id']+']" onkeyup="total(this,this.value)" required><div class="input-group-append"><span class="input-group-text" id="ware-amount">'+'حداکثر: '+ware['amount']+'</span></div><div class="warehouse-inputs position-relative" style="overflow: hidden;height:0;width:0;"><input type="text" name="warehouse_id['+commodity_id+']['+index+']" value="'+ware['id']+'"></div></div>';
                         thisForm.insertAdjacentHTML('beforeend', wareTemplate);
@@ -156,38 +160,41 @@
                 }
             });
         }
-
         function total(e,value){
             var unit = e.closest('#inputFormRow').querySelector('#unit');
             var wareamount = e.closest('#inputFormRow').querySelectorAll('.ware-amount');
             var total = 0;
-            switch (unit.value) {
-                case "kg":
-                    wareamount.forEach(element=>{
-                        total = total + parseFloat(element.value);
-                    })
-                    e.closest('#inputFormRow').querySelector('#total-amount').value = total.toFixed(2);
-                    break;
-                case "keg":
-                    wareamount.forEach(element=>{
-                        total = total + parseFloat(element.value/185);
-                    })
-                    e.closest('#inputFormRow').querySelector('#total-amount').value = total.toFixed(2);
-                    break;
-                case "twenty_liters":
-                    wareamount.forEach(element=>{
-                        total = total + parseFloat(element.value/17.8);
-                    })
-                    e.closest('#inputFormRow').querySelector('#total-amount').value = total.toFixed(2);
-                    break;
-            
-                default:                    
-                    wareamount.forEach(element=>{
-                        total = total + parseFloat(element.value);
-                    })
-                    e.closest('#inputFormRow').querySelector('#total-amount').value = total.toFixed(2);
-                    break;
-            }
+            wareamount.forEach(element=>{
+                total = total + parseFloat(element.value);
+            })
+            e.closest('#inputFormRow').querySelector('#total-amount').value = total.toFixed(2);
+            // switch (unit.value) {
+            //     case "kg":
+            //         wareamount.forEach(element=>{
+            //             total = total + parseFloat(element.value);
+            //         })
+            //         e.closest('#inputFormRow').querySelector('#total-amount').value = total.toFixed(2);
+            //         break;
+            //     case "keg":
+            //         wareamount.forEach(element=>{
+            //             total = total + parseFloat(element.value/185);
+            //         })
+            //         e.closest('#inputFormRow').querySelector('#total-amount').value = total.toFixed(2);
+            //         break;
+            //     case "twenty_liters":
+            //         wareamount.forEach(element=>{
+            //             total = total + parseFloat(element.value/17.8);
+            //         })
+            //         e.closest('#inputFormRow').querySelector('#total-amount').value = total.toFixed(2);
+            //         break;
+            //
+            //     default:
+            //         wareamount.forEach(element=>{
+            //             total = total + parseFloat(element.value);
+            //         })
+            //         e.closest('#inputFormRow').querySelector('#total-amount').value = total.toFixed(2);
+            //         break;
+            // }
         }
 
         function unitchange(e){
@@ -197,6 +204,7 @@
             })
         }
     </script>
+
 
     <!-- These plugins only need for the run this page -->
 

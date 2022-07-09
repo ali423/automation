@@ -41,7 +41,7 @@ class WithdrawalRequestController extends Controller
     public function create()
     {
         return view('dashboard.processes.withdrawal-request.create', [
-            'commodities' => Commodity::query()->get(),
+            'commodities' => Commodity::query()->where('type','product')->get(),
             'customers' => Customer::query()->get(),
             'warehouses' => Warehouse::query()->where('status', 'active')->get(),
         ]);
@@ -65,7 +65,7 @@ class WithdrawalRequestController extends Controller
         } else {
             return redirect()->back()->withErrors($inventory_check['error']);
         }
-        return redirect(route('importing-request.index'))->with('successful', 'اطلاعات ثبت شد.');
+        return redirect(route('withdrawal-request.index'))->with('successful', 'اطلاعات ثبت شد.');
     }
 
     /**
