@@ -6,6 +6,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Processes\ImportingRequestController;
 use App\Http\Controllers\Processes\WithdrawalRequestController;
 use App\Http\Controllers\RoleController;
@@ -60,6 +61,9 @@ Route::middleware('auth')->group(function () {
 
     Route::patch('inventory/update',[InventoryController::class,'update'])->name('inventory.update');
 
+    Route::get('order/confirm/{order}',[OrderController::class,'confirm'])->name('order.confirm');
+
+    Route::resource('order',OrderController::class);
 
     Route::resource('inventory',InventoryController::class)->only('index','show');
 
