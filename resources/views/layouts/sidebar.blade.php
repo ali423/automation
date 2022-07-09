@@ -61,6 +61,13 @@
                         <li><a href="{{ route('withdrawal-request.create') }}">ثبت درخواست</a></li>
                     </ul>
                 </li>
+                <li class="treeview">
+                    <a href="javascript:void(0)"><i class="ti-shopping-cart-full"></i> <span>سفارشات</span> <i class="fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        <li><a href="{{ route('order.index') }}">لیست سفارشات</a></li>
+                        <li><a href="{{ route('order.create') }}">ثبت سفارش جدید</a></li>
+                    </ul>
+                </li>
             </ul>
         </nav>
     </div>
