@@ -90,6 +90,21 @@
                                 </div>
                             </div>
 
+                            <div class="form-row col-md-12">
+                                <div class="form-group col-md-6">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" name="warning_message" class="custom-control-input" id="warning_message">
+                                        <label class="custom-control-label" for="warning_message">ارسال پیامک هشدار</label>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-6 d-none" id="mobile_div" >
+                                    <label for="mobile"> {{ __('fields.mobile') }}</label>
+                                    <input type="text" name="mobile" value="{{ old('mobile') }}"
+                                           class="form-control" id="mobile"
+                                           placeholder="{{ __('fields.mobile') }}" >
+                                </div>
+                            </div>
+
                             <button type="submit" class="btn btn-primary mr-2">ثبت</button>
                             <a href="{{ route('user.index') }}" class="btn btn-danger">انصراف</a>
                         </form>
@@ -102,7 +117,18 @@
 @endsection
 
 @section('page_scripts')
+    <script>
+        $("#warning_message").change(function() {
+            if(this.checked) {
+                $("#mobile_div").removeClass("d-none");
+            }else {
+                $("#mobile_div").addClass("d-none");
+            }
+        });
+
+    </script>
     <!-- These plugins only need for the run this page -->
     <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
     <script src="{{ asset('js/passConfirmation.js') }}"></script>
+
 @endsection

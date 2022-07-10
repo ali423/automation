@@ -18,6 +18,8 @@ class CreateUsersTable extends Migration
             $table->foreignId('role_id')->constrained();
             $table->string('user_name')->unique();
             $table->string('name');
+            $table->string('mobile')->nullable();
+            $table->boolean('warning_message')->default(false);
             $table->string('lastname');
             $table->string('email')->unique()->nullable();
             $table->enum('status',['active','inactive']);

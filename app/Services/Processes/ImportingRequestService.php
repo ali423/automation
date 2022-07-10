@@ -202,6 +202,7 @@ class ImportingRequestService extends BaseService
                     $required_amount = $required_amount - $material_warehouse->pivot->commodity_amount;
                 }
             }
+            $this->warningCommodity($material);
         }
     }
 

@@ -89,6 +89,7 @@ class WithdrawalRequestService extends BaseService
                     $value['warehouse']->commodities()->updateExistingPivot($commodity->id, ['commodity_amount' => $new_amount], false);
                     $warehouses[$value['warehouse']->id] = $value['warehouse'];
                 }
+                $this->warningCommodity($commodity);
             }
             $request->update([
                 'status' => 'approvaled',

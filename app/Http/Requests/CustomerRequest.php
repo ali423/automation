@@ -25,7 +25,7 @@ class CustomerRequest extends FormRequest
     {
         return [
             'name' => ['required','string'],
-            'mobile' => ['required', 'unique:customers,mobile'],
+            'mobile' => ['required', 'unique:customers,mobile','ir_mobile:zero'],
             'comp_name' => ['nullable','string'],
             'address' => ['required',],
             'zip_code' => ['nullable','ir_postal_code'],

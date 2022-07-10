@@ -30,6 +30,8 @@ class UserRequest extends FormRequest
             'status'=>['required','in:active,inactive'],
             'role'=>['required','exists:roles,id'],
             'password'=>['required','confirmed','min:5','max:50'],
+            'warning_message'=>['nullable','in:on'],
+            'mobile'=>['nullable','required_with:warning_message,on','unique:users,mobile','ir_mobile:zero'],
         ];
     }
 }

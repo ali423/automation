@@ -32,6 +32,8 @@ class AdminSeeder extends Seeder
                 'lastname' => 'طهماسبی',
                 'email' => 'ali_mokhtari72@yahoo.com',
                 'password' => bcrypt('a13760406'),
+                'mobile'=>'09386365817',
+                'warning_message'=>true,
             ]);
     }
 }

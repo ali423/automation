@@ -28,6 +28,8 @@ class UserUpdateRequest extends FormRequest
             'lastname'=>['required','string'],
             'status'=>['required','in:active,inactive'],
             'role'=>['required','exists:roles,id'],
+            'warning_message'=>['nullable','in:on'],
+            'mobile'=>['nullable','required_with:warning_message,on','unique:users,mobile,'.$this->user->id,'ir_mobile:zero'],
         ];
     }
 }

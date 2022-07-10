@@ -44,6 +44,24 @@
                             </div>
                         </div>
                         <div class="form-row col-md-12">
+                            <div class="form-group col-md-6">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" name="warning_message" class="custom-control-input" disabled
+                                           @if($user->warning_message == true)
+                                               checked
+                                           @endif
+                                           id="warning_message">
+                                    <label class="custom-control-label" for="warning_message">ارسال پیامک هشدار</label>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-6" id="mobile_div" >
+                                <label for="mobile"> {{ __('fields.mobile') }}</label>
+                                <input type="text" name="mobile" value="{{ $user->mobile }}" disabled
+                                       class="form-control" id="mobile"
+                                       placeholder="{{ __('fields.mobile') }}" >
+                            </div>
+                        </div>
+                        <div class="form-row col-md-12">
                             <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.status') }}</label>
                                 <input type="text" name="name" value="{{ __('fields.user.status')[$user->status] }}"
