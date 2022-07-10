@@ -34,7 +34,7 @@ return [
     'creator' => 'ایجاد کننده',
     'commodities_list' => 'لیست کالا ها',
     'details' => 'جزئیات',
-    'total_price' => ' مبلغ کل فاکتور(تومان)',
+    'total_price' => ' مبلغ کل فاکتور(ریال)',
     'unit' => 'واحد اندازه گیری',
     'deadline' => 'زمان تحویل',
     'role' => [
