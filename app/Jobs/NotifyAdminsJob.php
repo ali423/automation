@@ -37,7 +37,7 @@ class NotifyAdminsJob implements ShouldQueue
     {
         $admins = User::query()->where('warning_message', true)->where('mobile', '!=', null)->get();
         foreach ($admins as $admin) {
-            Http::post('https://api.kavenegar.com/v1/' . config('enums.sms_key') . '/verify/lookup.json?receptor=' . $admin->mobile . '&token=' . $this->commodity->number . '&template=warehouse');
+            Http::post('https://api.kavenegar.com/v1/' . config('enums.sms_key') . '/verify/lookup.json?receptor=' . $admin->mobile . '&token=' . $this->commodity->title . '&template=warehouse');
         }
     }
 }

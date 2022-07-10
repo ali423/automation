@@ -69,7 +69,7 @@
                                     <input type="text" name="user_name" value="{{ old('user_name') }}"
                                         class="form-control" id="exampleInputEmail111"
                                         placeholder="{{ __('fields.user_name') }}" autocomplete="off"
-                                        pattern="[a-zA-Z0-9]+" minlength="8" maxlength="16" required>
+                                        pattern="[a-zA-Z0-9]+" minlength="3" maxlength="16" required>
                                     <div class="invalid-feedback">این فیلد حداقل باید از 8 کاراکتر تشکیل شده باشد. (از حروف
                                         انگلیسی استفاده کنید)</div>
                                 </div>

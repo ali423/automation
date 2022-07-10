@@ -47,7 +47,7 @@ class BaseService
         });
     }
     public function warningCommodity(Commodity $commodity){
-        $amounts=array_column(array_column($commodity->warehouses,'pivot'),'commodity_amount');
+        $amounts=array_column(array_column($commodity->warehouses()->get()->toArray(),'pivot'),'commodity_amount');
         $total_amount = array_sum($amounts);
         if ($total_amount < $commodity-> warning_limit){
             NotifyAdminsJob::dispatch($commodity);
