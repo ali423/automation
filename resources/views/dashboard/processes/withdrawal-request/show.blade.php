@@ -76,7 +76,9 @@
                                 </div>
                                 <div class="form-group col-md-12">
                                     @foreach ($commodity->withdrawal_amount as $withdrawal_amount)
-                                        <p> مقدار {{ number_format($withdrawal_amount['amount']) .' '. __('fields.commodity.units')[$withdrawal_amount['unit']] }} از
+                                        <p>
+                                            مقدار {{ number_format($withdrawal_amount['amount']) .' '. __('fields.commodity.units')[$withdrawal_amount['unit']] }}
+                                            از
                                             انبار {{$withdrawal_amount['warehouse']['title']}}</p>
                                         <br>
                                     @endforeach
@@ -174,11 +176,11 @@
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <div class="d-flex justify-content-between">
-                            <div class="logo"><img src="{{ asset('img/logo/darklogo.png') }}" /></div>
-                            <div><h4>صورتحساب فروش کالا و خدمات</h4></div>
+                            <div class="logo"><img src="{{ asset('img/logo/darklogo.png') }}"/></div>
+                            <div><h4>صورتحساب فروش کالا</h4></div>
                             <div>
-                                <p>شماره فاکتور: <span>12345555559</span></p>
-                                <p>تاریخ: <span>1399/9/9</span></p>
+                                <p>شماره فاکتور: <span>{{$request->number}}</span></p>
+                                <p>تاریخ: <span>{{\Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at))}}</span></p>
                             </div>
                         </div>
                         <div class="d-flex justify-content-center border">
@@ -186,25 +188,25 @@
                         </div>
                         <table class="table sellerspecs">
                             <tbody>
-                              <tr>
-                                <td class="text-left">نام فروشنده: <span> </span></td>
+                            <tr>
+                                <td class="text-left">نام فروشنده: شرکت روغن موتور قم<span> </span></td>
                                 <td></td>
                                 <td></td>
                                 <td>شماره اقتصادی:</td>
                                 <td></td>
                                 <td>شماره ثبت/ شماره ملی:</td>
                                 <td></td>
-                              </tr>
-                              <tr>
-                                <td class="text-left">استان: <span> </span></td>
-                                <td>شهرستان:</td>
+                            </tr>
+                            <tr>
+                                <td class="text-left">استان: قم<span> </span></td>
+                                <td>شهرستان: قم</td>
                                 <td></td>
                                 <td>کدپستی:</td>
                                 <td></td>
                                 <td>شهر:</td>
                                 <td></td>
-                              </tr>
-                              <tr>
+                            </tr>
+                            <tr>
                                 <td class="text-left">آدرس: <span> </span></td>
                                 <td></td>
                                 <td></td>
@@ -212,7 +214,7 @@
                                 <td></td>
                                 <td>تلفن:</td>
                                 <td></td>
-                              </tr>
+                            </tr>
                             </tbody>
                         </table>
                         <div class="d-flex justify-content-center border">
@@ -220,100 +222,86 @@
                         </div>
                         <table class="table customerspecs">
                             <tbody>
-                              <tr>
-                                <td class="text-left">نام فروشنده: <span> </span></td>
+                            <tr>
+                                <td class="text-left">
+                                     نام خریدار: <span>{{ $request->customer->name.'-'. $request->customer->comp_name}} </span></td>
                                 <td></td>
                                 <td></td>
-                                <td>شماره اقتصادی:</td>
+                                <td>شماره اقتصادی: {{$request->customer->economic_code}}</td>
                                 <td></td>
-                                <td>شماره ثبت/ شماره ملی:</td>
+                                <td> شماره ملی:{{ $request->customer->national_code}}</td>
                                 <td></td>
-                              </tr>
-                              <tr>
+                            </tr>
+                            <tr>
                                 <td class="text-left">استان: <span> </span></td>
                                 <td>شهرستان:</td>
                                 <td></td>
-                                <td>کدپستی:</td>
+                                <td> کدپستی:{{$request->customer->zip_code}}</td>
                                 <td></td>
                                 <td>شهر:</td>
                                 <td></td>
-                              </tr>
-                              <tr>
-                                <td class="text-left">آدرس: <span> </span></td>
+                            </tr>
+                            <tr>
+                                <td class="text-left">آدرس: <span>{{$request->customer->address}} </span></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td>تلفن:</td>
+                                <td>تلفن: {{$request->customer->mobile}}</td>
                                 <td></td>
-                              </tr>
+                            </tr>
                             </tbody>
                         </table>
 
                         <table class="factortable table table-bordered text-center">
                             <thead>
-                              <tr class="table-secondary">
+                            <tr class="table-secondary">
                                 <th scope="col">ردیف</th>
                                 <th scope="col">کد کالا</th>
                                 <th scope="col">نام کالا</th>
                                 <th scope="col">تعداد / مقدار</th>
                                 <th scope="col">واحد</th>
                                 <th scope="col">فی</th>
-                                <th scope="col">مبلغ کل</th>
-                                <th scope="col">تخفیف</th>
-                                <th scope="col">مبلغ کل پس از تخفیف</th>
-                                <th scope="col">مجموع مالیات</th>
                                 <th scope="col">جمع کل</th>
-                              </tr>
+                            </tr>
                             </thead>
                             <tbody>
-                              <tr>
-                                <th scope="row">1</th>
-                                <td>Mark</td>
-                                <td>Otto</td>
-                                <td>@mdo</td>
-                                <td>Mark</td>
-                                <td>Otto</td>
-                                <td>@mdo</td>
-                                <td>Mark</td>
-                                <td>Otto</td>
-                                <td>@mdo</td>
-                                <td>@mdo</td>
-                              </tr>
-                              <tr>
-                                <td colspan="3" class="text-right">جمع</td>
-                                <td>45</td>
-                                <td></td>
-                                <td></td>
-                                <td>1</td>
-                                <td>2</td>
-                                <td>3</td>
-                                <td>4</td>
-                                <td>5</td>
-                              </tr>
-                              <tr>
+                            @php($i=1)
+                            @foreach ($request->commodities as $commodity)
+                                <tr>
+                                    <th scope="row">{{$i}}</th>
+                                    <td>{{$commodity->number}}</td>
+                                    <td>{{$commodity->title}}</td>
+                                    <td>{{$amount=array_sum(json_decode($commodity->pivot->amount,true))}}</td>
+                                    <td>{{__('fields.commodity.units')[$commodity->pivot->unit] }}</td>
+                                    <td>{{number_format($price=$commodity->pivot->price*10)}}</td>
+                                    <td>{{ number_format($total_price[]=round($amount*$price)) }}</td>
+                                </tr>
+                                @php($i++)
+                            @endforeach
+                            <tr>
                                 <td colspan="5" rowspan="3" class="text-left" style="vertical-align: top">
                                     <div class="d-flex justify-content-between">
                                         <span>شرایط و نحوه تسویه: </span>
-                                        <span>نقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
-                                        <span>غیرنقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
+                                        <span>نقدی <span class="border"
+                                                         style="display:inline-block;width:15px;height:15px"></span></span>
+                                        <span>غیرنقدی <span class="border"
+                                                            style="display:inline-block;width:15px;height:15px"></span></span>
                                     </div>
                                     <p>توضیحات:</p>
                                 </td>
-                                <td colspan="5" class="text-right">مبلغ هزینه</td>
-                                <td></td>
-                              </tr>
-                              <tr>
+                            </tr>
+                            <tr>
                                 <td colspan="5" class="text-right">جمع کل</td>
-                                <td></td>
-                              </tr>
-                              <tr>
-                                <td colspan="6" class="text-left">جمع کل به حروف:</td>
-                              </tr>
-                              <tr>
+                                    <td> {{ number_format($request->total_price['number']) ?? null }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="6" class="text-left">جمع کل به حروف:{{ $request->total_price['world'] }} ریال </td>
+                            </tr>
+                            <tr>
                                 <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
                                 <td colspan="6" class="text-left">مهر و امضای خریدار:</td>
-                              </tr>
+                            </tr>
                             </tbody>
                         </table>
                     </div>

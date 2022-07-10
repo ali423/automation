@@ -60,7 +60,7 @@
                                         </div>
                                         @php($i++)
                                     @endforeach
-        
+
                                 </div>
                             </div>
                             <div class="col-md-2">
@@ -115,12 +115,13 @@
     <script src="{{ asset('js/default-assets/apexchart.min.js') }}"></script>
     <script type="text/javascript">
         var options = {
-          series: [44, 55, 13, 43, 22],
+
+          series:  @json(array_column(array_column($commodities->toArray(),'pivot'),'commodity_amount')),
           chart: {
           width: 380,
           type: 'pie',
         },
-        labels: ['ware A', 'ware B', 'ware C', 'ware D', 'ware E'],
+        labels: @json(array_column($commodities->toArray(),'title')),
         responsive: [{
           breakpoint: 480,
           options: {

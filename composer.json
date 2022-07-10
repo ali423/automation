@@ -9,6 +9,7 @@
         "fruitcake/laravel-cors": "^2.0",
         "genealabs/laravel-pivot-events": "*",
         "guzzlehttp/guzzle": "^7.0.1",
+        "kwn/number-to-words": "^2.4",
         "laravel/framework": "^8.75",
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",

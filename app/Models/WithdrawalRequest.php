@@ -8,6 +8,7 @@ use App\Traits\FileTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use NumberToWords\NumberToWords;
 
 class WithdrawalRequest extends Model
 {
@@ -31,7 +32,14 @@ class WithdrawalRequest extends Model
         if (in_array(null,$prices)){
             return null;
         }else{
-            return array_sum($prices);
+            foreach ($this->commodities as $commodity){
+                $amount=array_sum(json_decode($commodity->pivot->amount,true));
+                $total_price[]=round($commodity->pivot->price * $amount*10);
+            }
+            return[
+                'number'=>$res=array_sum($total_price),
+                'world'=>NumberToWords::transformNumber('fa', $res),
+            ] ;
         }
     }
 }

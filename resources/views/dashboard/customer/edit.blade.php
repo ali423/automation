@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-xl-12 box-margin height-card">
             <div class="card card-body">
-                <h4 class="card-title">ویرایش انبار</h4>
+                <h4 class="card-title">ویرایش مشتری</h4>
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <form method="post" action="{{ route('customer.update', $customer) }}" class="needs-validation"

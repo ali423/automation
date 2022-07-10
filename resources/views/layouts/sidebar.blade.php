@@ -41,7 +41,7 @@
                     </ul>
                 </li>
                 <li class="treeview">
-                    <a href="javascript:void(0)"><i class="ti-truck"></i> <span>نقل و انتقالات انبار</span> <i class="fa fa-angle-left"></i></a>
+                    <a href="javascript:void(0)"><i class="ti-truck"></i> <span>ورود کالا به انبار</span> <i class="fa fa-angle-left"></i></a>
                     <ul class="treeview-menu">
                         <li><a href="{{ route('importing-request.index') }}">لیست درخواست ها</a></li>
                         <li><a href="{{ route('importing-request.create') }}">ثبت درخواست</a></li>
