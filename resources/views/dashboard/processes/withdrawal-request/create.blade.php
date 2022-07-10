@@ -48,8 +48,7 @@
                                     </div>
                                     <div class="form-group col-md-2">
                                         <label for="unit"> {{ __('fields.unit') }}</label>
-                                        <select id="unit" class="form-control" name="unit[0]" onchange="unitchange(this)" required>
-                                            <option value="">انتخاب کنید...</option>
+                                        <select id="unit" class="form-control" name="unit[0]" onchange="unitchange(this)" disabled required>
                                             @foreach( __('fields.commodity.units') as $key=>$value)
                                                 <option value="{{$key}}"
                                                 >{{$value}}</option>
@@ -114,9 +113,12 @@
 @section('page_scripts')
 
     <script type="text/javascript">
+
+        var maximumAmount = [];
+
         // add row
         $("#addRow").click(function () {
-            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-4"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]" onchange="commodity_change(this)" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div><div class="form-group col-md-2"><label for="unit"> {{ __('fields.unit') }}</label><select id="unit" class="form-control" name="unit[0]" onchange="unitchange(this)" required><option value="">انتخاب کنید...</option>@foreach( __('fields.commodity.units') as $key=>$value)<option value="{{$key}}">{{$value}}</option>@endforeach</select><div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div></div><div class="form-group col-md-2"><label for="total">مجموع</label><input type="number" value="0" id="total-amount" name="totalamount[0]" class="form-control"placeholder="{{ __('fields.sell-price') }}" required disabled></div><div class="form-group col-md-4"><label for="price"> {{ __('fields.sell-price') }}</label><input type="text" id="price" name="price[0]" class="form-control"placeholder="{{ __('fields.sell-price') }}" required><div class="invalid-feedback">{{ __('fields.sell-price') }} را انتخاب کنید</div></div><i id="removeRow" type="submit" class="ti-close"></i></div></div>';
+            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-4"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]" onchange="commodity_change(this)" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div><div class="form-group col-md-2"><label for="unit"> {{ __('fields.unit') }}</label><select id="unit" class="form-control" name="unit[0]" onchange="unitchange(this)" disabled required>@foreach( __('fields.commodity.units') as $key=>$value)<option value="{{$key}}">{{$value}}</option>@endforeach</select><div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div></div><div class="form-group col-md-2"><label for="total">مجموع</label><input type="number" value="0" id="total-amount" name="totalamount[0]" class="form-control"placeholder="{{ __('fields.sell-price') }}" required disabled></div><div class="form-group col-md-4"><label for="price"> {{ __('fields.sell-price') }}</label><input type="text" id="price" name="price[0]" class="form-control"placeholder="{{ __('fields.sell-price') }}" required><div class="invalid-feedback">{{ __('fields.sell-price') }} را انتخاب کنید</div></div><i id="removeRow" type="submit" class="ti-close"></i></div></div>';
             $('#newRow').append(html);
             document.querySelectorAll('#inputFormRow').forEach((element, index) => {
                 element.querySelector('#commodity_id').setAttribute('name', 'commodity_id[' + index + ']');
@@ -140,9 +142,14 @@
         function commodity_change(e){
             var commodity_id = e.value;
             var thisForm = e.closest('#inputFormRow');
+            maximumAmount = [];
             thisForm.querySelectorAll('.wares').forEach(element => {
                 element.remove();
             });
+            if(commodity_id==""){
+                thisForm.querySelector('#unit').setAttribute('disabled','');
+                thisForm.querySelector('#unit').value = 'kg';
+            }
             $.ajax({
                 url: '/inventory-ajax/' + commodity_id,
                 type: 'get',
@@ -156,6 +163,8 @@
                     warehouses.forEach((ware,index)=>{
                         var wareTemplate='<div class="input-group mb-3 wares"><div class="input-group-prepend"><span class="input-group-text" id="'+ware['title']+'">'+ware['title']+'</span></div><input type="number" class="ware-amount form-control" min="0" max="'+ware['amount']+'" value="0" name="amount['+commodity_id+']['+ware['id']+']" onkeyup="total(this,this.value)" required><div class="input-group-append"><span class="input-group-text" id="ware-amount">'+'حداکثر: '+ware['amount']+'</span></div><div class="warehouse-inputs position-relative" style="overflow: hidden;height:0;width:0;"><input type="text" name="warehouse_id['+commodity_id+']['+index+']" value="'+ware['id']+'"></div></div>';
                         thisForm.insertAdjacentHTML('beforeend', wareTemplate);
+                        thisForm.querySelector('#unit').removeAttribute('disabled');
+                        maximumAmount.push(ware['amount']);
                     })
                 }
             });
@@ -202,6 +211,21 @@
                 element.value = 0;
                 e.closest('#inputFormRow').querySelector('#total-amount').value = 0;
             })
+            e.closest('#inputFormRow').querySelectorAll('#ware-amount').forEach((element,index) => {
+                switch (e.value) {
+                    case "kg":
+                        element.innerText = maximumAmount[index]
+                        break;
+                    case "keg":
+                        element.innerText = ((parseFloat(maximumAmount[index]))/185).toFixed(3);
+                        break;
+                    case "twenty_liters":
+                        element.innerText = ((parseFloat(maximumAmount[index]))/17.8).toFixed(3);
+                        break;
+                    default:
+                        break;
+                }
+            });
         }
     </script>
 
