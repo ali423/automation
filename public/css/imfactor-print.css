@@ -1,5 +1,5 @@
 @media screen {
-    #invoice {
+    #finvoice {
         display: none;
     }
 }
@@ -16,8 +16,15 @@
         margin-right: 0;
     }
 
-    div:not(#invoice, #invoice *, .container-fluid, .row, .main-content, .ecaps-page-content, .ecaps-page-wrapper) {
+    /* div:not(#finvoice, #finvoice *, .container-fluid, .row, .main-content, .ecaps-page-content, .ecaps-page-wrapper) {
         display: none;
+    } */
+
+    .showprint{
+        display: block !important;
+    }
+    .hideprint{
+        display: none !important;
     }
 
     body {
