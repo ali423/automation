@@ -3,12 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderRequest;
-use App\Http\Requests\OrderUpdateRequest;
 use App\Models\Commodity;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Services\OrderService;
-use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
@@ -17,6 +15,7 @@ class OrderController extends Controller
     public function __construct(OrderService $service)
     {
         $this->service = $service;
+        $this->authorizeResource(Order::class);
     }
 
     /**

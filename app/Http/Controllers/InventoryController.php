@@ -15,6 +15,7 @@ class InventoryController extends Controller
     public function __construct(InventoryService $service)
     {
         $this->service=$service;
+        $this->authorizeResource(Warehouse::class);
     }
     /**
      * Display a listing of the resource.

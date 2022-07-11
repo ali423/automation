@@ -16,6 +16,7 @@ class ImportingRequestController extends Controller
     public function __construct(ImportingRequestService $service)
     {
         $this->service = $service;
+        $this->authorizeResource(ImportingRequest::class);
     }
 
     /**
@@ -148,6 +149,9 @@ class ImportingRequestController extends Controller
 
     public function approvalRequest($id)
     {
+        if (!auth()->user()->role->havePermission('status_importing')){
+            return redirect()->back()->withErrors('شما این دسترسی را ندارید .');
+        }
         $importing_request = ImportingRequest::query()->findOrFail($id);
         if ($importing_request->status != 'awaiting_approval') {
             return redirect()->back()->withErrors('در این مرحله امکان تایید وجود ندارد .');
@@ -165,6 +169,9 @@ class ImportingRequestController extends Controller
         return redirect(route('importing-request.show', $importing_request))->with('successful', 'درخواست با موفقیت تایید شد.');
     }
     public function rejectRequest($id){
+        if (!auth()->user()->role->havePermission('status_importing')){
+            return redirect()->back()->withErrors('شما این دسترسی را ندارید .');
+        }
         $importing_request = ImportingRequest::query()->findOrFail($id);
         if ($importing_request->status != 'awaiting_approval') {
             return redirect()->back()->withErrors('در این مرحله امکان رد وجود ندارد .');
