@@ -470,6 +470,7 @@
         </div>
     </div>
 
+
     <div class="row">
         <div class="col-xl-12 height-card box-margin">
             <div class="card">
@@ -544,4 +545,5 @@
 
     {{-- main links js --}}
     <script src="{{ asset('js/main-links/main-links.js') }}"></script>
+
 @endsection
