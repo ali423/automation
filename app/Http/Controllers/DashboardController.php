@@ -20,7 +20,7 @@ class DashboardController extends Controller
             ];
         }
         return view('dashboard.index',[
-            'commodities'=>$res ?? null,
+            'commodities'=>$res?? null,
         ]);
     }
 }

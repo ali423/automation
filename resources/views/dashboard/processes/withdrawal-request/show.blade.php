@@ -2,7 +2,8 @@
 @section('title', 'داشبورد')
 
 @section('page_styles')
-    <link rel="stylesheet" href="{{ asset('css/imfactor-print.css') }}">
+<link rel="stylesheet" href="{{ asset('css/imexport-print.css') }}">
+<link rel="stylesheet" href="{{ asset('css/imfactor-print.css') }}">
 @endsection
 
 @section('content')
@@ -58,7 +59,7 @@
                         </div>
                         @foreach ($request->commodities as $commodity)
                             <div id="inputFormRow" class="form-row shadow p-4 m-3">
-                                <div class="form-group col-md-6">
+                                {{-- <div class="form-group col-md-6">
                                     <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
                                     <select id="commodity_id" class="form-control" name="commodity_id[0]" disabled>
                                         <option value="{{ $commodity->id }}">{{ $commodity->title }}</option>
@@ -82,7 +83,29 @@
                                             انبار {{$withdrawal_amount['warehouse']['title']}}</p>
                                         <br>
                                     @endforeach
-                                </div>
+                                </div> --}}
+                                <table class="table">
+                                    <colgroup>
+                                        <col span="1" style="width: 5%;">
+                                        <col span="1" style="width: 40%;">
+                                        <col span="1" style="width: 25%;">
+                                        <col span="1" style="width: 30%;">
+                                    </colgroup>
+                                    <tr class="table-header table-dark">
+                                        <th scope="col">ردیف</th>
+                                        <th scope="col">نام کالا</th>
+                                        <th scope="col">مقدار</th>
+                                        <th scope="col">انبار</th>
+                                    </tr>
+                                    @foreach ($commodity->withdrawal_amount as $withdrawal_amount)
+                                    <tr>
+                                        <th scope="row" id="rownumbers"></th>
+                                        <td>{{ $commodity->title }}</td>
+                                        <td>{{ number_format($withdrawal_amount['amount']) .' '. __('fields.commodity.units')[$withdrawal_amount['unit']] }}</td>
+                                        <td>{{$withdrawal_amount['warehouse']['title']}}</td>
+                                    </tr>
+                                    @endforeach
+                                </table>
                             </div>
                         @endforeach
                         @foreach ($request->comments as $comment)
@@ -132,7 +155,7 @@
                                     <div class="card-body">
                                         <div class="bg-transparent d-flex align-items-center justify-content-between">
                                             <div class="widgets-card-title">
-                                                <h5 class="card-title">چاپ رسید کالای ورودی</h5>
+                                                <h5 class="card-title">چاپ رسید کالای خروجی</h5>
                                             </div>
                                         </div>
                                         <div class="d-md-flex justify-content-center">
@@ -142,6 +165,21 @@
                                                     class="ti-printer font-18"></i> نسخه پرونده</a>
                                             <a href="#" class="factor warehousebtn btn btn-secondary m-1"><i
                                                     class="ti-printer font-18"></i> نسخه انبار</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-12 height-card box-margin">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="bg-transparent d-flex align-items-center justify-content-between">
+                                            <div class="widgets-card-title">
+                                                <h5 class="card-title">چاپ فاکتور</h5>
+                                            </div>
+                                        </div>
+                                        <div class="d-md-flex justify-content-center">
+                                            <a href="#" class="factor factorbtn btn btn-secondary m-1"><i
+                                                    class="ti-printer font-18"></i>چاپ فاکتور</a>
                                         </div>
                                     </div>
                                 </div>
@@ -170,7 +208,69 @@
                 </div>
             </div>
         </div>
-        <div id="invoice" class="col-xl-12 box-margin height-card">
+        <div id="invoice" class="col-xl-12 box-margin height-card showprint">
+            <div class="card card-body">
+                {{-- <h4 class="card-title"></h4> --}}
+                <div class="row">
+                    <div class="col-sm-12 col-xs-12">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <img src="{{ asset('img/logo/darklogo.png') }}" class="logo" />
+                            <div class="text-center">
+                                <h4>
+                                    خروج کالا از انبار
+                                </h4>
+                                <div class="d-none factor customer">( رسید خریدار )</div>
+                                <div class="d-none factor documentation">( رسید پرونده )</div>
+                                <div class="d-none factor warehouse">( رسید انبار )</div>
+                            </div>
+                            <div>تاریخ: <span>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}</span></div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>خریدار/ نماینده خریدار: <span>{{ $request->creator_user->full_name }}</span></div>
+                            <div>شماره درخواست: <span>{{$request->number}}</span></div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <table class="table-borderless">
+                                <colgroup>
+                                    <col span="1" style="width: 5%;">
+                                    <col span="1" style="width: 30%;">
+                                    <col span="1" style="width: 25%;">
+                                    <col span="1" style="width: 15%;">
+                                    <col span="1" style="width: 25%;">
+                                </colgroup>
+                                <tr class="table-header">
+                                    <th scope="col">ردیف</th>
+                                    <th scope="col">کالای ورودی</th>
+                                    <th scope="col">انبار</th>
+                                    <th scope="col">تعداد / مقدار</th>
+                                    <th scope="col">توضیحات</th>
+                                </tr>
+                                <tr>
+                                    <th scope="row"></th>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="mb-5">
+                            اینجانب <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000">&nbsp;</span>
+                            راننده خودرو به شماره پلاک <div class="pelak" style="width: 100px">&nbsp;</div>
+                            <div class="pelak">&nbsp;&nbsp;</div>
+                            شماره تماس <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000">&nbsp;</span>
+                            محموله فوق را تحویل گرفتم.
+                        </div>
+                        <div class="d-flex justify-content-around align-items-center mb-3">
+                            <h6>امضاء تحویل گیرنده کالا</h6>
+                            <h6>امضاء متصدی شرکت</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="finvoice" class="col-xl-12 box-margin height-card hideprint">
             <div class="card card-body">
                 {{-- <h4 class="card-title"></h4> --}}
                 <div class="row">
@@ -183,7 +283,7 @@
                                 <p>تاریخ: <span>{{\Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at))}}</span></p>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-center border">
+                        {{-- <div class="d-flex justify-content-center border">
                             <div class="text-dark p-1">مشخصات فروشنده</div>
                         </div>
                         <table class="table sellerspecs">
@@ -216,7 +316,7 @@
                                 <td></td>
                             </tr>
                             </tbody>
-                        </table>
+                        </table> --}}
                         <div class="d-flex justify-content-center border">
                             <div class="text-dark p-1">مشخصات خریدار</div>
                         </div>
