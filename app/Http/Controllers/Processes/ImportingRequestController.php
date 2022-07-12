@@ -17,6 +17,7 @@ class ImportingRequestController extends Controller
     {
         $this->service = $service;
         $this->authorizeResource(ImportingRequest::class);
+        $this->shareView();
     }
 
     /**

@@ -16,6 +16,7 @@ class OrderController extends Controller
     {
         $this->service = $service;
         $this->authorizeResource(Order::class);
+        $this->shareView();
     }
 
     /**

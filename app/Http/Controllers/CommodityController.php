@@ -16,6 +16,7 @@ class CommodityController extends Controller
     {
         $this->service = $service;
         $this->authorizeResource(Commodity::class);
+        $this->shareView();
     }
 
     /**

@@ -19,6 +19,7 @@ class UserController extends Controller
     {
         $this->service=$service;
         $this->authorizeResource(User::class);
+        $this->shareView();
     }
 
     /**
