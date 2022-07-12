@@ -42,7 +42,7 @@
                                     @foreach ($permissions as $permission)
                                         <div class="col-md-3">
                                             <div class="form-group"><input type="checkbox"
-                                                    @if (old('permissions') && in_array($permission->id, old('permissions'))) checked @endif name="permissions[]"
+                                                    checked name="permissions[]"
                                                     value="{{ $permission->id }}" class="">
                                                 {{ $permission->name }} </div>
                                         </div>

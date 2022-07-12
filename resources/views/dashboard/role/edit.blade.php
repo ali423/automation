@@ -44,7 +44,7 @@
                                     @foreach ($permissions as $permission)
                                         <div class="col-md-3">
                                             <div class="form-group"><input type="checkbox"
-                                                    @if ($role->havePermission($permission)) checked @endif name="permissions[]"
+                                                    @if ($role->havePermission($permission->title)) checked @endif name="permissions[]"
                                                     value="{{ $permission->id }}" class="">
                                                 {{ $permission->name }} </div>
                                         </div>

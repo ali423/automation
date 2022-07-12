@@ -130,7 +130,7 @@ trait ActivityTrait
                 $previous_activities=$item->activities()->get()->toArray();
                 if (auth()->check()) {
                     $data = [
-                        'previous_activity_id' => end($previous_activities)['id'],
+                        'previous_activity_id' => end($previous_activities)['id'] ?? null,
                         'record_change_id' => $item->id,
                         'record_change_type' => get_class($item),
                         'relation_model'=>get_class($item->$relationName()->first()),

@@ -18,6 +18,8 @@ class WithdrawalRequestController extends Controller
     public function __construct(WithdrawalRequestService $service)
     {
         $this->service = $service;
+        $this->authorizeResource(WithdrawalRequest::class);
+
     }
     /**
      * Display a listing of the resource.
@@ -118,6 +120,9 @@ class WithdrawalRequestController extends Controller
 
     public function approvalRequest($id)
     {
+        if (!auth()->user()->role->havePermission('status_withdrawal')){
+            return redirect()->back()->withErrors('شما این دسترسی را ندارید .');
+        }
         $withdrawal_request = WithdrawalRequest::query()->findOrFail($id);
         if ($withdrawal_request->status != 'awaiting_approval') {
             return redirect()->back()->withErrors('در این مرحله امکان تایید وجود ندارد .');
@@ -135,6 +140,9 @@ class WithdrawalRequestController extends Controller
         return redirect(route('withdrawal-request.show', $withdrawal_request))->with('successful', 'درخواست با موفقیت تایید شد.');
     }
     public function rejectRequest($id){
+        if (!auth()->user()->role->havePermission('status_withdrawal')){
+            return redirect()->back()->withErrors('شما این دسترسی را ندارید .');
+        }
         $withdrawal_request = WithdrawalRequest::query()->findOrFail($id);
         if ($withdrawal_request->status != 'awaiting_approval') {
             return redirect()->back()->withErrors('در این مرحله امکان رد وجود ندارد .');

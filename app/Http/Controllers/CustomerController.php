@@ -15,6 +15,7 @@ class CustomerController extends Controller
     public function __construct(CustomerService $service)
     {
         $this->service=$service;
+        $this->authorizeResource(Customer::class);
     }
     /**
      * Display a listing of the resource.

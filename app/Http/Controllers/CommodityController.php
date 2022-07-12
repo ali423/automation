@@ -15,6 +15,7 @@ class CommodityController extends Controller
     public function __construct(CommodityService $service)
     {
         $this->service = $service;
+        $this->authorizeResource(Commodity::class);
     }
 
     /**
