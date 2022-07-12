@@ -9,7 +9,7 @@
         margin-right: 0;
     }
 
-    div:not(#invoice, #invoice *, .container-fluid, .row, .main-content, .ecaps-page-content, .ecaps-page-wrapper) {
+    div:not(#finvoice, #finvoice *,#invoice, #invoice *, .container-fluid, .row, .main-content, .ecaps-page-content, .ecaps-page-wrapper) {
         display: none;
     }
 
