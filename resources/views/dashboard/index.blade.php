@@ -10,166 +10,206 @@
 
     <!-- Main Content Area -->
     <div id="main-links" class="row">
+    @if(Gate::check('read_user') || Gate::check('create_user'))
         <!-- Single Widget -->
-        <div class="main-link col-12 col-3 col-md box-margin height-card">
-            <div class="card">
-                <div class="link card-body d-flex align-items-center justify-content-center" data-link="user">
-                    <div class="text-center">
-                        <div>
-                            <i class="ti-user font-24"></i>
+            <div class="main-link col-12 col-3 col-md box-margin height-card">
+                <div class="card">
+                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="user">
+                        <div class="text-center">
+                            <div>
+                                <i class="ti-user font-24"></i>
+                            </div>
+                            <h6>کاربران</h6>
                         </div>
-                        <h6>کاربران</h6>
-                    </div>
-                    <div class="d-md-none">
-                        <ul class="list-unstyled d-flex">
-                            <li><a href="#" class="btn btn-white m-1">لیست کاربران</a></li>
-                            <li><a href="#" class="btn btn-white m-1">افزودن کاربر جدید</a></li>
-                        </ul>
+                        <div class="d-md-none">
+                            <ul class="list-unstyled d-flex">
+                                @can('read_user',App\Models\User::class)
+                                    <li><a href="#" class="btn btn-white m-1">لیست کاربران</a></li>
+                                @endif
+                                @can('create_user',App\Models\User::class)
+                                    <li><a href="#" class="btn btn-white m-1">افزودن کاربر جدید</a></li>
+                                @endif
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+    @endif
+    @if(Gate::check('read_role') || Gate::check('create_role'))
 
         <!-- Single Widget -->
-        <div class="col-12 col-3 col-md box-margin height-card">
-            <div class="card">
-                <div class="link card-body d-flex align-items-center justify-content-center" data-link="role">
-                    <div class="text-center">
-                        <div>
-                            <i class="ti-id-badge font-24"></i>
+            <div class="col-12 col-3 col-md box-margin height-card">
+                <div class="card">
+                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="role">
+                        <div class="text-center">
+                            <div>
+                                <i class="ti-id-badge font-24"></i>
+                            </div>
+                            <h6>نقش ها</h6>
                         </div>
-                        <h6>نقش ها</h6>
-                    </div>
-                    <div class="d-md-none">
-                        <ul class="list-unstyled d-flex">
-                            <li><a href="#" class="btn btn-white m-1">لیست نقش ها</a></li>
-                            <li><a href="#" class="btn btn-white m-1">افزودن نقش جدید</a></li>
-                        </ul>
+                        <div class="d-md-none">
+                            <ul class="list-unstyled d-flex">
+                                @can('read_role',App\Models\Role::class)
+                                    <li><a href="#" class="btn btn-white m-1">لیست نقش ها</a></li>
+                                @endcan
+                                @can('create_role',App\Models\Role::class)
+                                    <li><a href="#" class="btn btn-white m-1">افزودن نقش جدید</a></li>
+                                @endcan
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
+    @endif
+    @can('read_activity',App\Models\Activity::class)
         <!-- Single Widget -->
-        <div class="col-12 col-3 col-md box-margin height-card">
-            <div class="card">
-                <div class="link card-body d-flex align-items-center justify-content-center" data-link="activity">
-                    <div class="text-center">
-                        <div>
-                            <i class="icon-search font-24"></i>
+            <div class="col-12 col-3 col-md box-margin height-card">
+                <div class="card">
+                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="activity">
+                        <div class="text-center">
+                            <div>
+                                <i class="icon-search font-24"></i>
+                            </div>
+                            <h6>فعالیت ها</h6>
                         </div>
-                        <h6>فعالیت ها</h6>
-                    </div>
-                    <div class="d-md-none">
-                        <ul class="list-unstyled d-flex">
-                            <li><a href="#" class="btn btn-white m-1">لیست فعالیت ها</a></li>
-                        </ul>
+                        <div class="d-md-none">
+                            <ul class="list-unstyled d-flex">
+                                <li><a href="#" class="btn btn-white m-1">لیست فعالیت ها</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
+    @endif
+    @if(Gate::check('read_commodity') || Gate::check('create_commodity'))
         <!-- Single Widget -->
-        <div class="col-12 col-3 col-md box-margin height-card">
-            <div class="card">
-                <div class="link card-body d-flex align-items-center justify-content-center" data-link="commodity">
-                    <div class="text-center">
-                        <div>
-                            <i class="icon-layers font-24"></i>
+            <div class="col-12 col-3 col-md box-margin height-card">
+                <div class="card">
+                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="commodity">
+                        <div class="text-center">
+                            <div>
+                                <i class="icon-layers font-24"></i>
+                            </div>
+                            <h6>کالاهای سیستم</h6>
                         </div>
-                        <h6>کالاهای سیستم</h6>
-                    </div>
-                    <div class="d-md-none">
-                        <ul class="list-unstyled d-flex">
-                            <li><a href="#" class="btn btn-white m-1">لیست کالا ها</a></li>
-                            <li><a href="#" class="btn btn-white m-1">افزودن کالای جدید</a></li>
-                        </ul>
+                        <div class="d-md-none">
+                            <ul class="list-unstyled d-flex">
+                                @can('read_commodity',App\Models\Commodity::class)
+                                    <li><a href="#" class="btn btn-white m-1">لیست کالا ها</a></li>
+                                @endcan
+                                @can('create_commodity',App\Models\Commodity::class)
+                                    <li><a href="#" class="btn btn-white m-1">افزودن کالای جدید</a></li>
+                                @endcan
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
+    @endif
+    @if(Gate::check('read_warehouse') || Gate::check('create_warehouse'))
         <!-- Single Widget -->
-        <div class="col-12 col-3 col-md box-margin height-card">
-            <div class="card">
-                <div class="link card-body d-flex align-items-center justify-content-center" data-link="warehouse">
-                    <div class="text-center">
-                        <div>
-                            <i class="black-text ti-home font-24"></i>
+            <div class="col-12 col-3 col-md box-margin height-card">
+                <div class="card">
+                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="warehouse">
+                        <div class="text-center">
+                            <div>
+                                <i class="black-text ti-home font-24"></i>
+                            </div>
+                            <h6 class="black-text">انبارها</h6>
                         </div>
-                        <h6 class="black-text">انبارها</h6>
-                    </div>
-                    <div class="d-md-none">
-                        <ul class="list-unstyled d-flex flex-wrap">
-                            <li><a href="#" class="btn btn-white m-1">لیست انبارها</a></li>
-                            <li><a href="#" class="btn btn-white m-1">افزودن انبار جدید</a></li>
-                            <li><a href="#" class="btn btn-white m-1">وضعیت موجودی انبار</a></li>
-                        </ul>
+                        <div class="d-md-none">
+                            <ul class="list-unstyled d-flex flex-wrap">
+                                @can('read_warehouse',App\Models\Warehouse::class)
+                                    <li><a href="#" class="btn btn-white m-1">لیست انبارها</a></li>
+                                @endcan
+                                @can('create_warehouse',App\Models\Warehouse::class)
+                                    <li><a href="#" class="btn btn-white m-1">افزودن انبار جدید</a></li>
+                                @endcan
+                                @can('read_warehouse',App\Models\Warehouse::class)
+                                    <li><a href="#" class="btn btn-white m-1">وضعیت موجودی انبار</a></li>
+                                @endcan
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
+    @endif
+    @if(Gate::check('read_importing') || Gate::check('create_importing'))
         <!-- Single Widget -->
-        <div class="col-12 col-md box-margin height-card">
-            <div class="card">
-                <div class="link card-body d-flex align-items-center justify-content-center" data-link="process">
-                    <div class="text-center">
-                        <div>
-                            <i class="ti-truck font-24"></i>
+            <div class="col-12 col-md box-margin height-card">
+                <div class="card">
+                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="process">
+                        <div class="text-center">
+                            <div>
+                                <i class="ti-truck font-24"></i>
+                            </div>
+                            <h6>ورود کالا به انبار</h6>
                         </div>
-                        <h6>انتقالات انبار</h6>
-                    </div>
-                    <div class="d-md-none">
-                        <ul class="list-unstyled d-flex">
-                            <li><a href="#" class="btn btn-white m-1">لیست درخواست ها</a></li>
-                            <li><a href="#" class="btn btn-white m-1">ثبت درخواست</a></li>
-                        </ul>
+                        <div class="d-md-none">
+                            <ul class="list-unstyled d-flex">
+                                @can('read_importing',App\Models\ImportingRequest::class)
+                                    <li><a href="#" class="btn btn-white m-1">لیست درخواست ها</a></li>
+                                @endcan
+                                @can('create_importing',App\Models\ImportingRequest::class)
+                                    <li><a href="#" class="btn btn-white m-1">ثبت درخواست</a></li>
+                                @endcan
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
+    @endif
+    @if(Gate::check('read_customer') || Gate::check('create_customer'))
         <!-- Single Widget -->
-        <div class="col-12 col-md box-margin height-card">
-            <div class="card">
-                <div class="link card-body d-flex align-items-center justify-content-center" data-link="customer">
-                    <div class="text-center">
-                        <div>
-                            <i class="ti-shopping-cart font-24"></i>
+            <div class="col-12 col-md box-margin height-card">
+                <div class="card">
+                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="customer">
+                        <div class="text-center">
+                            <div>
+                                <i class="ti-shopping-cart font-24"></i>
+                            </div>
+                            <h6>مشتری ها</h6>
                         </div>
-                        <h6>مشتری ها</h6>
-                    </div>
-                    <div class="d-md-none">
-                        <ul class="list-unstyled d-flex">
-                            <li><a href="#" class="btn btn-white m-1">لیست مشتریان</a></li>
-                            <li><a href="#" class="btn btn-white m-1">ثبت مشتری</a></li>
-                        </ul>
+                        <div class="d-md-none">
+                            <ul class="list-unstyled d-flex">
+                                @can('read_customer',App\Models\Customer::class)
+                                    <li><a href="#" class="btn btn-white m-1">لیست مشتریان</a></li>
+                                @endcan
+                                @can('create_customer',App\Models\Customer::class)
+                                    <li><a href="#" class="btn btn-white m-1">ثبت مشتری</a></li>
+                                @endcan
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
+    @endif
+    @if(Gate::check('read_withdrawal') || Gate::check('create_withdrawal'))
         <!-- Single Widget -->
-        <div class="col-12 col-md box-margin height-card">
-            <div class="card">
-                <div class="link card-body d-flex align-items-center justify-content-center" data-link="withrawal">
-                    <div class="text-center">
-                        <div>
-                            <i class="ti-shopping-cart-full font-24"></i>
+            <div class="col-12 col-md box-margin height-card">
+                <div class="card">
+                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="withrawal">
+                        <div class="text-center">
+                            <div>
+                                <i class="ti-shopping-cart-full font-24"></i>
+                            </div>
+                            <h6>فروش فرآورده</h6>
                         </div>
-                        <h6>فروش فرآورده</h6>
-                    </div>
-                    <div class="d-md-none">
-                        <ul class="list-unstyled d-flex">
-                            <li><a href="#" class="btn btn-white m-1">لیست فروش</a></li>
-                            <li><a href="#" class="btn btn-white m-1">ثبت فروش</a></li>
-                        </ul>
+                        <div class="d-md-none">
+                            <ul class="list-unstyled d-flex">
+                                @can('read_withdrawal',App\Models\WithdrawalRequest::class)
+                                    <li><a href="#" class="btn btn-white m-1">لیست فروش</a></li>
+                                @endcan
+                                @can('create_withdrawal',App\Models\WithdrawalRequest::class)
+                                    <li><a href="#" class="btn btn-white m-1">ثبت فروش</a></li>
+                                @endcan
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
     </div>
+    @endif
 
     <div id="users-links" class="row d-none d-md-flex">
         <div class="col box-margin height-card">
