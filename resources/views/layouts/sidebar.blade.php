@@ -5,6 +5,7 @@
         <!-- Sidebar Menu -->
         <nav>
             <ul class="sidebar-menu" data-widget="tree">
+                @can('read_user',App\Models\User::class)
                     <li class="treeview">
                         <a href="javascript:void(0)"><i class="icon-profile-male"></i> <span>کاربران</span> <i
                                 class="fa fa-angle-left"></i></a>
@@ -13,6 +14,7 @@
                                 <li><a href="{{ route('user.create') }}">افزودن کاربر جدید</a></li>
                         </ul>
                     </li>
+                @endcan
                 <li class="treeview">
                     <a href="javascript:void(0)"><i class="icon_id"></i> <span>نقش ها</span> <i
                             class="fa fa-angle-left"></i></a>

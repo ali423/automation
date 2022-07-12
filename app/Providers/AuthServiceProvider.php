@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Order;
 use App\Models\WithdrawalRequest;
 use App\Policies\OrderPolicy;
+use App\Policies\UserPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -27,9 +28,8 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
-
-//        Gate::define('edit_category',[OrderPolicy::class,'update']);
-//        Gate::define('delete_category',[OrderPolicy::class,'delete']);
-//        Gate::define('read_category',[OrderPolicy::class,'viewAny']);
+        
+        Gate::define('read_user',[UserPolicy::class,'viewAny']);
+        Gate::define('create_user',[UserPolicy::class,'create']);
     }
 }
