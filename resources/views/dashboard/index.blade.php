@@ -23,12 +23,8 @@
                         </div>
                         <div class="d-md-none">
                             <ul class="list-unstyled d-flex">
-                                @can('read_user',App\Models\User::class)
-                                    <li><a href="#" class="btn btn-white m-1">لیست کاربران</a></li>
-                                @endif
-                                @can('create_user',App\Models\User::class)
-                                    <li><a href="#" class="btn btn-white m-1">افزودن کاربر جدید</a></li>
-                                @endif
+                                <li><a href="#" class="btn btn-white m-1">لیست کاربران</a></li>
+                                <li><a href="#" class="btn btn-white m-1">افزودن کاربر جدید</a></li>
                             </ul>
                         </div>
                     </div>
@@ -36,7 +32,6 @@
             </div>
     @endif
     @if(Gate::check('read_role') || Gate::check('create_role'))
-
         <!-- Single Widget -->
             <div class="col-12 col-3 col-md box-margin height-card">
                 <div class="card">
@@ -49,12 +44,8 @@
                         </div>
                         <div class="d-md-none">
                             <ul class="list-unstyled d-flex">
-                                @can('read_role',App\Models\Role::class)
-                                    <li><a href="#" class="btn btn-white m-1">لیست نقش ها</a></li>
-                                @endcan
-                                @can('create_role',App\Models\Role::class)
-                                    <li><a href="#" class="btn btn-white m-1">افزودن نقش جدید</a></li>
-                                @endcan
+                                <li><a href="#" class="btn btn-white m-1">لیست نقش ها</a></li>
+                                <li><a href="#" class="btn btn-white m-1">افزودن نقش جدید</a></li>
                             </ul>
                         </div>
                     </div>
@@ -94,12 +85,8 @@
                         </div>
                         <div class="d-md-none">
                             <ul class="list-unstyled d-flex">
-                                @can('read_commodity',App\Models\Commodity::class)
-                                    <li><a href="#" class="btn btn-white m-1">لیست کالا ها</a></li>
-                                @endcan
-                                @can('create_commodity',App\Models\Commodity::class)
-                                    <li><a href="#" class="btn btn-white m-1">افزودن کالای جدید</a></li>
-                                @endcan
+                                <li><a href="#" class="btn btn-white m-1">لیست کالا ها</a></li>
+                                <li><a href="#" class="btn btn-white m-1">افزودن کالای جدید</a></li>
                             </ul>
                         </div>
                     </div>
@@ -119,15 +106,9 @@
                         </div>
                         <div class="d-md-none">
                             <ul class="list-unstyled d-flex flex-wrap">
-                                @can('read_warehouse',App\Models\Warehouse::class)
-                                    <li><a href="#" class="btn btn-white m-1">لیست انبارها</a></li>
-                                @endcan
-                                @can('create_warehouse',App\Models\Warehouse::class)
-                                    <li><a href="#" class="btn btn-white m-1">افزودن انبار جدید</a></li>
-                                @endcan
-                                @can('read_warehouse',App\Models\Warehouse::class)
-                                    <li><a href="#" class="btn btn-white m-1">وضعیت موجودی انبار</a></li>
-                                @endcan
+                                <li><a href="#" class="btn btn-white m-1">لیست انبارها</a></li>
+                                <li><a href="#" class="btn btn-white m-1">افزودن انبار جدید</a></li>
+                                <li><a href="#" class="btn btn-white m-1">وضعیت موجودی انبار</a></li>
                             </ul>
                         </div>
                     </div>
@@ -147,12 +128,8 @@
                         </div>
                         <div class="d-md-none">
                             <ul class="list-unstyled d-flex">
-                                @can('read_importing',App\Models\ImportingRequest::class)
-                                    <li><a href="#" class="btn btn-white m-1">لیست درخواست ها</a></li>
-                                @endcan
-                                @can('create_importing',App\Models\ImportingRequest::class)
-                                    <li><a href="#" class="btn btn-white m-1">ثبت درخواست</a></li>
-                                @endcan
+                                <li><a href="#" class="btn btn-white m-1">لیست درخواست ها</a></li>
+                                <li><a href="#" class="btn btn-white m-1">ثبت درخواست</a></li>
                             </ul>
                         </div>
                     </div>
@@ -172,12 +149,8 @@
                         </div>
                         <div class="d-md-none">
                             <ul class="list-unstyled d-flex">
-                                @can('read_customer',App\Models\Customer::class)
-                                    <li><a href="#" class="btn btn-white m-1">لیست مشتریان</a></li>
-                                @endcan
-                                @can('create_customer',App\Models\Customer::class)
-                                    <li><a href="#" class="btn btn-white m-1">ثبت مشتری</a></li>
-                                @endcan
+                                <li><a href="#" class="btn btn-white m-1">لیست مشتریان</a></li>
+                                <li><a href="#" class="btn btn-white m-1">ثبت مشتری</a></li>
                             </ul>
                         </div>
                     </div>
@@ -197,12 +170,8 @@
                         </div>
                         <div class="d-md-none">
                             <ul class="list-unstyled d-flex">
-                                @can('read_withdrawal',App\Models\WithdrawalRequest::class)
-                                    <li><a href="#" class="btn btn-white m-1">لیست فروش</a></li>
-                                @endcan
-                                @can('create_withdrawal',App\Models\WithdrawalRequest::class)
-                                    <li><a href="#" class="btn btn-white m-1">ثبت فروش</a></li>
-                                @endcan
+                                <li><a href="#" class="btn btn-white m-1">لیست فروش</a></li>
+                                <li><a href="#" class="btn btn-white m-1">ثبت فروش</a></li>
                             </ul>
                         </div>
                     </div>
@@ -217,300 +186,320 @@
                 {{-- start user --}}
                 <div id="user" class="card-body row">
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                </br></br>
-                                <a href="{{ route('user.index') }}" class="bg-red">
-                                    <div>
+                    @can('read_user',App\Models\User::class)
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    </br></br>
+                                    <a href="{{ route('user.index') }}" class="bg-red">
                                         <div>
-                                            <i class="ti-list-ol font-24"></i>
+                                            <div>
+                                                <i class="ti-list-ol font-24"></i>
+                                            </div>
+                                            <h6>لیست کاربران</h6>
                                         </div>
-                                        <h6>لیست کاربران</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
+                    @endcan
+                    @can('create_user',App\Models\User::class)
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                <a href="{{ route('user.create') }}" class="bg-blue">
-                                    <div>
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('user.create') }}" class="bg-blue">
                                         <div>
-                                            <i class="ti-write font-24"></i>
+                                            <div>
+                                                <i class="ti-write font-24"></i>
+                                            </div>
+                                            <h6>افزودن کاربر جدید</h6>
                                         </div>
-                                        <h6>افزودن کاربر جدید</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endcan
                 </div>
                 {{-- end user --}}
 
                 {{-- start role --}}
                 <div id="role" class="d-none card-body row">
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                </br></br>
-                                <a href="{{ route('role.index') }}" class="bg-red">
-                                    <div>
+                    @can('read_role',App\Models\Role::class)
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    </br></br>
+                                    <a href="{{ route('role.index') }}" class="bg-red">
                                         <div>
-                                            <i class="ti-list-ol font-24"></i>
+                                            <div>
+                                                <i class="ti-list-ol font-24"></i>
+                                            </div>
+                                            <h6>لیست نقش ها</h6>
                                         </div>
-                                        <h6>لیست نقش ها</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
+                    @endcan
+                    @can('create_role',App\Models\Role::class)
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                <a href="{{ route('role.create') }}" class="bg-blue">
-                                    <div>
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('role.create') }}" class="bg-blue">
                                         <div>
-                                            <i class="ti-write font-24"></i>
+                                            <div>
+                                                <i class="ti-write font-24"></i>
+                                            </div>
+                                            <h6>افزودن نقش جدید</h6>
                                         </div>
-                                        <h6>افزودن نقش جدید</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endcan
                 </div>
                 {{-- end role --}}
-
-                {{-- start activity --}}
-                <div id="activity" class="d-none card-body row">
-                    <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                </br></br>
-                                <a href="{{ route('activity.index') }}" class="bg-red">
-                                    <div>
+                @can('read_activity',App\Models\Activity::class)
+                    {{-- start activity --}}
+                    <div id="activity" class="d-none card-body row">
+                        <!-- Single Widget -->
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    </br></br>
+                                    <a href="{{ route('activity.index') }}" class="bg-red">
                                         <div>
-                                            <i class="ti-list-ol font-24"></i>
+                                            <div>
+                                                <i class="ti-list-ol font-24"></i>
+                                            </div>
+                                            <h6>لیست فعالیت ها</h6>
                                         </div>
-                                        <h6>لیست فعالیت ها</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                {{-- end activity --}}
-
+                    {{-- end activity --}}
+                @endcan
                 {{-- start commodity --}}
                 <div id="commodity" class="d-none card-body row">
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                </br></br>
-                                <a href="{{ route('commodity.index') }}" class="bg-red">
-                                    <div>
+                    @can('read_commodity',App\Models\Commodity::class)
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    </br></br>
+                                    <a href="{{ route('commodity.index') }}" class="bg-red">
                                         <div>
-                                            <i class="ti-list-ol font-24"></i>
+                                            <div>
+                                                <i class="ti-list-ol font-24"></i>
+                                            </div>
+                                            <h6>لیست کالاها</h6>
                                         </div>
-                                        <h6>لیست کالاها</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
+                    @endcan
+                    @can('create_commodity',App\Models\Commodity::class)
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                <a href="{{ route('commodity.create') }}" class="bg-blue">
-                                    <div>
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('commodity.create') }}" class="bg-blue">
                                         <div>
-                                            <i class="ti-write font-24"></i>
+                                            <div>
+                                                <i class="ti-write font-24"></i>
+                                            </div>
+                                            <h6>افزودن کالای جدید</h6>
                                         </div>
-                                        <h6>افزودن کالای جدید</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endcan
                 </div>
                 {{-- end commodity --}}
 
                 {{-- start warehouse --}}
                 <div id="warehouse" class="d-none card-body row">
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                </br></br>
-                                <a href="{{ route('warehouse.index') }}" class="bg-red">
-                                    <div>
+                    @can('read_warehouse',App\Models\Warehouse::class)
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    </br></br>
+                                    <a href="{{ route('warehouse.index') }}" class="bg-red">
                                         <div>
-                                            <i class="ti-list-ol font-24"></i>
+                                            <div>
+                                                <i class="ti-list-ol font-24"></i>
+                                            </div>
+                                            <h6>لیست انبار ها</h6>
                                         </div>
-                                        <h6>لیست انبار ها</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
+                    @endcan
+                    @can('create_warehouse',App\Models\Warehouse::class)
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                <a href="{{ route('warehouse.create') }}" class="bg-blue">
-                                    <div>
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('warehouse.create') }}" class="bg-blue">
                                         <div>
-                                            <i class="ti-write font-24"></i>
+                                            <div>
+                                                <i class="ti-write font-24"></i>
+                                            </div>
+                                            <h6>افزودن انبار جدید</h6>
                                         </div>
-                                        <h6>افزودن انبار جدید</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                <a href="{{ route('inventory.index') }}" class="bg-green">
-                                    <div>
+                    @endcan
+                <!-- Single Widget -->
+                    @can('read_warehouse',App\Models\Warehouse::class)
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('inventory.index') }}" class="bg-green">
                                         <div>
-                                            <i class="ti-bar-chart font-24"></i>
+                                            <div>
+                                                <i class="ti-bar-chart font-24"></i>
+                                            </div>
+                                            <h6>وضعیت موجودی انبار</h6>
                                         </div>
-                                        <h6>وضعیت موجودی انبار</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endcan
                 </div>
                 {{-- end warehouse --}}
                 {{-- start proccess --}}
                 <div id="process" class="d-none card-body row">
+                @can('read_importing',App\Models\ImportingRequest::class)
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                </br></br>
-                                <a href="{{ route('importing-request.index') }}" class="bg-red">
-                                    <div>
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    </br></br>
+                                    <a href="{{ route('importing-request.index') }}" class="bg-red">
                                         <div>
-                                            <i class="ti-list-ol font-24"></i>
+                                            <div>
+                                                <i class="ti-list-ol font-24"></i>
+                                            </div>
+                                            <h6>لیست درخواست ها</h6>
                                         </div>
-                                        <h6>لیست درخواست ها</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
+                @endif
+                @can('create_importing',App\Models\ImportingRequest::class)
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                <a href="{{ route('importing-request.create') }}" class="bg-blue">
-                                    <div>
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('importing-request.create') }}" class="bg-blue">
                                         <div>
-                                            <i class="ti-write font-24"></i>
+                                            <div>
+                                                <i class="ti-write font-24"></i>
+                                            </div>
+                                            <h6>ثبت درخواست جدید</h6>
                                         </div>
-                                        <h6>ثبت درخواست جدید</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
                 {{-- end process --}}
                 {{-- start customer --}}
                 <div id="customer" class="d-none card-body row">
+                @can('read_customer',App\Models\Customer::class)
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                </br></br>
-                                <a href="{{ route('customer.index') }}" class="bg-red">
-                                    <div>
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    </br></br>
+                                    <a href="{{ route('customer.index') }}" class="bg-red">
                                         <div>
-                                            <i class="ti-list-ol font-24"></i>
+                                            <div>
+                                                <i class="ti-list-ol font-24"></i>
+                                            </div>
+                                            <h6>لیست مشتریان</h6>
                                         </div>
-                                        <h6>لیست مشتریان</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
+                @endcan
+                @can('create_customer',App\Models\Customer::class)
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                <a href="{{ route('customer.create') }}" class="bg-blue">
-                                    <div>
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('customer.create') }}" class="bg-blue">
                                         <div>
-                                            <i class="ti-write font-24"></i>
+                                            <div>
+                                                <i class="ti-write font-24"></i>
+                                            </div>
+                                            <h6>ثبت مشتری جدید</h6>
                                         </div>
-                                        <h6>ثبت مشتری جدید</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endcan
                 </div>
                 {{-- end customer --}}
                 {{-- start customer --}}
                 <div id="withrawal" class="d-none card-body row">
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                </br></br>
-                                <a href="{{ route('withdrawal-request.index') }}" class="bg-red">
-                                    <div>
+                    @can('read_withdrawal',App\Models\WithdrawalRequest::class)
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    </br></br>
+                                    <a href="{{ route('withdrawal-request.index') }}" class="bg-red">
                                         <div>
-                                            <i class="ti-list-ol font-24"></i>
+                                            <div>
+                                                <i class="ti-list-ol font-24"></i>
+                                            </div>
+                                            <h6>لیست فروش</h6>
                                         </div>
-                                        <h6>لیست فروش</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
+                    @endcan
+                    @can('create_withdrawal',App\Models\WithdrawalRequest::class)
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                <a href="{{ route('withdrawal-request.create') }}" class="bg-blue">
-                                    <div>
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('withdrawal-request.create') }}" class="bg-blue">
                                         <div>
-                                            <i class="ti-write font-24"></i>
+                                            <div>
+                                                <i class="ti-write font-24"></i>
+                                            </div>
+                                            <h6>ثبت فروش جدید</h6>
                                         </div>
-                                        <h6>ثبت فروش جدید</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endcan
                 </div>
                 {{-- end customer --}}
             </div>
         </div>
     </div>
-
-
     <div class="row">
         <div class="col-xl-12 height-card box-margin">
             <div class="card">
