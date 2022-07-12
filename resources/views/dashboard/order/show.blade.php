@@ -45,7 +45,7 @@
                                 <input type="text"   class="form-control" value="{{ __('fields.commodity.units')[$order->unit] }}" disabled>
                             </div>
                         </div>
-                        <div class="form-row col-md-12">
+                        <div class="form-row">
                             <div class="form-group col-md-4">
                                 <label for="unit"> {{ __('fields.status') }}</label>
                                 <input type="text"   class="form-control" value="{{ __('fields.order.status')[$order->status] }}" disabled>

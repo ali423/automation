@@ -176,34 +176,6 @@
             wareamount.forEach(element=>{
                 total = total + parseFloat(element.value);
             })
-            e.closest('#inputFormRow').querySelector('#total-amount').value = total.toFixed(2);
-            // switch (unit.value) {
-            //     case "kg":
-            //         wareamount.forEach(element=>{
-            //             total = total + parseFloat(element.value);
-            //         })
-            //         e.closest('#inputFormRow').querySelector('#total-amount').value = total.toFixed(2);
-            //         break;
-            //     case "keg":
-            //         wareamount.forEach(element=>{
-            //             total = total + parseFloat(element.value/185);
-            //         })
-            //         e.closest('#inputFormRow').querySelector('#total-amount').value = total.toFixed(2);
-            //         break;
-            //     case "twenty_liters":
-            //         wareamount.forEach(element=>{
-            //             total = total + parseFloat(element.value/17.8);
-            //         })
-            //         e.closest('#inputFormRow').querySelector('#total-amount').value = total.toFixed(2);
-            //         break;
-            //
-            //     default:
-            //         wareamount.forEach(element=>{
-            //             total = total + parseFloat(element.value);
-            //         })
-            //         e.closest('#inputFormRow').querySelector('#total-amount').value = total.toFixed(2);
-            //         break;
-            // }
         }
 
         function unitchange(e){
