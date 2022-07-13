@@ -154,7 +154,7 @@
                             class="treeview active"
                             @else
                             class="treeview"
-                            @endif>                        <a href="javascript:void(0)"><i class="ti-list-ol"></i> <span>سفارشات</span> <i
+                            @endif>                        <a href="javascript:void(0)"><i class="ti-receipt"></i> <span>سفارشات</span> <i
                                 class="fa fa-angle-left"></i></a>
                         <ul class="treeview-menu">
                             @can('read_order',App\Models\Order::class)

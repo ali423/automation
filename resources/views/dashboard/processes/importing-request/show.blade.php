@@ -234,6 +234,7 @@
                 </div>
             </div>
         </div>
+        <div id="finvoice"><div class="factorbtn d-none"></div></div>
     </div>
 @endsection
 
