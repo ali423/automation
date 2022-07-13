@@ -41,7 +41,7 @@ class CommodityController extends Controller
     public function create()
     {
         return view('dashboard.commodity.create', [
-            'materials' => Commodity::all(),
+            'materials' => Commodity::query()->where('type','material')->get(),
         ]);
     }
 

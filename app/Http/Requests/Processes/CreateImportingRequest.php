@@ -23,7 +23,7 @@ class CreateImportingRequest extends FormRequest
      */
     public function rules()
     {
-        $rules= [
+        return [
             'commodity_id'=>['required','array','min:1'],
             'unit'=>['required','array','min:1'],
             'warehouse_id'=>['required','array','min:1'],
@@ -35,22 +35,5 @@ class CreateImportingRequest extends FormRequest
             'file'=>['nullable','mimes:jpg,svg,png,jpeg,pdf,txt,zip,rar','max:5120'],
             'comment'=>['nullable','string'],
         ];
-        $commodities=$this->get('commodity_id');
-        $units=$this->get('unit');
-        $amounts=$this->get('amount');
-        $warehouses=$this->get('warehouse_id');
-        $array_counts=[
-            count($commodities),
-            count($units),
-            count($amounts),
-            count($warehouses),
-        ];
-        $array_keys=array_merge(array_keys($commodities),array_keys($units),array_keys($amounts),array_keys($warehouses));
-        if (count(array_unique($array_counts)) != 1 || count(array_unique($array_keys)) !=   count($commodities) ){
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'materials' => ['اطلاعات نوع ماده و مقدار آن باید متناظر باشند.'],
-            ]);
-        }
-        return $rules;
     }
 }

@@ -7,6 +7,8 @@ use App\Http\Requests\InventoryUpdateRequest;
 use App\Models\Warehouse;
 use App\Services\InventoryService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+
 
 class InventoryController extends Controller
 {
@@ -15,7 +17,6 @@ class InventoryController extends Controller
     public function __construct(InventoryService $service)
     {
         $this->service=$service;
-        $this->authorizeResource(Warehouse::class);
         $this->shareView();
     }
     /**
@@ -25,6 +26,7 @@ class InventoryController extends Controller
      */
     public function index()
     {
+        Gate::authorize('read_warehouse');
         $warehouses=Warehouse::query()->orderBy('id', 'DESC')->get();
         return view('dashboard.inventory.index',
             [
@@ -61,6 +63,7 @@ class InventoryController extends Controller
      */
     public function show($id)
     {
+        Gate::authorize('read_warehouse');
         $warehouse=Warehouse::query()->findOrFail($id);
         return view('dashboard.inventory.show',[
             'warehouse'=>$warehouse,
@@ -76,6 +79,7 @@ class InventoryController extends Controller
      */
     public function edit(InventoryEditRequest $request)
     {
+        Gate::authorize('edit_warehouse');
         $warehouse=Warehouse::query()->findOrFail($request->get('warehouse'));
         $commodity=$warehouse->commodities()->where('commodity_id',$request->get('commodity'))->firstOrFail();
         return view('dashboard.inventory.edit',[
@@ -93,6 +97,7 @@ class InventoryController extends Controller
      */
     public function update(InventoryUpdateRequest $request)
     {
+        Gate::authorize('edit_warehouse');
         $warehouse=Warehouse::query()->findOrFail($request->get('warehouse'));
         $res=$this->service->updateAmount($warehouse,$request->only('commodity','commodity_amount'));
         if (isset($res['success']) && $res['success']== false){

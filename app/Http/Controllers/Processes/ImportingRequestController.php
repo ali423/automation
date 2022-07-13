@@ -64,16 +64,17 @@ class ImportingRequestController extends Controller
     public function store(CreateImportingRequest $request)
     {
         $data = $request->only('commodity_id', 'warehouse_id', 'unit', 'amount', 'comment');
+        $this->service->validationSecondLayer($data);
         $check_warehouses = $this->service->checkImportingStore($data);
         if ($check_warehouses['success'] == true) {
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
             }
-            $this->service->create($data, $file ?? null);
+           $importing= $this->service->create($data, $file ?? null);
         } else {
             return redirect()->back()->withErrors($check_warehouses['error']);
         }
-        return redirect(route('importing-request.index'))->with('successful', 'اطلاعات ثبت شد.');
+        return redirect(route('importing-request.show',$importing))->with('successful', 'اطلاعات ثبت شد.');
     }
 
     /**
@@ -122,6 +123,7 @@ class ImportingRequestController extends Controller
             return redirect()->back()->withErrors($check_expired['error']);
         }
         $data = $request->only('commodity_id', 'warehouse_id', 'unit', 'amount', 'comment');
+        $this->service->validationSecondLayer($data);
         if ($request->hasFile('file')) {
             $file = $request->file('file');
         }
@@ -184,4 +186,6 @@ class ImportingRequestController extends Controller
         $this->service->rejectImporting($importing_request);
         return redirect(route('importing-request.show', $importing_request))->with('successful', 'درخواست با موفقیت رد شد.');
     }
+
+
 }

@@ -27,7 +27,7 @@ class ImportingRequestService extends BaseService
         }
         $number = $this->generateUniqueNumber(ImportingRequest::class, 'number');
         $user = auth()->user();
-        DB::transaction(function () use ($data, $commodity, $user, $file, $number) {
+       return DB::transaction(function () use ($data, $commodity, $user, $file, $number) {
             $request = ImportingRequest::query()->create([
                 'status' => 'awaiting_approval',
                 'number' => $number,
@@ -42,8 +42,8 @@ class ImportingRequestService extends BaseService
             if (!empty($file)) {
                 $this->uploadFile($file, 'importing-commodity', $request);
             }
+            return $request;
         });
-        return true;
     }
 
     public function update($importing_request, $data, $file)
@@ -203,6 +203,25 @@ class ImportingRequestService extends BaseService
                 }
             }
             $this->warningCommodity($material);
+        }
+    }
+
+    public function validationSecondLayer($data){
+        $commodities=$data['commodity_id'];
+        $units=$data['unit'];
+        $amounts=$data['amount'];
+        $warehouses=$data['warehouse_id'];
+        $array_counts=[
+            count($commodities),
+            count($units),
+            count($amounts),
+            count($warehouses),
+        ];
+        $array_keys=array_merge(array_keys($commodities),array_keys($units),array_keys($amounts),array_keys($warehouses));
+        if (count(array_unique($array_counts)) != 1 || count(array_unique($array_keys)) !=   count($commodities) ){
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'materials' => ['اطلاعات نوع ماده و مقدار آن باید متناظر باشند.'],
+            ]);
         }
     }
 

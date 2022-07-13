@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Commodity;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -14,19 +15,20 @@ class DashboardController extends Controller
     }
 
     public function index(){
-        $commodities=Commodity::query()->with('warehouses')->whereHas('warehouses',function ($q){
-            $q->where('commodity_amount','>',0);
-        })->get()->toArray();
-        foreach ($commodities as $commodity){
-            $res[]=[
-                'title'=>$commodity['title'],
-                'id'=>$commodity['id'],
-                'warehouses'=>$commodity['warehouses'],
-                'amount'=>array_column(array_column($commodity['warehouses'],'pivot'),'commodity_amount'),
+        $warehouses=Warehouse::query()->with('commodities')->where('status','active')->get()->toArray();
+        foreach ($warehouses as $warehouse){
+            $res[$warehouse['id']]=[
+                'title'=>$warehouse['title'],
             ];
+            foreach ($warehouse['commodities'] as $commodity){
+                $res[$warehouse['id']]['amount'][]=[
+                    'y'=>$commodity['pivot']['commodity_amount'],
+                    'label'=>$commodity['title'],
+                ];
+            }
         }
         return view('dashboard.index',[
-            'commodities'=>$res?? null,
+            'warehouses'=>$res?? array(),
         ]);
     }
 }
