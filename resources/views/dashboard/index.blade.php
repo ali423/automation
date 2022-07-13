@@ -177,8 +177,30 @@
                     </div>
                 </div>
             </div>
+                @endif
+
+        </div>
+        <!-- Single Widget -->
+        <div class="col-12 col-md box-margin height-card">
+            <div class="card">
+                <div class="link card-body d-flex align-items-center justify-content-center" data-link="order">
+                    <div class="text-center">
+                        <div>
+                            <i class="ti-receipt font-24"></i>
+                        </div>
+                        <h6>سفارشات</h6>
+                    </div>
+                    <div class="d-md-none">
+                        <ul class="list-unstyled d-flex">
+                            <li><a href="#" class="btn btn-white m-1">لیست فروش</a></li>
+                            <li><a href="#" class="btn btn-white m-1">ثبت فروش</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    @endif
+
 
     <div id="users-links" class="row d-none d-md-flex">
         <div class="col box-margin height-card">
@@ -497,6 +519,42 @@
                     @endcan
                 </div>
                 {{-- end customer --}}
+                {{-- start order --}}
+                <div id="order" class="d-none card-body row">
+                    <!-- Single Widget -->
+                    <div class="col height-card">
+                        <div class="card">
+                            <div class="card-body d-flex align-items-center justify-content-center">
+                                </br></br>
+                                <a href="{{ route('order.index') }}" class="bg-red">
+                                    <div>
+                                        <div>
+                                            <i class="ti-list-ol font-24"></i>
+                                        </div>
+                                        <h6>لیست سفارشات</h6>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Single Widget -->
+                    <div class="col height-card">
+                        <div class="card">
+                            <div class="card-body d-flex align-items-center justify-content-center">
+                                <a href="{{ route('order.create') }}" class="bg-blue">
+                                    <div>
+                                        <div>
+                                            <i class="ti-write font-24"></i>
+                                        </div>
+                                        <h6>ثبت سفارش جدید</h6>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{-- end order --}}
             </div>
         </div>
     </div>
@@ -554,6 +612,16 @@
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-xl-12 height-card box-margin">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">وضعیت کالا ها</h4>
+                    <div id="chartContainer" style="height: 300px; width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 @endsection
@@ -571,8 +639,107 @@
     <script src="{{ asset('js/default-assets/vector-map/jquery-jvectormap-uk-mill-en.js') }}"></script>
     <script src="{{ asset('js/default-assets/vector-map/jquery-jvectormap-au-mill.js') }}"></script>
     <script src="{{ asset('js/default-assets/vector-map/jvectormap.custom.js') }}"></script>
+    <script src="{{ asset('js/canvas.min.js') }}"></script>
 
     {{-- main links js --}}
     <script src="{{ asset('js/main-links/main-links.js') }}"></script>
+
+    {{-- commodity in ware chart --}}
+    <script>
+        window.onload = function () {
+        
+        var chart = new CanvasJS.Chart("chartContainer", {
+            animationEnabled: true,
+            exportEnabled: true,
+            title:{
+                //header
+                text: "", 
+                fontFamily: "yekan black",
+                fontColor: "#695A42"
+            },
+            axisX: {
+                // title: "کالاها"
+            },
+            axisY:{
+                valueFormatString:"#0 kg",
+                gridColor: "#B6B1A8",
+                tickColor: "#B6B1A8"
+            },
+            toolTip: {
+                shared: true,
+                content: toolTipContent
+            },
+            data: [{
+                    type: "stackedColumn",
+                    // showInLegend: true,
+                    color: "#00b6e4",
+                    name: "انبار 1",
+                    dataPoints: [
+                        { y: 6.75,  label: "کالا 1"},
+                        { y: 8.57,  label: "کالا 2"},
+                        { y: 10.64,  label: "کالا 3"},
+                        { y: 13.97,  label: "کالا 4"},
+                        { y: 15.42,  label: "کالا 5"}
+                    ]
+                },
+                {        
+                    type: "stackedColumn",
+                    // showInLegend: true,
+                    name: "انبار 2",
+                    color: "#00b6e4",
+                    dataPoints: [
+                        { y: 6.82,  label: "کالا 1"},
+                        { y: 9.02,  label: "کالا 2"},
+                        { y: 11.80,  label: "کالا 3"},
+                        { y: 14.11,  label: "کالا 4"},
+                        { y: 15.96,  label: "کالا 5"}
+                    ]
+                },
+                {        
+                    type: "stackedColumn",
+                    // showInLegend: true,
+                    name: "انبار 3",
+                    color: "#00b6e4",
+                    dataPoints: [
+                        { y: 7.28,  label: "کالا 1" },
+                        { y: 9.72,  label: "کالا 2" },
+                        { y: 13.30,  label: "کالا 3"},
+                        { y: 14.9,  label: "کالا 4"},
+                        { y: 18.10,  label: "کالا 5"}
+                    ]
+                },
+                {        
+                    type: "stackedColumn",
+                    // showInLegend: true,
+                    name: "انبار 4",
+                    color: "#00b6e4",
+                    dataPoints: [
+                        { y: 8.44,  label: "کالا 1" },
+                        { y: 10.58,  label: "کالا 2" },
+                        { y: 14.41,  label: "کالا 3"},
+                        { y: 16.86,  label: "کالا 4"},
+                        { y: 10.64,  label: "کالا 5" }
+                    ]
+                }]
+        });
+        chart.render();
+        
+        function toolTipContent(e) {
+            var str = "";
+            var total = 0;
+            var str2, str3;
+            for (var i = 0; i < e.entries.length; i++){
+                var  str1 = "<span style= \"color:"+e.entries[i].dataSeries.color + "\"> "+e.entries[i].dataSeries.name+"</span> : <strong>"+e.entries[i].dataPoint.y+" کیلوگرم</strong><br/>";
+                total = e.entries[i].dataPoint.y + total;
+                str = str.concat(str1);
+            }
+            str2 = `<b>${e.entries[0].dataPoint.label}</b><br/>`;
+            total = Math.round(total * 100) / 100;
+            str3 = "<span style = \"color:Tomato\">مجموع : </span><strong>"+total+" کیلوگرم</strong><br/>";
+            return (str2.concat(str)).concat(str3);
+        }
+        
+        }
+        </script>
 
 @endsection
