@@ -19,7 +19,7 @@ class WithdrawalRequestController extends Controller
     {
         $this->service = $service;
         $this->authorizeResource(WithdrawalRequest::class);
-
+        $this->shareView();
     }
     /**
      * Display a listing of the resource.

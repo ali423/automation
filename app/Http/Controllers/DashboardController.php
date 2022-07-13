@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->shareView();
+    }
+
     public function index(){
         $commodities=Commodity::query()->with('warehouses')->whereHas('warehouses',function ($q){
             $q->where('commodity_amount','>',0);

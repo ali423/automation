@@ -16,6 +16,7 @@ class CustomerController extends Controller
     {
         $this->service=$service;
         $this->authorizeResource(Customer::class);
+        $this->shareView();
     }
     /**
      * Display a listing of the resource.

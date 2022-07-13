@@ -11,6 +11,7 @@ class ActivityController extends Controller
     public function __construct()
     {
         $this->authorizeResource(Activity::class);
+        $this->shareView();
     }
     /**
      * Display a listing of the resource.

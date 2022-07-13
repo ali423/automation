@@ -16,6 +16,7 @@ class InventoryController extends Controller
     {
         $this->service=$service;
         $this->authorizeResource(Warehouse::class);
+        $this->shareView();
     }
     /**
      * Display a listing of the resource.
