@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CommodityUpdateRequest extends FormRequest
 {
@@ -30,7 +31,7 @@ class CommodityUpdateRequest extends FormRequest
         ];
         if ($this->commodity->type == 'product'){
             $rules['materials']=['required','array','min:1'];
-            $rules['materials.*']=['required','exists:commodities,id','distinct'];
+            $rules['materials.*']=['required',Rule::exists('commodities', 'id')->where('type','material'),'distinct'];
             $rules['material_amount']=['required','array','min:1'];
             $rules['material_amount.*']=['required','numeric','max:100'];
             $rules['sales_price']=['required','integer'];
