@@ -6,6 +6,7 @@
 
 @section('content')
     <div class="row">
+        @if($commodities->count() > 0)
         <div class="col-xl-12 height-card box-margin">
             <div class="card">
                 <div class="card-body">
@@ -21,56 +22,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-12 height-card box-margin">
-            <div class="card">
-                <div class="card-body">
-                    <!-- Stacked Bar -->
-                    <div id="panel-15" class="panel">
-                        <h4 class="card-title">کالا های موجود در انبار {{ $warehouse->title }}</h4>
-                        <div class="row">
-                            <div class="col-md-10">
-                                <div id="mychart" class="row">
-                                    @php($i = 1)
-                                    @foreach ($commodities as $commodity)
-                                        <div class="col mr-1 mt-5 mt-3">
-                                            <span class="size">
-                                                {{ number_format($commodity->pivot->commodity_amount) }} کیلوگرم
-                                            </span>
-                                            <div class="full-size">
-                                                <span
-                                                    @switch($i) @case(1)
-                                                class="current-size bg-primary"
-                                                @break
-                                                @case(2)
-                                                class="current-size bg-success"
-                                                @break
-                                                @case(3)
-                                                class="current-size bg-danger"
-                                                @break
-                                                @case(4)
-                                                class="current-size bg-secondary"
-                                                @break
-                                                @case(5)
-                                                class="current-size bg-warning"
-                                                @php($i=0)
-                                                @break @endswitch
-                                                    data-current="{{ round(($commodity->pivot->commodity_amount * 100) / $warehouse->capacity, 2) }}"></span>
-                                            </div>
-                                            {{ $commodity->title }}
-                                        </div>
-                                        @php($i++)
-                                    @endforeach
-
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <img src="{{ asset('img/ware-capacity/warechartex.png')}}" alt="">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        @endif
         <div class="col-xl-12 box-margin height-card">
             <div class="card card-body">
                 <h4 class="card-title">کالا های موجود در انبار {{ $warehouse->title }}</h4>

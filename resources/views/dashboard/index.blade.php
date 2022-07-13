@@ -177,28 +177,29 @@
                     </div>
                 </div>
             </div>
-                @endif
+    @endif
 
-        </div>
+    @if(Gate::check('read_order') || Gate::check('create_order'))
         <!-- Single Widget -->
-        <div class="col-12 col-md box-margin height-card">
-            <div class="card">
-                <div class="link card-body d-flex align-items-center justify-content-center" data-link="order">
-                    <div class="text-center">
-                        <div>
-                            <i class="ti-receipt font-24"></i>
+            <div class="col-12 col-md box-margin height-card">
+                <div class="card">
+                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="order">
+                        <div class="text-center">
+                            <div>
+                                <i class="ti-receipt font-24"></i>
+                            </div>
+                            <h6>سفارشات</h6>
                         </div>
-                        <h6>سفارشات</h6>
-                    </div>
-                    <div class="d-md-none">
-                        <ul class="list-unstyled d-flex">
-                            <li><a href="#" class="btn btn-white m-1">لیست فروش</a></li>
-                            <li><a href="#" class="btn btn-white m-1">ثبت فروش</a></li>
-                        </ul>
+                        <div class="d-md-none">
+                            <ul class="list-unstyled d-flex">
+                                <li><a href="#" class="btn btn-white m-1">لیست فروش</a></li>
+                                <li><a href="#" class="btn btn-white m-1">ثبت فروش</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        @endif
     </div>
 
 
@@ -521,108 +522,58 @@
                 {{-- end customer --}}
                 {{-- start order --}}
                 <div id="order" class="d-none card-body row">
+                @can('read_order',App\Models\Order::class)
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                </br></br>
-                                <a href="{{ route('order.index') }}" class="bg-red">
-                                    <div>
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    </br></br>
+                                    <a href="{{ route('order.index') }}" class="bg-red">
                                         <div>
-                                            <i class="ti-list-ol font-24"></i>
+                                            <div>
+                                                <i class="ti-list-ol font-24"></i>
+                                            </div>
+                                            <h6>لیست سفارشات</h6>
                                         </div>
-                                        <h6>لیست سفارشات</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
+                @endcan
+                @can('create_order',App\Models\Order::class)
                     <!-- Single Widget -->
-                    <div class="col height-card">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                <a href="{{ route('order.create') }}" class="bg-blue">
-                                    <div>
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('order.create') }}" class="bg-blue">
                                         <div>
-                                            <i class="ti-write font-24"></i>
+                                            <div>
+                                                <i class="ti-write font-24"></i>
+                                            </div>
+                                            <h6>ثبت سفارش جدید</h6>
                                         </div>
-                                        <h6>ثبت سفارش جدید</h6>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endcan
                 </div>
                 {{-- end order --}}
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-xl-12 height-card box-margin">
-            <div class="card">
-                <div class="card-body">
-                    <!-- Stacked Bar -->
-                    <div id="panel-15" class="panel">
-                        <h4 class="card-title">وضعیت انبار ها</h4>
-                        <div class="row">
-                            <div class="col-md-10">
-                                <div id="mychart" class="row">
-                                    {{-- @php($i = 1)
-                                    @foreach ($warehouses as $warehouse)
-                                        <div class="col mr-1 mt-5 mt-3">
-                                            <span class="size">
-                                                {{ number_format($warehouse->capacity) }} کیلوگرم
-                                            </span>
-                                            <div class="full-size">
-                                                <span></span>
-                                                <span
-                                                    @switch($i) @case(1)
-                                          class="current-size bg-primary"
-                                        @break
-                                        @case(2)
-                                        class="current-size bg-success"
-                                        @break
-                                    @case(3)
-                                    class="current-size bg-danger"
-                                    @break
-                                    @case(4)
-                                    class="current-size bg-secondary"
-                                    @break
-                                    @case(5)
-                                    class="current-size bg-warning"
-                                    @php($i=0)
-                                    @break @endswitch
-                                                    data-current="{{ $warehouse->full_space_percentage }}"></span>
-                                            </div>
-                                            <span>
-                                                {{ $warehouse->title }}
-                                            </span>
-                                        </div>
-                                        @php($i++)
-                                    @endforeach --}}
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <img src="{{ asset('img/ware-capacity/warechartex.png')}}" alt="">
-                            </div>
-                        </div>
+    @if(count($warehouses) > 0)
+        <div class="row">
+            <div class="col-xl-12 height-card box-margin">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">وضعیت کالا ها</h4>
+                        <div id="chartContainer" style="height: 300px; width: 100%;"></div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-xl-12 height-card box-margin">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="card-title">وضعیت کالا ها</h4>
-                    <div id="chartContainer" style="height: 300px; width: 100%;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    @endif
 
 @endsection
 
@@ -647,99 +598,76 @@
     {{-- commodity in ware chart --}}
     <script>
         window.onload = function () {
-        
-        var chart = new CanvasJS.Chart("chartContainer", {
-            animationEnabled: true,
-            exportEnabled: true,
-            title:{
-                //header
-                text: "", 
-                fontFamily: "yekan black",
-                fontColor: "#695A42"
-            },
-            axisX: {
-                // title: "کالاها"
-            },
-            axisY:{
-                valueFormatString:"#0 kg",
-                gridColor: "#B6B1A8",
-                tickColor: "#B6B1A8"
-            },
-            toolTip: {
-                shared: true,
-                content: toolTipContent
-            },
-            data: [{
-                    type: "stackedColumn",
-                    // showInLegend: true,
-                    color: "#00b6e4",
-                    name: "انبار 1",
-                    dataPoints: [
-                        { y: 6.75,  label: "کالا 1"},
-                        { y: 8.57,  label: "کالا 2"},
-                        { y: 10.64,  label: "کالا 3"},
-                        { y: 13.97,  label: "کالا 4"},
-                        { y: 15.42,  label: "کالا 5"}
-                    ]
+
+            var chart = new CanvasJS.Chart("chartContainer", {
+                animationEnabled: true,
+                exportEnabled: true,
+                title: {
+                    //header
+                    text: "",
+                    fontFamily: "yekan black",
+                    fontColor: "#695A42"
                 },
-                {        
-                    type: "stackedColumn",
-                    // showInLegend: true,
-                    name: "انبار 2",
-                    color: "#00b6e4",
-                    dataPoints: [
-                        { y: 6.82,  label: "کالا 1"},
-                        { y: 9.02,  label: "کالا 2"},
-                        { y: 11.80,  label: "کالا 3"},
-                        { y: 14.11,  label: "کالا 4"},
-                        { y: 15.96,  label: "کالا 5"}
-                    ]
+                axisX: {
+                    // title: "کالاها"
                 },
-                {        
-                    type: "stackedColumn",
-                    // showInLegend: true,
-                    name: "انبار 3",
-                    color: "#00b6e4",
-                    dataPoints: [
-                        { y: 7.28,  label: "کالا 1" },
-                        { y: 9.72,  label: "کالا 2" },
-                        { y: 13.30,  label: "کالا 3"},
-                        { y: 14.9,  label: "کالا 4"},
-                        { y: 18.10,  label: "کالا 5"}
-                    ]
+                axisY: {
+                    valueFormatString: "#0 kg",
+                    gridColor: "#B6B1A8",
+                    tickColor: "#B6B1A8"
                 },
-                {        
-                    type: "stackedColumn",
-                    // showInLegend: true,
-                    name: "انبار 4",
-                    color: "#00b6e4",
-                    dataPoints: [
-                        { y: 8.44,  label: "کالا 1" },
-                        { y: 10.58,  label: "کالا 2" },
-                        { y: 14.41,  label: "کالا 3"},
-                        { y: 16.86,  label: "کالا 4"},
-                        { y: 10.64,  label: "کالا 5" }
-                    ]
-                }]
-        });
-        chart.render();
-        
-        function toolTipContent(e) {
-            var str = "";
-            var total = 0;
-            var str2, str3;
-            for (var i = 0; i < e.entries.length; i++){
-                var  str1 = "<span style= \"color:"+e.entries[i].dataSeries.color + "\"> "+e.entries[i].dataSeries.name+"</span> : <strong>"+e.entries[i].dataPoint.y+" کیلوگرم</strong><br/>";
-                total = e.entries[i].dataPoint.y + total;
-                str = str.concat(str1);
+                toolTip: {
+                    shared: true,
+                    content: toolTipContent
+                },
+                data: [
+                        @php($i=1)
+                        @foreach($warehouses as $warehouse)
+                    {
+                        type: "stackedColumn",
+                        // showInLegend: true,
+                        @switch($i)
+                            @case(1)
+                        color: "#00b6e4",
+                        @break
+                            @case(2)
+                        color: "#F72F05",
+                        @break
+                            @case(3)
+                        color: "#7EF317",
+                        @break
+                            @case(4)
+                        color: "#EC17F3",
+                        @php($i=0)
+                            @break
+                            @default
+                        color: "#00b6e4",
+                        @endswitch
+                        name: "{{$warehouse['title']}}",
+                        dataPoints: @json($warehouse['amount'])
+                    },
+                    @php($i++)
+                    @endforeach
+                ]
+            });
+            chart.render();
+
+            function toolTipContent(e) {
+                var str = "";
+                var total = 0;
+                var str2, str3;
+                for (var i = 0; i < e.entries.length; i++) {
+                    var str1 = "<span style= \"color:" + e.entries[i].dataSeries.color + "\"> " + e.entries[i].dataSeries.name + "</span> : <strong>" + e.entries[i].dataPoint.y + " کیلوگرم</strong><br/>";
+                    total = e.entries[i].dataPoint.y + total;
+                    str = str.concat(str1);
+                }
+                str2 = `<b>${e.entries[0].dataPoint.label}</b><br/>`;
+                total = Math.round(total * 100) / 100;
+                str3 = "<span style = \"color:Tomato\">مجموع : </span><strong>" + total + " کیلوگرم</strong><br/>";
+                return (str2.concat(str)).concat(str3);
             }
-            str2 = `<b>${e.entries[0].dataPoint.label}</b><br/>`;
-            total = Math.round(total * 100) / 100;
-            str3 = "<span style = \"color:Tomato\">مجموع : </span><strong>"+total+" کیلوگرم</strong><br/>";
-            return (str2.concat(str)).concat(str3);
+
         }
-        
-        }
-        </script>
+    </script>
 
 @endsection
