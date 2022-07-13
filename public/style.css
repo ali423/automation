@@ -14730,3 +14730,12 @@ i.icon_map_alt.font-12.font-weight-bold {
     padding: 1.5rem;
   }
 }
+
+/* #chartContainer canvas{
+  border: 1px solid #000;
+  border-bottom: 1px;
+} */
+
+#chartContainer .canvasjs-chart-credit{
+  display: none;
+}
