@@ -67,6 +67,14 @@
                                        placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
                             </div>
                         </div>
+                        @if($order->status =='done')
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label>{{ __('fields.done_date') }}</label>
+                                    <input type="text"  class="form-control" value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($customer->updated_at)) }}" disabled>
+                                </div>
+                            </div>
+                            @endif
 
                         <div class="row">
                             <div class="col-md-6">

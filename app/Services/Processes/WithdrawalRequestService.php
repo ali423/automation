@@ -15,7 +15,7 @@ class WithdrawalRequestService extends BaseService
     {
         foreach ($data['commodity_id'] as $key => $value) {
             $commodity = Commodity::query()->findOrFail($value);
-            $warehouse_ids = $data['warehouse_id'][$commodity->id];
+            $warehouse_ids = array_keys($data['amount'][$value]);
             foreach ($warehouse_ids as $warehouse_id) {
                 $warehouse = Warehouse::query()->findOrFail($warehouse_id);
                 $amount = $data['amount'][$commodity->id][$warehouse->id];
@@ -36,7 +36,7 @@ class WithdrawalRequestService extends BaseService
 
     public function create($data, $file)
     {
-        DB::transaction(function () use ($data, $file) {
+      return  DB::transaction(function () use ($data, $file) {
             $number = $this->generateUniqueNumber(WithdrawalRequest::class, 'number');
             $request = WithdrawalRequest::query()->create([
                 'customer_id' => $data['customer_id'],
@@ -61,6 +61,7 @@ class WithdrawalRequestService extends BaseService
                 if (!empty($file)) {
                     $this->uploadFile($file, 'withdrawal-request', $request);
                 }
+                return $request;
         });
     }
     public function checkInventoryApproval(WithdrawalRequest $request){

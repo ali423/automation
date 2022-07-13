@@ -2,19 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateWithdrawalRequest;
 use App\Http\Requests\OrderRequest;
 use App\Models\Commodity;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\WithdrawalRequest;
 use App\Services\OrderService;
+use App\Services\Processes\WithdrawalRequestService;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
     protected $service;
+    protected $withdrawal_service;
 
-    public function __construct(OrderService $service)
+    public function __construct(OrderService $service,WithdrawalRequestService $withdrawal_service)
     {
         $this->service = $service;
+        $this->withdrawal_service=$withdrawal_service;
         $this->authorizeResource(Order::class);
         $this->shareView();
     }
@@ -140,5 +146,23 @@ class OrderController extends Controller
             [
                 'order' => $order,
             ]);
+    }
+
+    public function confirmStore(CreateWithdrawalRequest $request,Order $order){
+        $data = $request->only('commodity_id', 'warehouse_id', 'unit', 'amount', 'comment','price','customer_id');
+        $inventory_check = $this->withdrawal_service->checkInventory($data);
+        if ($inventory_check['success'] == true) {
+            $file=null;
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+            }
+            $withdrawal = DB::transaction(function () use ($order,$data, $file) {
+                $this->service->updateStatus($order);
+                return $this->withdrawal_service->create($data, $file );
+            });
+        } else {
+            return redirect()->back()->withErrors($inventory_check['error']);
+        }
+        return redirect(route('withdrawal-request.show',$withdrawal))->with('successful', 'اطلاعات ثبت شد.');
     }
 }

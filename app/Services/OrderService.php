@@ -12,4 +12,9 @@ class OrderService
     public function update(Order $order,$data){
         return $order->update($data);
     }
+    public function updateStatus(Order $order){
+       $order->update([
+           'status'=>'done',
+       ]);
+    }
 }

@@ -28,10 +28,10 @@ class CustomerRequest extends FormRequest
             'mobile' => ['required', 'unique:customers,mobile','ir_mobile:zero'],
             'comp_name' => ['nullable','string'],
             'address' => ['required',],
-            'zip_code' => ['nullable','ir_postal_code'],
+            'zip_code' => ['nullable','numeric','digits:10'],
             'phone' => ['nullable','ir_phone_with_code','unique:customers,phone'],
-            'national_code' => ['nullable','ir_national_code','unique:customers,national_code'],
-            'economic_code' => ['nullable','numeric','unique:customers,economic_code'],
+            'national_code' => ['nullable','numeric','digits:10','unique:customers,national_code'],
+            'economic_code' => ['nullable','numeric','digits:12','unique:customers,economic_code'],
         ];
     }
 }

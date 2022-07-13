@@ -42,10 +42,22 @@ class WithdrawalRequestController extends Controller
      */
     public function create()
     {
+        $commodities = Commodity::query()->where('type','product')->whereHas('warehouses')->get();
+        $warehouses = Warehouse::query()->where('status', 'active')->get();
+        $customers=Customer::query()->get();
+        if (count($commodities) < 1) {
+            return redirect(route('commodity.create'))->withErrors('ابتدا حداقل یک کالا ثبت کنید .');
+        }
+        if (count($warehouses) < 1) {
+            return redirect(route('warehouse.create'))->withErrors('ابتدا حداقل یک انبار ثبت کنید .');
+        }
+        if (count($customers) < 1) {
+            return redirect(route('customer.create'))->withErrors('ابتدا حداقل یک مشتری ثبت کنید .');
+        }
         return view('dashboard.processes.withdrawal-request.create', [
-            'commodities' => Commodity::query()->where('type','product')->get(),
-            'customers' => Customer::query()->get(),
-            'warehouses' => Warehouse::query()->where('status', 'active')->get(),
+            'commodities' => $commodities,
+            'customers' => $customers,
+            'warehouses' => $warehouses,
         ]);
     }
 
@@ -63,11 +75,11 @@ class WithdrawalRequestController extends Controller
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
             }
-            $this->service->create($data, $file ?? null);
+           $withdrawal= $this->service->create($data, $file ?? null);
         } else {
             return redirect()->back()->withErrors($inventory_check['error']);
         }
-        return redirect(route('withdrawal-request.index'))->with('successful', 'اطلاعات ثبت شد.');
+        return redirect(route('withdrawal-request.show',$withdrawal))->with('successful', 'اطلاعات ثبت شد.');
     }
 
     /**

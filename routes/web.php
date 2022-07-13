@@ -63,6 +63,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('order/confirm/{order}',[OrderController::class,'confirm'])->name('order.confirm');
 
+    Route::post('order/confirm/{order}',[OrderController::class,'confirmStore'])->name('order-confirm.store');
+
+
     Route::resource('order',OrderController::class);
 
     Route::resource('inventory',InventoryController::class)->only('index','show');

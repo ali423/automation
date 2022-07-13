@@ -63,10 +63,10 @@
                                     </div>
 
                                     <div class="form-group col-md-4">
-                                        <label for="price"> {{ __('fields.sell-price') }}</label>
+                                        <label for="price"> {{ __('fields.sell-price_per_unit') }}</label>
                                         <input type="text" id="price" name="price[0]" class="form-control"
-                                               placeholder="{{ __('fields.sell-price') }}" required>
-                                        <div class="invalid-feedback">{{ __('fields.sell-price') }} را انتخاب کنید</div>
+                                               placeholder="{{ __('fields.sell-price_per_unit') }}" required>
+                                        <div class="invalid-feedback">{{ __('fields.sell-price_per_unit') }} را انتخاب کنید</div>
                                     </div>
 
                                     <div class="warehouse-inputs position-relative" style="overflow: hidden;height:0;width:0;">
@@ -118,7 +118,7 @@
 
         // add row
         $("#addRow").click(function () {
-            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-4"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]" onchange="commodity_change(this)" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div><div class="form-group col-md-2"><label for="unit"> {{ __('fields.unit') }}</label><select id="unit" class="form-control" name="unit[0]" onchange="unitchange(this)" disabled required>@foreach( __('fields.commodity.units') as $key=>$value)<option value="{{$key}}">{{$value}}</option>@endforeach</select><div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div></div><div class="form-group col-md-2"><label for="total">مجموع</label><input type="number" value="0" id="total-amount" name="totalamount[0]" class="form-control"placeholder="{{ __('fields.sell-price') }}" required disabled></div><div class="form-group col-md-4"><label for="price"> {{ __('fields.sell-price') }}</label><input type="text" id="price" name="price[0]" class="form-control"placeholder="{{ __('fields.sell-price') }}" required><div class="invalid-feedback">{{ __('fields.sell-price') }} را انتخاب کنید</div></div><i id="removeRow" type="submit" class="ti-close"></i></div></div>';
+            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-4"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]" onchange="commodity_change(this)" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div><div class="form-group col-md-2"><label for="unit"> {{ __('fields.unit') }}</label><select id="unit" class="form-control" name="unit[0]" onchange="unitchange(this)" disabled required>@foreach( __('fields.commodity.units') as $key=>$value)<option value="{{$key}}">{{$value}}</option>@endforeach</select><div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div></div><div class="form-group col-md-2"><label for="total">مجموع</label><input type="number" value="0" id="total-amount" name="totalamount[0]" class="form-control"placeholder="{{ __('fields.sell-price_per_unit') }}" required disabled></div><div class="form-group col-md-4"><label for="price"> {{ __('fields.sell-price_per_unit') }}</label><input type="text" id="price" name="price[0]" class="form-control"placeholder="{{ __('fields.sell-price_per_unit') }}" required><div class="invalid-feedback">{{ __('fields.sell-price_per_unit') }} را انتخاب کنید</div></div><i id="removeRow" type="submit" class="ti-close"></i></div></div>';
             $('#newRow').append(html);
             document.querySelectorAll('#inputFormRow').forEach((element, index) => {
                 element.querySelector('#commodity_id').setAttribute('name', 'commodity_id[' + index + ']');

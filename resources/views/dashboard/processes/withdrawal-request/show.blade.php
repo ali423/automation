@@ -226,7 +226,7 @@
                             <div>تاریخ: <span>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}</span></div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>خریدار/ نماینده خریدار: <span>{{ $request->creator_user->full_name }}</span></div>
+                            <div>خریدار/ نماینده خریدار: <span>{{ $request->customer->name }}</span></div>
                             <div>شماره درخواست: <span>{{$request->number}}</span></div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -245,13 +245,20 @@
                                     <th scope="col">تعداد / مقدار</th>
                                     <th scope="col">توضیحات</th>
                                 </tr>
+                                @php($i=1)
+                                @foreach($request->commodities as $commodity)
+                                    @php($amonuts=json_decode($commodity->pivot->amount))
+                                    @foreach($amonuts as $key=>$value)
                                 <tr>
-                                    <th scope="row"></th>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
+                                    <th scope="row">{{$i}}</th>
+                                    <td>{{$commodity->title}}</td>
+                                    <td>{{\App\Models\Warehouse::query()->where('id',$key)->first()->title}}</td>
+                                    <td>{{ $value }} {{ __('fields.commodity.units')[$commodity->pivot->unit] }}</td>
                                     <td></td>
                                 </tr>
+                                        @php($i++)
+                                    @endforeach
+                                @endforeach
                             </table>
                         </div>
                         <div class="mb-5">

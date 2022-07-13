@@ -13,7 +13,7 @@
 
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
-                        <form method="post" action="{{ route('withdrawal-request.store') }}"
+                        <form method="post" action="{{ route('order-confirm.store',$order) }}"
                             class="needs-validation forms-sample" enctype="multipart/form-data" novalidate="">
                             @csrf
                             <div class="form-row m-3">
@@ -100,9 +100,8 @@
                                                     value="{{ $warehouse->id }}">
                                             </div>
                                         </div>
+                                    @endforeach
                                 </div>
-                                @endforeach
-
                             </div>
 
                             <div class="form-group">

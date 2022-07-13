@@ -19,6 +19,7 @@ class Order extends Model
         'unit',
         'deadline',
         'price',
+        'status',
     ];
     public function customer()
     {
