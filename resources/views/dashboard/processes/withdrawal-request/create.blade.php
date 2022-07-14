@@ -171,11 +171,13 @@
         }
         function total(e,value){
             var unit = e.closest('#inputFormRow').querySelector('#unit');
+            var totalamount = e.closest('#inputFormRow').querySelector('#total-amount');
             var wareamount = e.closest('#inputFormRow').querySelectorAll('.ware-amount');
             var total = 0;
             wareamount.forEach(element=>{
                 total = total + parseFloat(element.value);
             })
+            totalamount.value = total.toFixed(2);
         }
 
         function unitchange(e){

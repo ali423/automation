@@ -105,6 +105,10 @@
                                         <td>{{$withdrawal_amount['warehouse']['title']}}</td>
                                     </tr>
                                     @endforeach
+                                    <tr>
+                                        <td class="text-right" colspan="4">مجموع:</td>
+                                        <td>20000</td>
+                                    </tr>
                                 </table>
                             </div>
                         @endforeach

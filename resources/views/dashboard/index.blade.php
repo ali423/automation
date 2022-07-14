@@ -574,6 +574,18 @@
             </div>
         </div>
     @endif
+    <div class="row">
+        <div class="col-xl-12 height-card box-margin">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">وضعیت سفارشات</h4>
+                    <div>
+                        <canvas id="orderchart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 @endsection
 
@@ -591,6 +603,7 @@
     <script src="{{ asset('js/default-assets/vector-map/jquery-jvectormap-au-mill.js') }}"></script>
     <script src="{{ asset('js/default-assets/vector-map/jvectormap.custom.js') }}"></script>
     <script src="{{ asset('js/canvas.min.js') }}"></script>
+    <script src="{{ asset('js/chartjs.js') }}"></script>
 
     {{-- main links js --}}
     <script src="{{ asset('js/main-links/main-links.js') }}"></script>
@@ -668,6 +681,25 @@
             }
 
         }
+    </script>
+    <script>
+        const mixedChart = new Chart(document.getElementById('orderchart'), {
+        data: {
+            datasets: [{
+                type: 'bar',
+                label: 'سفارش',
+                data: [10, 20, 30, 40],
+                backgroundColor: 'rgba(255, 99, 132, 0.2)'
+            }, {
+                type: 'bar',
+                label: 'موجودی',
+                data: [60, 50, 40, 50],
+                backgroundColor: 'rgb(54, 162, 235'
+            }],
+            labels: ['سفارش (20 روز)', 'February', 'March', 'April']
+        },
+        options: options
+        });
     </script>
 
 @endsection

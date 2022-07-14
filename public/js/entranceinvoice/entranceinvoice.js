@@ -75,6 +75,7 @@ warebtn.addEventListener('click', function(){
     ware.classList.remove('d-none')
     window.print();
 })
+
 factorbtn.addEventListener('click', function(){
     
     if(!(finvoice.classList.contains('showprint'))&&(invoice.classList.contains('showprint'))){
