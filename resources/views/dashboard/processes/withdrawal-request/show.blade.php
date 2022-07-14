@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title', 'داشبورد')
+@section('title', 'جزئیات درخواست فروش کالا')
 
 @section('page_styles')
 <link rel="stylesheet" href="{{ asset('css/imexport-print.css') }}">
@@ -101,13 +101,13 @@
                                     <tr>
                                         <th scope="row" id="rownumbers"></th>
                                         <td>{{ $commodity->title }}</td>
-                                        <td>{{ number_format($withdrawal_amount['amount']) .' '. __('fields.commodity.units')[$withdrawal_amount['unit']] }}</td>
+                                        <td>{{ number_format($total_amount[$commodity->id][]=$withdrawal_amount['amount']) .' '. __('fields.commodity.units')[$withdrawal_amount['unit']] }}</td>
                                         <td>{{$withdrawal_amount['warehouse']['title']}}</td>
                                     </tr>
                                     @endforeach
                                     <tr>
                                         <td class="text-right" colspan="4">مجموع:</td>
-                                        <td>20000</td>
+                                        <td>{{ number_format(array_sum($total_amount[$commodity->id])) .' '. __('fields.commodity.units')[$withdrawal_amount['unit']] }}</td>
                                     </tr>
                                 </table>
                             </div>

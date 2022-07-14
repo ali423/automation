@@ -62,4 +62,9 @@ class Commodity extends Model
         }
         return $res ??null;
     }
+    public function getTotalAmountAttribute(){
+        $warehouses=$this->warehouses()->get()->toArray();
+        $amounts=array_column(array_column($warehouses,'pivot'),'commodity_amount');
+        return array_sum($amounts);
+    }
 }

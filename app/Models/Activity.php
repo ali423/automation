@@ -62,8 +62,11 @@ class Activity extends Model
                 $new_value = json_decode($this->data, true);
                 unset($old_value[$this->relation_name], $old_value['updated_at']);
                 unset($new_value[$this->relation_name], $new_value['updated_at']);
+                unset($old_value['pivot']);
+                unset($new_value['pivot']);
                 $old_diff = array_diff($old_value, $new_value);
                 $new_diff = array_diff($new_value, $old_value);
+
                 $res = array_filter(array_keys($new_diff), function ($item) use ($new_diff, $old_diff) {
                     if (!empty($new_diff[$item])) {
                         return $item;
@@ -95,6 +98,23 @@ class Activity extends Model
                 $value = json_decode($this->pivot_data, true);
                 $data['detached']=$this->calculatePivotValues($value);
                 return $data;
+            case "pivot_update":
+               $model_data= config('enums.models.'.$this->record_change_type);
+               $i=0;
+              foreach (json_decode($this->pivot_data,true) as $key=>$value){
+                  $pivot_update_res[$i]['title']=$this->relation_model::where('id', $key)->first()->title;
+                  $pivot_update_res[$i]['relation_name']=$model_data['relations'][$this->relation_name]['fa_name'];
+                  foreach ($value['pivots'] as $key=>$value){
+                      $pivot_update_res[$i]['changes'][]= [
+                          'pivot_title'=>$model_data['relations'][$this->relation_name]['pivots'][$key],
+                          'new_amount'=>$value,
+                      ];
+                  }
+                  $i++;
+              }
+                return [
+                    'pivot_update'=>$pivot_update_res,
+                ];
             default:
                 return null;
         }
@@ -102,18 +122,21 @@ class Activity extends Model
     }
 
     protected function calculatePivotValues($items){
+
         foreach ($items ?? array() as $key=>$value){
             if (is_array($value)){
                 $search_obj=$key;
             }else{
                 $search_obj=$value;
             }
-//            dd($this->record_change_type);
-            $result= $this->record_change_type::where('id', $search_obj)->first()->toArray();
-            if (!empty($value['pivots'])){
-                $result['pivots']=$value['pivots'];
+            $result= $this->record_change_type::where('id', $search_obj)->first();
+            if (!is_null($result)){
+                $result=$result->toArray();
+                if (!empty($value['pivots'])){
+                    $result['pivots']=$value['pivots'];
+                }
+                $data[] = $result;
             }
-            $data[] = $result;
         }
         return $data ?? null;
     }

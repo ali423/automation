@@ -563,30 +563,36 @@
         </div>
     </div>
     @if(count($warehouses) > 0)
-        <div class="row">
-            <div class="col-xl-12 height-card box-margin">
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="card-title">وضعیت کالا ها</h4>
-                        <div id="chartContainer" style="height: 300px; width: 100%;"></div>
+        @can('read_warehouse',App\Models\Warehouse::class)
+            <div class="row">
+                <div class="col-xl-12 height-card box-margin">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">وضعیت کالا ها</h4>
+                            <div id="chartContainer" style="height: 300px; width: 100%;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        @endcan
     @endif
-    <div class="row">
-        <div class="col-xl-12 height-card box-margin">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="card-title">وضعیت سفارشات</h4>
-                    <div>
-                        <canvas id="orderchart"></canvas>
+    @if(count($orders) > 0)
+        @can('read_order',App\Models\Order::class)
+
+            <div class="row">
+                <div class="col-xl-12 height-card box-margin">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">وضعیت سفارشات</h4>
+                            <div>
+                                <canvas id="orderchart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
+        @endcan
+    @endif
 @endsection
 
 @section('page_scripts')
@@ -684,21 +690,21 @@
     </script>
     <script>
         const mixedChart = new Chart(document.getElementById('orderchart'), {
-        data: {
-            datasets: [{
-                type: 'bar',
-                label: 'سفارش',
-                data: [10, 20, 30, 40],
-                backgroundColor: 'rgba(255, 99, 132, 0.2)'
-            }, {
-                type: 'bar',
-                label: 'موجودی',
-                data: [60, 50, 40, 50],
-                backgroundColor: 'rgb(54, 162, 235'
-            }],
-            labels: ['سفارش (20 روز)', 'February', 'March', 'April']
-        },
-        options: options
+            data: {
+                datasets: [{
+                    type: 'bar',
+                    label: 'سفارش',
+                    data: @json(array_column($orders,'amount')),
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)'
+                }, {
+                    type: 'bar',
+                    label: 'موجودی',
+                    data: @json(array_column($orders,'exists_amount')),
+                    backgroundColor: 'rgb(54, 162, 235'
+                }],
+                labels: @json(array_column($orders,'title')),
+            },
+            options: options
         });
     </script>
 

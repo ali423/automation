@@ -37,4 +37,18 @@ class ActivityController extends Controller
                 'activities'=>$query->get(),
             ]);
     }
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Activity  $activity
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
+     */
+    public function show(Activity $activity)
+    {
+        return view('dashboard.activity.show',
+            [
+                'activity'=>$activity,
+            ]);
+    }
+
 }

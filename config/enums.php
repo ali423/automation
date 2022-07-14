@@ -6,14 +6,23 @@ return [
             'fa_name' => 'نقش',
             'url' => 'role',
             'relations' => [
-                'permissions' => 'دسترسی ها'
+                'permissions' => [
+                    'fa_name' => 'دسترسی ها',
+                    'primary_key' => 'role_id',
+                ],
+                'users' => [
+                    'fa_name' => 'کاربران',
+                    'primary_key' => 'role_id',
+                ],
             ]
         ],
         'App\Models\User' => [
             'fa_name' => 'کاربران',
             'url' => 'user',
             'relations' => [
-
+                'role' => [
+                    'fa_name' => 'نقش',
+                ],
             ]
         ],
         'App\Models\Commodity' => [
@@ -71,7 +80,30 @@ return [
 
             ]
         ],
+        'App\Models\WithdrawalRequest' => [
+            'fa_name' => 'درخواست فروش کالا',
+            'url' => 'withdrawal-request',
+            'relations' => [
+                'commodities' => [
+                    'fa_name' => 'کالا ها',
+                    'primary_key' => 'withdrawal_id',
+                    'pivots' => [
+                        'amount' => 'مقدار کالا',
+                        'price' => 'قیمت فروش',
+                        'unit' => 'واحد اندازه گیری',
+                    ],
+                ],
+            ]
+        ],
+        'App\Models\Order' => [
+            'fa_name' => 'سفارشات',
+            'url' => 'order',
+            'relations' => [
+
+            ]
+        ],
     ],
+
     'activity_types' => [
         'create' => 'ایجاد',
         'update' => 'ویرایش',
