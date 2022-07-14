@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title', 'داشبورد')
+@section('title', 'تغییر کلمه عبور')
 
 @section('page_styles')
 

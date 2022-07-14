@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title', 'داشبورد')
+@section('title', 'ایجاد سفارش')
 
 @section('page_styles')
     <link rel="stylesheet" href="{{ asset('css/imexport-print.css')}}">

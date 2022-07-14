@@ -64,95 +64,95 @@
                 <div><span class="btn btn-outline-primary btn-sm btn-block">حالت روشن</span></div>
             </div>
 
-            <div class="quick-action p-3">
-                <h4 class="card-title font-16 text-center">نمایش داده ها بر اساس</h4>
-                <hr>
-                <div class="row">
-                    <!-- Single Action -->
-                    <div class="col-6">
-                        <div class="action-area">
-                            <div class="icon">
-                                <i class="fa fa-archive"></i>
-                            </div>
-                            <div class="text">
-                                <a href="#">
-                                    <h5>کیلوگرم</h5>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+{{--            <div class="quick-action p-3">--}}
+{{--                <h4 class="card-title font-16 text-center">نمایش داده ها بر اساس</h4>--}}
+{{--                <hr>--}}
+{{--                <div class="row">--}}
+{{--                    <!-- Single Action -->--}}
+{{--                    <div class="col-6">--}}
+{{--                        <div class="action-area">--}}
+{{--                            <div class="icon">--}}
+{{--                                <i class="fa fa-archive"></i>--}}
+{{--                            </div>--}}
+{{--                            <div class="text">--}}
+{{--                                <a href="#">--}}
+{{--                                    <h5>کیلوگرم</h5>--}}
+{{--                                </a>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
 
-                    <!-- Single Action -->
-                    <div class="col-6">
-                        <div class="action-area">
-                            <div class="icon">
-                                <i class="ti-server"></i>
-                            </div>
-                            <div class="text">
-                                <a href="#">
-                                    <h5>بشکه</h5>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+{{--                    <!-- Single Action -->--}}
+{{--                    <div class="col-6">--}}
+{{--                        <div class="action-area">--}}
+{{--                            <div class="icon">--}}
+{{--                                <i class="ti-server"></i>--}}
+{{--                            </div>--}}
+{{--                            <div class="text">--}}
+{{--                                <a href="#">--}}
+{{--                                    <h5>بشکه</h5>--}}
+{{--                                </a>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
 
-                    <!-- Single Action -->
-                    <div class="col-6">
-                        <div class="action-area">
-                            <div class="icon">
-                                <i class="ti-bag"></i>
-                            </div>
-                            <div class="text">
-                                <a href="#">
-                                    <h5>گالن (20 لیتری)</h5>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+{{--                    <!-- Single Action -->--}}
+{{--                    <div class="col-6">--}}
+{{--                        <div class="action-area">--}}
+{{--                            <div class="icon">--}}
+{{--                                <i class="ti-bag"></i>--}}
+{{--                            </div>--}}
+{{--                            <div class="text">--}}
+{{--                                <a href="#">--}}
+{{--                                    <h5>گالن (20 لیتری)</h5>--}}
+{{--                                </a>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
 
-                    <!-- Single Action -->
-                    <div class="col-6">
-                        <div class="action-area">
-                            <div class="icon">
-                                <i class="fa fa-cog"></i>
-                            </div>
-                            <div class="text">
-                                <a href="#">
-                                    <h5>تنظیمات</h5>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+{{--                    <!-- Single Action -->--}}
+{{--                    <div class="col-6">--}}
+{{--                        <div class="action-area">--}}
+{{--                            <div class="icon">--}}
+{{--                                <i class="fa fa-cog"></i>--}}
+{{--                            </div>--}}
+{{--                            <div class="text">--}}
+{{--                                <a href="#">--}}
+{{--                                    <h5>تنظیمات</h5>--}}
+{{--                                </a>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
 
-                    <!-- Single Action -->
-                    <div class="col-6">
-                        <div class="action-area">
-                            <div class="icon">
-                                <i class="fa fa-bar-chart-o"></i>
-                            </div>
-                            <div class="text">
-                                <a href="#">
-                                    <h5>سود</h5>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+{{--                    <!-- Single Action -->--}}
+{{--                    <div class="col-6">--}}
+{{--                        <div class="action-area">--}}
+{{--                            <div class="icon">--}}
+{{--                                <i class="fa fa-bar-chart-o"></i>--}}
+{{--                            </div>--}}
+{{--                            <div class="text">--}}
+{{--                                <a href="#">--}}
+{{--                                    <h5>سود</h5>--}}
+{{--                                </a>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
 
-                    <!-- Single Action -->
-                    <div class="col-6">
-                        <div class="action-area">
-                            <div class="icon">
-                                <i class="fa fa-heart-o"></i>
-                            </div>
-                            <div class="text">
-                                <a href="#">
-                                    <h5> متن ساختگی </h5>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+{{--                    <!-- Single Action -->--}}
+{{--                    <div class="col-6">--}}
+{{--                        <div class="action-area">--}}
+{{--                            <div class="icon">--}}
+{{--                                <i class="fa fa-heart-o"></i>--}}
+{{--                            </div>--}}
+{{--                            <div class="text">--}}
+{{--                                <a href="#">--}}
+{{--                                    <h5> متن ساختگی </h5>--}}
+{{--                                </a>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
         </div>
     </div>
 
@@ -267,7 +267,7 @@
                                             <h6>نام کاربر</h6>
                                             <span>توسعه دهنده</span>
                                         </div>
-                                    </div> 
+                                    </div>
                                     <a href="#" class="dropdown-item"><i
                                             class="zmdi zmdi-account profile-icon bg-primary" aria-hidden="true"></i>
                                         پروفایل من</a>

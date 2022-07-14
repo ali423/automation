@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title','داشبورد')
+@section('title','ویرایش مشتری')
 
 @section('page_styles')
 

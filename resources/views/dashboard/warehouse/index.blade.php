@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title', 'داشبورد')
+@section('title', 'لیست انبار ها')
 @section('page_styles')
     <!-- These plugins only need for the run this page -->
     <link rel="stylesheet" href="{{ asset('css/default-assets/datatables.bootstrap4.css') }}">

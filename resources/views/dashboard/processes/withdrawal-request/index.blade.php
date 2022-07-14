@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title', 'داشبورد')
+@section('title', 'لیست درخواست های فروش کالا')
 @section('page_styles')
     <!-- These plugins only need for the run this page -->
     <link rel="stylesheet" href="{{ asset('css/default-assets/datatables.bootstrap4.css') }}">
@@ -15,7 +15,7 @@
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-2">لیست درخواست فروش کالا</h4>
+                    <h4 class="card-title mb-2">لیست درخواست های فروش کالا</h4>
                     <table id="datatable-buttons" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                             <tr>
