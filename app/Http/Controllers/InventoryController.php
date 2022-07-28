@@ -79,8 +79,8 @@ class InventoryController extends Controller
      */
     public function edit(InventoryEditRequest $request)
     {
-        Gate::authorize('edit_warehouse');
         $warehouse=Warehouse::query()->findOrFail($request->get('warehouse'));
+        Gate::authorize('edit_warehouse',$warehouse);
         $commodity=$warehouse->commodities()->where('commodity_id',$request->get('commodity'))->firstOrFail();
         return view('dashboard.inventory.edit',[
             'warehouse'=>$warehouse,
@@ -97,8 +97,8 @@ class InventoryController extends Controller
      */
     public function update(InventoryUpdateRequest $request)
     {
-        Gate::authorize('edit_warehouse');
         $warehouse=Warehouse::query()->findOrFail($request->get('warehouse'));
+        Gate::authorize('edit_warehouse',$warehouse);
         $res=$this->service->updateAmount($warehouse,$request->only('commodity','commodity_amount'));
         if (isset($res['success']) && $res['success']== false){
             return redirect()->back()->withErrors($res['error']);
