@@ -17,15 +17,17 @@ class DashboardController extends Controller
     }
 
     public function index(){
-        $warehouses=Warehouse::query()->with('commodities')->where('status','active')->get()->toArray();
+        $commodities = Commodity::query()->whereHas('warehouses')->with('warehouses')->get();
+        $warehouses=Warehouse::query()->whereHas('commodities')->with('commodities')->where('status','active')->get();
         foreach ($warehouses as $warehouse){
-            $warehouses_res[$warehouse['id']]=[
-                'title'=>$warehouse['title'],
+            $warehouses_res[$warehouse->id]=[
+                'title'=>$warehouse->title,
             ];
-            foreach ($warehouse['commodities'] as $commodity){
-                $warehouses_res[$warehouse['id']]['amount'][]=[
-                    'y'=>$commodity['pivot']['commodity_amount'],
-                    'label'=>$commodity['title'],
+            foreach ($commodities as $commodity) {
+                $commodity_amount = $warehouse->commodities->find($commodity->id);
+                $warehouses_res[$warehouse->id]['amount'][] = [
+                    'y' => $commodity_amount->pivot->commodity_amount ?? 0,
+                    'label' => $commodity->title,
                 ];
             }
         }
