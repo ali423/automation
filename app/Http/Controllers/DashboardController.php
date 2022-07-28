@@ -26,7 +26,7 @@ class DashboardController extends Controller
             foreach ($commodities as $commodity) {
                 $commodity_amount = $warehouse->commodities->find($commodity->id);
                 $warehouses_res[$warehouse->id]['amount'][] = [
-                    'y' => $commodity_amount->pivot->commodity_amount ?? 0,
+                    'y' => (float) ($commodity_amount->pivot->commodity_amount ?? 0),
                     'label' => $commodity->title,
                 ];
             }
