@@ -49,6 +49,7 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('read_warehouse',[WarehousePolicy::class,'viewAny']);
         Gate::define('create_warehouse',[WarehousePolicy::class,'create']);
+        Gate::define('edit_warehouse',[WarehousePolicy::class,'update']);
 
         Gate::define('read_importing',[ImportingRequestPolicy::class,'viewAny']);
         Gate::define('create_importing',[ImportingRequestPolicy::class,'create']);
