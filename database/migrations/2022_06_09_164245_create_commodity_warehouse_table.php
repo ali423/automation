@@ -18,6 +18,7 @@ class CreateCommodityWarehouseTable extends Migration
             $table->foreignId('warehouse_id')->constrained();
             $table->primary(['commodity_id','warehouse_id']);
             $table->double('commodity_amount');
+            $table->double('average_purchase_price')->nullable();
             $table->timestamps();
         });
     }

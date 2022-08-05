@@ -21,7 +21,7 @@ class Warehouse extends Model
     public function commodities()
     {
         return $this->belongsToMany(Commodity::class, 'commodity_warehouse', 'warehouse_id', 'commodity_id')
-            ->withPivot('commodity_amount')
+            ->withPivot('commodity_amount','average_purchase_price')
             ->withTimestamps();
     }
     public function getFullSpaceAttribute(){

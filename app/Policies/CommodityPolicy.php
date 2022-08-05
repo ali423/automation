@@ -63,7 +63,7 @@ class CommodityPolicy
      */
     public function update(User $user, Commodity $commodity)
     {
-        $isautorise= $user->role->havePermission('update_commodity');
+        $isautorise= $user->role->havePermission('edit_commodity');
         return $isautorise
             ? Response::allow()
             : Response::deny("شما مجاز نیستید ");
