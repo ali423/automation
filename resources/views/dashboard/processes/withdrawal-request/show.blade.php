@@ -385,7 +385,7 @@
                                     <td>{{$commodity->title}}</td>
                                     <td>{{$amount=array_sum(json_decode($commodity->pivot->amount,true))}}</td>
                                     <td>{{__('fields.commodity.units')[$commodity->pivot->unit] }}</td>
-                                    <td>{{number_format($price=$commodity->pivot->price*10)}}</td>
+                                    <td>{{number_format($price=$commodity->pivot->price)}}</td>
                                     <td>{{ number_format($total_price[]=round($amount*$price)) }}</td>
                                 </tr>
                                 @php($i++)

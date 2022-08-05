@@ -55,7 +55,7 @@
                                                value="{{ $commodity->sales_price }}"
                                                class="form-control" placeholder="{{ __('fields.sales_price') }}"
                                                required>
-                                        <div class="invalid-feedback">حداقل قیمت 100 تومان می باشد</div>
+                                        <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
                                     </div>
                                 @elseif(!empty($commodity->purchase_price))
                                     <div id="purchase_price" class="form-group col-md-6">
@@ -63,7 +63,7 @@
                                         <input type="number" step="0.01" min="100" name="purchase_price"
                                                value="{{ $commodity->purchase_price }}" class="form-control"
                                                placeholder="{{ __('fields.purchase_price') }}" required>
-                                        <div class="invalid-feedback">حداقل قیمت 100 تومان می باشد</div>
+                                        <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
                                     </div>
                                 @endif
                             </div>

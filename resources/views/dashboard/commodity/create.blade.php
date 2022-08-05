@@ -48,14 +48,14 @@
                                     <input type="number" step="0.01" min="100" name="sales_price"
                                            value="{{ old('sales_price') }}"
                                            class="form-control" placeholder="{{ __('fields.sales_price') }}" required>
-                                    <div class="invalid-feedback">حداقل قیمت 100 تومان می باشد</div>
+                                    <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
                                 </div>
                                 <div id="purchase_price" class="form-group col-md-6">
                                     <label for="purchase_price"> {{ __('fields.purchase_price') }}</label>
                                     <input type="number" step="0.01" min="100" name="purchase_price"
                                            value="{{ old('purchase_price') }}" class="form-control"
                                            placeholder="{{ __('fields.purchase_price') }}" required>
-                                    <div class="invalid-feedback">حداقل قیمت 100 تومان می باشد</div>
+                                    <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
                                 </div>
                             </div>
 

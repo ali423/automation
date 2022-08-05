@@ -34,7 +34,7 @@ class WithdrawalRequest extends Model
         }else{
             foreach ($this->commodities as $commodity){
                 $amount=array_sum(json_decode($commodity->pivot->amount,true));
-                $total_price[]=round($commodity->pivot->price * $amount*10);
+                $total_price[]=round($commodity->pivot->price * $amount);
             }
             return[
                 'number'=>$res=array_sum($total_price),
