@@ -15,6 +15,9 @@
                     <div class="col-sm-12 col-xs-12">
                         <form method="post" action="{{ route('importing-request.store') }}" class="needs-validation forms-sample" enctype="multipart/form-data" novalidate="">
                             @csrf
+                            @foreach ($commodities as $commodity)
+                                <input disabled class="d-none" id="type_{{$commodity->id}}" value="{{$commodity->type}}">
+                            @endforeach
                             <div id="product_formul" class="col-lg-12">
                                 <p>اطلاعات ورود کالا به انبار</p>
                                 <div id="inputFormRow" class="form-row shadow p-4 mb-3">
