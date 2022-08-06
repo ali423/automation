@@ -5,6 +5,9 @@
         <!-- Sidebar Menu -->
         <nav>
             <ul class="sidebar-menu" data-widget="tree">
+                <li>
+                    <a href="{{ route('home') }}" class='btn btn-dfprimary text-light'><i class="fa fa-home text-light"></i><span>صفحه اصلی</span></a>
+                </li>
                 @if(Gate::check('read_user') || Gate::check('create_user'))
                     <li
                         @if($first_url_part== 'user')

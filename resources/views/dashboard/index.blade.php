@@ -609,7 +609,6 @@
     <script src="{{ asset('js/default-assets/vector-map/jquery-jvectormap-au-mill.js') }}"></script>
     <script src="{{ asset('js/default-assets/vector-map/jvectormap.custom.js') }}"></script>
     <script src="{{ asset('js/canvas.min.js') }}"></script>
-    <script src="{{ asset('js/chartjs.js') }}"></script>
 
     {{-- main links js --}}
     <script src="{{ asset('js/main-links/main-links.js') }}"></script>
@@ -617,8 +616,7 @@
     {{-- commodity in ware chart --}}
     <script>
         window.onload = function () {
-
-            var chart = new CanvasJS.Chart("chartContainer", {
+            var chart = new CanvasJS.Chart('chartContainer', {
                 animationEnabled: true,
                 exportEnabled: true,
                 title: {
@@ -670,14 +668,13 @@
                 ]
             });
             chart.render();
-
             function toolTipContent(e) {
                 var str = "";
                 var total = 0;
                 var str2, str3;
                 for (var i = 0; i < e.entries.length; i++) {
                     var str1 = "<span style= \"color:" + e.entries[i].dataSeries.color + "\"> " + e.entries[i].dataSeries.name + "</span> : <strong>" + e.entries[i].dataPoint.y + " کیلوگرم</strong><br/>";
-                    total = e.entries[i].dataPoint.y + total;
+                    total = parseFloat(e.entries[i].dataPoint.y) + parseFloat(total);
                     str = str.concat(str1);
                 }
                 str2 = `<b>${e.entries[0].dataPoint.label}</b><br/>`;
@@ -685,9 +682,9 @@
                 str3 = "<span style = \"color:Tomato\">مجموع : </span><strong>" + total + " کیلوگرم</strong><br/>";
                 return (str2.concat(str)).concat(str3);
             }
-
         }
     </script>
+    <script src="{{ asset('js/chartjs.js') }}"></script>
     <script>
         const mixedChart = new Chart(document.getElementById('orderchart'), {
             data: {

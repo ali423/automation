@@ -72,7 +72,7 @@
                                     </select>
                                     <div class="invalid-feedback">{{ __('fields.warehouse.name') }} را انتخاب کنید.</div>
                                 </div>
-                                <div class="form-group col-md-6">
+                                <div class="form-group col-md-3">
                                     <label for="amount"> {{ __('fields.commodity.amount') }}</label>
                                     <input type="number" value="{{ $commodity->pivot->amount }}" id="amount"
                                         min="1" name="amount[0]" class="form-control" autocomplete="off"
@@ -80,6 +80,10 @@
                                     <div class="invalid-feedback">
                                         لطفاً {{ __('fields.commodity.amount') }} را وارد کنید.
                                     </div>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="price"> قیمت خرید</label>
+                                    <input type="price" id="price" name="price[0]" placeholder="_" class="form-control" disabled>
                                 </div>
                             </div>
                         @endforeach
