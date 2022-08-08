@@ -11,6 +11,8 @@ return [
     'sell-price_per_unit' => 'قیمت فروش هر واحد کالا',
     'sales_price' => 'قیمت فروش  هر کیلوگرم(ریال)',
     'purchase_price' => 'قیمت خرید هر کیلوگرم (ریال)',
+    'purchase_unit_price' => 'قیمت خرید (ریال)',
+    'avr_purchase_price' => 'میانگین قیمت خرید هر کیلوگرم(ریال)',
     'capacity' => 'گنجایش',
     'comment' => 'توضیحات',
     'empty_space' => 'فضای خالی(کیلوگرم)',

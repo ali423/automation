@@ -2,6 +2,7 @@
 
 namespace App\Services\Processes;
 
+use App\Models\Commodity;
 use App\Models\ImportingRequest;
 use App\Models\Warehouse;
 use App\Services\BaseService;
@@ -19,10 +20,18 @@ class ImportingRequestService extends BaseService
     {
 
         foreach ($data['commodity_id'] as $key => $value) {
+            $exists_commodity=Commodity::query()->findOrFail($value);
+            if ($exists_commodity->type == 'material' && empty($data['purchase_price'][$key])){
+                $error_price = \Illuminate\Validation\ValidationException::withMessages([
+                    'purchase_price.' . $key  => ['قیمت خرید فرآرده باید وارد شود.'],
+                ]);
+                throw $error_price;
+            }
             $commodity[$value] = [
                 'warehouses_id' => $data['warehouse_id'][$key],
                 'amount' => $data['amount'][$key],
                 'unit' => $data['unit'][$key],
+                'purchase_price' => $data['purchase_price'][$key] ?? null,
             ];
         }
         $number = $this->generateUniqueNumber(ImportingRequest::class, 'number');
@@ -49,10 +58,18 @@ class ImportingRequestService extends BaseService
     public function update($importing_request, $data, $file)
     {
         foreach ($data['commodity_id'] as $key => $value) {
+            $exists_commodity=Commodity::query()->findOrFail($value);
+            if ($exists_commodity->type == 'material' && empty($data['purchase_price'][$key])){
+                $error_price = \Illuminate\Validation\ValidationException::withMessages([
+                    'purchase_price.' . $key  => ['قیمت خرید فرآرده باید وارد شود.'],
+                ]);
+                throw $error_price;
+            }
             $commodity[$value] = [
                 'warehouses_id' => $data['warehouse_id'][$key],
                 'amount' => $data['amount'][$key],
                 'unit' => $data['unit'][$key],
+                'purchase_price' => $data['purchase_price'][$key] ?? null,
             ];
         }
         $user = auth()->user();
@@ -83,22 +100,28 @@ class ImportingRequestService extends BaseService
     public function approvalImporting($importing_request)
     {
         DB::transaction(function () use ($importing_request) {
-            foreach ($importing_request->commodities as $value) {
-                $warehouse = Warehouse::query()->where('id', $value->pivot->warehouses_id)->firstOrFail();
-                $commodity_amount = $this->calculateCommodityAmount($value->pivot->amount, $value->pivot->unit);
-                if ($value->type == 'product') {
-                    $this->subtractingIngredients($value, $commodity_amount);
+            foreach ($importing_request->commodities as $selected_commodity) {
+                $selected_commodity->update([
+                    'purchase_price'=>$this->calculateCommodityPrice($selected_commodity->pivot->purchase_price,$selected_commodity->pivot->unit)
+                ]);
+                $warehouse = Warehouse::query()->where('id', $selected_commodity->pivot->warehouses_id)->firstOrFail();
+                $commodity_amount = $this->calculateCommodityAmount($selected_commodity->pivot->amount, $selected_commodity->pivot->unit);
+                if ($selected_commodity->type == 'product') {
+                    $this->subtractingIngredients($selected_commodity, $commodity_amount);
                 }
                 $add_amounts[$warehouse->id][] = $commodity_amount;
                 $warehouses[$warehouse->id] = $warehouse;
-                if ($warehouse->commodities->contains($value->id)) {
-                    $exits_commodity = $warehouse->commodities->find($value->id);
+                if ($warehouse->commodities->contains($selected_commodity->id)) {
+                    $exits_commodity = $warehouse->commodities->find($selected_commodity->id);
                     $new_amount = round($exits_commodity->pivot->commodity_amount + $commodity_amount, 2);
-                    $warehouse->commodities()->updateExistingPivot($value->id, ['commodity_amount' => $new_amount], false);
+                    $average_purchase_price=$this->calculateAveragePurchasePrice($selected_commodity->type,$selected_commodity->pivot->purchase_price,$commodity_amount,$exits_commodity->pivot->commodity_amount,$exits_commodity->pivot->average_purchase_price,$selected_commodity->pivot->unit);
+                    $warehouse->commodities()->updateExistingPivot($selected_commodity->id, ['commodity_amount' => $new_amount], false);
+                    $warehouse->commodities()->updateExistingPivot($selected_commodity->id, ['average_purchase_price' => $average_purchase_price], false);
                 } else {
                     $warehouse->commodities()->attach([
-                        $value->id => [
-                            'commodity_amount' => $this->calculateCommodityAmount($value->pivot->amount, $value->pivot->unit),
+                        $selected_commodity->id => [
+                            'commodity_amount' => $this->calculateCommodityAmount($selected_commodity->pivot->amount, $selected_commodity->pivot->unit),
+                            'average_purchase_price'=>$this->calculatePrimaryPrice($selected_commodity->type,$selected_commodity->pivot->purchase_price,$selected_commodity->pivot->unit)
                         ],
                     ]);
                 }
@@ -109,6 +132,21 @@ class ImportingRequestService extends BaseService
             $this->recalculateWarehousesEmptySpace($warehouses);
         });
         return true;
+    }
+
+    public function calculatePrimaryPrice($type,$price,$unit){
+        if ($type == 'product'){
+            return null;
+        }
+            return $this->calculateCommodityPrice($price,$unit);
+    }
+
+    public function calculateAveragePurchasePrice($type,$price,$amount,$previous_amount,$previous_price,$unit){
+       if ($type == 'product'){
+           return null;
+       }
+       $new_price=$this->calculateCommodityPrice($price,$unit);
+           return round((($amount*$new_price)+($previous_amount*$previous_price))/($amount+$previous_amount),2);
     }
 
     public function checkImporting($importing_request)
@@ -128,6 +166,7 @@ class ImportingRequestService extends BaseService
                     }
                 }
             }
+            unset($commodity['kg_amount']);
         }
         foreach ($sort_warehouse as $key => $value) {
             $warehouse = Warehouse::query()->where('id', $key)->firstOrFail();

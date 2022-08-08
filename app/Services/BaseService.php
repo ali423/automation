@@ -20,6 +20,16 @@ class BaseService
                 return round($amount*17.8,2);
         }
     }
+    public function calculateCommodityPrice($price,$unit){
+        switch ($unit) {
+            case 'keg':
+                return round($price/185,2);
+            case 'kg':
+                return $price;
+            case 'twenty_liters':
+                return round($price/17.8,2);
+        }
+    }
     public function uploadFile($file,$patch,$attached){
         $user=auth()->user();
         $file_name=$file->getClientOriginalName();

@@ -63,7 +63,7 @@ class ImportingRequestController extends Controller
      */
     public function store(CreateImportingRequest $request)
     {
-        $data = $request->only('commodity_id', 'warehouse_id', 'unit', 'amount', 'comment');
+        $data = $request->only('commodity_id', 'warehouse_id', 'unit', 'amount', 'comment','purchase_price');
         $this->service->validationSecondLayer($data);
         $check_warehouses = $this->service->checkImportingStore($data);
         if ($check_warehouses['success'] == true) {
@@ -122,7 +122,7 @@ class ImportingRequestController extends Controller
         if ($check_expired['success'] == false) {
             return redirect()->back()->withErrors($check_expired['error']);
         }
-        $data = $request->only('commodity_id', 'warehouse_id', 'unit', 'amount', 'comment');
+        $data = $request->only('commodity_id', 'warehouse_id', 'unit', 'amount', 'comment','purchase_price');
         $this->service->validationSecondLayer($data);
         if ($request->hasFile('file')) {
             $file = $request->file('file');

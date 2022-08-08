@@ -67,4 +67,17 @@ class Commodity extends Model
         $amounts=array_column(array_column($warehouses,'pivot'),'commodity_amount');
         return array_sum($amounts);
     }
+    public function getAvrPriceAttribute(){
+        $warehouses=$this->warehouses();
+        if (!$warehouses->exists() || $this->type== 'product'){
+            return null;
+        }
+        $numerator=0;
+        $denominator=0;
+        foreach ($warehouses->get() as $warehouse){
+            $numerator=$numerator+($warehouse->pivot->commodity_amount*$warehouse->pivot->average_purchase_price);
+            $denominator=$denominator+$warehouse->pivot->commodity_amount;
+        }
+        return round(($numerator/$denominator),2);
+    }
 }
