@@ -164,7 +164,7 @@
         <div class="ecaps-sidemenu-area">
             <!-- Desktop Logo -->
             <div class="ecaps-logo">
-                <a href="index.html"><img class="desktop-logo" src="{{ asset('img/logo/darklogo.png') }}"
+                <a href="/"><img class="desktop-logo" src="{{ asset('img/logo/darklogo.png') }}"
                         alt="لوگوی دسکتاپ"> <img class="small-logo" src="{{ asset('img/logo/icon.png') }}"
                         alt="آرم موبایل"></a>
             </div>
@@ -178,7 +178,7 @@
                 <div class="left-side-content-area d-flex align-items-center">
                     <!-- Mobile Logo -->
                     <div class="mobile-logo mr-3 mr-sm-4">
-                        <a href="index.html"><img src="{{ asset('img/logo/icon.png') }}" alt="آرم موبایل"></a>
+                        <a href="/"><img src="{{ asset('img/logo/icon.png') }}" alt="آرم موبایل"></a>
                     </div>
 
                     <!-- Triggers -->
