@@ -1657,7 +1657,7 @@ div.tagsinput span.tag a {
   -webkit-transition-duration: 500ms;
   -o-transition-duration: 500ms;
   transition-duration: 500ms;
-  margin-top: 20px;
+  /*margin-top: 20px;*/
 }
 
 .sidebar-menu li {
