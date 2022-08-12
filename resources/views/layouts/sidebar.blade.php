@@ -112,6 +112,9 @@
                             @can('create_importing',App\Models\ImportingRequest::class)
                                 <li @if($first_url_part== 'importing-request' && $second_url_part== 'create') class="active" @endif><a href="{{ route('importing-request.create') }}">ثبت درخواست</a></li>
                             @endcan
+                                @can('read_importing',App\Models\ImportingRequest::class)
+                                    <li @if($first_url_part== 'importing' && $second_url_part== 'report') class="active" @endif><a href="{{ route('importing.report.create') }}">گزارش خرید کالا</a></li>
+                                @endcan
                         </ul>
                     </li>
                 @endif

@@ -33,6 +33,12 @@ class Commodity extends Model
             ->withTimestamps();
     }
 
+    public function importingRequests()
+    {
+        return $this->belongsToMany(ImportingRequest::class, 'importing_commodities', 'commodity_id', 'importation_id')
+            ->withPivot('amount','warehouses_id','unit','purchase_price');
+    }
+
     public function getBasePriceAttribute()
     {
         if ($this->type == 'product') {
