@@ -79,7 +79,7 @@
                                             for="material_amount">{{ __('fields.commodity.material_amount') }}</label>
                                         <input type="number" step="0.01" name="material_amount[0]" class="form-control"
                                                id="material_amount"
-                                               placeholder="{{ __('fields.commodity.material_amount') }}" min="1"
+                                               placeholder="{{ __('fields.commodity.material_amount') }}"
                                                max="100" onchange="percentage(this)" required="">
                                         <div class="invalid-feedback">
                                             لطفاً {{ __('fields.commodity.material_amount') }} را وارد کنید
@@ -106,7 +106,7 @@
     <script type="text/javascript">
         // add row
         $("#addRow").click(function () {
-            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"><div class="form-group col-md-5"><label for="materials"> {{ __("fields.commodity.material_type") }}</label><select id="materials" class="form-control" name="materials[1]" required><option value="">انتخاب کنید...</option>@foreach ($materials as $material)<option value="{{ $material->id }}">{{ $material->title }}</option>@endforeach</select><div class="invalid-feedback">{{ __("fields.commodity.material_type") }} را انتخاب کنید</div></div><div class="form-group col-md-5"><label for="material_amount">{{ __("fields.commodity.material_amount") }}</label><input type="number" step="0.01" name="material_amount[0]" class="form-control"id="material_amount"placeholder="{{ __("fields.commodity.material_amount") }}" min="1"max="100" onchange="percentage(this)" required=""><div class="invalid-feedback">لطفاً {{ __("fields.commodity.material_amount") }} را وارد کنید</div></div><div class="form-group col-sm-auto"><label for="" class="d-none d-md-block">&nbsp;</label><button id="removeRowbtn" type="submit" class="btn btn-danger btn-block py-2">حذف</button></div></div>';
+            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"><div class="form-group col-md-5"><label for="materials"> {{ __("fields.commodity.material_type") }}</label><select id="materials" class="form-control" name="materials[1]" required><option value="">انتخاب کنید...</option>@foreach ($materials as $material)<option value="{{ $material->id }}">{{ $material->title }}</option>@endforeach</select><div class="invalid-feedback">{{ __("fields.commodity.material_type") }} را انتخاب کنید</div></div><div class="form-group col-md-5"><label for="material_amount">{{ __("fields.commodity.material_amount") }}</label><input type="number" step="0.01" name="material_amount[0]" class="form-control"id="material_amount"placeholder="{{ __("fields.commodity.material_amount") }}" max="100" onchange="percentage(this)" required=""><div class="invalid-feedback">لطفاً {{ __("fields.commodity.material_amount") }} را وارد کنید</div></div><div class="form-group col-sm-auto"><label for="" class="d-none d-md-block">&nbsp;</label><button id="removeRowbtn" type="submit" class="btn btn-danger btn-block py-2">حذف</button></div></div>';
 
             $('#newRow').append(html);
 

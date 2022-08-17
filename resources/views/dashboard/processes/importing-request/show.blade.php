@@ -195,7 +195,7 @@
                             <div>تاریخ: <span>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}</span></div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>خریدار/ نماینده خریدار: <span>{{ $request->creator_user->full_name }}</span></div>
+                            <div>فروشنده/ نماینده فروشنده: <span>            </span></div>
                             <div>شماره درخواست: <span>{{$request->number}}</span></div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -224,13 +224,6 @@
                                 </tr>
                                 @endforeach
                             </table>
-                        </div>
-                        <div class="mb-5">
-                            اینجانب <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000">&nbsp;</span>
-                            راننده خودرو به شماره پلاک <div class="pelak" style="width: 100px">&nbsp;</div>
-                            <div class="pelak">&nbsp;&nbsp;</div>
-                            شماره تماس <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000">&nbsp;</span>
-                            محموله فوق را تحویل گرفتم.
                         </div>
                         <div class="d-flex justify-content-around align-items-center mb-3">
                             <h6>امضاء تحویل گیرنده کالا</h6>
