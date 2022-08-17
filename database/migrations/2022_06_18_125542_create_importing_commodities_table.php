@@ -20,6 +20,7 @@ class CreateImportingCommoditiesTable extends Migration
             $table->enum('unit',['kg','keg','twenty_liters']);
             $table->primary(['importation_id','commodity_id']);
             $table->double('amount');
+            $table->double('purchase_price')->nullable();
         });
     }
 

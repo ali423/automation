@@ -131,4 +131,10 @@ class CommodityController extends Controller
         ];
         return response()->json($res);
     }
+    public function commodityType($id){
+        $commodity = Commodity::query()->findOrFail($id);
+        return response()->json([
+            'type'=>$commodity->type,
+        ]);
+    }
 }

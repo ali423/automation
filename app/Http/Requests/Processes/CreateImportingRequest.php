@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Processes;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CreateImportingRequest extends FormRequest
 {
@@ -30,6 +31,7 @@ class CreateImportingRequest extends FormRequest
             'amount'=>['required','array','min:1'],
             'commodity_id.*'=>['required','exists:commodities,id','distinct'],
             'unit.*'=>['required','in:'.implode(',',array_keys(__('fields.commodity.units')))],
+            'purchase_price.*'=>['nullable','numeric'],
             'warehouse_id.*'=>['required','exists:warehouses,id'],
             'amount.*'=>['required','integer'],
             'file'=>['nullable','mimes:jpg,svg,png,jpeg,pdf,txt,zip,rar','max:5120'],

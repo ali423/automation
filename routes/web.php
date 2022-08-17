@@ -65,6 +65,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('order/confirm/{order}',[OrderController::class,'confirmStore'])->name('order-confirm.store');
 
+    Route::get('importing/report',[ImportingRequestController::class,'createReport'])->name('importing.report.create');
+
+    Route::post('importing/report',[ImportingRequestController::class,'storeReport'])->name('importing.report.store');
 
     Route::resource('order',OrderController::class);
 
@@ -72,6 +75,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('inventory-ajax/{id}',[CommodityController::class,'inventory'])->name('inventory');
 
+    Route::get('commodity-type-ajax/{id}',[CommodityController::class,'commodityType']);
 
 });
 

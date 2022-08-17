@@ -81,10 +81,12 @@
                                         لطفاً {{ __('fields.commodity.amount') }} را وارد کنید.
                                     </div>
                                 </div>
-                                <div class="form-group col-md-3">
-                                    <label for="price"> قیمت خرید</label>
-                                    <input type="price" id="price" name="price[0]" placeholder="_" class="form-control" disabled>
-                                </div>
+                                @if(isset($commodity->pivot->purchase_price))
+                                    <div class="form-group col-md-3">
+                                        <label for="price"> {{  __('fields.purchase_unit_price') }}</label>
+                                        <input type="text" id="price" placeholder="{{number_format($commodity->pivot->purchase_price)}}" class="form-control" disabled>
+                                    </div>
+                                @endif
                             </div>
                         @endforeach
                         @foreach ($request->comments as $comment)

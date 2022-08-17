@@ -63,7 +63,7 @@ class CustomerPolicy
      */
     public function update(User $user, Customer $customer)
     {
-        $isautorise= $user->role->havePermission('update_customer');
+        $isautorise= $user->role->havePermission('edit_customer');
         return $isautorise
             ? Response::allow()
             : Response::deny("شما مجاز نیستید ");
