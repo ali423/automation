@@ -2,15 +2,15 @@
 
 return [
     'name' => 'نام',
-    'type' => 'نوع',
+    'type' => 'نوع کالا',
     'mobile' => 'شماره موبایل',
     'comp_name' => 'نام شرکت',
     'address' => 'آدرس',
-    'warning_limit' => 'حد هشدار موجودی(کیلوگرم)',
+    'warning_limit' => 'حد هشدار موجودی',
     'sell-price' => 'قیمت فروش',
     'sell-price_per_unit' => 'قیمت فروش هر واحد کالا',
-    'sales_price' => 'قیمت فروش  هر کیلوگرم(ریال)',
-    'purchase_price' => 'قیمت خرید هر کیلوگرم (ریال)',
+    'sales_price' => 'قیمت فروش',
+    'purchase_price' => 'قیمت خرید',
     'purchase_unit_price' => 'قیمت خرید (ریال)',
     'avr_purchase_price' => 'میانگین قیمت خرید هر کیلوگرم(ریال)',
     'capacity' => 'گنجایش',
@@ -63,7 +63,7 @@ return [
             'twenty_liters' => 'گالن (20 لیتری)',
         ],
         'material_type' => 'ماده اولیه تشکیل دهنده',
-        'material_amount' => 'مقدار درصد کیلوگرم فرآورده',
+        'material_amount' => 'مقدار درصد فرآورده',
         'types' => [
             'material' => 'ماده اولیه',
             'product' => 'فرآورده',

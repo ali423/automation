@@ -24,7 +24,7 @@
                                         لطفاً عنوان کالا را وارد کنید.
                                     </div>
                                 </div>
-                                <div class="form-group col-md-6">
+                                <div class="form-group col-md-3">
                                     <label for="type"> {{ __('fields.type') }}</label>
                                     <select id="type" class="form-control" name="type" required>
                                         <option value="">انتخاب کنید...</option>
@@ -33,28 +33,41 @@
                                     </select>
                                     <div class="invalid-feedback">نوع کالا را انتخاب کنید</div>
                                 </div>
+                                <div class="form-group col-md-3">
+                                    <label for="unit"> {{ __('fields.unit') }}</label>
+                                    <select id="unit" class="form-control" name="unit" required>
+                                        <option value="kg">کیلوگرم</option>
+                                        <option value="barrel">بشکه</option>
+                                        <option value="galon">گالن (20 لیتری)</option>
+                                    </select>
+                                    <div class="invalid-feedback">نوع کالا را انتخاب کنید</div>
+                                </div>
                             </div>
                             <div class="form-row">
-
                                 <div class="form-group col-md-6">
-                                    <label for="sales_price"> {{ __('fields.warning_limit') }}</label>
-                                    <input type="number" step="0.01" name="warning_limit"
+                                    <label for="fake_warning_limit"> {{ __('fields.warning_limit') }} <span class="unit_label">(کیلوگرم)</span></label>
+                                    <input type="number" step="0.01" name="fake_warning_limit"
                                            value="{{ old('warning_limit') }}"
                                            class="form-control" placeholder="{{ __('fields.warning_limit') }}" required>
+
+                                    <input type="number" name="warning_limit" class="d-none" required>
+
                                     <div class="invalid-feedback">{{ __('fields.warning_limit') }} را وارد کنید</div>
                                 </div>
                                 <div id="sales_price" class="form-group col-md-6">
-                                    <label for="sales_price"> {{ __('fields.sales_price') }}</label>
-                                    <input type="number" step="0.01" min="100" name="sales_price"
+                                    <label for="sales_price"> {{ __('fields.sales_price') }} هر <span class="unit_label2">کیلوگرم</span> (ریال)</label>
+                                    <input type="number" step="0.01" min="100" name="fake_sales_price"
                                            value="{{ old('sales_price') }}"
                                            class="form-control" placeholder="{{ __('fields.sales_price') }}" required>
+                                    <input type="number" name="sales_price" class="d-none" required>
                                     <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
                                 </div>
                                 <div id="purchase_price" class="form-group col-md-6">
-                                    <label for="purchase_price"> {{ __('fields.purchase_price') }}</label>
-                                    <input type="number" step="0.01" min="100" name="purchase_price"
+                                    <label for="purchase_price"> {{ __('fields.purchase_price') }} هر <span class="unit_label2">کیلوگرم</span> (ریال)</label>
+                                    <input type="number" step="0.01" min="100" name="fake_purchase_price"
                                            value="{{ old('purchase_price') }}" class="form-control"
                                            placeholder="{{ __('fields.purchase_price') }}" required>
+                                    <input type="number" name="purchase_price" class="d-none" required>
                                     <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
                                 </div>
                             </div>
@@ -124,6 +137,88 @@
                 element.querySelector('input').setAttribute('name', 'material_amount[' + index + ']');
             });
         });
+
+        $('#unit').on('change', function() {
+
+            $('input[name="fake_warning_limit"]').val('');
+            $('input[name="fake_sales_price"]').val('');
+            $('input[name="fake_purchase_price"]').val('');
+            $('input[name="warning_limit"]').val('');
+            $('input[name="sales_price"]').val('');
+            $('input[name="purchase_price"]').val('');
+
+            switch (this.value) {
+                case 'kg':
+                    $('.unit_label').text('(کیلوگرم)'); 
+                    $('.unit_label2').text('کیلوگرم'); 
+                    break;
+                case 'barrel':
+                    $('.unit_label').text('(بشکه)');
+                    $('.unit_label2').text('بشکه');
+                    break;
+                case 'galon':
+                    $('.unit_label').text('(گالن 20 لیتری)');
+                    $('.unit_label2').text('گالن 20 لیتری');
+                    break;
+            
+                default:
+                    break;
+            }
+        });
+
+        $('input[name="fake_warning_limit"]').on('change keyup paste', function(){
+
+            switch ($('#unit option:selected').val()) {
+                case 'kg':
+                    $('input[name="warning_limit"]').val(this.value);
+                    break;
+                case 'barrel':
+                    $('input[name="warning_limit"]').val(this.value*185);
+                    break;
+                case 'galon':
+                    $('input[name="warning_limit"]').val(this.value*17.8);
+                    break;
+            
+                default:
+                    break;
+            }
+        })
+        $('input[name="fake_sales_price"]').on('change keyup paste', function(){
+
+            switch ($('#unit option:selected').val()) {
+                case 'kg':
+                    $('input[name="sales_price"]').val(this.value);
+                    break;
+                case 'barrel':
+                    $('input[name="sales_price"]').val(this.value/185);
+                    break;
+                case 'galon':
+                    $('input[name="sales_price"]').val(this.value/17.8);
+                    break;
+            
+                default:
+                    break;
+            }
+        })
+        $('input[name="fake_purchase_price"]').on('change keyup paste', function(){
+
+            switch ($('#unit option:selected').val()) {
+                case 'kg':
+                    $('input[name="purchase_price"]').val(this.value);
+                    break;
+                case 'barrel':
+                    $('input[name="purchase_price"]').val(this.value/185);
+                    break;
+                case 'galon':
+                    $('input[name="purchase_price"]').val(this.value/17.8);
+                    break;
+            
+                default:
+                    break;
+            }
+        })
+
+
     </script>
 
     <!-- These plugins only need for the run this page -->
