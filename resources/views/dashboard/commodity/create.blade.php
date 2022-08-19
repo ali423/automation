@@ -49,9 +49,7 @@
                                     <input type="number" step="0.01" name="fake_warning_limit"
                                            value="{{ old('warning_limit') }}"
                                            class="form-control" placeholder="{{ __('fields.warning_limit') }}" required>
-
-                                    <input type="number" name="warning_limit" class="d-none" required>
-
+                                           <input type="number" name="warning_limit" class="d-none">
                                     <div class="invalid-feedback">{{ __('fields.warning_limit') }} را وارد کنید</div>
                                 </div>
                                 <div id="sales_price" class="form-group col-md-6">
@@ -59,7 +57,7 @@
                                     <input type="number" step="0.01" min="100" name="fake_sales_price"
                                            value="{{ old('sales_price') }}"
                                            class="form-control" placeholder="{{ __('fields.sales_price') }}" required>
-                                    <input type="number" name="sales_price" class="d-none" required>
+                                           <input type="number" name="sales_price" class="d-none">
                                     <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
                                 </div>
                                 <div id="purchase_price" class="form-group col-md-6">
@@ -67,8 +65,8 @@
                                     <input type="number" step="0.01" min="100" name="fake_purchase_price"
                                            value="{{ old('purchase_price') }}" class="form-control"
                                            placeholder="{{ __('fields.purchase_price') }}" required>
-                                    <input type="number" name="purchase_price" class="d-none" required>
-                                    <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
+                                    <input type="number" name="purchase_price" class="d-none">
+                                   <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
                                 </div>
                             </div>
 
@@ -170,13 +168,13 @@
 
             switch ($('#unit option:selected').val()) {
                 case 'kg':
-                    $('input[name="warning_limit"]').val(this.value);
+                    $('input[name="warning_limit"]').val(Math.floor(this.value));
                     break;
                 case 'barrel':
-                    $('input[name="warning_limit"]').val(this.value*185);
+                    $('input[name="warning_limit"]').val(Math.floor(this.value*185));
                     break;
                 case 'galon':
-                    $('input[name="warning_limit"]').val(this.value*17.8);
+                    $('input[name="warning_limit"]').val(Math.floor(this.value*17.8));
                     break;
             
                 default:
@@ -187,13 +185,13 @@
 
             switch ($('#unit option:selected').val()) {
                 case 'kg':
-                    $('input[name="sales_price"]').val(this.value);
+                    $('input[name="sales_price"]').val(Math.floor(this.value));
                     break;
                 case 'barrel':
-                    $('input[name="sales_price"]').val(this.value/185);
+                    $('input[name="sales_price"]').val(Math.floor(this.value/185));
                     break;
                 case 'galon':
-                    $('input[name="sales_price"]').val(this.value/17.8);
+                    $('input[name="sales_price"]').val(Math.floor(this.value/17.8));
                     break;
             
                 default:
@@ -204,13 +202,13 @@
 
             switch ($('#unit option:selected').val()) {
                 case 'kg':
-                    $('input[name="purchase_price"]').val(this.value);
+                    $('input[name="purchase_price"]').val(Math.floor(this.value));
                     break;
                 case 'barrel':
-                    $('input[name="purchase_price"]').val(this.value/185);
+                    $('input[name="purchase_price"]').val(Math.floor(this.value/185));
                     break;
                 case 'galon':
-                    $('input[name="purchase_price"]').val(this.value/17.8);
+                    $('input[name="purchase_price"]').val(Math.floor(this.value/17.8));
                     break;
             
                 default:
