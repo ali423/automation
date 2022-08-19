@@ -27,14 +27,14 @@
                             </div>
                             @if(!empty($commodity->sales_price))
                                 <div class="form-group col-md-4">
-                                    <label for="exampleInputEmail111"> {{ __('fields.sales_price') }}</label>
+                                    <label for="exampleInputEmail111"> {{ __('fields.sales_price') }} هر کیلوگرم</label>
                                     <input type="text" name="sales_price" value="{{ number_format($commodity->sales_price) }}" class="form-control"
                                            id="exampleInputEmail111" autocomplete="off"
                                            disabled>
                                 </div>
                                @elseif(!empty($commodity->purchase_price))
                                 <div class="form-group col-md-4">
-                                    <label for="exampleInputEmail111"> {{ __('fields.purchase_price') }}</label>
+                                    <label for="exampleInputEmail111"> {{ __('fields.purchase_price') }} هر کیلوگرم</label>
                                     <input type="text" name="purchase_price" value="{{ number_format($commodity->purchase_price) }}" class="form-control"
                                            id="exampleInputEmail111" autocomplete="off"
                                            disabled>
@@ -49,7 +49,7 @@
                                       disabled>
                             </div>
                             <div class="form-group col-md-3">
-                                <label for="exampleInputEmail111"> {{ __('fields.warning_limit') }}</label>
+                                <label for="exampleInputEmail111"> {{ __('fields.warning_limit') }} (کیلوگرم)</label>
                                 <input type="text" name="warning_limit" value="{{number_format($commodity->warning_limit) }}"
                                        class="form-control" id="exampleInputEmail111"
                                        disabled>
