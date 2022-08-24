@@ -231,7 +231,7 @@ class ImportingRequestService extends BaseService
     public function subtractingIngredients($commodity, $commodity_amount)
     {
         foreach ($commodity->materials as $material) {
-            $required_amount = round(($material->pivot->percentage / 100) * $commodity_amount);
+            $required_amount = round(($material->pivot->percentage / 100) * $commodity_amount,2);
             $material_warehouses = $material->warehouses()->orderBy('commodity_amount', 'DESC')->get();
             foreach ($material_warehouses as $material_warehouse) {
                 if ($material_warehouse->pivot->commodity_amount >= $required_amount) {

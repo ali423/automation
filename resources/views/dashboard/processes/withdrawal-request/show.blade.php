@@ -96,6 +96,7 @@
                                         <th scope="col">نام کالا</th>
                                         <th scope="col">مقدار</th>
                                         <th scope="col">انبار</th>
+                                        <th scope="col">قسمت فروش (ریال)</th>
                                     </tr>
                                     @foreach ($commodity->withdrawal_amount as $withdrawal_amount)
                                     <tr>
@@ -103,6 +104,7 @@
                                         <td>{{ $commodity->title }}</td>
                                         <td>{{ number_format($total_amount[$commodity->id][]=$withdrawal_amount['amount']) .' '. __('fields.commodity.units')[$withdrawal_amount['unit']] }}</td>
                                         <td>{{$withdrawal_amount['warehouse']['title']}}</td>
+                                        <td>{{ number_format($commodity->pivot->price) }}</td>
                                     </tr>
                                     @endforeach
                                     <tr>
@@ -385,8 +387,13 @@
                                     <td>{{$commodity->title}}</td>
                                     <td>{{$amount=array_sum(json_decode($commodity->pivot->amount,true))}}</td>
                                     <td>{{__('fields.commodity.units')[$commodity->pivot->unit] }}</td>
+                                    @if(isset($commodity->pivot->price))
                                     <td>{{number_format($price=$commodity->pivot->price)}}</td>
                                     <td>{{ number_format($total_price[]=round($amount*$price)) }}</td>
+                                    @else
+                                        <td></td>
+                                        <td></td>
+                                    @endif
                                 </tr>
                                 @php($i++)
                             @endforeach
@@ -404,10 +411,19 @@
                             </tr>
                             <tr>
                                 <td colspan="5" class="text-right">جمع کل</td>
-                                    <td> {{ number_format($request->total_price['number']) ?? null }}</td>
+                                @if(isset($request->total_price['number']))
+                                    <td> {{ optional(number_format($request->total_price['number'])) }}</td>
+                                @else
+                                    <td>          </td>
+                                @endif
+
                             </tr>
                             <tr>
-                                <td colspan="6" class="text-left">جمع کل به حروف:{{ $request->total_price['world'] }} ریال </td>
+                                @if(isset($request->total_price['world']))
+                                    <td colspan="6" class="text-left">جمع کل به حروف:{{ $request->total_price['world'] }} ریال </td>
+                                @else
+                                    <td>          </td>
+                                @endif
                             </tr>
                             <tr>
                                 <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>

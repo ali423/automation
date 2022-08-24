@@ -45,7 +45,7 @@ class WithdrawalRequestService extends BaseService
             ]);
             foreach ($data['commodity_id'] as $key => $value) {
                 $commodity[$value] = [
-                    'amount' => json_encode($data['amount'][$value]),
+                    'amount' => json_encode(array_filter($data['amount'][$value])),
                     'unit' => $data['unit'][$key],
                     'price' => $data['price'][$key] ?? null,
                 ];
