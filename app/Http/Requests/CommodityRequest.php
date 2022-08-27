@@ -36,7 +36,7 @@ class CommodityRequest extends FormRequest
             $rules['material_amount.*']=['required','numeric','max:100'];
             $rules['sales_price']=['required','integer'];
 
-            $total_materials=array_sum($this->get('material_amount'));
+            $total_materials=round(array_sum($this->get('material_amount')),2);
             if ($total_materials > 100 ){
                 throw \Illuminate\Validation\ValidationException::withMessages([
                     'material_amount' => ['مجموع مقدار مواد تشکیل دهنده نباید از صد بیشتر باشد.'],
