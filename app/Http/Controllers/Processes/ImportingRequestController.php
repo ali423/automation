@@ -29,7 +29,9 @@ class ImportingRequestController extends Controller
      */
     public function index()
     {
-        $requests = ImportingRequest::query()->orderBy('id', 'DESC')->get();
+        $requests = ImportingRequest::query()
+            ->with('activities')
+            ->orderBy('id', 'DESC')->get();
         return view('dashboard.processes.importing-request.index',
             [
                 'requests' => $requests,

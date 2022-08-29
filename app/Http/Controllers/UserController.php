@@ -29,7 +29,9 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users=User::query()->orderBy('id', 'DESC')->get();
+        $users=User::query()
+            ->with('activities')
+            ->orderBy('id', 'DESC')->get();
         return view('dashboard.user.index',
             [
                 'users'=>$users,

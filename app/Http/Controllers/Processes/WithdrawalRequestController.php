@@ -28,7 +28,9 @@ class WithdrawalRequestController extends Controller
      */
     public function index()
     {
-        $requests = WithdrawalRequest::query()->orderBy('id', 'DESC')->get();
+        $requests = WithdrawalRequest::query()
+            ->with('activities')
+            ->orderBy('id', 'DESC')->get();
         return view('dashboard.processes.withdrawal-request.index',
             [
                 'requests' => $requests,

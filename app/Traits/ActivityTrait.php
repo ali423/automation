@@ -23,7 +23,7 @@ trait ActivityTrait
 
     public function getCreatorUserAttribute()
     {
-        return $this->activities()->where('action', 'create')->first()->user ?? null;
+        return $this->activities->where('action', 'create')->first()->user ?? null;
     }
 
     public static function bootActivityTrait()

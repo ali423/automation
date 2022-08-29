@@ -26,7 +26,9 @@ class WarehouseController extends Controller
      */
     public function index()
     {
-        $warehouses=Warehouse::query()->orderBy('id', 'DESC')->get();
+        $warehouses=Warehouse::query()
+            ->with('activities')
+            ->orderBy('id', 'DESC')->get();
         return view('dashboard.warehouse.index',
             [
                 'warehouses'=>$warehouses,

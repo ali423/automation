@@ -32,7 +32,9 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::query()->with(['customer', 'commodity'])->orderByRaw("FIELD(status, \"pending\", \"done\")")->orderBy('deadline', 'ASC')->get();
+        $orders = Order::query()->with(['customer', 'commodity','activities'])
+            ->orderByRaw("FIELD(status, \"pending\", \"done\")")
+            ->orderBy('deadline', 'ASC')->get();
         return view('dashboard.order.index',
             [
                 'orders' => $orders,

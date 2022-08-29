@@ -25,7 +25,9 @@ class CustomerController extends Controller
      */
     public function index()
     {
-        $customers=Customer::query()->orderBy('id', 'DESC')->get();
+        $customers=Customer::query()
+            ->with('activities')
+            ->orderBy('id', 'DESC')->get();
         return view('dashboard.customer.index',
             [
                 'customers'=>$customers,

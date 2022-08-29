@@ -24,7 +24,9 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $role=Role::query()->orderBy('id', 'DESC')->get();
+        $role=Role::query()
+            ->with('activities')
+            ->orderBy('id', 'DESC')->get();
         return view('dashboard.role.index',
             [
                 'roles'=>$role,
