@@ -46,6 +46,13 @@
                         </div>
                         @foreach ($request->commodities as $commodity)
                             <div id="inputFormRow" class="form-row shadow p-4 m-3">
+                                <div class="showbarrel">
+                                    <i class="fa fa-database"></i>
+                                    <div>
+                                        <span>بشکه</span>
+                                        <span>{{ number_format( ($commodity->pivot->amount)/185, 1) }}</span> 
+                                    </div>
+                                </div>
                                 <div class="form-group col-md-6">
                                     <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
                                     <select id="commodity_id" class="form-control" name="commodity_id[0]" disabled>
