@@ -14759,6 +14759,7 @@ i.icon_map_alt.font-12.font-weight-bold {
 .showbarrel i{
   color: #dc3545;
   font-size: 20px;
+  cursor: pointer;
 }
 .showbarrel div{
   width: 0;
