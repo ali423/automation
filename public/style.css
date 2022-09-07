@@ -14739,3 +14739,48 @@ i.icon_map_alt.font-12.font-weight-bold {
 #chartContainer .canvasjs-chart-credit{
   display: none;
 }
+
+/* show barrel in importing request show */
+.showbarrel{
+  display: flex;
+  direction: ltr;
+  position: absolute;
+  background-color: #fff;
+  top: 10px;
+  left: 10px;
+  transition: 0.3s;
+  -webkit-transition: 0.3s;
+  -moz-transition: 0.3s;
+  -ms-transition: 0.3s;
+  -o-transition: 0.3s;
+  overflow: hidden;
+  height: 25px;
+}
+.showbarrel i{
+  color: #dc3545;
+  font-size: 20px;
+  cursor: pointer;
+}
+.showbarrel div{
+  width: 0;
+  height: 0;
+  transition: 0.3s;
+  -webkit-transition: 0.3s;
+  -moz-transition: 0.3s;
+  -ms-transition: 0.3s;
+  -o-transition: 0.3s;
+  border: 1px solid #ccc;
+  text-align: center;
+  margin-left: 5px;
+  border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  opacity: 0;
+}
+.showbarrel>i:hover+div{
+  height: fit-content;
+  width: 80px;
+  opacity: 1;
+}
