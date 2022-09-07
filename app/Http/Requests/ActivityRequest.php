@@ -23,7 +23,7 @@ class ActivityRequest extends FormRequest
      */
     public function rules()
     {
-        $items=implode(getSystemModelsSymbol(),',');
+        $items=implode(',',getSystemModelsSymbol());
         return [
             'action'=>['nullable','array'],
             'action.*'=>['in:'.$items],

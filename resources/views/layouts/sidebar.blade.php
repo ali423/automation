@@ -136,6 +136,26 @@
                         </ul>
                     </li>
                 @endif
+
+                @if(Gate::check('read_seller') || Gate::check('create_seller'))
+                    <li
+                        @if($first_url_part== 'seller')
+                        class="treeview active"
+                        @else
+                        class="treeview"
+                        @endif>                        <a href="javascript:void(0)"><i class="ti-shopping-cart"></i> <span>فروشنده ها</span> <i
+                                class="fa fa-angle-left"></i></a>
+                        <ul class="treeview-menu">
+                            @can('read_seller',App\Models\seller::class)
+                                <li @if($first_url_part== 'seller' && $second_url_part== 'index') class="active" @endif><a href="{{ route('seller.index') }}">لیست فروشنده ها</a></li>
+                            @endcan
+                            @can('create_seller',App\Models\seller::class)
+                                <li @if($first_url_part== 'seller' && $second_url_part== 'create') class="active" @endif><a href="{{ route('seller.create') }}">ثبت فروشنده</a></li>
+                            @endcan
+                        </ul>
+                    </li>
+                @endif
+
                 @if(Gate::check('read_withdrawal') || Gate::check('create_withdrawal'))
                         <li
                             @if($first_url_part== 'withdrawal-request')

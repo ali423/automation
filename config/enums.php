@@ -80,6 +80,13 @@ return [
 
             ]
         ],
+        'App\Models\Seller' => [
+            'fa_name' => 'فروشنده ها',
+            'url' => 'seller',
+            'relations' => [
+
+            ]
+        ],
         'App\Models\WithdrawalRequest' => [
             'fa_name' => 'درخواست فروش کالا',
             'url' => 'withdrawal-request',

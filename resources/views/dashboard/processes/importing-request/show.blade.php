@@ -13,21 +13,31 @@
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-row col-md-12">
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-6">
                                 <label for="exampleInputEmail111"> {{ __('fields.status') }}</label>
                                 <input type="text" name="status"
                                     value="{{ __('fields.importing_request.status')[$request->status] }}"
                                     class="form-control" id="exampleInputEmail111" placeholder="{{ __('fields.status') }}"
                                     autocomplete="off" disabled>
                             </div>
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-6">
+                                <label for="exampleInputEmail111"> {{ __('fields.seller') }}</label>
+                                <input type="text" name="status"
+                                       value="{{ $request->seller->name}}"
+                                       class="form-control" id="exampleInputEmail111"
+                                       placeholder="{{ __('fields.seller') }} }}"
+                                       autocomplete="off" disabled>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 col-xs-12 row">
+                            <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.created_at') }}</label>
                                 <input type="text" name="name"
                                     value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}"
                                     class="form-control" id="exampleInputEmail111"
                                     placeholder="{{ __('fields.created_at') }}" autocomplete="off" disabled>
                             </div>
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
                                 <input type="text" name="name"
                                     @if (isset($request->creator_user)) value="{{ $request->creator_user->full_name }}"
@@ -36,7 +46,7 @@
                                     class="form-control" id="exampleInputEmail111"
                                     placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
                             </div>
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.importing_request.number') }}</label>
                                 <input type="text" name="status"
                                        value="{{ $request->number}}"
@@ -50,7 +60,7 @@
                                     <i class="fa fa-database"></i>
                                     <div>
                                         <span>بشکه</span>
-                                        <span>{{ number_format( ($commodity->pivot->amount)/185, 1) }}</span> 
+                                        <span>{{ $commodity->keg_amount }}</span>
                                     </div>
                                 </div>
                                 <div class="form-group col-md-6">
@@ -202,7 +212,7 @@
                             <div>تاریخ: <span>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}</span></div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>فروشنده/ نماینده فروشنده: <span>            </span></div>
+                            <div>فروشنده/ نماینده فروشنده: <span>  {{$request->seller->name}} </span></div>
                             <div>شماره درخواست: <span>{{$request->number}}</span></div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">

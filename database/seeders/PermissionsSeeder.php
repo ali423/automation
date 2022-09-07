@@ -42,6 +42,15 @@ class PermissionsSeeder extends Seeder
                 ['title'=>'delete_customer', 'name'=>'حذف مشتری '],
             ]);
 
+        //seller permissions
+        Permission::query()
+            ->insert([
+                ['title'=>'create_seller', 'name'=>'اضافه کردن فروشنده '],
+                ['title'=>'read_seller', 'name'=>'دیدن فروشنده'],
+                ['title'=>'edit_seller', 'name'=>'ویرایش فروشنده '],
+                ['title'=>'delete_seller', 'name'=>'حذف فروشنده '],
+            ]);
+
         //commodity permissions
         Permission::query()
             ->insert([

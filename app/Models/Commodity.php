@@ -86,4 +86,15 @@ class Commodity extends Model
         }
         return round(($numerator/$denominator),2);
     }
+
+    public function getKegAmountAttribute(){
+        switch ($this->pivot->unit) {
+            case 'keg':
+                return $this->pivot->amount;
+            case 'kg':
+                return round($this->pivot->amount/185 , 1);
+            case 'twenty_liters':
+                return round(($this->pivot->amount*17.8)/185,1);
+        }
+    }
 }

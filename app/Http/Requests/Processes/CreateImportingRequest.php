@@ -26,6 +26,7 @@ class CreateImportingRequest extends FormRequest
     {
         return [
             'commodity_id'=>['required','array','min:1'],
+            'seller_id'=>['required','exists:sellers,id'],
             'unit'=>['required','array','min:1'],
             'warehouse_id'=>['required','array','min:1'],
             'amount'=>['required','array','min:1'],

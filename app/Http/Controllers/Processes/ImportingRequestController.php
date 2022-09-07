@@ -7,6 +7,7 @@ use App\Http\Requests\importingReportRequest;
 use App\Http\Requests\Processes\CreateImportingRequest;
 use App\Models\Commodity;
 use App\Models\ImportingRequest;
+use App\Models\Seller;
 use App\Models\Warehouse;
 use App\Services\Processes\ImportingRequestService;
 use Morilog\Jalali\Jalalian;
@@ -47,15 +48,20 @@ class ImportingRequestController extends Controller
     {
         $commodities = Commodity::query()->get();
         $warehouses = Warehouse::query()->where('status', 'active')->get();
+        $sellers=Seller::all();
         if (count($commodities) < 1) {
             return redirect(route('commodity.create'))->withErrors('ابتدا حداقل یک کالا ثبت کنید .');
         }
         if (count($warehouses) < 1) {
             return redirect(route('warehouse.create'))->withErrors('ابتدا حداقل یک انبار ثبت کنید .');
         }
+        if (count($sellers) < 1) {
+            return redirect(route('seller.create'))->withErrors('ابتدا حداقل یک فروشنده ثبت کنید .');
+        }
         return view('dashboard.processes.importing-request.create', [
             'commodities' => $commodities,
             'warehouses' => $warehouses,
+            'sellers'=>$sellers,
         ]);
     }
 
@@ -67,7 +73,7 @@ class ImportingRequestController extends Controller
      */
     public function store(CreateImportingRequest $request)
     {
-        $data = $request->only('commodity_id', 'warehouse_id', 'unit', 'amount', 'comment', 'purchase_price');
+        $data = $request->only('commodity_id', 'warehouse_id', 'unit', 'amount', 'comment', 'purchase_price','seller_id');
         $this->service->validationSecondLayer($data);
         $check_warehouses = $this->service->checkImportingStore($data);
         if ($check_warehouses['success'] == true) {
@@ -107,6 +113,7 @@ class ImportingRequestController extends Controller
             'request' => $importingRequest,
             'commodities' => Commodity::query()->get(),
             'warehouses' => Warehouse::all(),
+            'sellers'=>Seller::all(),
         ]);
     }
 
@@ -126,7 +133,7 @@ class ImportingRequestController extends Controller
         if ($check_expired['success'] == false) {
             return redirect()->back()->withErrors($check_expired['error']);
         }
-        $data = $request->only('commodity_id', 'warehouse_id', 'unit', 'amount', 'comment', 'purchase_price');
+        $data = $request->only('commodity_id', 'warehouse_id', 'unit', 'amount', 'comment', 'purchase_price','seller_id');
         $this->service->validationSecondLayer($data);
         if ($request->hasFile('file')) {
             $file = $request->file('file');

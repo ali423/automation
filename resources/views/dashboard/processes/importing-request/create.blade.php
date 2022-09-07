@@ -15,6 +15,20 @@
                     <div class="col-sm-12 col-xs-12">
                         <form method="post" action="{{ route('importing-request.store') }}" class="needs-validation forms-sample" enctype="multipart/form-data" novalidate="">
                             @csrf
+                            <div class="form-row m-3">
+                                <div class="form-group col">
+                                    <label for="seller_id">نام فروشنده</label>
+                                    <select id="seller_id" class="form-control" name="seller_id" required>
+                                        <option value="">انتخاب کنید</option>
+                                        @foreach ($sellers as $seller)
+                                            <option value="{{ $seller->id }}">{{$seller->name}}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        فروشنده را انتخاب کنید
+                                    </div>
+                                </div>
+                            </div>
                             <div id="product_formul" class="col-lg-12">
                                 <p>اطلاعات ورود کالا به انبار</p>
                                 <div id="inputFormRow" class="form-row shadow p-4 mb-3">

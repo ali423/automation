@@ -8,12 +8,14 @@ use App\Traits\FileTrait;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ImportingRequest extends Model
 {
     use HasFactory,SoftDeletes,ActivityTrait,FileTrait,CommentTrait;
     protected $fillable = [
+        'seller_id',
         'status',
         'number',
     ];
@@ -24,5 +26,10 @@ class ImportingRequest extends Model
     }
     public function getCreatedDateAttribute() {
         return  $this->created_at->format('Y-m-d');
+    }
+
+    public function seller() : BelongsTo
+    {
+        return $this->belongsTo(Seller::class, 'seller_id');
     }
 }

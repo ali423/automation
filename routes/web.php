@@ -10,6 +10,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Processes\ImportingRequestController;
 use App\Http\Controllers\Processes\WithdrawalRequestController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SellerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
 use Illuminate\Support\Facades\Route;
@@ -45,6 +46,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('commodity',CommodityController::class);
     Route::resource('warehouse',WarehouseController::class);
     Route::resource('customer',CustomerController::class);
+    Route::resource('seller',SellerController::class);
+
     Route::resource('importing-request',ImportingRequestController::class);
 
     Route::resource('withdrawal-request',WithdrawalRequestController::class);

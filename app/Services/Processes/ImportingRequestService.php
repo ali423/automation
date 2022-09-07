@@ -38,6 +38,7 @@ class ImportingRequestService extends BaseService
         $user = auth()->user();
         return DB::transaction(function () use ($data, $commodity, $user, $file, $number) {
             $request = ImportingRequest::query()->create([
+                'seller_id' => $data['seller_id'],
                 'status' => 'awaiting_approval',
                 'number' => $number,
             ]);
@@ -75,6 +76,9 @@ class ImportingRequestService extends BaseService
         $user = auth()->user();
         DB::transaction(function () use ($data, $commodity, $user, $file, $importing_request) {
             $importing_request->commodities()->sync($commodity);
+            $importing_request->update([
+               'seller_id'=>$data['seller_id'],
+            ]);
             if (isset($data['comment'])) {
                 $importing_request->comments()->create([
                     'user_id' => $user->id,
