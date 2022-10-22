@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\View;
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
-
+//test
 
     public function shareView()
     {
