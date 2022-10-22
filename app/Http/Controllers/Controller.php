@@ -13,7 +13,7 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 //test2
-
+//hiiiii
     public function shareView()
     {
         $route = Route::getCurrentRoute()->getName();
