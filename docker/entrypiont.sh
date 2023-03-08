@@ -2,7 +2,6 @@
 if [ ! -f "vendor/autoload.php" ]; then
     composer install --no-progress --no-interaction
     php artisan migrate:fresh --seed
-    php artisan migrate
     if [ -f  ".env"]; then
     php artisan key:generate
     fi
