@@ -1,7 +1,7 @@
 FROM php:8.1 as php
 
 RUN apt-get update -y
-RUN apt-get install -y unzip libpq-dev libcurl4-gnutls-dev openssl zip git libonig-dev
+RUN apt-get install -y unzip libpq-dev libcurl4-gnutls-dev openssl zip git libonig-dev netcat-traditional
 RUN docker-php-ext-install mysqli pdo pdo_mysql bcmath mbstring && docker-php-ext-enable mysqli pdo pdo_mysql bcmath mbstring
 
 WORKDIR /var/www
@@ -10,4 +10,6 @@ ENV PORT=8000
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-ENTRYPOINT ["docker/entrypiont.sh"]
+RUN chmod +x /var/www/docker/entrypoint.sh
+
+ENTRYPOINT ["/var/www/docker/entrypoint.sh"]

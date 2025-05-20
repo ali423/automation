@@ -62,3 +62,101 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+# Laravel Docker Setup
+
+This project uses Docker and Docker Compose for development. Follow these steps to set up your development environment.
+
+## Prerequisites
+
+### 1. Install Docker
+- **macOS**: Download and install [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- **Linux**: Follow the [Docker installation guide](https://docs.docker.com/engine/install/)
+- **Windows**: Download and install [Docker Desktop](https://www.docker.com/products/docker-desktop)
+
+### 2. Install Docker Compose
+- Docker Compose comes pre-installed with Docker Desktop for macOS and Windows
+- For Linux, follow the [Docker Compose installation guide](https://docs.docker.com/compose/install/)
+
+### 3. Install Make
+- **macOS**: Install via Homebrew
+  ```bash
+  brew install make
+  ```
+- **Linux**: Install via package manager
+  ```bash
+  # Ubuntu/Debian
+  sudo apt-get install make
+  
+  # CentOS/RHEL
+  sudo yum install make
+  ```
+- **Windows**: Install via [Chocolatey](https://chocolatey.org/)
+  ```bash
+  choco install make
+  ```
+
+## Project Setup
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd <project-directory>
+   ```
+
+2. Start the application:
+   ```bash
+   make start
+   ```
+   This will:
+   - Create `.env` file from `.env.example` if it doesn't exist
+   - Start the Docker containers
+
+3. If you need to rebuild the containers (after Dockerfile changes):
+   ```bash
+   make rebuild
+   ```
+   This will:
+   - Stop all running containers
+   - Rebuild containers without cache
+   - Start the containers again
+
+## Accessing the Application
+
+- Web application: http://localhost:8045
+- MySQL database:
+  - Host: localhost
+  - Port: 3302
+  - Database: automation
+  - Username: automation
+  - Password: automation
+
+## Available Make Commands
+
+- `make start`: Start the application
+- `make rebuild`: Rebuild and restart the containers
+
+## Troubleshooting
+
+If you encounter any issues:
+
+1. Check if Docker is running:
+   ```bash
+   docker --version
+   docker-compose --version
+   ```
+
+2. Ensure all ports are available:
+   - 8045 (Web application)
+   - 3302 (MySQL)
+
+3. If containers fail to start:
+   ```bash
+   docker-compose logs
+   ```
+
+4. To completely reset the environment:
+   ```bash
+   docker-compose down -v
+   make rebuild
+   ```
