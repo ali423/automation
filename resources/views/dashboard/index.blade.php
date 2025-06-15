@@ -93,6 +93,27 @@
                 </div>
             </div>
     @endif
+    @if(Gate::check('read_unit') || Gate::check('create_unit'))
+        <!-- Single Widget -->
+            <div class="col-12 col-3 col-md box-margin height-card">
+                <div class="card">
+                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="commodity">
+                        <div class="text-center">
+                            <div>
+                                <i class="icon-layers font-24"></i>
+                            </div>
+                            <h6>واحدهای اندازه‌گیری</h6>
+                        </div>
+                        <div class="d-md-none">
+                            <ul class="list-unstyled d-flex">
+                                <li><a href="#" class="btn btn-white m-1">لیست واحد ها</a></li>
+                                <li><a href="#" class="btn btn-white m-1">افزودن واحد جدید</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    @endif
     @if(Gate::check('read_warehouse') || Gate::check('create_warehouse'))
         <!-- Single Widget -->
             <div class="col-12 col-3 col-md box-margin height-card">

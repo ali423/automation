@@ -20,6 +20,10 @@ class Commodity extends Model
         'warning_limit',
     ];
 
+    public function unit(){
+        return $this->belongsTo(Unit::class);
+    }
+
     public function warehouses()
     {
         return $this->belongsToMany(Warehouse::class, 'commodity_warehouse', 'commodity_id', 'warehouse_id')

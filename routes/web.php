@@ -13,6 +13,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\UnitController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -79,6 +80,8 @@ Route::middleware('auth')->group(function () {
     Route::get('inventory-ajax/{id}',[CommodityController::class,'inventory'])->name('inventory');
 
     Route::get('commodity-type-ajax/{id}',[CommodityController::class,'commodityType']);
+
+    Route::resource('unit', UnitController::class);
 
 });
 

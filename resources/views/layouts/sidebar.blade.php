@@ -76,6 +76,29 @@
                         </ul>
                     </li>
                 @endif
+                @if(Gate::check('read_unit') || Gate::check('create_unit'))
+                    <li
+                        @if($first_url_part == 'unit')
+                        class="treeview active"
+                        @else
+                        class="treeview"
+                        @endif>
+                        <a href="javascript:void(0)"><i class="ti-ruler-pencil"></i> <span>واحدهای اندازه‌گیری</span> <i
+                                class="fa fa-angle-left"></i></a>
+                        <ul class="treeview-menu">
+                            @can('read_unit', App\Models\Unit::class)
+                                <li @if($first_url_part == 'unit' && $second_url_part == 'index') class="active" @endif>
+                                    <a href="{{ route('unit.index') }}">لیست واحدها</a>
+                                </li>
+                            @endcan
+                            @can('create_unit', App\Models\Unit::class)
+                                <li @if($first_url_part == 'unit' && $second_url_part == 'create') class="active" @endif>
+                                    <a href="{{ route('unit.create') }}">افزودن واحد جدید</a>
+                                </li>
+                            @endcan
+                        </ul>
+                    </li>
+                @endif
                 @if(Gate::check('read_warehouse') || Gate::check('create_warehouse'))
                         <li
                             @if($first_url_part== 'warehouse' || $first_url_part== 'inventory')

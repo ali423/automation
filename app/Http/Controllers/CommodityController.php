@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CommodityRequest;
 use App\Http\Requests\CommodityUpdateRequest;
 use App\Models\Commodity;
+use App\Models\Unit;
 use App\Services\CommodityService;
-use Illuminate\Http\Request;
 
 class CommodityController extends Controller
 {
@@ -42,6 +42,7 @@ class CommodityController extends Controller
     {
         return view('dashboard.commodity.create', [
             'materials' => Commodity::query()->where('type','material')->get(),
+            'units' => Unit::all()
         ]);
     }
 
@@ -84,6 +85,7 @@ class CommodityController extends Controller
 
         return view('dashboard.commodity.edit', [
             'commodity' => $commodity,
+            'units' => Unit::all(),
             'materials' => Commodity::all(),
             'used_materials' => $used_materials,
         ]);
