@@ -97,7 +97,7 @@
         <!-- Single Widget -->
             <div class="col-12 col-3 col-md box-margin height-card">
                 <div class="card">
-                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="commodity">
+                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="unit">
                         <div class="text-center">
                             <div>
                                 <i class="icon-layers font-24"></i>
@@ -367,6 +367,46 @@
                     @endcan
                 </div>
                 {{-- end commodity --}}
+
+                {{-- start unit --}}
+                <div id="unit" class="d-none card-body row">
+                    <!-- Single Widget -->
+                    @can('read_unit',App\Models\Unit::class)
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    </br></br>
+                                    <a href="{{ route('unit.index') }}" class="bg-red">
+                                        <div>
+                                            <div>
+                                                <i class="ti-list-ol font-24"></i>
+                                            </div>
+                                            <h6>لیست واحدها</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endcan
+                    @can('create_unit',App\Models\Unit::class)
+                    <!-- Single Widget -->
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('unit.create') }}" class="bg-blue">
+                                        <div>
+                                            <div>
+                                                <i class="ti-write font-24"></i>
+                                            </div>
+                                            <h6>افزودن واحد جدید</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endcan
+                </div>
+                {{-- end unit --}}
 
                 {{-- start warehouse --}}
                 <div id="warehouse" class="d-none card-body row">
