@@ -8,12 +8,12 @@ use App\Policies\ActivityPolicy;
 use App\Policies\CommodityPolicy;
 use App\Policies\CustomerPolicy;
 use App\Policies\ImportingRequestPolicy;
+use App\Policies\InventoryPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\RolePolicy;
 use App\Policies\SellerPolicy;
 use App\Policies\UnitPolicy;
 use App\Policies\UserPolicy;
-use App\Policies\WarehousePolicy;
 use App\Policies\WithdrawalRequestPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
@@ -49,9 +49,9 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('read_commodity',[CommodityPolicy::class,'viewAny']);
         Gate::define('create_commodity',[CommodityPolicy::class,'create']);
 
-        Gate::define('read_warehouse',[WarehousePolicy::class,'viewAny']);
-        Gate::define('create_warehouse',[WarehousePolicy::class,'create']);
-        Gate::define('edit_warehouse',[WarehousePolicy::class,'update']);
+        Gate::define('read_inventory',[InventoryPolicy::class,'viewAny']);
+        Gate::define('create_inventory',[InventoryPolicy::class,'create']);
+        Gate::define('edit_inventory',[InventoryPolicy::class,'update']);
 
         Gate::define('read_importing',[ImportingRequestPolicy::class,'viewAny']);
         Gate::define('create_importing',[ImportingRequestPolicy::class,'create']);
