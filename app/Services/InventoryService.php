@@ -2,26 +2,51 @@
 
 namespace App\Services;
 
+use App\Models\Inventory;
 use Illuminate\Support\Facades\DB;
 
 class InventoryService extends BaseService
 {
-
-    public function updateAmount($warehouse,$data){
-        $exits_commodity = $warehouse->commodities->find($data['commodity']);
-        if ($data['commodity_amount'] > $exits_commodity->pivot->commodity_amount){
-            $increased_value=$data['commodity_amount']-$exits_commodity->pivot->commodity_amount;
-            if ($increased_value > $warehouse->empty_space ){
-                $data['success'] = false;
-                $data['error'] ='انبار گنجایش کافی ندارد';
-                return $data;
-            }
-        }
-        DB::transaction(function () use ($warehouse,$data) {
-            $warehouse->commodities()->updateExistingPivot($data['commodity'], ['commodity_amount' => $data['commodity_amount']],true);
-            $this->recalculateWarehousesEmptySpace([$warehouse]);
+    public function create(array $data): Inventory
+    {
+        return DB::transaction(function () use ($data) {
+            return Inventory::create($data);
         });
-        $data['success'] = true;
-        return  $data;
+    }
+
+    public function update(Inventory $inventory, array $data): Inventory
+    {
+        return DB::transaction(function () use ($inventory, $data) {
+            $inventory->update($data);
+            return $inventory->fresh();
+        });
+    }
+
+    public function updateQuantity(Inventory $inventory, float $quantity): Inventory
+    {
+        return DB::transaction(function () use ($inventory, $quantity) {
+            $inventory->update(['quantity' => $quantity]);
+            return $inventory->fresh();
+        });
+    }
+
+    public function incrementQuantity(Inventory $inventory, float $delta): Inventory
+    {
+        return DB::transaction(function () use ($inventory, $delta) {
+            $inventory->increment('quantity', $delta);
+            return $inventory->fresh();
+        });
+    }
+
+    public function decrementQuantity(Inventory $inventory, float $delta): Inventory
+    {
+        return DB::transaction(function () use ($inventory, $delta) {
+            if ($inventory->quantity < $delta) {
+                throw new \RuntimeException("Insufficient stock");
+            }
+            
+            $inventory->decrement('quantity', $delta);
+            return $inventory->fresh();
+        });
     }
 }

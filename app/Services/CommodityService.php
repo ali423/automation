@@ -3,72 +3,87 @@
 namespace App\Services;
 
 use App\Models\Commodity;
+use App\Models\Inventory;
 use Illuminate\Support\Facades\DB;
 
 class CommodityService extends BaseService
 {
-
-    public function create($data)
+    public function create(array $data): Commodity
     {
-        $number = $this->generateUniqueNumber(Commodity::class,'number');
-        if ($data['type'] == 'material') {
-            return Commodity::query()->create([
+        return DB::transaction(function () use ($data) {
+            $number = $this->generateUniqueNumber(Commodity::class, 'number');
+            $type = $data['type'] === 'material' 
+                ? 'raw_material'  
+                : 'product';
+
+            $commodity = Commodity::create([
                 'number' => $number,
-                'title' => $data['title'],
-                'type' => $data['type'],
-                'purchase_price' => $data['purchase_price'],
-                'warning_limit'=>$data['warning_limit'],
+                'name' => $data['title'],
+                'type' => $type,
+                'purchase_price' => $data['purchase_price'] ?? null,
+                'sales_price' => $data['sales_price'] ?? null,
+                'warning_limit' => $data['warning_limit'],
                 'unit_id' => $data['unit_id'],
             ]);
-        } else {
-            $materials = null;
-            foreach ($data['materials'] as $key => $value) {
-                $materials[$value] = [
-                    'percentage' => $data['material_amount'][$key],
-                ];
+
+            // Handle product components
+            if ($type === 'product' && isset($data['materials'])) {
+                $this->attachComponents($commodity, $data['materials'], $data['material_amount']);
             }
-            return DB::transaction(function () use ($data, $number, $materials) {
-                $product = Commodity::query()->create([
-                    'number' => $number,
-                    'title' => $data['title'],
-                    'sales_price' => $data['sales_price'],
-                    'type' => $data['type'],
-                    'warning_limit'=>$data['warning_limit'],
-                    'unit_id' => $data['unit_id']
-                ]);
-                $product->materials()->attach($materials);
-                return true;
-            });
-        }
+
+            // Create initial inventory
+            $this->createInitialInventory($commodity, $data);
+
+            return $commodity;
+        });
     }
 
-    public function update(Commodity $commodity, $data)
+    private function attachComponents(Commodity $product, array $materialIds, array $quantities): void
     {
-        if ($commodity->type == 'material') {
-            return $commodity->update([
-                'title' => $data['title'],
-                'sales_price' => null,
-                'warning_limit'=>$data['warning_limit'],
-                'unit_id' => $data['unit_id']
-
-            ]);
-        } else {
-            $materials = null;
-            foreach ($data['materials'] as $key => $value) {
-                $materials[$value] = [
-                    'percentage' => $data['material_amount'][$key],
-                ];
-            }
-            return DB::transaction(function () use ($data, $commodity, $materials) {
-                $commodity->update([
-                    'title' => $data['title'],
-                    'sales_price' => $data['sales_price'],
-                    'warning_limit'=>$data['warning_limit'],
-                    'unit_id' => $data['unit_id']
-                ]);
-                $commodity->materials()->sync($materials);
-                return true;
-            });
+        $components = [];
+        foreach ($materialIds as $index => $materialId) {
+            $components[$materialId] = ['quantity' => $quantities[$index]];
         }
+        $product->productComponents()->sync($components);
+    }
+
+    private function createInitialInventory(Commodity $commodity, array $data): void
+    {
+        $initialPrice = $commodity->isProduct() 
+            ? $commodity->base_price 
+            : ($data['purchase_price'] ?? 0);
+
+        Inventory::create([
+            'commodity_id' => $commodity->id,
+            'unit_id' => $data['unit_id'],
+            'quantity' => 0,
+            'purchase_price' => $initialPrice,
+            'sale_price' => $data['sales_price'] ?? $initialPrice,
+            'active' => true
+        ]);
+    }
+
+    public function update(Commodity $commodity, array $data): Commodity
+    {
+        return DB::transaction(function () use ($commodity, $data) {
+            $commodity->update([
+                'name' => $data['title'],
+                'sales_price' => $data['sales_price'] ?? null,
+                'warning_limit' => $data['warning_limit'],
+                'unit_id' => $data['unit_id'],
+            ]);
+
+            // Update product components
+            if ($commodity->isProduct() && isset($data['materials'])) {
+                $this->attachComponents($commodity, $data['materials'], $data['material_amount']);
+            }
+
+            // Update inventory unit
+            if ($inventory = $commodity->inventoryItems->first()) {
+                $inventory->update(['unit_id' => $data['unit_id']]);
+            }
+
+            return $commodity->fresh();
+        });
     }
 }
