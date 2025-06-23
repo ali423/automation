@@ -58,12 +58,6 @@ class PermissionsSeeder extends Seeder
             ['title'=>'edit_order', 'name'=>'ویرایش سفارش '],
             ['title'=>'delete_order', 'name'=>'حذف سفارش '],
 
-            //warehouse permissions
-            ['title'=>'create_warehouse', 'name'=>'اضافه کردن انبار '],
-            ['title'=>'read_warehouse', 'name'=>'دیدن انبار'],
-            ['title'=>'edit_warehouse', 'name'=>'ویرایش انبار '],
-            ['title'=>'delete_warehouse', 'name'=>'حذف انبار '],
-
             //withdrawal permissions
             ['title'=>'create_withdrawal', 'name'=>'اضافه کردن فروش کالا '],
             ['title'=>'read_withdrawal', 'name'=>'دیدن فروش کالا'],
@@ -81,11 +75,11 @@ class PermissionsSeeder extends Seeder
             ['title'=>'delete_unit', 'name'=>'حذف واحد'],
 
             //inventory permissions
-            ['title'=>'view_inventory', 'name'=>'مشاهده موجودی'],
             ['title'=>'create_inventory', 'name'=>'اضافه کردن موجودی'],
+            ['title'=>'read_inventory', 'name'=>'دیدن موجودی'],
             ['title'=>'edit_inventory', 'name'=>'ویرایش موجودی'],
             ['title'=>'delete_inventory', 'name'=>'حذف موجودی'],
-            ['title'=>'manage_inventory_commodities', 'name'=>'مدیریت کالاهای موجودی'],
+            ['title'=>'manage_inventory', 'name'=>'مدیریت موجودی'],
         ];
 
         foreach ($permissions as $permission) {
