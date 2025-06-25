@@ -3,14 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Unit;
-use Illuminate\Http\Request;
+use App\Services\UnitService;
+use App\Http\Requests\UnitRequest;
+use App\Http\Requests\UnitUpdateRequest;
 
 class UnitController extends Controller
 {
-    public function __construct()
+    protected $unitService;
+
+    public function __construct(UnitService $unitService)
     {
         $this->authorizeResource(Unit::class);
         $this->shareView();
+        $this->unitService = $unitService;
     }
 
     /**
@@ -35,17 +40,17 @@ class UnitController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(UnitRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:units',
-            'symbol' => 'required|string|max:10',
-        ]);
-
-        Unit::create($validated);
-
-        return redirect()->route('unit.index')
-            ->with('success', 'Unit created successfully.');
+        try {
+            $this->unitService->create($request->validated());
+            return redirect()->route('unit.index')
+                ->with('success', 'واحد با موفقیت ایجاد شد.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'خطا در ایجاد واحد: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     /**
@@ -71,17 +76,17 @@ class UnitController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Unit $unit)
+    public function update(UnitUpdateRequest $request, Unit $unit)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:units,name,' . $unit->id,
-            'symbol' => 'required|string|max:10',
-        ]);
-
-        $unit->update($validated);
-
-        return redirect()->route('unit.index')
-            ->with('success', 'Unit updated successfully.');
+        try {
+            $this->unitService->update($unit, $request->validated());
+            return redirect()->route('unit.index')
+                ->with('success', 'واحد با موفقیت ویرایش شد.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'خطا در ویرایش واحد: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     /**
@@ -89,8 +94,13 @@ class UnitController extends Controller
      */
     public function destroy(Unit $unit)
     {
-        $unit->delete();
-        return redirect()->route('unit.index')
-            ->with('success', 'Unit deleted successfully.');
+        try {
+            $this->unitService->delete($unit);
+            return redirect()->route('unit.index')
+                ->with('success', 'واحد با موفقیت حذف شد.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'خطا در حذف واحد: ' . $e->getMessage());
+        }
     }
 }
