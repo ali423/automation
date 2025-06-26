@@ -2,39 +2,30 @@
 @section('title', 'ویرایش واحد')
 
 @section('content')
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">ویرایش واحد</h3>
-                    </div>
-                    <div class="card-body">
-                        <form action="{{ route('unit.update', $unit) }}" method="POST">
+    <div class="row">
+        <div class="col-xl-12 box-margin height-card">
+            <div class="card card-body">
+                <h4 class="card-title">ویرایش واحد</h4>
+                <div class="row">
+                    <div class="col-sm-12 col-xs-12">
+                        <form method="post" action="{{ route('unit.update', $unit) }}" class="needs-validation" novalidate>
                             @csrf
                             @method('PUT')
-                            
-                            <div class="form-group">
-                                <label for="name">نام</label>
-                                <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                                       id="name" name="name" value="{{ old('name', $unit->name) }}" required>
-                                @error('name')
-                                    <span class="invalid-feedback">{{ $message }}</span>
-                                @enderror
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="name">نام واحد</label>
+                                    <input type="text" name="name" value="{{ old('name', $unit->name) }}" class="form-control" id="name" required>
+                                    <div class="invalid-feedback">لطفاً نام واحد را وارد کنید.</div>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="symbol">نماد واحد</label>
+                                    <input type="text" name="symbol" value="{{ old('symbol', $unit->symbol) }}" class="form-control" id="symbol" required>
+                                    <div class="invalid-feedback">لطفاً نماد واحد را وارد کنید.</div>
+                                </div>
                             </div>
-
-                            <div class="form-group">
-                                <label for="symbol">نماد</label>
-                                <input type="text" class="form-control @error('symbol') is-invalid @enderror" 
-                                       id="symbol" name="symbol" value="{{ old('symbol', $unit->symbol) }}" required>
-                                @error('symbol')
-                                    <span class="invalid-feedback">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-primary">بروزرسانی</button>
-                                <a href="{{ route('unit.index') }}" class="btn btn-secondary">انصراف</a>
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="submit" class="btn btn-primary mr-2">بروزرسانی</button>
+                                <a href="{{ route('unit.index') }}" class="btn btn-danger">انصراف</a>
                             </div>
                         </form>
                     </div>
@@ -42,4 +33,25 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('page_scripts')
+    <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
+    <script>
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+    </script>
 @endsection 

@@ -100,7 +100,7 @@
                     <div class="link card-body d-flex align-items-center justify-content-center" data-link="unit">
                         <div class="text-center">
                             <div>
-                                <i class="icon-layers font-24"></i>
+                                <i class="ti-ruler-pencil font-24"></i>
                             </div>
                             <h6>واحدهای اندازه‌گیری</h6>
                         </div>
