@@ -25,6 +25,10 @@
                                        id="exampleInputEmail111" autocomplete="off"
                                        disabled>
                             </div>
+                            <div class="form-group col-md-4">
+                                <label for="unit">{{ __('fields.unit') }}</label>
+                                <input type="text" name="unit" value="{{ $commodity->unit ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : '-' }}" class="form-control" disabled>
+                            </div>
                             @if(!empty($commodity->sales_price))
                                 <div class="form-group col-md-4">
                                     <label for="exampleInputEmail111"> {{ __('fields.sales_price') }} هر کیلوگرم</label>

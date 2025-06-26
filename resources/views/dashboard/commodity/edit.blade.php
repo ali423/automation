@@ -41,12 +41,15 @@
                                 </div>
                                 <div class="form-group col-md-3">
                                     <label for="unit"> {{ __('fields.unit') }}</label>
-                                    <select id="unit" class="form-control" name="unit" required>
-                                        <option value="kg">کیلوگرم</option>
-                                        <option value="barrel">بشکه</option>
-                                        <option value="galon">گالن (20 لیتری)</option>
+                                    <select id="unit" class="form-control" name="unit_id" required>
+                                        <option value="">انتخاب کنید...</option>
+                                        @foreach($units as $unit)
+                                            <option value="{{ $unit->id }}" {{ $commodity->unit_id == $unit->id ? 'selected' : '' }}>
+                                                {{ $unit->name }} ({{ $unit->symbol }})
+                                            </option>
+                                        @endforeach
                                     </select>
-                                    <div class="invalid-feedback">نوع کالا را انتخاب کنید</div>
+                                    <div class="invalid-feedback">واحد را انتخاب کنید</div>
                                 </div>
                             </div>
                             <div class="form-row">

@@ -25,6 +25,7 @@
                             <th> {{ __('fields.base_price') }}</th>
                             <th> {{ __('fields.type') }}</th>
                             <th>{{ __('fields.avr_purchase_price') }}</th>
+                            <th>{{ __('fields.unit') }}</th>
                             <th>{{ __('fields.details') }}</th>
                         </tr>
                         </thead>
@@ -43,6 +44,7 @@
                                 @else
                                     <td>-</td>
                                 @endif
+                                <td>{{ $commodity->unit ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : '-' }}</td>
                                 <td><a href="{{ route('commodity.show', $commodity) }}" class=""><i
                                             class="ti-more-alt font-24"></i></a>
                                 </td>
