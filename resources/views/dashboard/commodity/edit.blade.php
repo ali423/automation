@@ -54,7 +54,7 @@
                             </div>
                             <div class="form-row">
                                 <div class="form-group col-md-6">
-                                    <label for="fake_warning_limit"> {{ __('fields.warning_limit') }} <span class="unit_label">(کیلوگرم)</span></label>
+                                    <label for="fake_warning_limit"> {{ __('fields.warning_limit') }} <span class="unit_label">({{ $commodity->unit ? $commodity->unit->symbol : '' }})</span></label>
                                     <input type="number" step="0.01" name="fake_warning_limit"
                                            value="{{ $commodity->warning_limit }}"
                                            class="form-control" placeholder="{{ __('fields.warning_limit') }}" required>
@@ -65,7 +65,7 @@
                                 </div>
                             @if(!empty($commodity->sales_price))
                                     <div id="sales_price" class="form-group col-md-6">
-                                        <label for="fake_sales_price"> {{ __('fields.sales_price') }} (ریال)</label>
+                                        <label for="fake_sales_price"> {{ __('fields.sales_price') }} هر <span class="unit_label2">{{ $commodity->unit ? $commodity->unit->symbol : '' }}</span> (ریال)</label>
                                         <input type="number" step="0.01" min="100" name="fake_sales_price"
                                                value="{{ $commodity->sales_price }}"
                                                class="form-control" placeholder="{{ __('fields.sales_price') }}"
@@ -77,7 +77,7 @@
                                     </div>
                                 @elseif(!empty($commodity->purchase_price))
                                     <div id="purchase_price" class="form-group col-md-6">
-                                        <label for="fake_purchase_price"> {{ __('fields.purchase_price') }} (ریال)</label>
+                                        <label for="fake_purchase_price"> {{ __('fields.purchase_price') }} هر <span class="unit_label2">{{ $commodity->unit ? $commodity->unit->symbol : '' }}</span> (ریال)</label>
                                         <input type="number" step="0.01" min="100" name="fake_purchase_price"
                                                value="{{ $commodity->purchase_price }}" class="form-control"
                                                placeholder="{{ __('fields.purchase_price') }}" required>
@@ -184,6 +184,10 @@
         }
 
         $('#unit').on('change', function() {
+            const selectedUnit = $(this).find('option:selected');
+            const unitSymbol = selectedUnit.text().match(/\((.*?)\)/)[1];
+            $('.unit_label').text(`(${unitSymbol})`);
+            $('.unit_label2').text(unitSymbol);
             
             switch (this.value) {
                 case 'kg':
