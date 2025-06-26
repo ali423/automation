@@ -14,24 +14,17 @@
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="card-title mb-0">لیست واحدها</h4>
-                        <a href="{{ route('unit.create') }}" class="btn btn-primary">
-                            <i class="ti-plus mr-1"></i> افزودن واحد جدید
-                        </a>
-                    </div>
-                    
+                    <h4 class="card-title mb-2">لیست واحدها</h4>
                     <table id="datatable-buttons-unit" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                         <tr>
                             <th>ردیف</th>
-                            <th>نام واحد</th>
-                            <th>نماد</th>
-                            <th>تاریخ ایجاد</th>
-                            <th>عملیات</th>
+                            <th>{{ __('fields.name') }}</th>
+                            <th>{{ __('fields.symbol') }}</th>
+                            <th>{{ __('fields.created_at') }}</th>
+                            <th>{{ __('fields.details') }}</th>
                         </tr>
                         </thead>
-
                         <tbody class="text-center">
                         @php($i = 1)
                         @foreach ($units as $unit)
@@ -40,30 +33,17 @@
                                 <td>{{ $unit->name }}</td>
                                 <td>{{ $unit->symbol }}</td>
                                 <td>{{ jdate($unit->created_at)->format('Y/m/d') }}</td>
-                                <td class="d-flex justify-content-center">
-                                    <a href="{{ route('unit.edit', $unit) }}" class="btn btn-sm btn-warning mr-1" 
-                                       data-toggle="tooltip" title="ویرایش">
-                                        <i class="ti-pencil"></i>
-                                    </a>
-                                    <form action="{{ route('unit.destroy', $unit) }}" method="POST" 
-                                          onsubmit="return confirm('آیا از حذف این واحد اطمینان دارید؟')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" 
-                                                data-toggle="tooltip" title="حذف">
-                                            <i class="ti-trash"></i>
-                                        </button>
-                                    </form>
+                                <td>
+                                    <a href="{{ route('unit.show', $unit) }}" class=""><i class="ti-more-alt font-24"></i></a>
                                 </td>
                             </tr>
                             @php($i++)
                         @endforeach
                         </tbody>
                     </table>
-
-                </div> <!-- end card body-->
-            </div> <!-- end card -->
-        </div><!-- end col-->
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
 
@@ -94,32 +74,20 @@
                     bolditalics: "IRANSansWeb400.ttf"
                 }
             };
-
             $('#datatable-buttons-unit').DataTable({
                 dom: 'Bfrtip',
-                buttons: [{
-                    extend: 'copy',
-                    text: "کپی",
-                    className: 'btn btn-outline-primary',
-                    exportOptions: {
-                        columns: [4, 3, 2, 1, 0],
-                        modifier: {
-                            page: 'current'
-                        },
-                        orthogonal: "rtlexport"
-                    }
-                },
+                buttons: [
+                    {
+                        extend: 'copy',
+                        text: "کپی",
+                        className: 'btn btn-outline-primary',
+                        exportOptions: { columns: [4, 3, 2, 1, 0], modifier: { page: 'current' }, orthogonal: "rtlexport" }
+                    },
                     {
                         extend: 'pdf',
                         text: 'pdf',
                         className: 'btn btn-outline-primary',
-                        exportOptions: {
-                            columns: [4, 3, 2, 1, 0],
-                            modifier: {
-                                page: 'current'
-                            },
-                            orthogonal: "rtlexport"
-                        },
+                        exportOptions: { columns: [4, 3, 2, 1, 0], modifier: { page: 'current' }, orthogonal: "rtlexport" },
                         customize: function (doc) {
                             doc.defaultStyle.font = "IRANSansWeb";
                             doc.content[1].table.widths = ['20%', '20%', '20%', '20%', '20%'];
@@ -130,34 +98,18 @@
                     {
                         extend: 'excel',
                         className: 'btn btn-outline-primary',
-                        exportOptions: {
-                            columns: [4, 3, 2, 1, 0],
-                            modifier: {
-                                page: 'current'
-                            }
-                        }
+                        exportOptions: { columns: [4, 3, 2, 1, 0], modifier: { page: 'current' } }
                     },
                     {
                         extend: 'csv',
                         className: 'btn btn-outline-primary',
-                        exportOptions: {
-                            columns: [4, 3, 2, 1, 0],
-                            modifier: {
-                                page: 'current'
-                            }
-                        }
+                        exportOptions: { columns: [4, 3, 2, 1, 0], modifier: { page: 'current' } }
                     },
                     {
                         extend: 'print',
                         text: "پرینت",
                         className: 'btn btn-outline-primary',
-                        exportOptions: {
-                            columns: [0, 1, 2, 3, 4],
-                            modifier: {
-                                page: 'current'
-                            },
-                            orthogonal: "rtlexport"
-                        }
+                        exportOptions: { columns: [0, 1, 2, 3, 4], modifier: { page: 'current' }, orthogonal: "rtlexport" }
                     }
                 ],
                 columnDefs: [{
@@ -182,9 +134,6 @@
                     "infoFiltered": "(فیلتر شده از _MAX_ رکورد)"
                 }
             });
-            
-            // Initialize tooltips
-            $('[data-toggle="tooltip"]').tooltip();
         });
     </script>
 @endsection

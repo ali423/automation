@@ -36,6 +36,7 @@ return [
     'c_password' => 'تکرار کلمه عبور',
     'permissions' => 'دسترسی ها',
     'created_at' => 'تاریخ ایجاد',
+    'updated_at' => 'تاریخ بروزرسانی',
     'creator' => 'ایجاد کننده',
     'commodities_list' => 'لیست کالا ها',
     'details' => 'جزئیات',
@@ -43,6 +44,7 @@ return [
     'unit' => 'واحد اندازه گیری',
     'deadline' => 'تاریخ سررسید',
     'done_date' => 'زمان تحویل سفارش',
+    'symbol' => 'نماد واحد',
     'role' => [
         'name' => 'نام نقش',
         'title' => 'عنوان نقش',
