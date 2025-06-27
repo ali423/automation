@@ -14,14 +14,14 @@
                         <div class="form-row">
                             <div class="form-group col-md-4">
                                 <label for="customer_id">{{ __('fields.customer')}}</label>
-                                <input type="text"  class="form-control" value="{{ $order->customer->name }}" disabled>
+                                <input type="text"  class="form-control" value="{{ $order->customer ? $order->customer->name : 'مشتری حذف شده' }}" disabled>
                                 <div class="invalid-feedback">
                                     {{ __('fields.customer')}} را انتخاب کنید
                                 </div>
                             </div>
                             <div class="form-group col-md-4">
                                 <label for="commodity_id">{{ __('fields.commodity.name')}}</label>
-                                <input type="text"  class="form-control" value="{{ $order->commodity->title }}" disabled>
+                                <input type="text"  class="form-control" value="{{ $order->commodity ? $order->commodity->title : 'کالا حذف شده' }}" disabled>
                                 <div class="invalid-feedback">
                                     {{ __('fields.commodity.name')}} را انتخاب کنید
                                 </div>
@@ -71,7 +71,7 @@
                             <div class="form-row">
                                 <div class="form-group col-md-4">
                                     <label>{{ __('fields.done_date') }}</label>
-                                    <input type="text"  class="form-control" value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($customer->updated_at)) }}" disabled>
+                                    <input type="text"  class="form-control" value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($order->updated_at)) }}" disabled>
                                 </div>
                             </div>
                             @endif
