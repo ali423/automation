@@ -10,15 +10,15 @@
                     <div class="col-sm-12 col-xs-12">
                         <form method="post" action="{{ route('unit.update', $unit) }}" class="needs-validation" novalidate>
                             @csrf
-                            @method('PUT')
+                            @method('PATCH')
                             <div class="form-row">
                                 <div class="form-group col-md-6">
-                                    <label for="name">نام واحد</label>
+                                    <label for="name">{{ __('fields.name') }}</label>
                                     <input type="text" name="name" value="{{ old('name', $unit->name) }}" class="form-control" id="name" required>
                                     <div class="invalid-feedback">لطفاً نام واحد را وارد کنید.</div>
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label for="symbol">نماد واحد</label>
+                                    <label for="symbol">{{ __('fields.symbol') }}</label>
                                     <input type="text" name="symbol" value="{{ old('symbol', $unit->symbol) }}" class="form-control" id="symbol" required>
                                     <div class="invalid-feedback">لطفاً نماد واحد را وارد کنید.</div>
                                 </div>
@@ -38,20 +38,34 @@
 @section('page_scripts')
     <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
     <script>
-        (function() {
-            'use strict';
-            window.addEventListener('load', function() {
-                var forms = document.getElementsByClassName('needs-validation');
-                var validation = Array.prototype.filter.call(forms, function(form) {
-                    form.addEventListener('submit', function(event) {
-                        if (form.checkValidity() === false) {
-                            event.preventDefault();
-                            event.stopPropagation();
-                        }
-                        form.classList.add('was-validated');
-                    }, false);
-                });
-            }, false);
-        })();
+        // Debug: Log form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const submitBtn = document.querySelector('button[type="submit"]');
+            
+            console.log('Form found:', form);
+            console.log('Submit button found:', submitBtn);
+            
+            form.addEventListener('submit', function(e) {
+                console.log('Form submitted!');
+                console.log('Form action:', form.action);
+                console.log('Form method:', form.method);
+                
+                // Check if form is valid
+                if (!form.checkValidity()) {
+                    console.log('Form validation failed');
+                    e.preventDefault();
+                    e.stopPropagation();
+                } else {
+                    console.log('Form validation passed, submitting...');
+                }
+                
+                form.classList.add('was-validated');
+            });
+            
+            submitBtn.addEventListener('click', function(e) {
+                console.log('Submit button clicked!');
+            });
+        });
     </script>
 @endsection 
