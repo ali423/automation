@@ -109,6 +109,16 @@ return [
 
             ]
         ],
+        'App\Models\Unit' => [
+            'fa_name' => 'واحدها',
+            'url' => 'unit',
+            'relations' => [
+                'commodities' => [
+                    'fa_name' => 'کالاها',
+                    'primary_key' => 'unit_id',
+                ],
+            ]
+        ],
     ],
 
     'activity_types' => [
