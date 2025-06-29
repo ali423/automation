@@ -36,8 +36,8 @@
                             @foreach ($orders as $order)
                                 <tr>
                                     <td>{{ $i }}</td>
-                                    <td>{{ $order->customer->name }}</td>
-                                    <td>{{ $order->commodity->title }}</td>
+                                    <td>{{ $order->customer ? $order->customer->name : 'مشتری حذف شده' }}</td>
+                                    <td>{{ $order->commodity ? $order->commodity->title : 'کالا حذف شده' }}</td>
                                     <td>{{ number_format($order->commodity_amount) }}</td>
                                     <td>{{ __('fields.commodity.units')[$order->unit] }}</td>
                                     <td>{{ date('Y/m/d', strtotime($order->deadline))}}
