@@ -30,22 +30,19 @@ class UnitConversionController extends Controller
     public function index(Request $request)
     {
         $commodityId = $request->get('commodity_id');
-        
-        if (!$commodityId) {
-            // Show commodity selection page
-            $commodities = Commodity::query()->orderBy('id', 'DESC')->get();
-            return view('dashboard.unit-conversion.select-commodity', [
-                'commodities' => $commodities,
-            ]);
-        }
-
-        $commodity = Commodity::findOrFail($commodityId);
-        $conversions = $this->service->getConversionsForCommodity($commodityId);
+        $commodities = Commodity::orderBy('id', 'DESC')->get();
         $units = Unit::all();
+
+        $query = $this->service->queryWithRelations();
+        if ($commodityId) {
+            $query->where('commodity_id', $commodityId);
+        }
+        $conversions = $query->orderBy('created_at', 'DESC')->get();
 
         return view('dashboard.unit-conversion.index', [
             'conversions' => $conversions,
-            'commodity' => $commodity,
+            'commodities' => $commodities,
+            'selectedCommodityId' => $commodityId,
             'units' => $units,
         ]);
     }
@@ -57,19 +54,12 @@ class UnitConversionController extends Controller
      */
     public function create(Request $request)
     {
-        $commodityId = $request->get('commodity_id');
-        
-        if (!$commodityId) {
-            return redirect()->route('unit-conversion.index')->with('error', 'لطفاً ابتدا یک کالا انتخاب کنید.');
-        }
-
-        $commodity = Commodity::findOrFail($commodityId);
+        $commodities = Commodity::orderBy('id', 'DESC')->get();
         $units = Unit::all();
-
         return view('dashboard.unit-conversion.create', [
-            'commodity' => $commodity,
+            'commodities' => $commodities,
             'units' => $units,
-            'defaultFromUnitId' => $commodity->unit_id,
+            'defaultFromUnitId' => null,
         ]);
     }
 
@@ -87,8 +77,7 @@ class UnitConversionController extends Controller
             $request->to_unit_id,
             $request->conversion_rate
         );
-
-        return redirect(route('unit-conversion.index', ['commodity_id' => $request->commodity_id]))
+        return redirect(route('unit-conversion.index'))
             ->with('successful', 'اطلاعات ثبت شد.');
     }
 
@@ -113,10 +102,11 @@ class UnitConversionController extends Controller
      */
     public function edit(UnitConversion $unitConversion)
     {
+        $commodities = Commodity::orderBy('id', 'DESC')->get();
         $units = Unit::all();
-
         return view('dashboard.unit-conversion.edit', [
             'unitConversion' => $unitConversion,
+            'commodities' => $commodities,
             'units' => $units,
         ]);
     }

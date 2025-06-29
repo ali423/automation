@@ -162,4 +162,14 @@ class UnitConversionService extends BaseService
             'to_unit_id' => $toUnitId,
         ])->exists();
     }
+
+    /**
+     * Get a query builder for unit conversions with relations loaded.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function queryWithRelations()
+    {
+        return UnitConversion::with(['fromUnit', 'toUnit', 'commodity']);
+    }
 } 
