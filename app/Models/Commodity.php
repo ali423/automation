@@ -18,7 +18,12 @@ class Commodity extends Model
         'type',
         'purchase_price',
         'warning_limit',
+        'unit_id',
     ];
+
+    public function unit(){
+        return $this->belongsTo(Unit::class);
+    }
 
     public function warehouses()
     {

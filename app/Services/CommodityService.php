@@ -18,6 +18,7 @@ class CommodityService extends BaseService
                 'type' => $data['type'],
                 'purchase_price' => $data['purchase_price'],
                 'warning_limit'=>$data['warning_limit'],
+                'unit_id' => $data['unit_id'],
             ]);
         } else {
             $materials = null;
@@ -33,6 +34,7 @@ class CommodityService extends BaseService
                     'sales_price' => $data['sales_price'],
                     'type' => $data['type'],
                     'warning_limit'=>$data['warning_limit'],
+                    'unit_id' => $data['unit_id']
                 ]);
                 $product->materials()->attach($materials);
                 return true;
@@ -47,6 +49,8 @@ class CommodityService extends BaseService
                 'title' => $data['title'],
                 'sales_price' => null,
                 'warning_limit'=>$data['warning_limit'],
+                'unit_id' => $data['unit_id']
+
             ]);
         } else {
             $materials = null;
@@ -60,6 +64,7 @@ class CommodityService extends BaseService
                     'title' => $data['title'],
                     'sales_price' => $data['sales_price'],
                     'warning_limit'=>$data['warning_limit'],
+                    'unit_id' => $data['unit_id']
                 ]);
                 $commodity->materials()->sync($materials);
                 return true;

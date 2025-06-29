@@ -28,6 +28,7 @@ class CommodityRequest extends FormRequest
             'title'=>['required','unique:commodities,title'],
             'type'=>['required','in:material,product'],
             'warning_limit'=>['required','numeric'],
+            'unit_id' =>['required', 'exists:units,id']
         ];
         if ($this->get('type') == 'product'){
             $rules['materials']=['required','array','min:1'];

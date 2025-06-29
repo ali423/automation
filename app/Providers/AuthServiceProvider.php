@@ -11,6 +11,7 @@ use App\Policies\ImportingRequestPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\RolePolicy;
 use App\Policies\SellerPolicy;
+use App\Policies\UnitPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\WarehousePolicy;
 use App\Policies\WithdrawalRequestPolicy;
@@ -66,5 +67,10 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('read_seller',[SellerPolicy::class,'viewAny']);
         Gate::define('create_seller',[SellerPolicy::class,'create']);
+
+        Gate::define('read_unit',[UnitPolicy::class,'viewAny']);
+        Gate::define('create_unit',[UnitPolicy::class,'create']);
+        Gate::define('edit_unit',[UnitPolicy::class,'update']);
+
     }
 }

@@ -14,15 +14,21 @@
                     <div class="col-sm-12 col-xs-12">
                         <p>
                             تغییرات مورد نظر در ردیف
-                            ( <a
-                                href="{{ route($activity->recordChange->model_detail['url'] . '.show', $activity->recordChange) }}">
-                                {{ $activity->recordChange->model_detail['fa_name'] }} ID =
-                                {{ $activity->record_change_id }}
-                            </a> )
+                            ( @if($activity->recordChange && isset($activity->recordChange->model_detail['url']))
+                                <a href="{{ route($activity->recordChange->model_detail['url'] . '.show', $activity->recordChange) }}">
+                                    {{ $activity->recordChange->model_detail['fa_name'] ?? '' }} ID = {{ $activity->record_change_id }}
+                                </a>
+                              @else
+                                <span>رکورد حذف شده</span>
+                              @endif )
                             توسط
-                            <a href="{{ route('user.show', $activity->user) }}">
-                                {{ $activity->user->full_name }}
-                            </a>
+                            @if($activity->user)
+                                <a href="{{ route('user.show', $activity->user) }}">
+                                    {{ $activity->user->full_name ?? '-' }}
+                                </a>
+                            @else
+                                <span>کاربر حذف شده</span>
+                            @endif
                             در زمان
                             {{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d H:i:s', strtotime($activity->created_at)) }}
                             به صورت زیر انجام گرفته است:
@@ -31,14 +37,14 @@
                         <div class="card shadow m-3 rounded d-md-inline-block border border-secondary">
                             <div class="card-header text-center">
                                 @if ($activity->action == 'create')
-                                    <div>{{ $activity->recordChange->model_detail['fa_name'] }} جدید ایجاد شد</div>
+                                    <div>{{ $activity->recordChange->model_detail['fa_name'] ?? '-' }} جدید ایجاد شد</div>
                                 @else
-                                    {{ $activity->action_persian_name }} @if (isset($activity->relation_persian_name))
+                                    {{ $activity->action_persian_name }} @if (!empty($activity->relation_persian_name))
                                         ({{ $activity->relation_persian_name }})
                                     @endif
                                 @endif
                             </div>
-                            @if (isset($activity->changes['new_value']))
+                            @if (isset($activity->changes['new_value']) && !empty($activity->changes['new_value']))
                                 @foreach ($activity->changes['new_value'] as $key => $value)
                                     <div class="card-body">
                                         <div class="">
@@ -47,7 +53,7 @@
                                         <div class="p-1">
                                             - مقدار قبلی:
                                             <span class="text-danger">
-                                                {{ $activity->changes['old_value'][$key] }}
+                                                {{ $activity->changes['old_value'][$key] ?? '(بدون مقدار)' }}
                                             </span>
                                         </div>
                                         <div class="p-1">
@@ -110,6 +116,13 @@
                                         </div>
                                     </div>
                                         @endforeach
+                                @endif
+                                @if (empty($activity->changes['attached']) && empty($activity->changes['updated']) && empty($activity->changes['pivot_update']))
+                                    <div class="card-body">
+                                        <div class="text-muted">
+                                            هیچ تغییر مشخصی ثبت نشده است.
+                                        </div>
+                                    </div>
                                 @endif
                             @endif
 

@@ -35,12 +35,15 @@
                                 </div>
                                 <div class="form-group col-md-3">
                                     <label for="unit"> {{ __('fields.unit') }}</label>
-                                    <select id="unit" class="form-control" name="unit" required>
-                                        <option value="kg">کیلوگرم</option>
-                                        <option value="barrel">بشکه</option>
-                                        <option value="galon">گالن (20 لیتری)</option>
+                                    <select id="unit" class="form-control" name="unit_id" required>
+                                        <option value="">انتخاب کنید...</option>
+                                        @foreach($units as $unit)
+                                            <option value="{{ $unit->id }}" {{ old('unit_id') == $unit->id ? 'selected' : '' }}>
+                                                {{ $unit->name }} ({{ $unit->symbol }})
+                                            </option>
+                                        @endforeach
                                     </select>
-                                    <div class="invalid-feedback">نوع کالا را انتخاب کنید</div>
+                                    <div class="invalid-feedback">واحد را انتخاب کنید</div>
                                 </div>
                             </div>
                             <div class="form-row">
@@ -137,7 +140,9 @@
         });
 
         $('#unit').on('change', function() {
-
+            const selectedUnit = $(this).find('option:selected');
+            const unitSymbol = selectedUnit.text().match(/\((.*?)\)/)[1];
+            
             $('input[name="fake_warning_limit"]').val('');
             $('input[name="fake_sales_price"]').val('');
             $('input[name="fake_purchase_price"]').val('');
@@ -145,77 +150,21 @@
             $('input[name="sales_price"]').val('');
             $('input[name="purchase_price"]').val('');
 
-            switch (this.value) {
-                case 'kg':
-                    $('.unit_label').text('(کیلوگرم)'); 
-                    $('.unit_label2').text('کیلوگرم'); 
-                    break;
-                case 'barrel':
-                    $('.unit_label').text('(بشکه)');
-                    $('.unit_label2').text('بشکه');
-                    break;
-                case 'galon':
-                    $('.unit_label').text('(گالن 20 لیتری)');
-                    $('.unit_label2').text('گالن 20 لیتری');
-                    break;
-            
-                default:
-                    break;
-            }
+            $('.unit_label').text(`(${unitSymbol})`);
+            $('.unit_label2').text(unitSymbol);
         });
 
         $('input[name="fake_warning_limit"]').on('change keyup paste', function(){
+            $('input[name="warning_limit"]').val(Math.floor(this.value));
+        });
 
-            switch ($('#unit option:selected').val()) {
-                case 'kg':
-                    $('input[name="warning_limit"]').val(Math.floor(this.value));
-                    break;
-                case 'barrel':
-                    $('input[name="warning_limit"]').val(Math.floor(this.value*185));
-                    break;
-                case 'galon':
-                    $('input[name="warning_limit"]').val(Math.floor(this.value*17.8));
-                    break;
-            
-                default:
-                    break;
-            }
-        })
         $('input[name="fake_sales_price"]').on('change keyup paste', function(){
+            $('input[name="sales_price"]').val(Math.floor(this.value));
+        });
 
-            switch ($('#unit option:selected').val()) {
-                case 'kg':
-                    $('input[name="sales_price"]').val(Math.floor(this.value));
-                    break;
-                case 'barrel':
-                    $('input[name="sales_price"]').val(Math.floor(this.value/185));
-                    break;
-                case 'galon':
-                    $('input[name="sales_price"]').val(Math.floor(this.value/17.8));
-                    break;
-            
-                default:
-                    break;
-            }
-        })
         $('input[name="fake_purchase_price"]').on('change keyup paste', function(){
-
-            switch ($('#unit option:selected').val()) {
-                case 'kg':
-                    $('input[name="purchase_price"]').val(Math.floor(this.value));
-                    break;
-                case 'barrel':
-                    $('input[name="purchase_price"]').val(Math.floor(this.value/185));
-                    break;
-                case 'galon':
-                    $('input[name="purchase_price"]').val(Math.floor(this.value/17.8));
-                    break;
-            
-                default:
-                    break;
-            }
-        })
-
+            $('input[name="purchase_price"]').val(Math.floor(this.value));
+        });
 
     </script>
 

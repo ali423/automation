@@ -40,12 +40,16 @@
                             @foreach ($activities as $activity)
                                 <tr>
                                     <td>{{ $i }}</td>
-                                    <td>{{ $activity->user->full_name }}</td>
-                                    <td>{{ $activity->recordChange->model_detail['fa_name']}} </td>
+                                    <td>{{ $activity->user->full_name ?? '-' }}</td>
+                                    <td>{{ $activity->recordChange->model_detail['fa_name'] ?? '-' }}</td>
                                     <td>{{ $activity->action_persian_name }}</td>
-                                    <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d H:i:s', strtotime($activity->created_at)) }}
-                                    </td>
-                                    <td><a href="{{ route('activity.show', $activity) }}"><i class="ti-more-alt font-24"></i></a>
+                                    <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d H:i:s', strtotime($activity->created_at)) }}</td>
+                                    <td>
+                                        @if($activity->user && $activity->recordChange)
+                                            <a href="{{ route('activity.show', $activity) }}"><i class="ti-more-alt font-24"></i></a>
+                                        @else
+                                            <span class="text-muted">جزئیات در دسترس نیست</span>
+                                        @endif
                                     </td>
                                 </tr>
                                 @php($i++)

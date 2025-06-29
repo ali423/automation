@@ -13,83 +13,67 @@
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-row col-md-12">
-                            <div class="form-group col-md-4">
-                                <label for="exampleInputEmail111"> {{ __('fields.title') }}</label>
-                                <input type="text" name="name" value="{{ $commodity->title }}" class="form-control"
-                                       id="exampleInputEmail111" autocomplete="off"
-                                       disabled>
+                            <div class="form-group col-md-3">
+                                <label>{{ __('fields.title') }}</label>
+                                <input type="text" value="{{ $commodity->title }}" class="form-control" disabled>
                             </div>
-                            <div class="form-group col-md-4">
-                                <label for="exampleInputEmail111"> {{ __('fields.type') }}</label>
-                                <input type="text" name="type" value="{{ __('fields.commodity.types') [$commodity->type] }}" class="form-control"
-                                       id="exampleInputEmail111" autocomplete="off"
-                                       disabled>
+                            <div class="form-group col-md-3">
+                                <label>{{ __('fields.type') }}</label>
+                                <input type="text" value="{{ __('fields.commodity.types')[$commodity->type] }}" class="form-control" disabled>
                             </div>
-                            @if(!empty($commodity->sales_price))
-                                <div class="form-group col-md-4">
-                                    <label for="exampleInputEmail111"> {{ __('fields.sales_price') }} هر کیلوگرم</label>
-                                    <input type="text" name="sales_price" value="{{ number_format($commodity->sales_price) }}" class="form-control"
-                                           id="exampleInputEmail111" autocomplete="off"
-                                           disabled>
-                                </div>
-                               @elseif(!empty($commodity->purchase_price))
-                                <div class="form-group col-md-4">
-                                    <label for="exampleInputEmail111"> {{ __('fields.purchase_price') }} هر کیلوگرم</label>
-                                    <input type="text" name="purchase_price" value="{{ number_format($commodity->purchase_price) }}" class="form-control"
-                                           id="exampleInputEmail111" autocomplete="off"
-                                           disabled>
-                                </div>
-                            @endif
+                            <div class="form-group col-md-3">
+                                <label>{{ __('fields.unit') }}</label>
+                                <input type="text" value="{{ $commodity->unit ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : '-' }}" class="form-control" disabled>
+                            </div>
+                            <div class="form-group col-md-3">
+                                @if(!empty($commodity->sales_price))
+                                    <label>{{ __('fields.sales_price') }} هر {{ $commodity->unit ? $commodity->unit->symbol : '' }}</label>
+                                    <input type="text" value="{{ number_format($commodity->sales_price) }}" class="form-control" disabled>
+                                @elseif(!empty($commodity->purchase_price))
+                                    <label>{{ __('fields.purchase_price') }} هر {{ $commodity->unit ? $commodity->unit->symbol : '' }}</label>
+                                    <input type="text" value="{{ number_format($commodity->purchase_price) }}" class="form-control" disabled>
+                                @else
+                                    <label>&nbsp;</label>
+                                    <input type="text" class="form-control" disabled>
+                                @endif
+                            </div>
                         </div>
                         <div class="form-row col-md-12">
                             <div class="form-group col-md-3">
-                                <label for="exampleInputEmail111"> {{ __('fields.commodity.number') }}</label>
-                                <input type="text" name="number" value="{{$commodity->number }}"
-                                       class="form-control" id="exampleInputEmail111"
-                                      disabled>
+                                <label>{{ __('fields.commodity.number') }}</label>
+                                <input type="text" value="{{ $commodity->number }}" class="form-control" disabled>
                             </div>
                             <div class="form-group col-md-3">
-                                <label for="exampleInputEmail111"> {{ __('fields.warning_limit') }} (کیلوگرم)</label>
-                                <input type="text" name="warning_limit" value="{{number_format($commodity->warning_limit) }}"
-                                       class="form-control" id="exampleInputEmail111"
-                                       disabled>
+                                <label>{{ __('fields.warning_limit') }} ({{ $commodity->unit ? $commodity->unit->symbol : '' }})</label>
+                                <input type="text" value="{{ number_format($commodity->warning_limit) }}" class="form-control" disabled>
                             </div>
                             <div class="form-group col-md-3">
-                                <label for="exampleInputEmail111"> {{ __('fields.created_at') }}</label>
-                                <input type="text" name="name"
-                                       value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($commodity->created_at)) }}"
-                                       class="form-control" id="exampleInputEmail111"
-                                       placeholder="{{ __('fields.created_at') }}" autocomplete="off" disabled>
+                                <label>{{ __('fields.created_at') }}</label>
+                                <input type="text" value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($commodity->created_at)) }}" class="form-control" disabled>
                             </div>
                             <div class="form-group col-md-3">
-                                <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
-                                <input type="text" name="name"
-                                       @if (isset($commodity->creator_user)) value="{{ $commodity->creator_user->full_name }}"
-                                       @else
-                                       value="سیستم" @endif
-                                       class="form-control" id="exampleInputEmail111"
-                                       placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
+                                <label>{{ __('fields.creator') }}</label>
+                                <input type="text" value="{{ isset($commodity->creator_user) ? $commodity->creator_user->full_name : 'سیستم' }}" class="form-control" disabled>
                             </div>
                         </div>
 
-                        <div id="product_formul" class="col-lg-12">
-                            <p>فرمول ساخت برای صد کیلوگرم فراورده</p>
-                            <div id="inputFormRow" class="form-row shadow p-4 mb-3">
-                                @foreach ($materials as $material)
-                                <div class="form-group col-md-5">
-                                    <label for="materials"> {{ __('fields.commodity.material_type') }}</label>
-                                    <input type="text" value="{{$material->title}}" class="form-control" id="materials" disabled>
+                        @if($commodity->type == 'product')
+                            <div id="product_formul" class="col-lg-12">
+                                <p>فرمول ساخت برای صد {{ $commodity->unit ? $commodity->unit->symbol : 'واحد' }} فراورده</p>
+                                <div id="inputFormRow" class="form-row shadow p-4 mb-3">
+                                    @foreach ($materials as $material)
+                                        <div class="form-group col-md-5">
+                                            <label>{{ __('fields.commodity.material_type') }}</label>
+                                            <input type="text" value="{{ $material->title }}" class="form-control" disabled>
+                                        </div>
+                                        <div class="form-group col-md-5">
+                                            <label>{{ __('fields.commodity.material_amount') }}</label>
+                                            <input type="number" step="0.01" value="{{ $material->pivot->percentage }}" class="form-control" disabled>
+                                        </div>
+                                    @endforeach
                                 </div>
-                                <div class="form-group col-md-5">
-                                    <label for="material_amount">{{ __('fields.commodity.material_amount') }}</label>
-                                    <input type="number" step="0.01" name="material_amount[0]" class="form-control"
-                                           id="material_amount" value="{{ $material->pivot->percentage }}"
-                                           placeholder="{{ __('fields.commodity.material_amount') }}" min="1"
-                                           max="100" onchange="percentage(this)" disabled>
-                                </div>
-                                @endforeach
                             </div>
-                        </div>
+                        @endif
 
                         <div class="row">
                             <div class="col-md-6">
