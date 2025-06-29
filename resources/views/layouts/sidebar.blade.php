@@ -99,6 +99,29 @@
                         </ul>
                     </li>
                 @endif
+                @if(Gate::check('read_unit_conversion') || Gate::check('create_unit_conversion'))
+                    <li
+                        @if($first_url_part == 'unit-conversion')
+                        class="treeview active"
+                        @else
+                        class="treeview"
+                        @endif>
+                        <a href="javascript:void(0)"><i class="ti-exchange-vertical"></i> <span>تبدیل واحدها</span> <i
+                                class="fa fa-angle-left"></i></a>
+                        <ul class="treeview-menu">
+                            @can('read_unit_conversion', App\Models\UnitConversion::class)
+                                <li @if($first_url_part == 'unit-conversion' && $second_url_part == 'index') class="active" @endif>
+                                    <a href="{{ route('unit-conversion.index') }}">لیست تبدیل ها</a>
+                                </li>
+                            @endcan
+                            @can('create_unit_conversion', App\Models\UnitConversion::class)
+                                <li @if($first_url_part == 'unit-conversion' && $second_url_part == 'create') class="active" @endif>
+                                    <a href="{{ route('unit-conversion.create') }}">افزودن تبدیل جدید</a>
+                                </li>
+                            @endcan
+                        </ul>
+                    </li>
+                @endif
                 @if(Gate::check('read_warehouse') || Gate::check('create_warehouse'))
                         <li
                             @if($first_url_part== 'warehouse' || $first_url_part== 'inventory')
