@@ -110,7 +110,6 @@
                 });
             }, false);
         })();
-        // Prevent selecting same unit for both from and to
         $('#from_unit_id, #to_unit_id').on('change', function() {
             var fromUnit = $('#from_unit_id').val();
             var toUnit = $('#to_unit_id').val();
@@ -119,7 +118,6 @@
                 $(this).val('');
             }
         });
-        // Set from_unit_id and display when commodity changes
         function updateFromUnit() {
             var selected = $('#commodity_id').find('option:selected');
             var unitId = selected.data('unit-id');
@@ -131,7 +129,6 @@
             } else {
                 $('#from_unit_display').val('');
             }
-            // Optionally, remove the selected from_unit from to_unit options
             $('#to_unit_id option').show();
             if(unitId) {
                 $('#to_unit_id option[value="' + unitId + '"]').hide();
@@ -141,7 +138,6 @@
             }
         }
         $('#commodity_id').on('change', updateFromUnit);
-        // Trigger change on page load if old value exists or for edit
         updateFromUnit();
     </script>
 @endsection

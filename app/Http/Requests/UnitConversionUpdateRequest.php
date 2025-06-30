@@ -69,11 +69,9 @@ class UnitConversionUpdateRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $conversion = $this->route('unit_conversion');
-            // If it's a collection, get the first item
             if ($conversion instanceof \Illuminate\Database\Eloquent\Collection) {
                 $conversion = $conversion->first();
             }
-            // If it's an ID, fetch the model
             if (is_numeric($conversion)) {
                 $conversion = \App\Models\UnitConversion::find($conversion);
             }
@@ -81,7 +79,6 @@ class UnitConversionUpdateRequest extends FormRequest
                 $validator->errors()->add('conversion', 'تبدیل واحد یافت نشد.');
                 return;
             }
-            // Check if the same conversion already exists for this commodity
             $existingConversion = \App\Models\UnitConversion::where([
                 'commodity_id' => $conversion->commodity_id,
                 'from_unit_id' => $this->from_unit_id,

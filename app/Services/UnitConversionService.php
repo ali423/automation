@@ -73,7 +73,7 @@ class UnitConversionService extends BaseService
      */
     public function convert($amount, $fromUnitId, $toUnitId, $commodityId)
     {
-        // If units are the same, return the same amount
+      
         if ($fromUnitId === $toUnitId) {
             return $amount;
         }
@@ -84,14 +84,13 @@ class UnitConversionService extends BaseService
             return $amount * $conversion;
         }
 
-        // Try reverse conversion
         $reverseConversion = $this->getConversionRate($toUnitId, $fromUnitId, $commodityId);
         
         if ($reverseConversion) {
             return $amount / $reverseConversion;
         }
 
-        return null; // No conversion found
+        return null; 
     }
 
     /**

@@ -71,7 +71,6 @@ class UnitConversionRequest extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            // Check if the same conversion already exists for this commodity
             $existingConversion = \App\Models\UnitConversion::where([
                 'commodity_id' => $this->commodity_id,
                 'from_unit_id' => $this->from_unit_id,
