@@ -70,25 +70,21 @@ class Activity extends Model
                 unset($new_value[$this->relation_name], $new_value['updated_at']);
                 unset($old_value['pivot']);
                 unset($new_value['pivot']);
-                $old_diff = array_diff($old_value, $new_value);
-                $new_diff = array_diff($new_value, $old_value);
-
-                $res = array_filter(array_keys($new_diff), function ($item) use ($new_diff, $old_diff) {
-                    if (!empty($new_diff[$item])) {
-                        return $item;
-                    } else {
-                        if (!empty($old_diff[$item])) {
-                            return $item;
-                        }
+                $changed_keys = [];
+                foreach (array_keys($old_value + $new_value) as $key) {
+                    if (($old_value[$key] ?? null) !== ($new_value[$key] ?? null)) {
+                        $changed_keys[] = $key;
                     }
-                });
-                foreach ($res as $value) {
-                    $res_old_diff[$value]= $old_diff[$value]?? '(بدون مقدار)';
-                    $res_new_diff[$value] = $new_diff[$value]?? '(بدون مقدار)';
+                }
+                $res_old_diff = [];
+                $res_new_diff = [];
+                foreach ($changed_keys as $key) {
+                    $res_old_diff[$key] = $old_value[$key] ?? '(بدون مقدار)';
+                    $res_new_diff[$key] = $new_value[$key] ?? '(بدون مقدار)';
                 }
                 return [
-                    'old_value' => $res_old_diff ?? null,
-                    'new_value' => $res_new_diff ?? null,
+                    'old_value' => $res_old_diff ?: null,
+                    'new_value' => $res_new_diff ?: null,
                 ];
             case "attach":
                 $value = json_decode($this->pivot_data, true);
