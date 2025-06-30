@@ -58,6 +58,12 @@ class Activity extends Model
             case "create":
                 return false;
             case "update":
+                if (!$this->perviousActivity) {
+                    return [
+                        'old_value' => null,
+                        'new_value' => null,
+                    ];
+                }
                 $old_value = json_decode($this->perviousActivity->data, true);
                 $new_value = json_decode($this->data, true);
                 unset($old_value[$this->relation_name], $old_value['updated_at']);

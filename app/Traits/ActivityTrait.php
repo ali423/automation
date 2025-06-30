@@ -65,10 +65,11 @@ trait ActivityTrait
             static::updated(function ($item) {
                 $previous_activities=$item->activities()->get()->toArray();
                 if (auth()->check()) {
+                    $last_activity = !empty($previous_activities) ? end($previous_activities) : null;
                     $data = [
-                        'previous_activity_id' => end($previous_activities)['id'],
+                        'previous_activity_id' => $last_activity['id'] ?? null,
                         'user_id' => auth()->user()->id,
-                        'relation_name' => end($previous_activities)['relation_name'],
+                        'relation_name' => $last_activity['relation_name'] ?? null,
                         'action' => 'update',
                         'data' => json_encode($item->toArray()),
                     ];
@@ -91,10 +92,11 @@ trait ActivityTrait
             static::deleted(function ($item) {
                 $previous_activities=$item->activities()->get()->toArray();
                 if (auth()->check()) {
+                    $last_activity = !empty($previous_activities) ? end($previous_activities) : null;
                     $data = [
                         'record_change_id' => $item->id,
                         'record_change_type' => get_class($item),
-                        'previous_activity_id' => end($previous_activities)['id'],
+                        'previous_activity_id' => $last_activity['id'] ?? null,
                         'user_id' => auth()->user()->id,
                         'action' => 'delete',
                         'data' => json_encode($item->toArray()),
@@ -129,8 +131,9 @@ trait ActivityTrait
                 $pivot_res['updated']=self::getRelatedData($item,$relationName,$pivotIdsAttributes['updated']);
                 $previous_activities=$item->activities()->get()->toArray();
                 if (auth()->check()) {
+                    $last_activity = !empty($previous_activities) ? end($previous_activities) : null;
                     $data = [
-                        'previous_activity_id' => end($previous_activities)['id'] ?? null,
+                        'previous_activity_id' => $last_activity['id'] ?? null,
                         'record_change_id' => $item->id,
                         'record_change_type' => get_class($item),
                         'relation_model'=>get_class($item->$relationName()->first()),
@@ -159,8 +162,9 @@ trait ActivityTrait
                  $pivot_res=self::getRelatedData($item,$relationName,$pivotIdsAttributes);
                 $previous_activities=$item->activities()->get()->toArray();
                 if (auth()->check()) {
+                    $last_activity = !empty($previous_activities) ? end($previous_activities) : null;
                     $data = [
-                        'previous_activity_id' => end($previous_activities)['id'],
+                        'previous_activity_id' => $last_activity['id'] ?? null,
                         'record_change_id' => $item->id,
                         'record_change_type' => get_class($item),
                         'relation_model'=>get_class($item->$relationName()->first()),
@@ -187,8 +191,9 @@ trait ActivityTrait
                 $pivot_res=self::getRelatedData($item,$relationName,$pivotIdsAttributes);
                 $previous_activities=$item->activities()->get()->toArray();
                 if (auth()->check()) {
+                    $last_activity = !empty($previous_activities) ? end($previous_activities) : null;
                     $data = [
-                        'previous_activity_id' => end($previous_activities)['id'],
+                        'previous_activity_id' => $last_activity['id'] ?? null,
                         'record_change_id' => $item->id,
                         'record_change_type' => get_class($item),
                         'relation_model'=>get_class($item->$relationName()->first()),
@@ -221,8 +226,9 @@ trait ActivityTrait
                 $pivot_res=self::getRelatedData($item,$relationName,$pivotIdsAttributes);
                 $previous_activities=$item->activities()->get()->toArray();
                 if (auth()->check()) {
+                    $last_activity = !empty($previous_activities) ? end($previous_activities) : null;
                     $data = [
-                        'previous_activity_id' => end($previous_activities)['id'],
+                        'previous_activity_id' => $last_activity['id'] ?? null,
                         'record_change_id' => $item->id,
                         'record_change_type' => get_class($item),
                         'user_id' => auth()->user()->id,

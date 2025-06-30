@@ -32,36 +32,6 @@
                             </div>
                         </div>
 
-                        @if($unit->commodities->count() > 0)
-                            <div class="col-lg-12 mt-4">
-                                <h5>{{ __('fields.related_commodities') }}</h5>
-                                <div class="form-row shadow p-4 mb-3">
-                                    <table class="table table-bordered">
-                                        <thead class="text-center">
-                                            <tr>
-                                                <th>{{ __('fields.commodity.number') }}</th>
-                                                <th>{{ __('fields.title') }}</th>
-                                                <th>{{ __('fields.type') }}</th>
-                                                <th>{{ __('fields.details') }}</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="text-center">
-                                            @foreach($unit->commodities as $commodity)
-                                                <tr>
-                                                    <td>{{ $commodity->number }}</td>
-                                                    <td>{{ $commodity->title }}</td>
-                                                    <td>{{ __('fields.commodity.types')[$commodity->type] }}</td>
-                                                    <td>
-                                                        <a href="{{ route('commodity.show', $commodity) }}" class=""><i class="ti-more-alt font-24"></i></a>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        @endif
-
                         <div class="row">
                             <div class="col-md-6">
                                 <a href="{{ route('unit.edit', $unit) }}" class="btn btn-primary">ویرایش</a>

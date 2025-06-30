@@ -412,7 +412,7 @@
                             <tr>
                                 <td colspan="5" class="text-right">جمع کل</td>
                                 @if(isset($request->total_price['number']))
-                                    <td> {{ optional(number_format($request->total_price['number'])) }}</td>
+                                    <td> {{ optional($request->total_price)['number'] !== null ? number_format($request->total_price['number']) : 0 }}</td>
                                 @else
                                     <td>          </td>
                                 @endif
