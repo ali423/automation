@@ -78,7 +78,13 @@ class PermissionsSeeder extends Seeder
             ['title'=>'create_unit', 'name'=>'اضافه کردن واحد'],
             ['title'=>'read_unit', 'name'=>'دیدن واحد'],
             ['title'=>'edit_unit', 'name'=>'ویرایش واحد'],
-            ['title'=>'delete_unit', 'name'=>'حذف واحد']
+            ['title'=>'delete_unit', 'name'=>'حذف واحد'],
+
+            //unit conversion permissions
+            ['title'=>'create_unit_conversion', 'name'=>'اضافه کردن تبدیل واحد'],
+            ['title'=>'read_unit_conversion', 'name'=>'دیدن تبدیل واحد'],
+            ['title'=>'edit_unit_conversion', 'name'=>'ویرایش تبدیل واحد'],
+            ['title'=>'delete_unit_conversion', 'name'=>'حذف تبدیل واحد']
         ];
 
         foreach ($permissions as $permission) {
