@@ -80,6 +80,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('commodity-type-ajax/{id}',[CommodityController::class,'commodityType']);
 
+    Route::get('order/{order}/download-invoice', [OrderController::class, 'downloadInvoice'])->name('order.downloadInvoice');
+
 });
 
 
