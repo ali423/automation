@@ -12,7 +12,7 @@ class Inventory extends Model
     protected $fillable = [
         'commodity_id',
         'unit_id',
-        'quantity',
+        'amount',
         'purchase_price',
         'sale_price',
         'active'
@@ -29,7 +29,6 @@ class Inventory extends Model
     {
         return $this->belongsTo(Commodity::class);
     }
-
 
     public function unit()
     {
@@ -53,5 +52,70 @@ class Inventory extends Model
         return $query->whereHas('commodity', function($q) {
             $q->where('type', 'product');
         });
+    }
+
+    public function scopeAvailable($query)
+    {
+        return $query->where('amount', '>', 0);
+    }
+
+    public function scopeByCommodityAndUnit($query, $commodityId, $unitId)
+    {
+        return $query->where('commodity_id', $commodityId)
+                    ->where('unit_id', $unitId);
+    }
+
+    /**
+     * Get total available quantity for a commodity and unit
+     */
+    public static function getTotalAvailableQuantity($commodityId, $unitId)
+    {
+        return static::byCommodityAndUnit($commodityId, $unitId)
+                    ->available()
+                    ->sum('amount');
+    }
+
+    /**
+     * Get average purchase price for a commodity and unit
+     */
+    public static function getAveragePurchasePrice($commodityId, $unitId)
+    {
+        $inventory = static::byCommodityAndUnit($commodityId, $unitId)
+                          ->available()
+                          ->get();
+
+        if ($inventory->isEmpty()) {
+            return 0;
+        }
+
+        $totalValue = $inventory->sum(function ($item) {
+            return $item->amount * $item->purchase_price;
+        });
+
+        $totalQuantity = $inventory->sum('amount');
+
+        return $totalQuantity > 0 ? round($totalValue / $totalQuantity, 2) : 0;
+    }
+
+    /**
+     * Consume inventory for a commodity and unit (single record)
+     */
+    public static function consume($commodityId, $unitId, $quantity)
+    {
+        $inventory = static::byCommodityAndUnit($commodityId, $unitId)
+            ->available()
+            ->first();
+
+        if (!$inventory || $inventory->amount < $quantity) {
+            throw new \RuntimeException("موجودی کافی برای کالای مورد نظر وجود ندارد");
+        }
+
+        $inventory->decrement('amount', $quantity);
+
+        return [
+            'inventory_id' => $inventory->id,
+            'quantity' => $quantity,
+            'purchase_price' => $inventory->purchase_price
+        ];
     }
 }
