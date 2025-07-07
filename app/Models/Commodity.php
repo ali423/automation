@@ -46,7 +46,7 @@ class Commodity extends Model
     public function importingRequests()
     {
         return $this->belongsToMany(ImportingRequest::class, 'importing_commodities', 'commodity_id', 'importation_id')
-            ->withPivot('amount','warehouses_id','unit','purchase_price');
+            ->withPivot('amount','unit_id','purchase_price');
     }
 
     public function getBasePriceAttribute()
@@ -106,5 +106,16 @@ class Commodity extends Model
             case 'twenty_liters':
                 return round(($this->pivot->amount*17.8)/185,1);
         }
+    }
+    
+    /**
+     * Get all selectable units for this commodity
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getSelectableUnitsAttribute()
+    {
+        $commodityUnitService = app(\App\Services\CommodityUnitService::class);
+        return $commodityUnitService->getSelectableUnits($this);
     }
 }

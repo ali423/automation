@@ -6,14 +6,20 @@ use App\Models\Commodity;
 use App\Models\ImportingRequest;
 use App\Models\Warehouse;
 use App\Services\BaseService;
+use App\Services\InventoryService;
+use App\Services\CommodityUnitService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ImportingRequestService extends BaseService
 {
-    public function __construct()
+    protected $inventoryService;
+    protected $commodityUnitService;
+
+    public function __construct(InventoryService $inventoryService, CommodityUnitService $commodityUnitService)
     {
-        //
+        $this->inventoryService = $inventoryService;
+        $this->commodityUnitService = $commodityUnitService;
     }
 
     public function create($data, $file)
@@ -27,10 +33,10 @@ class ImportingRequestService extends BaseService
                 ]);
                 throw $error_price;
             }
+            
             $commodity[$value] = [
-                'warehouses_id' => $data['warehouse_id'][$key],
                 'amount' => $data['amount'][$key],
-                'unit' => $data['unit'][$key],
+                'unit_id' => $data['unit'][$key],
                 'purchase_price' => $data['purchase_price'][$key] ?? null,
             ];
         }
@@ -66,10 +72,10 @@ class ImportingRequestService extends BaseService
                 ]);
                 throw $error_price;
             }
+            
             $commodity[$value] = [
-                'warehouses_id' => $data['warehouse_id'][$key],
                 'amount' => $data['amount'][$key],
-                'unit' => $data['unit'][$key],
+                'unit_id' => $data['unit'][$key],
                 'purchase_price' => $data['purchase_price'][$key] ?? null,
             ];
         }
@@ -105,122 +111,81 @@ class ImportingRequestService extends BaseService
     {
         DB::transaction(function () use ($importing_request) {
             foreach ($importing_request->commodities as $selected_commodity) {
-                $selected_commodity->update([
-                    'purchase_price' => $this->calculateCommodityPrice($selected_commodity->pivot->purchase_price, $selected_commodity->pivot->unit)
-                ]);
-                $warehouse = Warehouse::query()->where('id', $selected_commodity->pivot->warehouses_id)->firstOrFail();
-                $commodity_amount = $this->calculateCommodityAmount($selected_commodity->pivot->amount, $selected_commodity->pivot->unit);
-                if ($selected_commodity->type == 'product') {
-                    $this->subtractingIngredients($selected_commodity, $commodity_amount);
-                }
-                $add_amounts[$warehouse->id][] = $commodity_amount;
-                $warehouses[$warehouse->id] = $warehouse;
-                if ($warehouse->commodities->contains($selected_commodity->id)) {
-                    $exits_commodity = $warehouse->commodities->find($selected_commodity->id);
-                    $new_amount = round($exits_commodity->pivot->commodity_amount + $commodity_amount, 2);
-                    $average_purchase_price = $this->calculateAveragePurchasePrice($selected_commodity->type, $selected_commodity->pivot->purchase_price, $commodity_amount, $exits_commodity->pivot->commodity_amount, $exits_commodity->pivot->average_purchase_price, $selected_commodity->pivot->unit);
-                    $warehouse->commodities()->updateExistingPivot($selected_commodity->id, ['commodity_amount' => $new_amount], false);
-                    $warehouse->commodities()->updateExistingPivot($selected_commodity->id, ['average_purchase_price' => $average_purchase_price], false);
-                } else {
-                    $warehouse->commodities()->attach([
-                        $selected_commodity->id => [
-                            'commodity_amount' => $this->calculateCommodityAmount($selected_commodity->pivot->amount, $selected_commodity->pivot->unit),
-                            'average_purchase_price' => $this->calculatePrimaryPrice($selected_commodity->type, $selected_commodity->pivot->purchase_price, $selected_commodity->pivot->unit)
-                        ],
+                // Get the selected unit ID directly from the pivot
+                $selectedUnitId = $selected_commodity->pivot->unit_id;
+                
+                // Update commodity purchase price if it's a material (no conversion needed)
+                if ($selected_commodity->type == 'material') {
+                    $selected_commodity->update([
+                        'purchase_price' => $selected_commodity->pivot->purchase_price
                     ]);
                 }
+                
+                // Convert amount to main unit for inventory storage
+                $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
+                    $selected_commodity,
+                    $selected_commodity->pivot->amount,
+                    $selectedUnitId
+                );
+                
+                // If it's a product, subtract ingredients from inventory
+                if ($selected_commodity->type == 'product') {
+                    $this->subtractingIngredients($selected_commodity, $amountInMainUnit);
+                }
+                
+                // Add stock to inventory using the main unit
+                $this->inventoryService->addStock(
+                    $selected_commodity->id,
+                    $selected_commodity->unit_id, // Use commodity's main unit
+                    $amountInMainUnit,
+                    $selected_commodity->pivot->purchase_price,
+                    $selected_commodity->sales_price
+                );
             }
+            
             $importing_request->update([
                 'status' => 'approvaled',
             ]);
-            $this->recalculateWarehousesEmptySpace($warehouses);
         });
         return true;
-    }
-
-    public function calculatePrimaryPrice($type, $price, $unit)
-    {
-        if ($type == 'product') {
-            return null;
-        }
-        return $this->calculateCommodityPrice($price, $unit);
-    }
-
-    public function calculateAveragePurchasePrice($type, $price, $amount, $previous_amount, $previous_price, $unit)
-    {
-        if ($type == 'product') {
-            return null;
-        }
-        $new_price = $this->calculateCommodityPrice($price, $unit);
-        return round((($amount * $new_price) + ($previous_amount * $previous_price)) / ($amount + $previous_amount), 2);
     }
 
     public function checkImporting($importing_request)
     {
         foreach ($importing_request->commodities as $commodity) {
-            $commodity['kg_amount'] = $this->calculateCommodityAmount($commodity->pivot->amount, $commodity->pivot->unit);
-            $sort_warehouse[$commodity->pivot->warehouses_id][] = $commodity;
+            // Convert amount to main unit using CommodityUnitService
+            $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
+                $commodity,
+                $commodity->pivot->amount,
+                $commodity->pivot->unit_id
+            );
+            $commodity['main_unit_amount'] = $amountInMainUnit;
+            
+            // If it's a product, check if we have enough materials in inventory
             if ($commodity->type == 'product') {
                 foreach ($commodity->materials as $material) {
-                    $required_amount = round(($material->pivot->percentage / 100) * $commodity['kg_amount']);
-                    $exits_material_amount = array_column(array_column($material->warehouses->toArray(), 'pivot'), 'commodity_amount');
-                    $total_material_amount = array_sum($exits_material_amount);
-                    if ($required_amount > $total_material_amount) {
+                    $required_amount = round(($material->pivot->percentage / 100) * $commodity['main_unit_amount']);
+                    
+                    // Check if we have enough material in inventory
+                    $available_stock = $this->inventoryService->getStockLevel($material->id, $material->unit_id);
+                    
+                    if ($required_amount > $available_stock) {
                         $data['success'] = false;
-                        $data['error'] = $material->title . ' که یک از مواد تشکیل دهنده ' . $commodity->title . ' است به مقدار کافی در انبار وجود ندارد ';
+                        $data['error'] = $material->title . ' که یکی از مواد تشکیل دهنده ' . $commodity->title . ' است به مقدار کافی در موجودی وجود ندارد ';
                         return $data;
                     }
                 }
             }
-            unset($commodity['kg_amount']);
+            unset($commodity['main_unit_amount']);
         }
-        foreach ($sort_warehouse as $key => $value) {
-            $warehouse = Warehouse::query()->where('id', $key)->firstOrFail();
-            if ($warehouse->status != 'active') {
-                $data['success'] = false;
-                $data['error'] = ' انبار ' . $warehouse->title . '  در وضعیت فعال قرار ندارد لطفا انبار دیگری را انتخاب کنید.  ';
-                return $data;
-            }
-            $total_amount = array_sum(array_column($value, 'kg_amount'));
-            if ($total_amount > $warehouse->empty_space) {
-                $data['success'] = false;
-                $data['error'] = ' انبار ' . $warehouse->title . ' گنجایش کالا های انتخابی را ندارد. ';
-                return $data;
-            }
-        }
+        
         $data['success'] = true;
         return $data;
     }
 
     public function checkImportingStore($data)
     {
-        for ($i = 0; $i < count($data['commodity_id']); $i++) {
-            $res[] = [
-                'commodity_id' => $data['commodity_id'][$i],
-                'warehouse_id' => $data['warehouse_id'][$i],
-                'unit' => $data['unit'][$i],
-                'amount' => $data['amount'][$i],
-            ];
-        }
-        foreach ($res as $value) {
-            $warehouses[$value['warehouse_id']][] = $value;
-            $value['kg_amount'] = $this->calculateCommodityAmount($value['amount'], $value['unit']);
-            $warehouses[$value['warehouse_id']][] = $value;
-        }
-        foreach ($warehouses as $key => $value) {
-            $warehouse = Warehouse::query()->where('id', $key)->firstOrFail();
-            if ($warehouse->status != 'active') {
-                $data['success'] = false;
-                $data['error'] = ' انبار ' . $warehouse->title . '  در وضعیت فعال قرار ندارد لطفا انبار دیگری را انتخاب کنید.  ';
-                return $data;
-            }
-            $total_amount = array_sum(array_column($value, 'kg_amount'));
-            if ($total_amount > $warehouse->empty_space) {
-                $data['success'] = false;
-                $data['error'] = ' انبار ' . $warehouse->title . ' گنجایش کالا های انتخابی را ندارد. ';
-                return $data;
-            }
-        }
+        // No warehouse capacity checks needed with inventory system
         $data['success'] = true;
         return $data;
     }
@@ -235,18 +200,12 @@ class ImportingRequestService extends BaseService
     public function subtractingIngredients($commodity, $commodity_amount)
     {
         foreach ($commodity->materials as $material) {
-            $required_amount = round(($material->pivot->percentage / 100) * $commodity_amount,2);
-            $material_warehouses = $material->warehouses()->orderBy('commodity_amount', 'DESC')->get();
-            foreach ($material_warehouses as $material_warehouse) {
-                if ($material_warehouse->pivot->commodity_amount >= $required_amount) {
-                    $material_new_amount = $material_warehouse->pivot->commodity_amount - $required_amount;
-                    $material_warehouse->commodities()->updateExistingPivot($material->id, ['commodity_amount' => $material_new_amount], false);
-                    break;
-                } else {
-                    $material_warehouse->commodities()->updateExistingPivot($material->id, ['commodity_amount' => 0], false);
-                    $required_amount = $required_amount - $material_warehouse->pivot->commodity_amount;
-                }
-            }
+            $required_amount = round(($material->pivot->percentage / 100) * $commodity_amount, 2);
+            
+            // Remove the required amount from inventory
+            $this->inventoryService->removeStock($material->id, $material->unit_id, $required_amount);
+            
+            // Check if material is running low and trigger warning
             $this->warningCommodity($material);
         }
     }
@@ -256,14 +215,12 @@ class ImportingRequestService extends BaseService
         $commodities = $data['commodity_id'];
         $units = $data['unit'];
         $amounts = $data['amount'];
-        $warehouses = $data['warehouse_id'];
         $array_counts = [
             count($commodities),
             count($units),
             count($amounts),
-            count($warehouses),
         ];
-        $array_keys = array_merge(array_keys($commodities), array_keys($units), array_keys($amounts), array_keys($warehouses));
+        $array_keys = array_merge(array_keys($commodities), array_keys($units), array_keys($amounts));
         if (count(array_unique($array_counts)) != 1 || count(array_unique($array_keys)) != count($commodities)) {
             throw \Illuminate\Validation\ValidationException::withMessages([
                 'materials' => ['اطلاعات نوع ماده و مقدار آن باید متناظر باشند.'],
@@ -320,23 +277,32 @@ class ImportingRequestService extends BaseService
         foreach ($requests as $request) {
             $commodity_key = array_search($commodity_id, array_column($request['commodities'], 'id'));
             $commodity = $request['commodities'][$commodity_key];
+            
+            // Get unit information
+            $unit = \App\Models\Unit::find($commodity['pivot']['unit_id']);
+            $unitName = $unit ? ($unit->name . ' (' . $unit->symbol . ')') : 'نامشخص';
+            
             $res['requests'][] = [
                 'request_id'=>$request['id'],
                 'amount' => $commodity['pivot']['amount'],
-                'unit' => $commodity['pivot']['unit'],
+                'unit' => $unitName,
                 'product_purchase_price' => $commodity['pivot']['purchase_price'],
                 'created_at'=>$request['created_at'],
             ];
-            $numerator = $numerator +
-                    ($this->calculateCommodityAmount($commodity['pivot']['amount'], $commodity['pivot']['unit'])
-                    *
-                    $this->calculateCommodityPrice($commodity['pivot']['purchase_price'], $commodity['pivot']['unit']));
-
-            $denominator = $denominator + $this->calculateCommodityAmount($commodity['pivot']['amount'], $commodity['pivot']['unit']);
+            
+            // Convert amount to main unit for calculations
+            $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
+                $db_commodity,
+                $commodity['pivot']['amount'],
+                $commodity['pivot']['unit_id']
+            );
+            
+            // Use purchase price without conversion
+            $numerator = $numerator + ($amountInMainUnit * $commodity['pivot']['purchase_price']);
+            $denominator = $denominator + $amountInMainUnit;
         }
         $res['avr_price'] = round(($numerator/$denominator),);
         return $res;
     }
-
-
+    
 }

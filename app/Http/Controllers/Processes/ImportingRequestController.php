@@ -8,17 +8,20 @@ use App\Http\Requests\Processes\CreateImportingRequest;
 use App\Models\Commodity;
 use App\Models\ImportingRequest;
 use App\Models\Seller;
-use App\Models\Warehouse;
+use App\Services\CommodityUnitService;
+
 use App\Services\Processes\ImportingRequestService;
 use Morilog\Jalali\Jalalian;
 
 class ImportingRequestController extends Controller
 {
     protected $service;
+    protected $commodityUnitService;
 
-    public function __construct(ImportingRequestService $service)
+    public function __construct(ImportingRequestService $service, CommodityUnitService $commodityUnitService)
     {
         $this->service = $service;
+        $this->commodityUnitService = $commodityUnitService;
         $this->authorizeResource(ImportingRequest::class);
         $this->shareView();
     }
@@ -31,7 +34,7 @@ class ImportingRequestController extends Controller
     public function index()
     {
         $requests = ImportingRequest::query()
-            ->with('activities')
+            ->with(['activities', 'commodities.unit', 'seller'])
             ->orderBy('id', 'DESC')->get();
         return view('dashboard.processes.importing-request.index',
             [
@@ -46,21 +49,16 @@ class ImportingRequestController extends Controller
      */
     public function create()
     {
-        $commodities = Commodity::query()->get();
-        $warehouses = Warehouse::query()->where('status', 'active')->get();
+        $commodities = Commodity::query()->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get();
         $sellers=Seller::all();
         if (count($commodities) < 1) {
             return redirect(route('commodity.create'))->withErrors('ابتدا حداقل یک کالا ثبت کنید .');
-        }
-        if (count($warehouses) < 1) {
-            return redirect(route('warehouse.create'))->withErrors('ابتدا حداقل یک انبار ثبت کنید .');
         }
         if (count($sellers) < 1) {
             return redirect(route('seller.create'))->withErrors('ابتدا حداقل یک فروشنده ثبت کنید .');
         }
         return view('dashboard.processes.importing-request.create', [
             'commodities' => $commodities,
-            'warehouses' => $warehouses,
             'sellers'=>$sellers,
         ]);
     }
@@ -73,7 +71,7 @@ class ImportingRequestController extends Controller
      */
     public function store(CreateImportingRequest $request)
     {
-        $data = $request->only('commodity_id', 'warehouse_id', 'unit', 'amount', 'comment', 'purchase_price','seller_id');
+        $data = $request->only('commodity_id', 'unit', 'amount', 'comment', 'purchase_price','seller_id');
         $this->service->validationSecondLayer($data);
         $check_warehouses = $this->service->checkImportingStore($data);
         if ($check_warehouses['success'] == true) {
@@ -95,9 +93,13 @@ class ImportingRequestController extends Controller
      */
     public function show(ImportingRequest $importingRequest)
     {
+        // Load the importing request with commodities and their units
+        $importingRequest->load(['commodities' => function ($query) {
+            $query->with('unit');
+        }]);
+        
         return view('dashboard.processes.importing-request.show', [
             'request' => $importingRequest,
-            'warehouses' => Warehouse::all(),
         ]);
     }
 
@@ -109,10 +111,23 @@ class ImportingRequestController extends Controller
      */
     public function edit(ImportingRequest $importingRequest)
     {
+        // Load the importing request with commodities and their selectable units
+        $importingRequest->load(['commodities' => function ($query) {
+            $query->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit']);
+        }]);
+        
+        // Add selectable units to each commodity
+        foreach ($importingRequest->commodities as $commodity) {
+            $selectableUnits = $this->commodityUnitService->getSelectableUnits($commodity);
+            $commodity->selectable_units = $selectableUnits;
+            
+            // Debug: Log the selectable units
+            \Log::info("Commodity {$commodity->id} ({$commodity->title}) has " . $selectableUnits->count() . " selectable units");
+        }
+        
         return view('dashboard.processes.importing-request.edit', [
             'request' => $importingRequest,
-            'commodities' => Commodity::query()->get(),
-            'warehouses' => Warehouse::all(),
+            'commodities' => Commodity::query()->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get(),
             'sellers'=>Seller::all(),
         ]);
     }
@@ -133,7 +148,7 @@ class ImportingRequestController extends Controller
         if ($check_expired['success'] == false) {
             return redirect()->back()->withErrors($check_expired['error']);
         }
-        $data = $request->only('commodity_id', 'warehouse_id', 'unit', 'amount', 'comment', 'purchase_price','seller_id');
+        $data = $request->only('commodity_id', 'unit', 'amount', 'comment', 'purchase_price','seller_id');
         $this->service->validationSecondLayer($data);
         if ($request->hasFile('file')) {
             $file = $request->file('file');
@@ -198,6 +213,34 @@ class ImportingRequestController extends Controller
         }
         $this->service->rejectImporting($importing_request);
         return redirect(route('importing-request.show', $importing_request))->with('successful', 'درخواست با موفقیت رد شد.');
+    }
+
+    /**
+     * Get selectable units for a commodity via AJAX
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getSelectableUnits(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'commodity_id' => 'required|exists:commodities,id',
+        ]);
+
+        $commodity = Commodity::findOrFail($request->commodity_id);
+        $selectableUnits = $this->commodityUnitService->getSelectableUnits($commodity);
+
+        return response()->json([
+            'success' => true,
+            'units' => $selectableUnits->map(function ($unit) {
+                return [
+                    'id' => $unit->id,
+                    'name' => $unit->name,
+                    'symbol' => $unit->symbol,
+                    'display_name' => $unit->name . ' (' . $unit->symbol . ')'
+                ];
+            })
+        ]);
     }
 
     public function createReport()

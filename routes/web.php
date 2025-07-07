@@ -51,6 +51,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('seller',SellerController::class);
 
     Route::resource('importing-request',ImportingRequestController::class);
+    Route::post('importing-request/get-selectable-units', [ImportingRequestController::class, 'getSelectableUnits'])->name('importing-request.get-selectable-units');
 
     Route::resource('withdrawal-request',WithdrawalRequestController::class);
 
