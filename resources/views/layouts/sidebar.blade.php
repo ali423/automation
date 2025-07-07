@@ -149,7 +149,7 @@
                             class="treeview active"
                             @else
                             class="treeview"
-                            @endif>                        <a href="javascript:void(0)"><i class="ti-truck"></i> <span>ورود کالا به انبار</span> <i
+                            @endif>                        <a href="javascript:void(0)"><i class="ti-truck"></i> <span>خرید کالا</span> <i
                                 class="fa fa-angle-left"></i></a>
                         <ul class="treeview-menu">
                             @can('read_importing',App\Models\ImportingRequest::class)

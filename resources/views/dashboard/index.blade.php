@@ -166,7 +166,7 @@
                             <div>
                                 <i class="ti-truck font-24"></i>
                             </div>
-                            <h6>ورود کالا به انبار</h6>
+                                                            <h6>خرید کالا</h6>
                         </div>
                         <div class="d-md-none">
                             <ul class="list-unstyled d-flex">

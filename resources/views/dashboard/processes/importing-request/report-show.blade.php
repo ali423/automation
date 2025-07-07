@@ -57,7 +57,7 @@
                                     <td>{{$requests['title']  }}</td>
                                     <td>{{$request['amount']  }}</td>
                                     <td>{{$request['product_purchase_price']  }}</td>
-                                    <td>{{__('fields.commodity.units')[$request['unit']]  }}</td>
+                                    <td>{{ $request['unit'] }}</td>
                                     <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request['created_at'] )) }}
                                     </td>
                                     <td><a href="{{ route('importing-request.show', $request['request_id'] ) }}" class=""><i class="ti-more-alt font-24"></i></a>

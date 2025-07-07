@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title', 'جزئیات درخواست ورود کالا به انبار')
+@section('title', 'جزئیات درخواست خرید کالا')
 
 @section('page_styles')
     <link rel="stylesheet" href="{{ asset('css/imexport-print.css') }}">
@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-xl-12 box-margin height-card">
             <div class="card card-body">
-                <h4 class="card-title">جزئیات درخواست ورود کالا به انبار</h4>
+                <h4 class="card-title">جزئیات درخواست خرید کالا</h4>
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-row col-md-12">
@@ -59,8 +59,12 @@
                                 <div class="showbarrel">
                                     <i class="fa fa-database"></i>
                                     <div>
-                                        <span>بشکه</span>
-                                        <span>{{ $commodity->keg_amount }}</span>
+                                        <span>Main Unit Amount</span>
+                                        @php
+                                            $mainUnitData = $request->getMainUnitAmountAttribute();
+                                            $commodityMainUnit = $mainUnitData[$commodity->id] ?? null;
+                                        @endphp
+                                        <span>{{ $commodityMainUnit ? number_format($commodityMainUnit['main_unit_amount'], 2) : '-' }} {{ $commodityMainUnit ? $commodityMainUnit['main_unit_name'] . ' (' . $commodityMainUnit['main_unit_symbol'] . ')' : '' }}</span>
                                     </div>
                                 </div>
                                 <div class="form-group col-md-6">
@@ -73,22 +77,11 @@
                                 <div class="form-group col-md-6">
                                     <label for="unit"> {{ __('fields.unit') }}</label>
                                     <input type="text"
-                                        value="{{ __('fields.commodity.units')[$commodity->pivot->unit] }}"
+                                        value="{{ $commodity->pivot->unit_id ? (\App\Models\Unit::find($commodity->pivot->unit_id)->name . ' (' . \App\Models\Unit::find($commodity->pivot->unit_id)->symbol . ')') : '-' }}"
                                         id="unit" name="unit" class="form-control" disabled>
                                     <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
                                 </div>
-                                <div class="form-group col-md-6">
-                                    <label for="warehouse_id"> {{ __('fields.warehouse.name') }}</label>
-                                    <select id="warehouse_id" class="form-control" name="warehouse_id[0]" disabled>
-                                        @foreach ($warehouses as $warehouse)
-                                            @if ($warehouse->id == $commodity->pivot->warehouses_id)
-                                                <option value="{{ $warehouse->id }}">{{ $warehouse->title }}
-                                                </option>
-                                            @endif
-                                        @endforeach
-                                    </select>
-                                    <div class="invalid-feedback">{{ __('fields.warehouse.name') }} را انتخاب کنید.</div>
-                                </div>
+
                                 <div class="form-group col-md-3">
                                     <label for="amount"> {{ __('fields.commodity.amount') }}</label>
                                     <input type="number" value="{{ $commodity->pivot->amount }}" id="amount"
@@ -150,16 +143,16 @@
                         <div class="col-xl-12 height-card box-margin">
                             <div class="card">
                                 <div class="card-body">
-                                    <div class="bg-transparent d-flex align-items-center justify-content-between">
-                                        <div class="widgets-card-title">
-                                            <h5 class="card-title">چاپ رسید کالای ورودی</h5>
+                                                                            <div class="bg-transparent d-flex align-items-center justify-content-between">
+                                            <div class="widgets-card-title">
+                                                <h5 class="card-title">چاپ رسید کالای خریداری شده</h5>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="d-md-flex justify-content-center">
-                                        <a href="#" class="factor customerbtn btn btn-secondary m-1"><i class="ti-printer font-18"></i> نسخه خریدار</a>
-                                        <a href="#" class="factor documentationbtn btn btn-secondary m-1"><i class="ti-printer font-18"></i> نسخه پرونده</a>
-                                        <a href="#" class="factor warehousebtn btn btn-secondary m-1"><i class="ti-printer font-18"></i> نسخه انبار</a>
-                                    </div>
+                                        <div class="d-md-flex justify-content-center">
+                                            <a href="#" class="factor customerbtn btn btn-secondary m-1"><i class="ti-printer font-18"></i> نسخه خریدار</a>
+                                            <a href="#" class="factor documentationbtn btn btn-secondary m-1"><i class="ti-printer font-18"></i> نسخه پرونده</a>
+                                            <a href="#" class="factor warehousebtn btn btn-secondary m-1"><i class="ti-printer font-18"></i> نسخه انبار</a>
+                                        </div>
                                 </div>
                             </div>
                         </div>
@@ -203,7 +196,7 @@
                             <img src="{{ asset('img/logo/darklogo.png') }}" class="logo" />
                             <div class="text-center">
                                 <h4>
-                                    ورود کالا به انبار
+                                    خرید کالا
                                 </h4>
                                 <div class="d-none factor customer">( رسید خریدار )</div>
                                 <div class="d-none factor documentation">( رسید پرونده )</div>
@@ -226,19 +219,21 @@
                                 </colgroup>
                                 <tr class="table-header">
                                     <th scope="col">ردیف</th>
-                                    <th scope="col">کالای ورودی</th>
-                                    <th scope="col">انبار</th>
+                                    <th scope="col">کالای خریداری شده</th>
+                                    <th scope="col">قیمت واحد</th>
                                     <th scope="col">تعداد / مقدار</th>
                                     <th scope="col">توضیحات</th>
                                 </tr>
+                                @php($i=1)
                                 @foreach ($request->commodities as $commodity)
                                 <tr>
-                                    <th scope="row"></th>
+                                    <th scope="row">{{$i}}</th>
                                     <td>{{ $commodity->title }}</td>
-                                    <td>{{ $warehouse->title }}</td>
-                                    <td>{{ $commodity->pivot->amount }} {{ __('fields.commodity.units')[$commodity->pivot->unit] }}</td>
+                                    <td>{{ number_format($commodity->pivot->purchase_price) }}</td>
+                                    <td>{{ $commodity->pivot->amount }} {{ $commodity->pivot->unit_id ? (\App\Models\Unit::find($commodity->pivot->unit_id)->name . ' (' . \App\Models\Unit::find($commodity->pivot->unit_id)->symbol . ')') : '-' }}</td>
                                     <td></td>
                                 </tr>
+                                    @php($i++)
                                 @endforeach
                             </table>
                         </div>
