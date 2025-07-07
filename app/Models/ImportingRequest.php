@@ -20,7 +20,8 @@ class ImportingRequest extends Model
         'number',
     ];
     
-    protected $appends = ['main_unit_amount'];
+    // Remove main_unit_amount from appends to avoid issues with ActivityTrait
+    // protected $appends = ['main_unit_amount'];
     
     public function commodities()
     {
@@ -65,6 +66,20 @@ class ImportingRequest extends Model
         }
         
         return $mainUnitAmounts;
+    }
+    
+    /**
+     * Override toArray method to exclude main_unit_amount from activity logging
+     * This prevents issues with ActivityTrait when dealing with computed attributes
+     */
+    public function toArray()
+    {
+        $array = parent::toArray();
+        
+        // Remove main_unit_amount from the array to prevent issues with ActivityTrait
+        unset($array['main_unit_amount']);
+        
+        return $array;
     }
     
 

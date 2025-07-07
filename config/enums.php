@@ -69,7 +69,6 @@ return [
                         'amount' => 'مقدار کالا',
                         'unit_id' => 'واحد اندازه گیری',
                         'purchase_price' => 'قیمت خرید',
-                        'main_unit_amount' => 'مقدار معادل واحد اصلی',
                     ],
                 ],
             ]

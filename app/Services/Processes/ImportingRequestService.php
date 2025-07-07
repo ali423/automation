@@ -159,12 +159,11 @@ class ImportingRequestService extends BaseService
                 $commodity->pivot->amount,
                 $commodity->pivot->unit_id
             );
-            $commodity['main_unit_amount'] = $amountInMainUnit;
             
             // If it's a product, check if we have enough materials in inventory
             if ($commodity->type == 'product') {
                 foreach ($commodity->materials as $material) {
-                    $required_amount = round(($material->pivot->percentage / 100) * $commodity['main_unit_amount']);
+                    $required_amount = round(($material->pivot->percentage / 100) * $amountInMainUnit);
                     
                     // Check if we have enough material in inventory
                     $available_stock = $this->inventoryService->getStockLevel($material->id, $material->unit_id);
@@ -176,7 +175,6 @@ class ImportingRequestService extends BaseService
                     }
                 }
             }
-            unset($commodity['main_unit_amount']);
         }
         
         $data['success'] = true;

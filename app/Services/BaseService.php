@@ -5,29 +5,49 @@ namespace App\Services;
 use App\Jobs\NotifyAdminsJob;
 use App\Models\Commodity;
 use App\Models\Warehouse;
+use App\Services\InventoryService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class BaseService
 {
-    public function calculateCommodityAmount($amount,$unit){
-        switch ($unit) {
+    public function calculateCommodityAmount($amount, $unit_id){
+        // Get unit from database
+        $unit = \App\Models\Unit::find($unit_id);
+        if (!$unit) {
+            return $amount; // Return original amount if unit not found
+        }
+        
+        // Convert amount based on unit conversion rate to main unit (kg)
+        switch ($unit->name) {
             case 'keg':
-                return round($amount*185,2);
+                return round($amount*185, 2);
             case 'kg':
                 return $amount;
             case 'twenty_liters':
-                return round($amount*17.8,2);
+                return round($amount*17.8, 2);
+            default:
+                return $amount; // Return original amount for unknown units
         }
     }
-    public function calculateCommodityPrice($price,$unit){
-        switch ($unit) {
+    public function calculateCommodityPrice($price, $unit_id){
+        // Get unit from database
+        $unit = \App\Models\Unit::find($unit_id);
+        if (!$unit) {
+            return $price; // Return original price if unit not found
+        }
+        
+        // For now, we'll use a simple conversion based on unit name
+        // This should be replaced with proper conversion logic when commodity context is available
+        switch ($unit->name) {
             case 'keg':
-                return round($price/185,2);
+                return round($price/185, 2); // Convert keg price to kg price
             case 'kg':
-                return $price;
+                return $price; // Already in main unit
             case 'twenty_liters':
-                return round($price/17.8,2);
+                return round($price/17.8, 2); // Convert 20L price to kg price
+            default:
+                return $price; // Return original price for unknown units
         }
     }
     public function uploadFile($file,$patch,$attached){
@@ -57,16 +77,18 @@ class BaseService
         });
     }
     public function warningCommodity(Commodity $commodity){
-        $amounts=array_column(array_column($commodity->warehouses()->get()->toArray(),'pivot'),'commodity_amount');
-        $total_amount = array_sum($amounts);
-        if ($total_amount < $commodity-> warning_limit){
+        // Get total stock from inventory system
+        $inventoryService = app(InventoryService::class);
+        $total_amount = $inventoryService->getStockLevel($commodity->id, $commodity->unit_id);
+        
+        if ($total_amount < $commodity->warning_limit){
             NotifyAdminsJob::dispatch($commodity);
         }
     }
     protected function generateUniqueNumber($model,$field)
     {
         $number = rand(1000000, 9999999);
-        while ($model::query()->where('number', $field)->exists()) {
+        while ($model::query()->where($field, $number)->exists()) {
             $number = rand(1000000, 9999999);
         }
         return $number;
