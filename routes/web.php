@@ -4,7 +4,7 @@ use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\CommodityController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\InventoryController;
+
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Processes\ImportingRequestController;
@@ -62,9 +62,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('withdrawal-request/reject/{id}',[WithdrawalRequestController::class,'rejectRequest'])->name('reject.withdrawal');
 
-    Route::get('inventory/edit',[InventoryController::class,'edit'])->name('inventory.edit');
 
-    Route::patch('inventory/update',[InventoryController::class,'update'])->name('inventory.update');
 
     Route::get('order/confirm/{order}',[OrderController::class,'confirm'])->name('order.confirm');
 
@@ -76,9 +74,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('order',OrderController::class);
 
-    Route::resource('inventory',InventoryController::class)->only('index','show');
 
-    Route::get('inventory-ajax/{id}',[CommodityController::class,'inventory'])->name('inventory');
 
     Route::get('commodity-type-ajax/{id}',[CommodityController::class,'commodityType']);
 

@@ -507,22 +507,7 @@
                         </div>
                     @endcan
                 <!-- Single Widget -->
-                    @can('read_warehouse',App\Models\Warehouse::class)
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    <a href="{{ route('inventory.index') }}" class="bg-green">
-                                        <div>
-                                            <div>
-                                                <i class="ti-bar-chart font-24"></i>
-                                            </div>
-                                            <h6>وضعیت موجودی انبار</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
+
                 </div>
                 {{-- end warehouse --}}
                 {{-- start proccess --}}

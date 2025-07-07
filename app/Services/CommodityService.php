@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Commodity;
-use App\Models\Inventory;
+
 use Illuminate\Support\Facades\DB;
 
 class CommodityService extends BaseService
@@ -31,8 +31,7 @@ class CommodityService extends BaseService
                 $this->attachComponents($commodity, $data['materials'], $data['material_amount']);
             }
 
-            // Create initial inventory
-            $this->createInitialInventory($commodity, $data);
+            
 
             return $commodity;
         });
@@ -47,21 +46,7 @@ class CommodityService extends BaseService
         $product->productComponents()->sync($components);
     }
 
-    private function createInitialInventory(Commodity $commodity, array $data): void
-    {
-        $initialPrice = $commodity->isProduct() 
-            ? $commodity->base_price 
-            : ($data['purchase_price'] ?? 0);
 
-        Inventory::create([
-            'commodity_id' => $commodity->id,
-            'unit_id' => $data['unit_id'],
-            'quantity' => 0,
-            'purchase_price' => $initialPrice,
-            'sale_price' => $data['sales_price'] ?? $initialPrice,
-            'active' => true
-        ]);
-    }
 
     public function update(Commodity $commodity, array $data): Commodity
     {
@@ -78,10 +63,7 @@ class CommodityService extends BaseService
                 $this->attachComponents($commodity, $data['materials'], $data['material_amount']);
             }
 
-            // Update inventory unit
-            if ($inventory = $commodity->inventoryItems->first()) {
-                $inventory->update(['unit_id' => $data['unit_id']]);
-            }
+
 
             return $commodity->fresh();
         });

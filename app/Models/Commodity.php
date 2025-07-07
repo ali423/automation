@@ -6,7 +6,7 @@ use App\Traits\ActivityTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Inventory;
+
 
 class Commodity extends Model
 {
@@ -63,22 +63,9 @@ class Commodity extends Model
         return $this->purchase_price;
     }
 
-    public function getWithdrawalAmountAttribute()
-    {
-        $amounts = json_decode($this->pivot->amount) ?? null;
-        foreach ($amounts as $key => $value) {
-            $res[] = [
-                'inventory' => Inventory::query()->find($key),
-                'amount' => $value,
-                'unit' => $this->pivot->unit,
-            ];
-        }
-        return $res ?? null;
-    }
-
     public function getTotalQuantityAttribute()
     {
-        return $this->inventoryItems()->sum('quantity');
+        return $this->warehouses->sum('pivot.commodity_amount');
     }
 
     public function getAveragePurchasePriceAttribute()
@@ -88,9 +75,9 @@ class Commodity extends Model
         $totalValue = 0;
         $totalQuantity = 0;
         
-        foreach ($this->inventoryItems as $item) {
-            $totalValue += ($item->quantity * $item->purchase_price);
-            $totalQuantity += $item->quantity;
+        foreach ($this->warehouses as $warehouse) {
+            $totalValue += ($warehouse->pivot->commodity_amount * $warehouse->pivot->average_purchase_price);
+            $totalQuantity += $warehouse->pivot->commodity_amount;
         }
         
         return $totalQuantity > 0 ? round($totalValue / $totalQuantity, 2) : null;

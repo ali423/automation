@@ -16,15 +16,21 @@ class Controller extends BaseController
 
     public function shareView()
     {
-        $route = Route::getCurrentRoute()->getName();
-        $route_arr = explode('.', $route);
-        if (count($route_arr) < 2) {
-            $first_part = $route;
-            $second_part = null;
+        $route = Route::getCurrentRoute();
+        $routeName = $route ? $route->getName() : null;
+        
+        if ($routeName) {
+            $route_arr = explode('.', $routeName);
+            if (count($route_arr) < 2) {
+                $first_part = $routeName;
+                $second_part = null;
+            } else {
+                $first_part = $route_arr[0];
+                $second_part = $route_arr[1];
+            }
         } else {
-            $first_part = $route_arr[0];
-            $second_part = $route_arr[1];
-
+            $first_part = null;
+            $second_part = null;
         }
 
         View::share([

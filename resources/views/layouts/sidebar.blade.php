@@ -124,7 +124,7 @@
                 @endif
                 @if(Gate::check('read_warehouse') || Gate::check('create_warehouse'))
                         <li
-                            @if($first_url_part== 'warehouse' || $first_url_part== 'inventory')
+                            @if($first_url_part== 'warehouse')
                             class="treeview active"
                             @else
                             class="treeview"
@@ -138,7 +138,7 @@
                                 <li @if($first_url_part== 'warehouse' && $second_url_part== 'create') class="active" @endif><a href="{{ route('warehouse.create') }}">افزودن انبار جدید</a></li>
                             @endcan
                             @can('read_warehouse',App\Models\Warehouse::class)
-                                <li @if($first_url_part== 'inventory' && $second_url_part== 'index') class="active" @endif><a href="{{ route('inventory.index') }}">وضعیت موجودی انبار</a></li>
+        
                             @endcan
                         </ul>
                     </li>
