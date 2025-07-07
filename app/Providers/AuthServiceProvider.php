@@ -11,6 +11,8 @@ use App\Policies\ImportingRequestPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\RolePolicy;
 use App\Policies\SellerPolicy;
+use App\Policies\UnitPolicy;
+use App\Policies\UnitConversionPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\WarehousePolicy;
 use App\Policies\WithdrawalRequestPolicy;
@@ -26,6 +28,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         // 'App\Models\Model' => 'App\Policies\ModelPolicy',
+        \App\Models\UnitConversion::class => \App\Policies\UnitConversionPolicy::class,
     ];
 
     /**
@@ -66,5 +69,14 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('read_seller',[SellerPolicy::class,'viewAny']);
         Gate::define('create_seller',[SellerPolicy::class,'create']);
+
+        Gate::define('read_unit',[UnitPolicy::class,'viewAny']);
+        Gate::define('create_unit',[UnitPolicy::class,'create']);
+        Gate::define('edit_unit',[UnitPolicy::class,'update']);
+
+        Gate::define('read_unit_conversion',[UnitConversionPolicy::class,'viewAny']);
+        Gate::define('create_unit_conversion',[UnitConversionPolicy::class,'create']);
+        Gate::define('edit_unit_conversion',[UnitConversionPolicy::class,'update']);
+        Gate::define('delete_unit_conversion',[UnitConversionPolicy::class,'delete']);
     }
 }

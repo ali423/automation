@@ -743,8 +743,13 @@
                             </tr>
                             <tr>
                                 <td colspan="5" class="text-right">جمع کل</td>
+<<<<<<< HEAD
                                 @if(isset($request->total_price) && isset($request->total_price['number']))
                                     <td> {{ number_format($request->total_price['number']) }}</td>
+=======
+                                @if(isset($request->total_price['number']))
+                                    <td> {{ optional($request->total_price)['number'] !== null ? number_format($request->total_price['number']) : 0 }}</td>
+>>>>>>> f185a25b725bf50fe3fc8485c143a8262066440d
                                 @else
                                     <td>          </td>
                                 @endif

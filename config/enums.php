@@ -109,6 +109,34 @@ return [
 
             ]
         ],
+        'App\Models\UnitConversion' => [
+            'fa_name' => 'تبدیل واحد',
+            'url' => 'unit-conversion',
+            'relations' => [
+                'commodity' => [
+                    'fa_name' => 'کالا',
+                    'primary_key' => 'commodity_id',
+                ],
+                'fromUnit' => [
+                    'fa_name' => 'واحد مبدا',
+                    'primary_key' => 'from_unit_id',
+                ],
+                'toUnit' => [
+                    'fa_name' => 'واحد مقصد',
+                    'primary_key' => 'to_unit_id',
+                ],
+            ]
+        ],
+        'App\Models\Unit' => [
+            'fa_name' => 'واحدها',
+            'url' => 'unit',
+            'relations' => [
+                'commodities' => [
+                    'fa_name' => 'کالاها',
+                    'primary_key' => 'unit_id',
+                ],
+            ]
+        ],
     ],
 
     'activity_types' => [

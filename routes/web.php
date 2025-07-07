@@ -13,6 +13,8 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\UnitController;
+use App\Http\Controllers\UnitConversionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -81,6 +83,12 @@ Route::middleware('auth')->group(function () {
     Route::get('commodity-type-ajax/{id}',[CommodityController::class,'commodityType']);
 
     Route::get('order/{order}/download-invoice', [OrderController::class, 'downloadInvoice'])->name('order.downloadInvoice');
+    Route::resource('unit', UnitController::class);
+
+    Route::get('unit-conversion/select-commodity', [UnitConversionController::class, 'index'])->name('unit-conversion.select-commodity');
+
+    Route::resource('unit-conversion', UnitConversionController::class);
+    Route::post('unit-conversion/convert', [UnitConversionController::class, 'convert'])->name('unit-conversion.convert');
 
 });
 

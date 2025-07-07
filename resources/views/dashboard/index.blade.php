@@ -93,6 +93,48 @@
                 </div>
             </div>
     @endif
+    @if(Gate::check('read_unit') || Gate::check('create_unit'))
+        <!-- Single Widget -->
+            <div class="col-12 col-3 col-md box-margin height-card">
+                <div class="card">
+                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="unit">
+                        <div class="text-center">
+                            <div>
+                                <i class="ti-ruler-pencil font-24"></i>
+                            </div>
+                            <h6>واحدهای اندازه‌گیری</h6>
+                        </div>
+                        <div class="d-md-none">
+                            <ul class="list-unstyled d-flex">
+                                <li><a href="#" class="btn btn-white m-1">لیست واحد ها</a></li>
+                                <li><a href="#" class="btn btn-white m-1">افزودن واحد جدید</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    @endif
+    @if(Gate::check('read_unit_conversion') || Gate::check('create_unit_conversion'))
+        <!-- Single Widget -->
+            <div class="col-12 col-3 col-md box-margin height-card">
+                <div class="card">
+                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="unit-conversion">
+                        <div class="text-center">
+                            <div>
+                                <i class="ti-exchange-vertical font-24"></i>
+                            </div>
+                            <h6>تبدیل واحد ها</h6>
+                        </div>
+                        <div class="d-md-none">
+                            <ul class="list-unstyled d-flex">
+                                <li><a href="#" class="btn btn-white m-1">لیست تبدیل ها</a></li>
+                                <li><a href="#" class="btn btn-white m-1">افزودن تبدیل جدید</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    @endif
     @if(Gate::check('read_warehouse') || Gate::check('create_warehouse'))
         <!-- Single Widget -->
             <div class="col-12 col-3 col-md box-margin height-card">
@@ -346,6 +388,86 @@
                     @endcan
                 </div>
                 {{-- end commodity --}}
+
+                {{-- start unit --}}
+                <div id="unit" class="d-none card-body row">
+                    <!-- Single Widget -->
+                    @can('read_unit',App\Models\Unit::class)
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    </br></br>
+                                    <a href="{{ route('unit.index') }}" class="bg-red">
+                                        <div>
+                                            <div>
+                                                <i class="ti-list-ol font-24"></i>
+                                            </div>
+                                            <h6>لیست واحدها</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endcan
+                    @can('create_unit',App\Models\Unit::class)
+                    <!-- Single Widget -->
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('unit.create') }}" class="bg-blue">
+                                        <div>
+                                            <div>
+                                                <i class="ti-write font-24"></i>
+                                            </div>
+                                            <h6>افزودن واحد جدید</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endcan
+                </div>
+                {{-- end unit --}}
+
+                {{-- start unit-conversion --}}
+                <div id="unit-conversion" class="d-none card-body row">
+                    <!-- Single Widget -->
+                    @can('read_unit_conversion',App\Models\UnitConversion::class)
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    </br></br>
+                                    <a href="{{ route('unit-conversion.select-commodity') }}" class="bg-red">
+                                        <div>
+                                            <div>
+                                                <i class="ti-list-ol font-24"></i>
+                                            </div>
+                                            <h6>لیست تبدیل ها</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endcan
+                    @can('create_unit_conversion',App\Models\UnitConversion::class)
+                    <!-- Single Widget -->
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('unit-conversion.select-commodity') }}" class="bg-blue">
+                                        <div>
+                                            <div>
+                                                <i class="ti-write font-24"></i>
+                                            </div>
+                                            <h6>افزودن تبدیل جدید</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endcan
+                </div>
+                {{-- end unit-conversion --}}
 
                 {{-- start warehouse --}}
                 <div id="warehouse" class="d-none card-body row">
