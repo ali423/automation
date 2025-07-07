@@ -26,9 +26,15 @@ class Commodity extends Model
         return $this->belongsTo(Unit::class);
     }
 
-    public function inventoryItems()
+    public function unitConversions()
     {
-        return $this->hasMany(Inventory::class);
+        return $this->hasMany(UnitConversion::class);
+    }
+
+    public function warehouses()
+    {
+        return $this->belongsToMany(Warehouse::class, 'commodity_warehouse', 'commodity_id', 'warehouse_id')
+            ->withPivot('commodity_amount','average_purchase_price');
     }
 
     public function materials()
