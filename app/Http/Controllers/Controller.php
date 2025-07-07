@@ -21,12 +21,12 @@ class Controller extends BaseController
         
         if ($routeName) {
             $route_arr = explode('.', $routeName);
-            if (count($route_arr) < 2) {
+        if (count($route_arr) < 2) {
                 $first_part = $routeName;
-                $second_part = null;
-            } else {
-                $first_part = $route_arr[0];
-                $second_part = $route_arr[1];
+            $second_part = null;
+        } else {
+            $first_part = $route_arr[0];
+            $second_part = $route_arr[1];
             }
         } else {
             $first_part = null;

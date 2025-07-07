@@ -67,8 +67,9 @@ return [
                     'primary_key' => 'importation_id',
                     'pivots' => [
                         'amount' => 'مقدار کالا',
-                        'warehouses_id' => 'انبار',
-                        'unit' => 'واحد اندازه گیری',
+                        'unit_id' => 'واحد اندازه گیری',
+                        'purchase_price' => 'قیمت خرید',
+                        'main_unit_amount' => 'مقدار معادل واحد اصلی',
                     ],
                 ],
             ]

@@ -128,7 +128,8 @@ class Activity extends Model
     }
 
     protected function calculatePivotValues($items){
-
+        $data = [];
+        
         foreach ($items ?? array() as $key=>$value){
             if (is_array($value)){
                 $search_obj=$key;
