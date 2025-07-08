@@ -3,6 +3,8 @@ const customerInvoice = document.querySelector("#invoice-customer");
 const documentationInvoice = document.querySelector("#invoice-documentation");
 const warehouseInvoice = document.querySelector("#invoice-warehouse");
 const finvoice = document.querySelector("#finvoice");
+const factorBtn2 = document.querySelector(".factorbtn2");
+const finvoice2 = document.querySelector("#finvoice2");
 
 // Select print buttons
 const customerBtn = document.querySelector(".customerbtn");
@@ -18,6 +20,7 @@ function showInvoice(activeInvoice) {
         documentationInvoice,
         warehouseInvoice,
         finvoice,
+        finvoice2,
     ];
 
     // Disable all elements
@@ -25,7 +28,7 @@ function showInvoice(activeInvoice) {
         if (invoice) {
             invoice.classList.remove("showprint", "print-active");
             invoice.classList.add("d-none");
-            if (invoice === finvoice) {
+            if (invoice === finvoice || invoice === finvoice2) {
                 invoice.classList.add("hideprint");
             }
         }
@@ -45,12 +48,13 @@ window.onafterprint = function () {
         documentationInvoice,
         warehouseInvoice,
         finvoice,
+        finvoice2,
     ];
     invoices.forEach((invoice) => {
         if (invoice) {
             invoice.classList.remove("showprint", "print-active");
             invoice.classList.add("d-none");
-            if (invoice === finvoice) {
+            if (invoice === finvoice || invoice === finvoice2) {
                 invoice.classList.add("hideprint");
             }
         }
@@ -78,6 +82,12 @@ warehouseBtn.addEventListener("click", function () {
 // Event listener for factor button
 factorBtn.addEventListener("click", function () {
     showInvoice(finvoice);
+    window.print();
+});
+
+// Event listener for factor button 2
+factorBtn2.addEventListener("click", function () {
+    showInvoice(finvoice2);
     window.print();
 });
 

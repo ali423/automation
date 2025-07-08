@@ -192,6 +192,8 @@
                                         <div class="d-md-flex justify-content-center">
                                             <a href="#" class="factor factorbtn btn btn-secondary m-1"><i
                                                     class="ti-printer font-18"></i> چاپ فاکتور</a>
+                                            <a href="#" class="factor factorbtn2 btn btn-secondary m-1"><i
+                                                     class="ti-printer font-18"></i> چاپ فاکتور</a>
                                         </div>
                                     </div>
                                 </div>
@@ -631,40 +633,40 @@
                                 <p>تاریخ: <span>{{\Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at))}}</span></p>
                             </div>
                         </div>
-                        {{-- <div class="d-flex justify-content-center border">
+                        <div class="d-flex justify-content-center border">
                             <div class="text-dark p-1">مشخصات فروشنده</div>
                         </div>
                         <table class="table sellerspecs">
                             <tbody>
                             <tr>
-                                <td class="text-left">نام فروشنده: شرکت روغن موتور قم<span> </span></td>
+                                <td class="text-left">نام شخص حقیقی / حقوقی : شرکت روغن موتور قم<span> </span></td>
                                 <td></td>
                                 <td></td>
-                                <td>شماره اقتصادی:</td>
+                                <td>شماره اقتصادی : 411134945318</td>
                                 <td></td>
-                                <td>شماره ثبت/ شماره ملی:</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td class="text-left">استان: قم<span> </span></td>
-                                <td>شهرستان: قم</td>
-                                <td></td>
-                                <td>کدپستی:</td>
-                                <td></td>
-                                <td>شهر:</td>
+                                <td>شماره ثبت :</td>
                                 <td></td>
                             </tr>
                             <tr>
-                                <td class="text-left">آدرس: <span> </span></td>
+                                <td class="text-left">استان: <span>قم</span></td>
+                                <td>شهرستان : سلفچگان</td>
+                                <td></td>
+                                <td>کد پستی ده رقمی : 3746139845</td>
+                                <td></td>
+                                <td>شناسه ملی : 10860961755</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td class="text-left">نشانی : <span>شهرک صنعتی سلفچگان - خ سینا - خیابان فتح</span></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td>تلفن:</td>
+                                <td>تلفن / فکس : 02533673907</td>
                                 <td></td>
                             </tr>
                             </tbody>
-                        </table> --}}
+                        </table> 
                         <div class="d-flex justify-content-center border">
                             <div class="text-dark p-1">مشخصات خریدار</div>
                         </div>
@@ -709,8 +711,8 @@
                                 <th scope="col">نام کالا</th>
                                 <th scope="col">تعداد / مقدار</th>
                                 <th scope="col">واحد</th>
-                                <th scope="col">فی</th>
-                                <th scope="col">جمع کل</th>
+                                <th scope="col" colspan="1.5">فی</th>
+                                <th scope="col" colspan="1.5">جمع کل</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -723,14 +725,14 @@
                                         <td>{{$commodity->title}}</td>
                                         <td>{{$amount}}</td>
                                         <td>{{__('fields.commodity.units')[$commodity->pivot->unit] }}</td>
-                                        <td></td>
-                                        <td></td>
+                                        <td colspan="1.5"></td>
+                                        <td colspan="1.5"></td>
                                     </tr>
                                     @php($i++)
                                 @endforeach
 
                                 <tr>
-                                <td colspan="5" rowspan="3" class="text-left" style="vertical-align: top">
+                                <td colspan="5" rowspan="4" class="text-left" style="vertical-align: top">
                                     <div class="d-flex justify-content-between">
                                         <span>شرایط و نحوه تسویه: </span>
                                         <span>نقدی <span class="border"
@@ -742,29 +744,28 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td colspan="5" class="text-right">جمع کل</td>
-<<<<<<< HEAD
+                            <td colspan="3" class="text-left">مالیات بر ارزش افزوده : </td>
+                                
+                             </tr>
+                            <tr>
+                                <td colspan="3" class="text-left">جمع کل : 
                                 @if(isset($request->total_price) && isset($request->total_price['number']))
-                                    <td> {{ number_format($request->total_price['number']) }}</td>
-=======
-                                @if(isset($request->total_price['number']))
-                                    <td> {{ optional($request->total_price)['number'] !== null ? number_format($request->total_price['number']) : 0 }}</td>
->>>>>>> f185a25b725bf50fe3fc8485c143a8262066440d
+                                     {{ number_format($request->total_price['number']) }}
                                 @else
-                                    <td>          </td>
+                                    
                                 @endif
-
+                                    </td>
                             </tr>
                             <tr>
                                 @if(isset($request->total_price) && isset($request->total_price['world']))
-                                    <td colspan="6" class="text-left">جمع کل به حروف:{{ $request->total_price['world'] }} ریال </td>
+                                    <td colspan="2" class="text-left">جمع کل به حروف : {{ $request->total_price['world'] }} ریال </td>
                                 @else
-                                    <td colspan="6" class="text-left">جمع کل به حروف: صفر ریال </td>
+                                    <td colspan="2" class="text-left">جمع کل به حروف: صفر ریال </td>
                                 @endif
                             </tr>
                             <tr>
                                 <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
-                                <td colspan="6" class="text-left">مهر و امضای خریدار:</td>
+                                <td colspan="2" class="text-left">مهر و امضای خریدار:</td>
                             </tr>
                             </tbody>
                         </table>
@@ -772,6 +773,163 @@
                 </div>
             </div>
         </div>
+        <div id="finvoice2" class="col-xl-12 box-margin height-card hideprint d-none">
+    <div class="card card-body">
+        <div class="row">
+            <div class="col-sm-12 col-xs-12">
+                <div class="d-flex justify-content-between">
+                    <div class="logo"><img src="{{ asset('img/logo/darklogo.png') }}"/></div>
+                    <div><h4>صورتحساب فروش کالا </h4></div>
+                    <div>
+                        <p>شماره فاکتور: <span>{{$request->number}}</span></p>
+                        <p>تاریخ: <span>{{\Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at))}}</span></p>
+                        <p>کد فاکتور: {{ $request->number }}-B</p>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center border">
+                    <div class="text-dark p-1">مشخصات فروشنده</div>
+                </div>
+                <table class="table sellerspecs">
+                    <tbody>
+                    <tr>
+                        <td class="text-left">نام شخص حقیقی / حقوقی : شرکت روغن موتور قم<span> </span></td>
+                        <td></td>
+                        <td></td>
+                        <td>شماره اقتصادی : 411134945318</td>
+                        <td></td>
+                        <td>شماره ثبت :</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">استان: <span>قم</span></td>
+                        <td>شهرستان : سلفچگان</td>
+                        <td></td>
+                        <td>کد پستی ده رقمی : 3746139845</td>
+                        <td></td>
+                        <td>شناسه ملی : 10860961755</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">نشانی : <span>شهرک صنعتی سلفچگان - خ سینا - خیابان فتح</span></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>تلفن / فکس : 02533673907</td>
+                        <td></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="d-flex justify-content-center border">
+                    <div class="text-dark p-1">مشخصات خریدار</div>
+                </div>
+                <table class="table customerspecs">
+                    <tbody>
+                    <tr>
+                        <td class="text-left">
+                            نام خریدار: <span>{{ $request->customer->name.'-'. $request->customer->comp_name}} </span></td>
+                        <td></td>
+                        <td></td>
+                        <td>شماره اقتصادی: {{$request->customer->economic_code}}</td>
+                        <td></td>
+                        <td> شماره ملی:{{ $request->customer->national_code}}</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">استان: <span> </span></td>
+                        <td>شهرستان:</td>
+                        <td></td>
+                        <td> کدپستی:{{$request->customer->zip_code}}</td>
+                        <td></td>
+                        <td>شهر:</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">آدرس: <span>{{$request->customer->address}} </span></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>تلفن: {{$request->customer->mobile}}</td>
+                        <td></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <table class="factortable table table-bordered text-center">
+                    <thead>
+                    <tr class="table-secondary">
+                        <th scope="col">ردیف</th>
+                        <th scope="col">کد کالا</th>
+                        <th scope="col">نام کالا</th>
+                        <th scope="col">تعداد / مقدار</th>
+                        <th scope="col">واحد</th>
+                        <th scope="col">تعداد کارتن</th>
+                        <th scope="col">تعداد در کارتن</th>
+                        <th scope="col">فی</th>
+                        <th scope="col">جمع کل</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        @php($i=1)
+                        @foreach($request->commodities as $commodity)
+                            @php($amount = array_sum(json_decode($commodity->pivot->amount, true)))
+                            <tr>
+                                <td scope="row">{{$i}}</td>
+                                <td>{{$commodity->number}}</td>
+                                <td>{{$commodity->title}}</td>
+                                <td>{{$amount}}</td>
+                                <td>{{__('fields.commodity.units')[$commodity->pivot->unit] }}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            @php($i++)
+                        @endforeach
+
+                        <tr>
+                        <td colspan="5" rowspan="4" class="text-left" style="vertical-align: top">
+                            <div class="d-flex justify-content-between">
+                                <span>شرایط و نحوه تسویه: </span>
+                                <span>نقدی <span class="border"
+                                                 style="display:inline-block;width:15px;height:15px"></span></span>
+                                <span>غیرنقدی <span class="border"
+                                                    style="display:inline-block;width:15px;height:15px"></span></span>
+                            </div>
+                            <p>توضیحات:</p>
+                        </td>
+                    </tr>
+                    <tr>
+                    <td colspan="4" class="text-left"> مالیات بر ارزش افزوده : </td>
+                     </tr>
+                    <tr>
+                        <td colspan="4" class="text-left">جمع کل : 
+                        @if(isset($request->total_price) && isset($request->total_price['number']))
+                             {{ number_format($request->total_price['number']) }}
+                        @else
+                            
+                        @endif
+                        </td>
+                    </tr>
+                    <tr>
+                        @if(isset($request->total_price) && isset($request->total_price['world']))
+                            <td colspan="6" class="text-left">جمع کل به حروف:{{ $request->total_price['world'] }} ریال </td>
+                        @else
+                            <td colspan="6" class="text-left">جمع کل به حروف: صفر ریال </td>
+                        @endif
+                    </tr>
+                    <tr>
+                        <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
+                        <td colspan="6" class="text-left">مهر و امضای خریدار:</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
     </div>
 @endsection
 

@@ -17,7 +17,7 @@
         margin-right: 0;
     }
 
-    div:not(.invoice, .invoice *, #finvoice, #finvoice *, .container-fluid, .row, .main-content, .ecaps-page-content, .ecaps-page-wrapper) {
+    div:not(.invoice, .invoice *, #finvoice, #finvoice *, #finvoice2, #finvoice2 *, .container-fluid, .row, .main-content, .ecaps-page-content, .ecaps-page-wrapper) {
         display: none !important;
     }
 

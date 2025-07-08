@@ -5,6 +5,12 @@
     #finvoice.showprint {
         display: block; 
     }
+    #finvoice2 {
+        display: none;
+    }
+    #finvoice2.showprint {
+        display: block;
+    }
 }
 
 @media print {
@@ -26,9 +32,15 @@
     #finvoice.hideprint {
         display: none !important; 
     }
+    #finvoice2.hideprint {
+       display: none !important;
+    }
 
     #finvoice.print-active {
         display: block !important; 
+    }
+    #finvoice2.print-active {
+        display: block !important;
     }
 
     body {
