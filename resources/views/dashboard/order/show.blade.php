@@ -115,10 +115,10 @@
                 </div>
                 <div class="d-md-flex justify-content-center">
                     <button type="button" class="factor factorbtn btn btn-secondary m-1" onclick="printProformaInvoice('proforma-invoice')">
-                        <i class="ti-printer font-18"></i>چاپ پیش فاکتور
+                        <i class="ti-printer font-18"></i> چاپ پیش فاکتور
                     </button>
                     <button type="button" class="factor factorbtn btn btn-secondary m-1" onclick="printProformaInvoice('proforma-invoice-2')">
-                        <i class="ti-printer font-18"></i>چاپ پیش فاکتور
+                        <i class="ti-printer font-18"></i> چاپ پیش فاکتور
                     </button>
                 </div>
             </div>
@@ -187,6 +187,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
+                                    <!--
                                     <tr>
                                         <td>1</td>
                                         <td>{{ $order->commodity ? $order->commodity->number : '' }}</td>
@@ -195,6 +196,34 @@
                                         <td>{{ __('fields.commodity.units')[$order->unit] }}</td>
                                         <td>{{ number_format($order->price) }}</td>
                                         <td colspan="2">{{ number_format($order->price * $order->commodity_amount) }}</td>
+                                    </tr>
+                                    -->
+                                    <tr>
+                                        <td>1</td>
+                                        <td>8728028</td>
+                                        <td>موتور چهارلیتری پلاستیکی SAE:20w50</td>
+                                        <td>400</td>
+                                        <td>کارتن</td>
+                                        <td>450,000</td>
+                                        <td colspan="2">198,000,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>8728029</td>
+                                        <td>موتور یک لیتری پلاستیکی SAE:50</td>
+                                        <td>50</td>
+                                        <td>کارتن</td>
+                                        <td>400,000</td>
+                                        <td colspan="2">22,000,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>8728030</td>
+                                        <td>گریس</td>
+                                        <td>400</td>
+                                        <td>کارتن</td>
+                                        <td>630,000</td>
+                                        <td colspan="2">277,200,000</td>
                                     </tr>
                                     <tr>
                                         <td colspan="5" rowspan="3" class="text-left" style="vertical-align: top">
@@ -207,12 +236,10 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="2" class="text-left">جمع کل : 
-                                            {{ number_format($order->price * $order->commodity_amount) }}
-                                    </td>
+                                        <td colspan="2" class="text-left">جمع کل : 497,200,000</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3" class="text-left">جمع کل به حروف: {{ \NumberToWords\NumberToWords::transformNumber('fa', $order->price * $order->commodity_amount) ?? '' }} ریال </td>
+                                        <td colspan="3" class="text-left">جمع کل به حروف: چهارصد و نود و هفت میلیون و دویست هزار ریال </td>
                                     </tr>
                                     <tr>
                                         <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
@@ -288,10 +315,10 @@
                                     <th scope="col">تعداد در کارتن</th>
                                     <th scope="col">فی</th>
                                     <th scope="col">جمع کل + مالیات</th>
-                                    
                                 </tr>
                                 </thead>
                                 <tbody>
+                                    <!--
                                     <tr>
                                         <td>1</td>
                                         <td>{{ $order->commodity ? $order->commodity->number : '' }}</td>
@@ -302,6 +329,40 @@
                                         <td></td>
                                         <td>{{ number_format($order->price) }}</td>
                                         <td>{{ number_format($order->price * $order->commodity_amount) }}</td>
+                                    </tr>
+                                    -->
+                                    <tr>
+                                        <td>1</td>
+                                        <td>8728028</td>
+                                        <td>موتور چهارلیتری پلاستیکی SAE:20w50</td>
+                                        <td>400</td>
+                                        <td>کارتن</td>
+                                        <td>40</td>
+                                        <td>10</td>
+                                        <td>450,000</td>
+                                        <td>198,000,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>8728029</td>
+                                        <td>موتور یک لیتری پلاستیکی SAE:50</td>
+                                        <td>50</td>
+                                        <td>کارتن</td>
+                                        <td>5</td>
+                                        <td>10</td>
+                                        <td>400,000</td>
+                                        <td>22,000,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>8728030</td>
+                                        <td>گریس</td>
+                                        <td>400</td>
+                                        <td>کارتن</td>
+                                        <td>40</td>
+                                        <td>10</td>
+                                        <td>630,000</td>
+                                        <td>277,200,000</td>
                                     </tr>
                                     <tr>
                                         <td colspan="5" rowspan="3" class="text-left" style="vertical-align: top">
@@ -314,12 +375,10 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="4" class="text-left">جمع کل : 
-                                            {{ number_format($order->price * $order->commodity_amount) }}
-                                        </td>
+                                        <td colspan="4" class="text-left">جمع کل : 497,200,000</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="4" class="text-left">جمع کل به حروف: {{ \NumberToWords\NumberToWords::transformNumber('fa', $order->price * $order->commodity_amount) ?? '' }} ریال </td>
+                                        <td colspan="4" class="text-left">جمع کل به حروف: چهارصد و نود و هفت میلیون و دویست هزار ریال </td>
                                     </tr>
                                     <tr>
                                         <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>

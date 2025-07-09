@@ -174,7 +174,7 @@
                                         <div class="d-md-flex justify-content-center">
                                             <a href="#" class="factor customerbtn btn btn-secondary m-1"><i
                                                     class="ti-printer font-18"></i> حواله مشتری</a>
-                                            <a href="{{ request()->fullUrlWithQuery(['receipt_type' => 'documentation']) }}" class="factor documentationbtn btn btn-secondary m-1"><i class="ti-printer font-18"></i> حواله حسابداری</a>
+                                            <a href="#" class="factor documentationbtn btn btn-secondary m-1"><i class="ti-printer font-18"></i> حواله حسابداری</a>
                                             <a href="#" class="factor warehousebtn btn btn-secondary m-1"><i
                                                     class="ti-printer font-18"></i> حواله بارگیری</a>
                                         </div>
@@ -395,7 +395,7 @@
                                     <tr>
                                         <td scope="row">1</td>
                                         <td>زیگما</td>
-                                        <td style="text-align: center;">موتور چهار لیتری پلاستیکی SAE : 20w50</td>
+                                        <td style="text-align: center;">گریس</td>
                                         <td>کارتن</td>
                                         <td>400</td>
                                     </tr>
@@ -498,7 +498,7 @@
                                     <tr>
                                         <td scope="row">1</td>
                                         <td>زیگما</td>
-                                        <td style="text-align: center;">موتور چهار لیتری پلاستیکی SAE : 20w50</td>
+                                        <td style="text-align: center;">گریس</td>
                                         <td>کارتن</td>
                                         <td>400</td>
                                         <td>630000</td>
@@ -592,7 +592,7 @@
                                     <tr>
                                         <td scope="row">1</td>
                                         <td>زیگما</td>
-                                        <td style="text-align: center;">موتور چهار لیتری پلاستیکی SAE : 20w50</td>
+                                        <td style="text-align: center;">گریس</td>
                                         <td>کارتن</td>
                                         <td>400</td>
 
@@ -720,13 +720,40 @@
                                 @foreach($request->commodities as $commodity)
                                     @php($amount = array_sum(json_decode($commodity->pivot->amount, true)))
                                     <tr>
-                                        <td scope="row">{{$i}}</td>
+                                        <!-- <td scope="row">{{$i}}</td>
                                         <td>{{$commodity->number}}</td>
                                         <td>{{$commodity->title}}</td>
                                         <td>{{$amount}}</td>
                                         <td>{{__('fields.commodity.units')[$commodity->pivot->unit] }}</td>
                                         <td colspan="1.5"></td>
-                                        <td colspan="1.5"></td>
+                                        <td colspan="1.5"></td> -->
+                                        
+                                        <td scope="row">1</td>
+                                        <td>8728028</td>
+                                        <td>موتور چهارلیتری پلاستیکی SAE:20w50</td>
+                                        <td>400</td>
+                                        <td>کارتن</td>
+                                        <td colspan="1.5">450,000</td>
+                                        <td colspan="1.5">180,000,000</td>
+                                </tr>
+                                <tr>
+                                        <td scope="row">2</td>
+                                        <td>8728029</td>
+                                        <td>موتور یک لیتری پلاستیکی SAE:50</td>
+                                        <td>50</td>
+                                        <td>کارتن</td>
+                                        <td colspan="1.5">400,000</td>
+                                        <td colspan="1.5">20,000,000</td>
+                                </tr>
+                                <tr>
+                                        <td scope="row">3</td>
+                                        <td>8728030</td>
+                                        <td>گریس</td>
+                                        <td>400</td>
+                                        <td>کارتن</td>
+                                        <td colspan="1.5">630,000</td>
+                                        <td colspan="1.5">252,000,000</td>                                        
+                                        
                                     </tr>
                                     @php($i++)
                                 @endforeach
@@ -744,24 +771,29 @@
                                 </td>
                             </tr>
                             <tr>
-                            <td colspan="3" class="text-left">مالیات بر ارزش افزوده : </td>
+                            <td colspan="3" class="text-left">مالیات بر ارزش افزوده : %10</td>
                                 
                              </tr>
                             <tr>
                                 <td colspan="3" class="text-left">جمع کل : 
-                                @if(isset($request->total_price) && isset($request->total_price['number']))
+                                    497,200,000
+
+                                <!-- @if(isset($request->total_price) && isset($request->total_price['number']))
                                      {{ number_format($request->total_price['number']) }}
                                 @else
                                     
-                                @endif
+                                @endif -->
+
                                     </td>
                             </tr>
                             <tr>
-                                @if(isset($request->total_price) && isset($request->total_price['world']))
+                                <!-- @if(isset($request->total_price) && isset($request->total_price['world']))
                                     <td colspan="2" class="text-left">جمع کل به حروف : {{ $request->total_price['world'] }} ریال </td>
                                 @else
                                     <td colspan="2" class="text-left">جمع کل به حروف: صفر ریال </td>
-                                @endif
+                                @endif -->
+
+                                <td colspan="2" class="text-left">جمع کل به حروف : چهارصد و نود و هفت میلیون و دویست هزار ریال</td>
                             </tr>
                             <tr>
                                 <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
@@ -871,7 +903,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                        @php($i=1)
+                        <!-- @php($i=1)
                         @foreach($request->commodities as $commodity)
                             @php($amount = array_sum(json_decode($commodity->pivot->amount, true)))
                             <tr>
@@ -886,43 +918,63 @@
                                 <td></td>
                             </tr>
                             @php($i++)
-                        @endforeach
-
+                        @endforeach -->
                         <tr>
-                        <td colspan="5" rowspan="4" class="text-left" style="vertical-align: top">
-                            <div class="d-flex justify-content-between">
-                                <span>شرایط و نحوه تسویه: </span>
-                                <span>نقدی <span class="border"
-                                                 style="display:inline-block;width:15px;height:15px"></span></span>
-                                <span>غیرنقدی <span class="border"
-                                                    style="display:inline-block;width:15px;height:15px"></span></span>
-                            </div>
-                            <p>توضیحات:</p>
-                        </td>
-                    </tr>
-                    <tr>
-                    <td colspan="4" class="text-left"> مالیات بر ارزش افزوده : </td>
-                     </tr>
-                    <tr>
-                        <td colspan="4" class="text-left">جمع کل : 
-                        @if(isset($request->total_price) && isset($request->total_price['number']))
-                             {{ number_format($request->total_price['number']) }}
-                        @else
-                            
-                        @endif
-                        </td>
-                    </tr>
-                    <tr>
-                        @if(isset($request->total_price) && isset($request->total_price['world']))
-                            <td colspan="6" class="text-left">جمع کل به حروف:{{ $request->total_price['world'] }} ریال </td>
-                        @else
-                            <td colspan="6" class="text-left">جمع کل به حروف: صفر ریال </td>
-                        @endif
-                    </tr>
-                    <tr>
-                        <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
-                        <td colspan="6" class="text-left">مهر و امضای خریدار:</td>
-                    </tr>
+                            <td scope="row">1</td>
+                            <td>8728028</td>
+                            <td>موتور چهارلیتری پلاستیکی SAE:20w50</td>
+                            <td>400</td>
+                            <td>کارتن</td>
+                            <td>40</td>
+                            <td>10</td>
+                            <td>450,000</td>
+                            <td>180,000,000</td>
+                        </tr>
+                        <tr>
+                            <td scope="row">2</td>
+                            <td>8728029</td>
+                            <td>موتور یک لیتری پلاستیکی SAE:50</td>
+                            <td>50</td>
+                            <td>کارتن</td>
+                            <td>5</td>
+                            <td>10</td>
+                            <td>400,000</td>
+                            <td>20,000,000</td>
+                        </tr>
+                        <tr>
+                            <td scope="row">3</td>
+                            <td>8728030</td>
+                            <td>گریس</td>
+                            <td>400</td>
+                            <td>کارتن</td>
+                            <td>40</td>
+                            <td>10</td>
+                            <td>630,000</td>
+                            <td>252,000,000</td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" rowspan="4" class="text-left" style="vertical-align: top">
+                                <div class="d-flex justify-content-between">
+                                    <span>شرایط و نحوه تسویه: </span>
+                                    <span>نقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
+                                    <span>غیرنقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
+                                </div>
+                                <p>توضیحات:</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-left"> مالیات بر ارزش افزوده : %10 </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-left">جمع کل : 497,200,000</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="text-left">جمع کل به حروف: چهارصد و نود و هفت میلیون و دویست هزار ریال </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
+                            <td colspan="6" class="text-left">مهر و امضای خریدار:</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
