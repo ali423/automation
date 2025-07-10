@@ -82,7 +82,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('commodity-type-ajax/{id}',[CommodityController::class,'commodityType']);
 
-    Route::get('order/{order}/download-invoice', [OrderController::class, 'downloadInvoice'])->name('order.downloadInvoice');
     Route::resource('unit', UnitController::class);
 
     Route::get('unit-conversion/select-commodity', [UnitConversionController::class, 'index'])->name('unit-conversion.select-commodity');
