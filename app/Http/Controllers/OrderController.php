@@ -44,6 +44,23 @@ class OrderController extends Controller
     }
 
     /**
+     * Display the order chart page.
+     *
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
+     */
+    public function chart()
+    {
+        $orders = Order::query()->with(['customer', 'commodity','activities'])
+            ->whereHas('customer')
+            ->whereHas('commodity')
+            ->orderByRaw("FIELD(status, 'pending', 'done')")
+            ->orderBy('deadline', 'ASC')->get();
+        return view('dashboard.order.chart', [
+            'orders' => $orders,
+        ]);
+    }
+
+    /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
