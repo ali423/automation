@@ -2,6 +2,15 @@
     #finvoice {
         display: none;
     }
+    #finvoice.showprint {
+        display: block; 
+    }
+    #finvoice2 {
+        display: none;
+    }
+    #finvoice2.showprint {
+        display: block;
+    }
 }
 
 @media print {
@@ -16,19 +25,26 @@
         margin-right: 0;
     }
 
-    /* div:not(#finvoice, #finvoice *, .container-fluid, .row, .main-content, .ecaps-page-content, .ecaps-page-wrapper) {
-        display: none;
-    } */
-
-    .showprint{
-        display: block !important;
+    .invoice {
+        display: none !important; 
     }
-    .hideprint{
-        display: none !important;
+
+    #finvoice.hideprint {
+        display: none !important; 
+    }
+    #finvoice2.hideprint {
+       display: none !important;
+    }
+
+    #finvoice.print-active {
+        display: block !important; 
+    }
+    #finvoice2.print-active {
+        display: block !important;
     }
 
     body {
-        background-color: #fff
+        background-color: #fff;
     }
 
     .logo {
