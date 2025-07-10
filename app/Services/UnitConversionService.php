@@ -73,21 +73,25 @@ class UnitConversionService extends BaseService
      */
     public function convert($amount, $fromUnitId, $toUnitId, $commodityId)
     {
+        // Validate input parameters
+        if (!is_numeric($amount) || !is_numeric($fromUnitId) || !is_numeric($toUnitId) || !is_numeric($commodityId)) {
+            return null;
+        }
       
         if ($fromUnitId === $toUnitId) {
-            return $amount;
+            return (float) $amount;
         }
 
         $conversion = $this->getConversionRate($fromUnitId, $toUnitId, $commodityId);
         
-        if ($conversion) {
-            return $amount * $conversion;
+        if ($conversion && is_numeric($conversion)) {
+            return (float) ($amount * $conversion);
         }
 
         $reverseConversion = $this->getConversionRate($toUnitId, $fromUnitId, $commodityId);
         
-        if ($reverseConversion) {
-            return $amount / $reverseConversion;
+        if ($reverseConversion && is_numeric($reverseConversion)) {
+            return (float) ($amount / $reverseConversion);
         }
 
         return null; 
