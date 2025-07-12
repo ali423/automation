@@ -143,6 +143,22 @@
                         </ul>
                     </li>
                 @endif
+                @if(Gate::check('read_inventory'))
+                    <li
+                        @if($first_url_part== 'inventory')
+                        class="treeview active"
+                        @else
+                        class="treeview"
+                        @endif>
+                        <a href="javascript:void(0)"><i class="ti-package"></i> <span>مدیریت موجودی</span> <i
+                                class="fa fa-angle-left"></i></a>
+                        <ul class="treeview-menu">
+                                            @can('read_inventory',App\Models\Inventory::class)
+                <li @if($first_url_part== 'inventory' && $second_url_part== 'index') class="active" @endif><a href="{{ route('inventory.index') }}">لیست موجودی ها</a></li>
+                @endcan
+                        </ul>
+                    </li>
+                @endif
                 @if(Gate::check('read_importing') || Gate::check('create_importing'))
                         <li
                             @if($first_url_part== 'importing-request')
