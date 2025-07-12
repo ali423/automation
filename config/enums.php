@@ -137,6 +137,20 @@ return [
                 ],
             ]
         ],
+        'App\Models\Inventory' => [
+            'fa_name' => 'موجودی ها',
+            'url' => 'inventory',
+            'relations' => [
+                'commodity' => [
+                    'fa_name' => 'کالا',
+                    'primary_key' => 'commodity_id',
+                ],
+                'unit' => [
+                    'fa_name' => 'واحد',
+                    'primary_key' => 'unit_id',
+                ],
+            ]
+        ],
     ],
 
     'activity_types' => [
