@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\ActivityTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Inventory extends Model
 {
-    use HasFactory;
+    use HasFactory, ActivityTrait;
 
     protected $fillable = [
         'commodity_id',
