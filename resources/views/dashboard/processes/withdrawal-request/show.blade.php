@@ -247,15 +247,15 @@
                                 </tr>
                                 @php($i=1)
                                 @foreach($request->commodities as $commodity)
-<tr>
-    <th scope="row">{{$i}}</th>
-    <td>{{$commodity->title}}</td>
+                                <tr>
+                                    <th scope="row">{{$i}}</th>
+                                    <td>{{$commodity->title}}</td>
     <td>-</td>
                                         <td>{{ $commodity->pivot->amount }} {{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name . ' (' . $unit->symbol . ')' : '-') : '-' }}</td>
-    <td></td>
-</tr>
-@php($i++)
-@endforeach
+                                    <td></td>
+                                </tr>
+                                        @php($i++)
+                                @endforeach
                             </table>
                         </div>
                         <div class="mb-5">
