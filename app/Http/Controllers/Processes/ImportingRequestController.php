@@ -49,10 +49,10 @@ class ImportingRequestController extends Controller
      */
     public function create()
     {
-        $commodities = Commodity::query()->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get();
+        $commodities = Commodity::query()->where('type', 'material')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get();
         $sellers=Seller::all();
         if (count($commodities) < 1) {
-            return redirect(route('commodity.create'))->withErrors('ابتدا حداقل یک کالا ثبت کنید .');
+            return redirect(route('commodity.create'))->withErrors('ابتدا حداقل یک کالای ماده اولیه ثبت کنید .');
         }
         if (count($sellers) < 1) {
             return redirect(route('seller.create'))->withErrors('ابتدا حداقل یک فروشنده ثبت کنید .');
@@ -127,7 +127,7 @@ class ImportingRequestController extends Controller
         
         return view('dashboard.processes.importing-request.edit', [
             'request' => $importingRequest,
-            'commodities' => Commodity::query()->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get(),
+            'commodities' => Commodity::query()->where('type', 'material')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get(),
             'sellers'=>Seller::all(),
         ]);
     }
