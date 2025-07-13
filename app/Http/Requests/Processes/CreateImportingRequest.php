@@ -31,7 +31,7 @@ class CreateImportingRequest extends FormRequest
             'seller_id'=>['required','exists:sellers,id'],
             'unit'=>['required','array','min:1'],
             'amount'=>['required','array','min:1'],
-            'commodity_id.*'=>['required','exists:commodities,id','distinct'],
+            'commodity_id.*'=>['required','exists:commodities,id','distinct', Rule::exists('commodities', 'id')->where('type', 'material')],
             'unit.*'=>['required','exists:units,id'],
             'purchase_price.*'=>['nullable','numeric'],
             'amount.*'=>['required','integer'],

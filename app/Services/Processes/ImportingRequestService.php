@@ -27,7 +27,7 @@ class ImportingRequestService extends BaseService
 
         foreach ($data['commodity_id'] as $key => $value) {
             $exists_commodity = Commodity::query()->findOrFail($value);
-            if ($exists_commodity->type == 'material' && empty($data['purchase_price'][$key])) {
+            if (empty($data['purchase_price'][$key])) {
                 $error_price = \Illuminate\Validation\ValidationException::withMessages([
                     'purchase_price.' . $key => ['قیمت خرید فرآرده باید وارد شود.'],
                 ]);
@@ -66,7 +66,7 @@ class ImportingRequestService extends BaseService
     {
         foreach ($data['commodity_id'] as $key => $value) {
             $exists_commodity = Commodity::query()->findOrFail($value);
-            if ($exists_commodity->type == 'material' && empty($data['purchase_price'][$key])) {
+            if (empty($data['purchase_price'][$key])) {
                 $error_price = \Illuminate\Validation\ValidationException::withMessages([
                     'purchase_price.' . $key => ['قیمت خرید فرآرده باید وارد شود.'],
                 ]);
@@ -114,12 +114,10 @@ class ImportingRequestService extends BaseService
                 // Get the selected unit ID directly from the pivot
                 $selectedUnitId = $selected_commodity->pivot->unit_id;
                 
-                // Update commodity purchase price if it's a material (no conversion needed)
-                if ($selected_commodity->type == 'material') {
-                    $selected_commodity->update([
-                        'purchase_price' => $selected_commodity->pivot->purchase_price
-                    ]);
-                }
+                // Update commodity purchase price
+                $selected_commodity->update([
+                    'purchase_price' => $selected_commodity->pivot->purchase_price
+                ]);
                 
                 // Convert amount to main unit for inventory storage
                 $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
@@ -127,11 +125,6 @@ class ImportingRequestService extends BaseService
                     $selected_commodity->pivot->amount,
                     $selectedUnitId
                 );
-                
-                // If it's a product, subtract ingredients from inventory
-                if ($selected_commodity->type == 'product') {
-                    $this->subtractingIngredients($selected_commodity, $amountInMainUnit);
-                }
                 
                 // Add stock to inventory using the main unit
                 $this->inventoryService->addStock(
@@ -152,28 +145,20 @@ class ImportingRequestService extends BaseService
 
     public function checkImporting($importing_request)
     {
+        // Validate that the import request can be processed
         foreach ($importing_request->commodities as $commodity) {
-            // Convert amount to main unit using CommodityUnitService
+            // Convert amount to main unit using CommodityUnitService for validation
             $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
                 $commodity,
                 $commodity->pivot->amount,
                 $commodity->pivot->unit_id
             );
             
-            // If it's a product, check if we have enough materials in inventory
-            if ($commodity->type == 'product') {
-                foreach ($commodity->materials as $material) {
-                    $required_amount = round(($material->pivot->percentage / 100) * $amountInMainUnit);
-                    
-                    // Check if we have enough material in inventory
-                    $available_stock = $this->inventoryService->getStockLevel($material->id, $material->unit_id);
-                    
-                    if ($required_amount > $available_stock) {
-                        $data['success'] = false;
-                        $data['error'] = $material->title . ' که یکی از مواد تشکیل دهنده ' . $commodity->title . ' است به مقدار کافی در موجودی وجود ندارد ';
-                        return $data;
-                    }
-                }
+            // Basic validation - ensure amount is positive
+            if ($amountInMainUnit <= 0) {
+                $data['success'] = false;
+                $data['error'] = 'مقدار کالا باید بیشتر از صفر باشد.';
+                return $data;
             }
         }
         
@@ -195,18 +180,7 @@ class ImportingRequestService extends BaseService
         ]);
     }
 
-    public function subtractingIngredients($commodity, $commodity_amount)
-    {
-        foreach ($commodity->materials as $material) {
-            $required_amount = round(($material->pivot->percentage / 100) * $commodity_amount, 2);
-            
-            // Remove the required amount from inventory
-            $this->inventoryService->removeStock($material->id, $material->unit_id, $required_amount);
-            
-            // Check if material is running low and trigger warning
-            $this->warningCommodity($material);
-        }
-    }
+
 
     public function validationSecondLayer($data)
     {
