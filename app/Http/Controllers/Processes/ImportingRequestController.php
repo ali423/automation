@@ -9,8 +9,8 @@ use App\Models\Commodity;
 use App\Models\ImportingRequest;
 use App\Models\Seller;
 use App\Services\CommodityUnitService;
-
 use App\Services\Processes\ImportingRequestService;
+use Illuminate\Support\Facades\DB;
 use Morilog\Jalali\Jalalian;
 
 class ImportingRequestController extends Controller
@@ -50,16 +50,25 @@ class ImportingRequestController extends Controller
     public function create()
     {
         $commodities = Commodity::query()->where('type', 'material')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get();
-        $sellers=Seller::all();
+        $sellers = Seller::all();
+        
         if (count($commodities) < 1) {
             return redirect(route('commodity.create'))->withErrors('ابتدا حداقل یک کالای ماده اولیه ثبت کنید .');
         }
         if (count($sellers) < 1) {
             return redirect(route('seller.create'))->withErrors('ابتدا حداقل یک فروشنده ثبت کنید .');
         }
+        
+        // Preload all selectable units for each commodity
+        $commoditiesWithUnits = $commodities->map(function ($commodity) {
+            $selectableUnits = $this->commodityUnitService->getSelectableUnits($commodity);
+            $commodity->selectable_units = $selectableUnits;
+            return $commodity;
+        });
+        
         return view('dashboard.processes.importing-request.create', [
             'commodities' => $commodities,
-            'sellers'=>$sellers,
+            'sellers' => $sellers,
         ]);
     }
 
@@ -74,14 +83,20 @@ class ImportingRequestController extends Controller
         $data = $request->only('commodity_id', 'unit', 'amount', 'comment', 'purchase_price','seller_id');
         $this->service->validationSecondLayer($data);
         $check_warehouses = $this->service->checkImportingStore($data);
+        
         if ($check_warehouses['success'] == true) {
+            $file = null;
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
             }
-            $importing = $this->service->create($data, $file ?? null);
+            
+            $importing = DB::transaction(function () use ($data, $file) {
+                return $this->service->create($data, $file);
+            });
         } else {
             return redirect()->back()->withErrors($check_warehouses['error']);
         }
+        
         return redirect(route('importing-request.show', $importing))->with('successful', 'اطلاعات ثبت شد.');
     }
 
@@ -107,10 +122,15 @@ class ImportingRequestController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param \App\Models\ImportingRequest $importingRequest
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
     public function edit(ImportingRequest $importingRequest)
     {
+        // Prevent editing of approved, rejected, expired, or done requests
+        if (!in_array($importingRequest->status, ['awaiting_approval'])) {
+            return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد. درخواست‌های تایید شده، رد شده، منقضی شده یا تکمیل شده قابل ویرایش نیستند.');
+        }
+        
         // Load the importing request with commodities and their selectable units
         $importingRequest->load(['commodities' => function ($query) {
             $query->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit']);
@@ -141,19 +161,26 @@ class ImportingRequestController extends Controller
      */
     public function update(CreateImportingRequest $request, ImportingRequest $importingRequest)
     {
-        if ($importingRequest->status != 'awaiting_approval') {
-            return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد .');
+        // Prevent editing of approved, rejected, expired, or done requests
+        if (!in_array($importingRequest->status, ['awaiting_approval'])) {
+            return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد. درخواست‌های تایید شده، رد شده، منقضی شده یا تکمیل شده قابل ویرایش نیستند.');
         }
+        
         $check_expired = $this->service->checkExpiredRequest($importingRequest);
         if ($check_expired['success'] == false) {
             return redirect()->back()->withErrors($check_expired['error']);
         }
         $data = $request->only('commodity_id', 'unit', 'amount', 'comment', 'purchase_price','seller_id');
         $this->service->validationSecondLayer($data);
+        $file = null;
         if ($request->hasFile('file')) {
             $file = $request->file('file');
         }
-        $this->service->update($importingRequest, $data, $file ?? null);
+        
+        DB::transaction(function () use ($importingRequest, $data, $file) {
+            $this->service->update($importingRequest, $data, $file);
+        });
+        
         return redirect(route('importing-request.index'))->with('successful', 'اطلاعات درخواست ویرایش شد.');
     }
 
@@ -165,14 +192,20 @@ class ImportingRequestController extends Controller
      */
     public function destroy(ImportingRequest $importingRequest)
     {
-        if ($importingRequest->status != 'awaiting_approval') {
-            return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد .');
+        // Prevent deletion of approved, rejected, expired, or done requests
+        if (!in_array($importingRequest->status, ['awaiting_approval'])) {
+            return redirect()->back()->withErrors('در این مرحله امکان حذف وجود ندارد. درخواست‌های تایید شده، رد شده، منقضی شده یا تکمیل شده قابل حذف نیستند.');
         }
+        
         $check_expired = $this->service->checkExpiredRequest($importingRequest);
         if ($check_expired['success'] == false) {
             return redirect()->back()->withErrors($check_expired['error']);
         }
-        $this->service->delete($importingRequest);
+        
+        DB::transaction(function () use ($importingRequest) {
+            $this->service->delete($importingRequest);
+        });
+        
         return redirect(route('importing-request.index'))->with('successful', 'درخواست با موفقیت حذف شد.');
     }
 
@@ -191,7 +224,10 @@ class ImportingRequestController extends Controller
         }
         $check_warehouses = $this->service->checkImporting($importing_request);
         if ($check_warehouses['success'] == true) {
-            $this->service->approvalImporting($importing_request);
+            
+            DB::transaction(function () use ($importing_request) {
+                $this->service->approvalImporting($importing_request);
+            });
         } else {
             return redirect()->back()->withErrors($check_warehouses['error']);
         }
@@ -215,33 +251,7 @@ class ImportingRequestController extends Controller
         return redirect(route('importing-request.show', $importing_request))->with('successful', 'درخواست با موفقیت رد شد.');
     }
 
-    /**
-     * Get selectable units for a commodity via AJAX
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getSelectableUnits(\Illuminate\Http\Request $request)
-    {
-        $request->validate([
-            'commodity_id' => 'required|exists:commodities,id',
-        ]);
 
-        $commodity = Commodity::findOrFail($request->commodity_id);
-        $selectableUnits = $this->commodityUnitService->getSelectableUnits($commodity);
-
-        return response()->json([
-            'success' => true,
-            'units' => $selectableUnits->map(function ($unit) {
-                return [
-                    'id' => $unit->id,
-                    'name' => $unit->name,
-                    'symbol' => $unit->symbol,
-                    'display_name' => $unit->name . ' (' . $unit->symbol . ')'
-                ];
-            })
-        ]);
-    }
 
     public function createReport()
     {

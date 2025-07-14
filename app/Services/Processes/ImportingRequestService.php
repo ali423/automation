@@ -42,24 +42,23 @@ class ImportingRequestService extends BaseService
         }
         $number = $this->generateUniqueNumber(ImportingRequest::class, 'number');
         $user = auth()->user();
-        return DB::transaction(function () use ($data, $commodity, $user, $file, $number) {
-            $request = ImportingRequest::query()->create([
-                'seller_id' => $data['seller_id'],
-                'status' => 'awaiting_approval',
-                'number' => $number,
+        
+        $request = ImportingRequest::query()->create([
+            'seller_id' => $data['seller_id'],
+            'status' => 'awaiting_approval',
+            'number' => $number,
+        ]);
+        $request->commodities()->attach($commodity);
+        if (isset($data['comment'])) {
+            $request->comments()->create([
+                'user_id' => $user->id,
+                'body' => $data['comment'],
             ]);
-            $request->commodities()->attach($commodity);
-            if (isset($data['comment'])) {
-                $request->comments()->create([
-                    'user_id' => $user->id,
-                    'body' => $data['comment'],
-                ]);
-            }
-            if (!empty($file)) {
-                $this->uploadFile($file, 'importing-commodity', $request);
-            }
-            return $request;
-        });
+        }
+        if (!empty($file)) {
+            $this->uploadFile($file, 'importing-commodity', $request);
+        }
+        return $request;
     }
 
     public function update($importing_request, $data, $file)
@@ -80,66 +79,61 @@ class ImportingRequestService extends BaseService
             ];
         }
         $user = auth()->user();
-        DB::transaction(function () use ($data, $commodity, $user, $file, $importing_request) {
-            $importing_request->commodities()->sync($commodity);
-            $importing_request->update([
-               'seller_id'=>$data['seller_id'],
+        
+        $importing_request->commodities()->sync($commodity);
+        $importing_request->update([
+           'seller_id'=>$data['seller_id'],
+        ]);
+        if (isset($data['comment'])) {
+            $importing_request->comments()->create([
+                'user_id' => $user->id,
+                'body' => $data['comment'],
             ]);
-            if (isset($data['comment'])) {
-                $importing_request->comments()->create([
-                    'user_id' => $user->id,
-                    'body' => $data['comment'],
-                ]);
-            }
-            if (!empty($file)) {
-                $this->uploadFile($file, 'importing-commodity', $importing_request);
-            }
-        });
+        }
+        if (!empty($file)) {
+            $this->uploadFile($file, 'importing-commodity', $importing_request);
+        }
         return true;
     }
 
     public function delete($importing_request)
     {
-        DB::transaction(function () use ($importing_request) {
-            $importing_request->commodities()->detach();
-            $importing_request->delete();
-        });
+        $importing_request->commodities()->detach();
+        $importing_request->delete();
         return true;
     }
 
     public function approvalImporting($importing_request)
     {
-        DB::transaction(function () use ($importing_request) {
-            foreach ($importing_request->commodities as $selected_commodity) {
-                // Get the selected unit ID directly from the pivot
-                $selectedUnitId = $selected_commodity->pivot->unit_id;
-                
-                // Update commodity purchase price
-                $selected_commodity->update([
-                    'purchase_price' => $selected_commodity->pivot->purchase_price
-                ]);
-                
-                // Convert amount to main unit for inventory storage
-                $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
-                    $selected_commodity,
-                    $selected_commodity->pivot->amount,
-                    $selectedUnitId
-                );
-                
-                // Add stock to inventory using the main unit
-                $this->inventoryService->addStock(
-                    $selected_commodity->id,
-                    $selected_commodity->unit_id, // Use commodity's main unit
-                    $amountInMainUnit,
-                    $selected_commodity->pivot->purchase_price,
-                    $selected_commodity->sales_price
-                );
-            }
+        foreach ($importing_request->commodities as $selected_commodity) {
+            // Get the selected unit ID directly from the pivot
+            $selectedUnitId = $selected_commodity->pivot->unit_id;
             
-            $importing_request->update([
-                'status' => 'approvaled',
+            // Update commodity purchase price
+            $selected_commodity->update([
+                'purchase_price' => $selected_commodity->pivot->purchase_price
             ]);
-        });
+            
+            // Convert amount to main unit for inventory storage
+            $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
+                $selected_commodity,
+                $selected_commodity->pivot->amount,
+                $selectedUnitId
+            );
+            
+            // Add stock to inventory using the main unit
+            $this->inventoryService->addStock(
+                $selected_commodity->id,
+                $selected_commodity->unit_id, // Use commodity's main unit
+                $amountInMainUnit,
+                $selected_commodity->pivot->purchase_price,
+                $selected_commodity->sales_price
+            );
+        }
+        
+        $importing_request->update([
+            'status' => 'approvaled',
+        ]);
         return true;
     }
 

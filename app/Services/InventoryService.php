@@ -14,35 +14,33 @@ class InventoryService extends BaseService
      */
     public function addStock($commodityId, $unitId, $amount, $purchasePrice = null, $salePrice = null)
     {
-        return DB::transaction(function () use ($commodityId, $unitId, $amount, $purchasePrice, $salePrice) {
-            $inventory = Inventory::where('commodity_id', $commodityId)
-                ->where('unit_id', $unitId)
-                ->where('active', true)
-                ->first();
+        $inventory = Inventory::where('commodity_id', $commodityId)
+            ->where('unit_id', $unitId)
+            ->where('active', true)
+            ->first();
 
-            if ($inventory) {
-                // Update existing inventory
-                $newAmount = $inventory->amount + $amount;
-                
-                $inventory->update([
-                    'amount' => $newAmount,
-                    'purchase_price' => $purchasePrice ?? $inventory->purchase_price,
-                    'sale_price' => $salePrice ?? $inventory->sale_price,
-                ]);
-                
-                return $inventory;
-            } else {
-                // Create new inventory record
-                return Inventory::create([
-                    'commodity_id' => $commodityId,
-                    'unit_id' => $unitId,
-                    'amount' => $amount,
-                    'purchase_price' => $purchasePrice,
-                    'sale_price' => $salePrice,
-                    'active' => true,
-                ]);
-            }
-        });
+        if ($inventory) {
+            // Update existing inventory
+            $newAmount = $inventory->amount + $amount;
+            
+            $inventory->update([
+                'amount' => $newAmount,
+                'purchase_price' => $purchasePrice ?? $inventory->purchase_price,
+                'sale_price' => $salePrice ?? $inventory->sale_price,
+            ]);
+            
+            return $inventory;
+        } else {
+            // Create new inventory record
+            return Inventory::create([
+                'commodity_id' => $commodityId,
+                'unit_id' => $unitId,
+                'amount' => $amount,
+                'purchase_price' => $purchasePrice,
+                'sale_price' => $salePrice,
+                'active' => true,
+            ]);
+        }
     }
 
     /**
@@ -50,27 +48,25 @@ class InventoryService extends BaseService
      */
     public function removeStock($commodityId, $unitId, $amount)
     {
-        return DB::transaction(function () use ($commodityId, $unitId, $amount) {
-            $inventory = Inventory::where('commodity_id', $commodityId)
-                ->where('unit_id', $unitId)
-                ->where('active', true)
-                ->where('amount', '>=', $amount)
-                ->first();
+        $inventory = Inventory::where('commodity_id', $commodityId)
+            ->where('unit_id', $unitId)
+            ->where('active', true)
+            ->where('amount', '>=', $amount)
+            ->first();
 
-            if (!$inventory) {
-                throw new \Exception('موجودی کافی برای کالای مورد نظر وجود ندارد');
-            }
+        if (!$inventory) {
+            throw new \Exception('موجودی کافی برای کالای مورد نظر وجود ندارد');
+        }
 
-            $newAmount = $inventory->amount - $amount;
-            
-            if ($newAmount == 0) {
-                $inventory->update(['active' => false]);
-            } else {
-                $inventory->update(['amount' => $newAmount]);
-            }
+        $newAmount = $inventory->amount - $amount;
+        
+        if ($newAmount == 0) {
+            $inventory->update(['active' => false]);
+        } else {
+            $inventory->update(['amount' => $newAmount]);
+        }
 
-            return $inventory;
-        });
+        return $inventory;
     }
 
     /**
