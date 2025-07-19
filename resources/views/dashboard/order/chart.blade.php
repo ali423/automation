@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="{{ asset('css/default-assets/buttons.bootstrap4.css') }}">
     <link rel="stylesheet" href="{{ asset('css/default-assets/select.bootstrap4.css') }}">
     <link rel="stylesheet" href="{{ asset('css/datatables-td.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/bootstrap-datepicker.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/default-assets/daterange-picker.css') }}">
     <style>
         #order-inventory-charts {
             width: 100%;
@@ -58,8 +60,11 @@
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title mb-2">لیست سفارشات</h4>
-                    <div class="d-flex justify-content-end mb-3">
-                        <button id="calculate-orders" class="btn btn-success">محاسبه</button>
+                    <!-- Date fields and calculate button in a flex row -->
+                    <div id="order-filter-group" class=" justify-content-start gap-2 mb-2" style="width: auto;">
+                        <input type="text" id="date_from" class="form-control usage" placeholder="از تاریخ" autocomplete="off" style="min-width: 110px;">
+                        <input type="text" id="date_to" class="form-control usage" placeholder="تا تاریخ" autocomplete="off" style="min-width: 110px;">
+                        <button id="calculate-orders" class="btn btn-success ml-2" type="button">محاسبه</button>
                     </div>
                     <table id="datatable-buttons-customer" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
@@ -110,6 +115,9 @@
 
 @section('page_scripts')
     <!-- These plugins only need for the run this page -->
+    <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
+    <script src="{{ asset('js/bootstrap-datepicker.min.js') }}"></script>
+    <script src="{{ asset('js/default-assets/daterange-picker.js') }}"></script>
     <script src="{{ asset('js/default-assets/jquery.datatables.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/dataTables.bootstrap5.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/datatable-responsive.min.js') }}"></script>
@@ -221,18 +229,38 @@
                 }
             });
 
-            // Move the calculate button below the DataTable filter/search bar
-            var calcBtn = $('#calculate-orders').detach();
-            $('#datatable-buttons-customer_filter').after(
-                $('<div class="d-flex justify-content-end mb-3"></div>').append(calcBtn)
-            );
+            // Move the date fields and calculate button next to the DataTable search box
+            var $orderFilterGroup = $('#order-filter-group').detach();
+            $('#datatable-buttons-customer_filter').addClass('d-flex align-items-center gap-2').append($orderFilterGroup);
+            $('#datatable-buttons-customer_filter input[type="search"]').addClass('ml-2');
 
             $('#select-all-orders').prop('checked', true);
             $('.order-checkbox').prop('checked', false);
 
+            // Remove custom datepicker initialization for date_from and date_to
+            // The global $(".usage").persianDatepicker() in bootstrap-datepicker.min.js will handle all .usage fields
+
             var mockMode = false; // If true, generates mock data
 
             function getSelectedOrderData() {
+                // Convert Persian digits to English digits
+                function faToEn(str) {
+                    if (!str) return '';
+                    return str.replace(/[۰-۹]/g, function (d) {
+                        return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d);
+                    });
+                }
+                // Convert date string to number for comparison (YYYY/MM/DD -> YYYYMMDD), always pad month and day
+                function toNum(str) {
+                    if (!str) return null;
+                    str = faToEn(str);
+                    var parts = str.split('/');
+                    if (parts.length !== 3) return null;
+                    var y = parts[0];
+                    var m = parts[1].length === 1 ? '0' + parts[1] : parts[1];
+                    var d = parts[2].length === 1 ? '0' + parts[2] : parts[2];
+                    return parseInt(y + m + d);
+                }
                 var data = {
                     orderIds: [],
                     names: [],
@@ -241,12 +269,40 @@
                 };
                 var commodityMap = {};
                 var unitMap = {};
+
+                // --- Date range filter ---
+                var dateFrom = $('#date_from').val();
+                var dateTo = $('#date_to').val();
+
+                var fromNum = toNum(dateFrom);
+                var toNumVal = toNum(dateTo);
+
+                // If both date fields are empty, ignore date filtering (show all rows)
+                var filterByDate = !!(fromNum || toNumVal);
+
+                // Filter checked rows by date range if needed
                 var checkedRows = $('#datatable-buttons-customer tbody tr').filter(function() {
                     var checkbox = $(this).find('.order-checkbox');
-                    return checkbox.length && checkbox.is(':checked');
+                    var dateStr = $(this).find('td').eq(6).text().trim();
+                    var dateNum = toNum(dateStr); // faToEn applied to table value too
+                    if (!filterByDate) return checkbox.length && checkbox.is(':checked');
+                    // Only keep rows within the selected date range
+                    var inRange = true;
+                    if (fromNum && dateNum < fromNum) inRange = false;
+                    if (toNumVal && dateNum > toNumVal) inRange = false;
+                    return checkbox.length && checkbox.is(':checked') && inRange;
                 });
+                // If no row is checked but 'select all' is checked, include all rows in range
                 if (checkedRows.length === 0 && $('#select-all-orders').is(':checked')) {
-                    checkedRows = $('#datatable-buttons-customer tbody tr');
+                    checkedRows = $('#datatable-buttons-customer tbody tr').filter(function() {
+                        var dateStr = $(this).find('td').eq(6).text().trim();
+                        var dateNum = toNum(dateStr);
+                        if (!filterByDate) return true;
+                        var inRange = true;
+                        if (fromNum && dateNum < fromNum) inRange = false;
+                        if (toNumVal && dateNum > toNumVal) inRange = false;
+                        return inRange;
+                    });
                 }
                 checkedRows.each(function() {
                     var $row = $(this);
@@ -262,7 +318,7 @@
                             unitMap[commodityName] = unit;
                         }
                         commodityMap[commodityName] += commodityAmount;
-                        // Keep all order_ids for backend use
+                        // Collect all filtered order_ids for backend use
                         data.orderIds.push(orderId);
                     }
                 });
@@ -308,7 +364,7 @@
                 });
             }
 
-            // Initial chart rendering with all orders (since 'select all' is checked)
+            // Initial chart rendering with all orders (since 'select all' is checked and no date filter)
             var initialData = getSelectedOrderData();
             renderCharts({
                 names: initialData.names,
