@@ -1,9 +1,9 @@
 @media screen {
     .invoice {
-        display: none; 
+        display: none;
     }
     .invoice.showprint {
-        display: block; 
+        display: block;
     }
 }
 
@@ -17,12 +17,26 @@
         margin-right: 0;
     }
 
-    div:not(.invoice, .invoice *, #finvoice, #finvoice *, #finvoice2, #finvoice2 *, .container-fluid, .row, .main-content, .ecaps-page-content, .ecaps-page-wrapper) {
+    div:not(
+            .invoice,
+            .invoice *,
+            #finvoice,
+            #finvoice *,
+            #finvoice2,
+            #finvoice2 *,
+            #finvoice-tejarat,
+            #finvoice-tejarat *,
+            .container-fluid,
+            .row,
+            .main-content,
+            .ecaps-page-content,
+            .ecaps-page-wrapper
+        ) {
         display: none !important;
     }
 
     .invoice {
-        display: none; 
+        display: none;
     }
 
     .invoice.print-active {
@@ -30,7 +44,7 @@
     }
 
     #finvoice.hideprint {
-        display: none !important; 
+        display: none !important;
     }
 
     body {
@@ -60,17 +74,11 @@
         border: 1px solid #ddd;
         padding: 10px;
     }
+
+    #finvoice-tejarat.print-active {
+        display: block !important;
+    }
 }
-
-
-
-
-
-
-
-
-
-
 
 /* @media screen {#invoice{display: none;}}
 @media print {

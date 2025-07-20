@@ -3,7 +3,7 @@
         display: none;
     }
     #finvoice.showprint {
-        display: block; 
+        display: block;
     }
     #finvoice2 {
         display: none;
@@ -26,18 +26,18 @@
     }
 
     .invoice {
-        display: none !important; 
+        display: none !important;
     }
 
     #finvoice.hideprint {
-        display: none !important; 
+        display: none !important;
     }
     #finvoice2.hideprint {
-       display: none !important;
+        display: none !important;
     }
 
     #finvoice.print-active {
-        display: block !important; 
+        display: block !important;
     }
     #finvoice2.print-active {
         display: block !important;
