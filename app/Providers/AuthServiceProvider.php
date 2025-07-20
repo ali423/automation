@@ -16,6 +16,7 @@ use App\Policies\UnitPolicy;
 use App\Policies\UnitConversionPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\WithdrawalRequestPolicy;
+use App\Policies\InventoryPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -29,6 +30,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         // 'App\Models\Model' => 'App\Policies\ModelPolicy',
         \App\Models\UnitConversion::class => \App\Policies\UnitConversionPolicy::class,
+        \App\Models\Inventory::class => \App\Policies\InventoryPolicy::class,
     ];
 
     /**
@@ -76,5 +78,12 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('create_unit_conversion',[UnitConversionPolicy::class,'create']);
         Gate::define('edit_unit_conversion',[UnitConversionPolicy::class,'update']);
         Gate::define('delete_unit_conversion',[UnitConversionPolicy::class,'delete']);
+
+        Gate::define('read_inventory',[InventoryPolicy::class,'viewAny']);
+
+        Gate::define('edit_inventory',[InventoryPolicy::class,'update']);
+        Gate::define('delete_inventory',[InventoryPolicy::class,'delete']);
+        Gate::define('adjust_stock_inventory',[InventoryPolicy::class,'adjustStock']);
+        Gate::define('adjust_price_inventory',[InventoryPolicy::class,'adjustPrice']);
     }
 }

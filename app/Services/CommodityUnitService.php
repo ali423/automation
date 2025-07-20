@@ -100,19 +100,26 @@ class CommodityUnitService extends BaseService
      */
     public function convertToMainUnit(Commodity $commodity, float $amount, int $selectedUnitId): ?float
     {
+        // Validate input parameters
+        if (!is_numeric($amount) || !is_numeric($selectedUnitId) || !$commodity) {
+            return null;
+        }
+        
         // If selected unit is the main unit, return the amount as is
         if ($selectedUnitId === $commodity->unit_id) {
-            return $amount;
+            return (float) $amount;
         }
         
         // Use the existing UnitConversionService to convert
         $unitConversionService = app(UnitConversionService::class);
-        return $unitConversionService->convert(
+        $result = $unitConversionService->convert(
             $amount,
             $selectedUnitId,
             $commodity->unit_id,
             $commodity->id
         );
+        
+        return is_numeric($result) ? (float) $result : null;
     }
     
     /**

@@ -97,7 +97,7 @@ return [
                     'pivots' => [
                         'amount' => 'مقدار کالا',
                         'price' => 'قیمت فروش',
-                        'unit' => 'واحد اندازه گیری',
+                        'unit_id' => 'واحد اندازه گیری',
                     ],
                 ],
             ]
@@ -133,6 +133,20 @@ return [
             'relations' => [
                 'commodities' => [
                     'fa_name' => 'کالاها',
+                    'primary_key' => 'unit_id',
+                ],
+            ]
+        ],
+        'App\Models\Inventory' => [
+            'fa_name' => 'موجودی ها',
+            'url' => 'inventory',
+            'relations' => [
+                'commodity' => [
+                    'fa_name' => 'کالا',
+                    'primary_key' => 'commodity_id',
+                ],
+                'unit' => [
+                    'fa_name' => 'واحد',
                     'primary_key' => 'unit_id',
                 ],
             ]

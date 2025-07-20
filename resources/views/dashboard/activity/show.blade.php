@@ -14,13 +14,13 @@
                     <div class="col-sm-12 col-xs-12">
                         <p>
                             تغییرات مورد نظر در ردیف
-                            ( @if($activity->recordChange && isset($activity->recordChange->model_detail['url']))
+                            @if($activity->recordChange && isset($activity->recordChange->model_detail['url']))
                                 <a href="{{ route($activity->recordChange->model_detail['url'] . '.show', $activity->recordChange) }}">
                                     {{ $activity->recordChange->model_detail['fa_name'] ?? '' }} ID = {{ $activity->record_change_id }}
                                 </a>
                               @else
                                 <span>رکورد حذف شده</span>
-                              @endif )
+                              @endif
                             توسط
                             @if($activity->user)
                                 <a href="{{ route('user.show', $activity->user) }}">
@@ -44,7 +44,57 @@
                                     @endif
                                 @endif
                             </div>
-                            @if (isset($activity->changes['new_value']) && !empty($activity->changes['new_value']))
+                            @if (isset($activity->changes['custom_adjustment']) && $activity->changes['custom_adjustment'])
+                                <div class="card-body">
+                                    <div class="text-info">
+                                        <strong>نوع تنظیم:</strong>
+                                    </div>
+                                    <div class="p-2">
+                                        @if($activity->changes['adjustment_type'] == 'stock_adjustment')
+                                            <span class="badge badge-primary">تنظیم موجودی</span>
+                                            @if($activity->changes['operation'])
+                                                <span class="badge badge-{{ $activity->changes['operation'] == 'add' ? 'success' : 'warning' }}">
+                                                    {{ $activity->changes['operation'] == 'add' ? 'افزودن' : 'کاهش' }}
+                                                </span>
+                                            @endif
+                                            <div class="mt-2">
+                                                <strong>تغییرات:</strong>
+                                                <div class="p-1">
+                                                    - مقدار قبلی: <span class="text-danger">{{ number_format($activity->changes['old_amount'], 2) }}</span>
+                                                </div>
+                                                <div class="p-1">
+                                                    - مقدار جدید: <span class="text-success">{{ number_format($activity->changes['new_amount'], 2) }}</span>
+                                                </div>
+                                                <div class="p-1">
+                                                    - مقدار تغییر: <span class="text-info">{{ number_format($activity->changes['quantity'], 2) }}</span>
+                                                </div>
+                                            </div>
+                                        @elseif($activity->changes['adjustment_type'] == 'price_adjustment')
+                                            <span class="badge badge-warning">تنظیم قیمت فروش</span>
+                                            <div class="mt-2">
+                                                <strong>تغییرات:</strong>
+                                                <div class="p-1">
+                                                    - قیمت قبلی: <span class="text-danger">{{ number_format($activity->changes['old_price']) }} تومان</span>
+                                                </div>
+                                                <div class="p-1">
+                                                    - قیمت جدید: <span class="text-success">{{ number_format($activity->changes['new_price']) }} تومان</span>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                                
+                                @if($activity->changes['reason'] && $activity->changes['reason'] !== 'بدون دلیل')
+                                    <div class="card-body border-top">
+                                        <div class="text-info">
+                                            <strong>دلیل تغییر:</strong>
+                                        </div>
+                                        <div class="p-2">
+                                            <span class="text-dark">{{ $activity->changes['reason'] }}</span>
+                                        </div>
+                                    </div>
+                                @endif
+                            @elseif (isset($activity->changes['new_value']) && !empty($activity->changes['new_value']))
                                 @foreach ($activity->changes['new_value'] as $key => $value)
                                     <div class="card-body">
                                         <div class="">
@@ -124,6 +174,8 @@
                                         </div>
                                     </div>
                                 @endif
+                                
+
                             @endif
 
                         </div>

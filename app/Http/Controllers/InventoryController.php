@@ -1,0 +1,129 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\InventoryUpdateRequest;
+use App\Models\Inventory;
+use App\Models\Commodity;
+use App\Models\Unit;
+
+use App\Services\InventoryService;
+use Illuminate\Http\Request;
+
+class InventoryController extends Controller
+{
+    protected $service;
+
+    public function __construct(InventoryService $service)
+    {
+        $this->service = $service;
+        $this->authorizeResource(Inventory::class);
+        $this->shareView();
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
+     */
+    public function index()
+    {
+        $inventories = $this->service->getActiveInventory();
+        
+        // Add empty state handling
+        if ($inventories->isEmpty()) {
+            return view('dashboard.inventory.index', compact('inventories'))
+                ->with('message', 'هیچ موجودی فعالی یافت نشد. موجودی ها از طریق فرآیندهای خرید و فروش ایجاد می‌شوند.');
+        }
+        
+        return view('dashboard.inventory.index', compact('inventories'));
+    }
+
+
+
+    /**
+     * Display the specified resource.
+     *
+     * @param Inventory $inventory
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
+     */
+    public function show(Inventory $inventory)
+    {
+        return view('dashboard.inventory.show', compact('inventory'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param Inventory $inventory
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
+     */
+    public function edit(Inventory $inventory)
+    {
+        $commodities = Commodity::all();
+        $units = Unit::all();
+        return view('dashboard.inventory.edit', compact('inventory', 'commodities', 'units'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param InventoryUpdateRequest $request
+     * @param Inventory $inventory
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function update(InventoryUpdateRequest $request, Inventory $inventory)
+    {
+        $this->service->update($inventory, $request->validated());
+        return redirect()->route('inventory.index')->with('success', __('messages.updated_successfully'));
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param Inventory $inventory
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function destroy(Inventory $inventory)
+    {
+        $this->service->delete($inventory);
+        return redirect()->route('inventory.index')->with('success', __('messages.deleted_successfully'));
+    }
+
+    /**
+     * Manual stock adjustment
+     *
+     * @param Request $request
+     * @param Inventory $inventory
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function adjustStock(Request $request, Inventory $inventory)
+    {
+        $request->validate([
+            'adjustment_type' => 'required|in:add,subtract',
+            'quantity' => 'required|numeric|min:0.01',
+            'reason' => 'nullable|string|max:255'
+        ]);
+
+        $this->service->adjustStock($inventory, $request->all());
+        return redirect()->route('inventory.show', $inventory)->with('success', __('messages.stock_adjusted_successfully'));
+    }
+
+    /**
+     * Manual price adjustment
+     *
+     * @param Request $request
+     * @param Inventory $inventory
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function adjustPrice(Request $request, Inventory $inventory)
+    {
+        $request->validate([
+            'new_price' => 'required|numeric|min:0.01',
+            'reason' => 'nullable|string|max:255'
+        ]);
+
+        $this->service->adjustPrice($inventory, $request->all());
+        return redirect()->route('inventory.show', $inventory)->with('success', __('messages.price_adjusted_successfully'));
+    }
+} 

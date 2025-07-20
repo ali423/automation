@@ -17,7 +17,7 @@
                             <div class="form-group col-md-6">
                                 <label for="exampleInputEmail111"> {{ __('fields.status') }}</label>
                                 <input type="text" name="status"
-                                       value="{{ __('fields.withdrawal-request.status')[$request->status] }}"
+                                       value="{{ $request->status ? __('fields.withdrawal-request.status')[$request->status] : '-' }}"
                                        class="form-control" id="exampleInputEmail111"
                                        placeholder="{{ __('fields.status') }}"
                                        autocomplete="off" disabled>
@@ -59,59 +59,53 @@
                         </div>
                         @foreach ($request->commodities as $commodity)
                             <div id="inputFormRow" class="form-row shadow p-4 m-3">
-                                {{-- <div class="form-group col-md-6">
+                                <div class="showbarrel">
+                                    <i class="fa fa-database"></i>
+                                    <div>
+                                        <span>Main Unit Amount</span>
+                                        @php
+                                            $mainUnitData = $request->getMainUnitAmountAttribute();
+                                            $commodityMainUnit = $mainUnitData[$commodity->id] ?? null;
+                                        @endphp
+                                        <span>
+                                            @if($commodityMainUnit && isset($commodityMainUnit['main_unit_amount']))
+                                                {{ number_format($commodityMainUnit['main_unit_amount'], 2) }} {{ $commodityMainUnit['main_unit_name'] . ' (' . $commodityMainUnit['main_unit_symbol'] . ')' }}
+                                            @else
+                                                -
+                                            @endif
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-6">
                                     <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
                                     <select id="commodity_id" class="form-control" name="commodity_id[0]" disabled>
                                         <option value="{{ $commodity->id }}">{{ $commodity->title }}</option>
                                     </select>
-                                    <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.
-                                    </div>
+                                    <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
                                 </div>
                                 <div class="form-group col-md-6">
                                     <label for="unit"> {{ __('fields.unit') }}</label>
                                     <input type="text"
-                                           value="{{ __('fields.commodity.units')[$commodity->pivot->unit] }}"
-                                           id="unit" name="unit" class="form-control" disabled>
-                                    <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.
+                                        value="{{ $commodity->pivot->unit_id ? (\App\Models\Unit::find($commodity->pivot->unit_id)->name . ' (' . \App\Models\Unit::find($commodity->pivot->unit_id)->symbol . ')') : '-' }}"
+                                        id="unit" name="unit" class="form-control" disabled>
+                                    <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
+                                </div>
+
+                                <div class="form-group col-md-3">
+                                    <label for="amount"> {{ __('fields.commodity.amount') }}</label>
+                                    <input type="number" value="{{ $commodity->pivot->amount }}" id="amount"
+                                        min="1" name="amount[0]" class="form-control" autocomplete="off"
+                                        placeholder="{{ __('fields.commodity.amount') }}" pattern="[0-9 .]" disabled>
+                                    <div class="invalid-feedback">
+                                        لطفاً {{ __('fields.commodity.amount') }} را وارد کنید.
                                     </div>
                                 </div>
-                                <div class="form-group col-md-12">
-                                    @foreach ($commodity->withdrawal_amount as $withdrawal_amount)
-                                        <p>
-                                            مقدار {{ number_format($withdrawal_amount['amount']) .' '. __('fields.commodity.units')[$withdrawal_amount['unit']] }}
-                                            از
-                                            انبار {{$withdrawal_amount['warehouse']['title']}}</p>
-                                        <br>
-                                    @endforeach
-                                </div> --}}
-                                <table class="table">
-                                    <colgroup>
-                                        <col span="1" style="width: 5%;">
-                                        <col span="1" style="width: 40%;">
-                                        <col span="1" style="width: 25%;">
-                                        <col span="1" style="width: 30%;">
-                                    </colgroup>
-                                    <tr class="table-header table-dark">
-                                        <th scope="col">ردیف</th>
-                                        <th scope="col">نام کالا</th>
-                                        <th scope="col">مقدار</th>
-                                        <th scope="col">انبار</th>
-                                        <th scope="col">قسمت فروش (ریال)</th>
-                                    </tr>
-                                    @foreach ($commodity->withdrawal_amount as $withdrawal_amount)
-                                    <tr>
-                                        <th scope="row" id="rownumbers"></th>
-                                        <td>{{ $commodity->title }}</td>
-                                        <td>{{ number_format($total_amount[$commodity->id][]=$withdrawal_amount['amount']) .' '. __('fields.commodity.units')[$withdrawal_amount['unit']] }}</td>
-                                        <td>{{$withdrawal_amount['warehouse']['title']}}</td>
-                                        <td>{{ number_format($commodity->pivot->price) }}</td>
-                                    </tr>
-                                    @endforeach
-                                    <tr>
-                                        <td class="text-right" colspan="4">مجموع:</td>
-                                        <td>{{ number_format(array_sum($total_amount[$commodity->id])) .' '. __('fields.commodity.units')[$withdrawal_amount['unit']] }}</td>
-                                    </tr>
-                                </table>
+                                @if(isset($commodity->pivot->price))
+                                    <div class="form-group col-md-3">
+                                        <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
+                                        <input type="text" id="price" placeholder="{{number_format($commodity->pivot->price)}}" class="form-control" disabled>
+                                    </div>
+                                @endif
                             </div>
                         @endforeach
                         @foreach ($request->comments as $comment)
@@ -253,17 +247,14 @@
                                 </tr>
                                 @php($i=1)
                                 @foreach($request->commodities as $commodity)
-                                    @php($amonuts=json_decode($commodity->pivot->amount))
-                                    @foreach($amonuts as $key=>$value)
                                 <tr>
                                     <th scope="row">{{$i}}</th>
                                     <td>{{$commodity->title}}</td>
-                                    <td>{{\App\Models\Warehouse::query()->where('id',$key)->first()->title}}</td>
-                                    <td>{{ $value }} {{ __('fields.commodity.units')[$commodity->pivot->unit] }}</td>
+    <td>-</td>
+                                        <td>{{ $commodity->pivot->amount }} {{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name . ' (' . $unit->symbol . ')' : '-') : '-' }}</td>
                                     <td></td>
                                 </tr>
                                         @php($i++)
-                                    @endforeach
                                 @endforeach
                             </table>
                         </div>
@@ -385,11 +376,11 @@
                                     <th scope="row">{{$i}}</th>
                                     <td>{{$commodity->number}}</td>
                                     <td>{{$commodity->title}}</td>
-                                    <td>{{$amount=array_sum(json_decode($commodity->pivot->amount,true))}}</td>
-                                    <td>{{__('fields.commodity.units')[$commodity->pivot->unit] }}</td>
+                                    <td>{{$commodity->pivot->amount}}</td>
+                                    <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name . ' (' . $unit->symbol . ')' : '-') : '-' }}</td>
                                     @if(isset($commodity->pivot->price))
                                     <td>{{number_format($price=$commodity->pivot->price)}}</td>
-                                    <td>{{ number_format($total_price[]=round($amount*$price)) }}</td>
+                                    <td>{{ number_format($total_price[]=round($commodity->pivot->amount*$price)) }}</td>
                                     @else
                                         <td></td>
                                         <td></td>

@@ -15,6 +15,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UnitConversionController;
+use App\Http\Controllers\InventoryController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -53,6 +54,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('importing-request',ImportingRequestController::class);
 
     Route::resource('withdrawal-request',WithdrawalRequestController::class);
+    Route::post('withdrawal-request/get-selectable-units', [WithdrawalRequestController::class, 'getSelectableUnits'])->name('withdrawal-request.get-selectable-units');
 
     Route::get('importing-request/approval/{id}',[ImportingRequestController::class,'approvalRequest'])->name('approval.importing');
 
@@ -84,6 +86,10 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('unit-conversion', UnitConversionController::class);
     Route::post('unit-conversion/convert', [UnitConversionController::class, 'convert'])->name('unit-conversion.convert');
+
+    Route::resource('inventory', InventoryController::class)->except(['create', 'store']);
+    Route::post('inventory/{inventory}/adjust-stock', [InventoryController::class, 'adjustStock'])->name('inventory.adjust-stock');
+    Route::post('inventory/{inventory}/adjust-price', [InventoryController::class, 'adjustPrice'])->name('inventory.adjust-price');
 
 });
 

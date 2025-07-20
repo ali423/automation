@@ -3,6 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use App\Models\Commodity;
+use App\Services\CommodityUnitService;
 
 class CreateWithdrawalRequest extends FormRequest
 {
@@ -24,18 +27,57 @@ class CreateWithdrawalRequest extends FormRequest
     public function rules()
     {
         return [
-            'customer_id'=>['required','exists:customers,id'],
-            'commodity_id'=>['required','array','min:1'],
-            'unit'=>['required','array','min:1'],
-            'price'=>['nullable','array'],
-            'amount'=>['required','array','min:1'],
-            'amount.*'=>['required','array','min:1'],
-            'commodity_id.*'=>['required','exists:commodities,id','distinct'],
-            'unit.*'=>['required','in:'.implode(',',array_keys(__('fields.commodity.units')))],
-            'amount.*.*'=>['required','integer'],
-            'price.*'=>['nullable','numeric'],
-            'file'=>['nullable','mimes:jpg,svg,png,jpeg,pdf,txt,zip,rar','max:5120'],
-            'comment'=>['nullable','string'],
+            'customer_id' => ['required', 'exists:customers,id'],
+            'commodity_id' => ['required', 'array', 'min:1'],
+            'unit' => ['required', 'array', 'min:1'],
+            'amount' => ['required', 'array', 'min:1'],
+            'price' => ['nullable', 'array'],
+            'commodity_id.*' => ['required', 'exists:commodities,id', 'distinct'],
+            'unit.*' => ['required', 'exists:units,id'],
+            'amount.*' => ['required', 'numeric', 'min:0.01'],
+            'price.*' => ['nullable', 'numeric'],
+            'file' => ['nullable', 'mimes:jpg,svg,png,jpeg,pdf,txt,zip,rar', 'max:5120'],
+            'comment' => ['nullable', 'string'],
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     *
+     * @param  \Illuminate\Validation\Validator  $validator
+     * @return void
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $commodityIds = $this->input('commodity_id', []);
+            $unitIds = $this->input('unit', []);
+            
+            if (count($commodityIds) !== count($unitIds)) {
+                return;
+            }
+            
+            $commodityUnitService = app(CommodityUnitService::class);
+            
+            foreach ($commodityIds as $index => $commodityId) {
+                if (!isset($unitIds[$index])) {
+                    continue;
+                }
+                
+                $commodity = Commodity::find($commodityId);
+                $unitId = $unitIds[$index];
+                
+                if (!$commodity) {
+                    continue;
+                }
+                
+                if (!$commodityUnitService->isUnitSelectable($commodity, $unitId)) {
+                    $validator->errors()->add(
+                        "unit.{$index}", 
+                        'The selected unit is not valid for this commodity.'
+                    );
+                }
+            }
+        });
     }
 }

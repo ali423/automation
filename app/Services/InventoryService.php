@@ -43,6 +43,8 @@ class InventoryService extends BaseService
         }
     }
 
+
+
     /**
      * Remove stock from inventory (for sales/withdrawals)
      */
@@ -88,6 +90,17 @@ class InventoryService extends BaseService
         return Inventory::with(['commodity', 'unit'])
             ->where('active', true)
             ->where('amount', '>', 0)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Get all inventory items (including inactive)
+     */
+    public function getAllInventory()
+    {
+        return Inventory::with(['commodity', 'unit'])
+            ->orderBy('created_at', 'desc')
             ->get();
     }
 
@@ -119,5 +132,129 @@ class InventoryService extends BaseService
             ')
             ->groupBy('commodity_id', 'unit_id')
             ->get();
+    }
+
+
+
+    /**
+     * Update inventory record
+     */
+    public function update($inventory, $data)
+    {
+        return DB::transaction(function () use ($inventory, $data) {
+            $inventory->update([
+                'commodity_id' => $data['commodity_id'],
+                'unit_id' => $data['unit_id'],
+                'amount' => $data['amount'],
+                'purchase_price' => $data['purchase_price'],
+                'sale_price' => $data['sale_price'],
+            ]);
+            
+            return $inventory;
+        });
+    }
+
+    /**
+     * Delete inventory record
+     */
+    public function delete($inventory)
+    {
+        return DB::transaction(function () use ($inventory) {
+            $inventory->update(['active' => false]);
+            return $inventory;
+        });
+    }
+
+    /**
+     * Manual stock adjustment
+     */
+    public function adjustStock($inventory, $data)
+    {
+        return DB::transaction(function () use ($inventory, $data) {
+            $adjustmentType = $data['adjustment_type'];
+            $quantity = $data['quantity'];
+            $reason = $data['reason'];
+
+            if ($adjustmentType === 'add') {
+                $newAmount = $inventory->amount + $quantity;
+            } else {
+                $newAmount = $inventory->amount - $quantity;
+                if ($newAmount < 0) {
+                    throw new \Exception('مقدار موجودی نمی‌تواند منفی باشد');
+                }
+            }
+
+            $inventory->update([
+                'amount' => $newAmount,
+                'active' => $newAmount > 0
+            ]);
+
+            // Log the adjustment
+            $this->logStockAdjustment($inventory, $adjustmentType, $quantity, $reason);
+
+            return $inventory;
+        });
+    }
+
+    /**
+     * Manual price adjustment
+     */
+    public function adjustPrice($inventory, $data)
+    {
+        return DB::transaction(function () use ($inventory, $data) {
+            $newPrice = $data['new_price'];
+            $reason = $data['reason'];
+
+            $inventory->update([
+                'sale_price' => $newPrice
+            ]);
+
+            // Log the price adjustment
+            $this->logPriceAdjustment($inventory, $newPrice, $reason);
+
+            return $inventory;
+        });
+    }
+
+    /**
+     * Log stock adjustment for audit trail
+     */
+    private function logStockAdjustment($inventory, $adjustmentType, $quantity, $reason)
+    {
+        // Use the existing ActivityTrait system with 'update' action
+        $reason = $reason ?: 'بدون دلیل';
+        $inventory->activities()->create([
+            'user_id' => auth()->user()->id,
+            'action' => 'update',
+            'data' => json_encode([
+                'adjustment_type' => 'stock_adjustment',
+                'operation' => $adjustmentType,
+                'quantity' => $quantity,
+                'reason' => $reason,
+                'old_amount' => $inventory->getOriginal('amount'),
+                'new_amount' => $inventory->amount,
+                'description' => "Stock adjustment: {$adjustmentType} {$quantity} units. Reason: {$reason}"
+            ]),
+        ]);
+    }
+
+    /**
+     * Log price adjustment for audit trail
+     */
+    private function logPriceAdjustment($inventory, $newPrice, $reason)
+    {
+        // Use the existing ActivityTrait system with 'update' action
+        $reason = $reason ?: 'بدون دلیل';
+        $inventory->activities()->create([
+            'user_id' => auth()->user()->id,
+            'action' => 'update',
+            'data' => json_encode([
+                'adjustment_type' => 'price_adjustment',
+                'old_price' => $inventory->getOriginal('sale_price'),
+                'new_price' => $newPrice,
+                'reason' => $reason,
+                'description' => "Price adjustment: New price {$newPrice}. Reason: {$reason}"
+            ]),
+        ]);
     }
 }
