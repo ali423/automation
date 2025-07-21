@@ -5,6 +5,8 @@ const warehouseInvoice = document.querySelector("#invoice-warehouse");
 const finvoice = document.querySelector("#finvoice");
 const factorBtn2 = document.querySelector(".factorbtn2");
 const finvoice2 = document.querySelector("#finvoice2");
+const finvoiceTejarat = document.querySelector("#finvoice-tejarat");
+const tejaratBtn = document.querySelector(".tejaratbtn");
 
 // Select print buttons
 const customerBtn = document.querySelector(".customerbtn");
@@ -21,6 +23,7 @@ function showInvoice(activeInvoice) {
         warehouseInvoice,
         finvoice,
         finvoice2,
+        finvoiceTejarat,
     ];
 
     // Disable all elements
@@ -28,7 +31,11 @@ function showInvoice(activeInvoice) {
         if (invoice) {
             invoice.classList.remove("showprint", "print-active");
             invoice.classList.add("d-none");
-            if (invoice === finvoice || invoice === finvoice2) {
+            if (
+                invoice === finvoice ||
+                invoice === finvoice2 ||
+                invoice === finvoiceTejarat
+            ) {
                 invoice.classList.add("hideprint");
             }
         }
@@ -49,12 +56,17 @@ window.onafterprint = function () {
         warehouseInvoice,
         finvoice,
         finvoice2,
+        finvoiceTejarat,
     ];
     invoices.forEach((invoice) => {
         if (invoice) {
             invoice.classList.remove("showprint", "print-active");
             invoice.classList.add("d-none");
-            if (invoice === finvoice || invoice === finvoice2) {
+            if (
+                invoice === finvoice ||
+                invoice === finvoice2 ||
+                invoice === finvoiceTejarat
+            ) {
                 invoice.classList.add("hideprint");
             }
         }
@@ -90,6 +102,14 @@ factorBtn2.addEventListener("click", function () {
     showInvoice(finvoice2);
     window.print();
 });
+
+// Event listener for tejarat button
+if (tejaratBtn && finvoiceTejarat) {
+    tejaratBtn.addEventListener("click", function () {
+        showInvoice(finvoiceTejarat);
+        window.print();
+    });
+}
 
 // Set row numbers for invoice tables
 document
