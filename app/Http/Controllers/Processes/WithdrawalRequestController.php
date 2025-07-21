@@ -9,7 +9,7 @@ use App\Models\Customer;
 use App\Models\WithdrawalRequest;
 use App\Services\CommodityUnitService;
 use App\Services\Processes\WithdrawalRequestService;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class WithdrawalRequestController extends Controller
 {
@@ -23,6 +23,7 @@ class WithdrawalRequestController extends Controller
         $this->authorizeResource(WithdrawalRequest::class);
         $this->shareView();
     }
+
     /**
      * Display a listing of the resource.
      *
@@ -42,7 +43,7 @@ class WithdrawalRequestController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
     public function create()
     {
@@ -56,8 +57,15 @@ class WithdrawalRequestController extends Controller
             return redirect(route('customer.create'))->withErrors('ابتدا حداقل یک مشتری ثبت کنید .');
         }
         
+        // Preload all selectable units for each commodity
+        $commoditiesWithUnits = $commodities->map(function ($commodity) {
+            $selectableUnits = $this->commodityUnitService->getSelectableUnits($commodity);
+            $commodity->selectable_units = $selectableUnits;
+            return $commodity;
+        });
+        
         return view('dashboard.processes.withdrawal-request.create', [
-            'commodities' => $commodities,
+            'commodities' => $commoditiesWithUnits,
             'customers' => $customers,
         ]);
     }
@@ -65,8 +73,8 @@ class WithdrawalRequestController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @param CreateWithdrawalRequest $request
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
     public function store(CreateWithdrawalRequest $request)
     {
@@ -75,10 +83,14 @@ class WithdrawalRequestController extends Controller
         
         $check_inventory = $this->service->checkWithdrawalData($data);
         if ($check_inventory['success'] == true) {
+            $file = null;
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
             }
-            $withdrawal = $this->service->create($data, $file ?? null);
+            
+            $withdrawal = DB::transaction(function () use ($data, $file) {
+                return $this->service->create($data, $file);
+            });
         } else {
             return redirect()->back()->withErrors($check_inventory['error']);
         }
@@ -89,7 +101,7 @@ class WithdrawalRequestController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\WithdrawalRequest  $withdrawalRequest
+     * @param WithdrawalRequest $withdrawalRequest
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
     public function show(WithdrawalRequest $withdrawalRequest)
@@ -107,13 +119,14 @@ class WithdrawalRequestController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\WithdrawalRequest  $withdrawalRequest
-     * @return \Illuminate\Http\Response
+     * @param WithdrawalRequest $withdrawalRequest
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
     public function edit(WithdrawalRequest $withdrawalRequest)
     {
-        if ($withdrawalRequest->status != 'awaiting_approval') {
-            return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد .');
+        // Prevent editing of approved, rejected, expired, or done requests
+        if (!in_array($withdrawalRequest->status, ['awaiting_approval'])) {
+            return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد. درخواست‌های تایید شده، رد شده، منقضی شده یا تکمیل شده قابل ویرایش نیستند.');
         }
         
         $check_expired = $this->service->checkExpiredRequest($withdrawalRequest);
@@ -142,14 +155,15 @@ class WithdrawalRequestController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\WithdrawalRequest  $withdrawalRequest
-     * @return \Illuminate\Http\Response
+     * @param CreateWithdrawalRequest $request
+     * @param WithdrawalRequest $withdrawalRequest
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(CreateWithdrawalRequest $request, WithdrawalRequest $withdrawalRequest)
     {
-        if ($withdrawalRequest->status != 'awaiting_approval') {
-            return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد .');
+        // Prevent editing of approved, rejected, expired, or done requests
+        if (!in_array($withdrawalRequest->status, ['awaiting_approval'])) {
+            return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد. درخواست‌های تایید شده، رد شده، منقضی شده یا تکمیل شده قابل ویرایش نیستند.');
         }
         
         $check_expired = $this->service->checkExpiredRequest($withdrawalRequest);
@@ -160,24 +174,34 @@ class WithdrawalRequestController extends Controller
         $data = $request->only('commodity_id', 'unit', 'amount', 'comment', 'price', 'customer_id');
         $this->service->validationSecondLayer($data);
         
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
+        $check_inventory = $this->service->checkWithdrawalData($data);
+        if ($check_inventory['success'] == true) {
+            $file = null;
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+            }
+            
+            DB::transaction(function () use ($withdrawalRequest, $data, $file) {
+                $this->service->update($withdrawalRequest, $data, $file);
+            });
+        } else {
+            return redirect()->back()->withErrors($check_inventory['error']);
         }
         
-        $this->service->update($withdrawalRequest, $data, $file ?? null);
         return redirect(route('withdrawal-request.index'))->with('successful', 'اطلاعات درخواست ویرایش شد.');
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\WithdrawalRequest  $withdrawalRequest
-     * @return \Illuminate\Http\Response
+     * @param WithdrawalRequest $withdrawalRequest
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(WithdrawalRequest $withdrawalRequest)
     {
-        if ($withdrawalRequest->status != 'awaiting_approval') {
-            return redirect()->back()->withErrors('در این مرحله امکان حذف وجود ندارد .');
+        // Prevent deletion of approved, rejected, expired, or done requests
+        if (!in_array($withdrawalRequest->status, ['awaiting_approval'])) {
+            return redirect()->back()->withErrors('در این مرحله امکان حذف وجود ندارد. درخواست‌های تایید شده، رد شده، منقضی شده یا تکمیل شده قابل حذف نیستند.');
         }
         
         $check_expired = $this->service->checkExpiredRequest($withdrawalRequest);
@@ -185,82 +209,71 @@ class WithdrawalRequestController extends Controller
             return redirect()->back()->withErrors($check_expired['error']);
         }
         
-        $this->service->delete($withdrawalRequest);
+        DB::transaction(function () use ($withdrawalRequest) {
+            $this->service->delete($withdrawalRequest);
+        });
+        
         return redirect(route('withdrawal-request.index'))->with('successful', 'درخواست با موفقیت حذف شد.');
     }
 
+    /**
+     * Approve a withdrawal request
+     *
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function approvalRequest($id)
     {
         if (!auth()->user()->role->havePermission('status_withdrawal')) {
             return redirect()->back()->withErrors('شما این دسترسی را ندارید .');
         }
         
-        $withdrawal_request = WithdrawalRequest::query()->with(['commodities' => function ($query) {
-            $query->with('unit');
-        }])->findOrFail($id);
-        if ($withdrawal_request->status != 'awaiting_approval') {
+        $withdrawalRequest = WithdrawalRequest::query()->findOrFail($id);
+        if ($withdrawalRequest->status != 'awaiting_approval') {
             return redirect()->back()->withErrors('در این مرحله امکان تایید وجود ندارد .');
         }
         
-        $check_expired = $this->service->checkExpiredRequest($withdrawal_request);
+        $check_expired = $this->service->checkExpiredRequest($withdrawalRequest);
         if ($check_expired['success'] == false) {
             return redirect()->back()->withErrors($check_expired['error']);
         }
         
-        $check_inventory = $this->service->checkWithdrawal($withdrawal_request);
+        $check_inventory = $this->service->checkWithdrawal($withdrawalRequest);
         if ($check_inventory['success'] == true) {
-            $this->service->approvalWithdrawal($withdrawal_request);
+            DB::transaction(function () use ($withdrawalRequest) {
+                $this->service->approvalWithdrawal($withdrawalRequest);
+            });
         } else {
             return redirect()->back()->withErrors($check_inventory['error']);
         }
         
-        return redirect(route('withdrawal-request.show', $withdrawal_request))->with('successful', 'درخواست با موفقیت تایید شد.');
+        return redirect(route('withdrawal-request.show', $withdrawalRequest))->with('successful', 'درخواست با موفقیت تایید شد.');
     }
+
+    /**
+     * Reject a withdrawal request
+     *
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function rejectRequest($id)
     {
         if (!auth()->user()->role->havePermission('status_withdrawal')) {
             return redirect()->back()->withErrors('شما این دسترسی را ندارید .');
         }
         
-        $withdrawal_request = WithdrawalRequest::query()->findOrFail($id);
-        if ($withdrawal_request->status != 'awaiting_approval') {
+        $withdrawalRequest = WithdrawalRequest::query()->findOrFail($id);
+        if ($withdrawalRequest->status != 'awaiting_approval') {
             return redirect()->back()->withErrors('در این مرحله امکان رد وجود ندارد .');
         }
         
-        $check_expired = $this->service->checkExpiredRequest($withdrawal_request);
+        $check_expired = $this->service->checkExpiredRequest($withdrawalRequest);
         if ($check_expired['success'] == false) {
             return redirect()->back()->withErrors($check_expired['error']);
         }
         
-        $this->service->rejectWithdrawal($withdrawal_request);
-        return redirect(route('withdrawal-request.show', $withdrawal_request))->with('successful', 'درخواست با موفقیت رد شد.');
+        $this->service->rejectWithdrawal($withdrawalRequest);
+        return redirect(route('withdrawal-request.show', $withdrawalRequest))->with('successful', 'درخواست با موفقیت رد شد.');
     }
 
-    /**
-     * Get selectable units for a commodity via AJAX
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getSelectableUnits(\Illuminate\Http\Request $request)
-    {
-        $request->validate([
-            'commodity_id' => 'required|exists:commodities,id',
-        ]);
-
-        $commodity = Commodity::findOrFail($request->commodity_id);
-        $selectableUnits = $this->commodityUnitService->getSelectableUnits($commodity);
-
-        return response()->json([
-            'success' => true,
-            'units' => $selectableUnits->map(function ($unit) {
-                return [
-                    'id' => $unit->id,
-                    'name' => $unit->name,
-                    'symbol' => $unit->symbol,
-                    'display_name' => $unit->name . ' (' . $unit->symbol . ')'
-                ];
-            })
-        ]);
-    }
 }

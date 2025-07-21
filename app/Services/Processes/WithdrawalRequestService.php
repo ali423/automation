@@ -20,45 +20,60 @@ class WithdrawalRequestService extends BaseService
         $this->commodityUnitService = $commodityUnitService;
     }
 
+    /**
+     * Create a new withdrawal request
+     *
+     * @param array $data
+     * @param mixed $file
+     * @return WithdrawalRequest
+     */
     public function create($data, $file)
     {
-        $number = $this->generateUniqueNumber(WithdrawalRequest::class, 'number');
+        $commodity = [];
+        foreach ($data['commodity_id'] as $key => $value) {
+            $commodity[$value] = [
+                'amount' => $data['amount'][$key],
+                'unit_id' => $data['unit'][$key],
+                'price' => $data['price'][$key] ?? null,
+            ];
+        }
         
-        return DB::transaction(function () use ($data, $file, $number) {
-            $user = auth()->user();
-            $request = WithdrawalRequest::query()->create([
-                'customer_id' => $data['customer_id'],
-                'status' => 'awaiting_approval',
-                'number' => $number,
+        $number = $this->generateUniqueNumber(WithdrawalRequest::class, 'number');
+        $user = auth()->user();
+        
+        $request = WithdrawalRequest::query()->create([
+            'customer_id' => $data['customer_id'],
+            'status' => 'awaiting_approval',
+            'number' => $number,
+        ]);
+        
+        $request->commodities()->attach($commodity);
+        
+        if (isset($data['comment'])) {
+            $request->comments()->create([
+                'user_id' => $user->id,
+                'body' => $data['comment'],
             ]);
-            
-            foreach ($data['commodity_id'] as $key => $value) {
-                $commodity[$value] = [
-                    'amount' => $data['amount'][$key],
-                    'unit_id' => $data['unit'][$key],
-                    'price' => $data['price'][$key] ?? null,
-                ];
-            }
-            
-            $request->commodities()->attach($commodity);
-            
-            if (isset($data['comment'])) {
-                $request->comments()->create([
-                    'user_id' => $user->id,
-                    'body' => $data['comment'],
-                ]);
-            }
-            
-            if (!empty($file)) {
-                $this->uploadFile($file, 'withdrawal-request', $request);
-            }
-            
-            return $request;
-        });
+        }
+        
+        if (!empty($file)) {
+            $this->uploadFile($file, 'withdrawal-request', $request);
+        }
+        
+        return $request;
     }
 
-    public function update($withdrawal_request, $data, $file)
+    /**
+     * Update an existing withdrawal request
+     *
+     * @param WithdrawalRequest $withdrawalRequest
+     * @param array $data
+     * @param mixed $file
+     * @return bool
+     */
+    public function update($withdrawalRequest, $data, $file)
     {
+        $commodity = [];
         foreach ($data['commodity_id'] as $key => $value) {
             $commodity[$value] = [
                 'amount' => $data['amount'][$key],
@@ -69,41 +84,49 @@ class WithdrawalRequestService extends BaseService
         
         $user = auth()->user();
         
-        DB::transaction(function () use ($data, $commodity, $user, $file, $withdrawal_request) {
-            $withdrawal_request->commodities()->sync($commodity);
-            
-            $withdrawal_request->update([
-                'customer_id' => $data['customer_id'],
+        $withdrawalRequest->commodities()->sync($commodity);
+        
+        $withdrawalRequest->update([
+            'customer_id' => $data['customer_id'],
+        ]);
+        
+        if (isset($data['comment'])) {
+            $withdrawalRequest->comments()->create([
+                'user_id' => $user->id,
+                'body' => $data['comment'],
             ]);
-            
-            if (isset($data['comment'])) {
-                $withdrawal_request->comments()->create([
-                    'user_id' => $user->id,
-                    'body' => $data['comment'],
-                ]);
-            }
-            
-            if (!empty($file)) {
-                $this->uploadFile($file, 'withdrawal-request', $withdrawal_request);
-            }
-        });
+        }
+        
+        if (!empty($file)) {
+            $this->uploadFile($file, 'withdrawal-request', $withdrawalRequest);
+        }
         
         return true;
     }
 
-    public function delete($withdrawal_request)
+    /**
+     * Delete a withdrawal request
+     *
+     * @param WithdrawalRequest $withdrawalRequest
+     * @return bool
+     */
+    public function delete($withdrawalRequest)
     {
-        DB::transaction(function () use ($withdrawal_request) {
-            $withdrawal_request->commodities()->detach();
-            $withdrawal_request->delete();
-        });
+        $withdrawalRequest->commodities()->detach();
+        $withdrawalRequest->delete();
         
         return true;
     }
 
-    public function checkWithdrawal($withdrawal_request)
+    /**
+     * Check if withdrawal is possible for existing request
+     *
+     * @param WithdrawalRequest $withdrawalRequest
+     * @return array
+     */
+    public function checkWithdrawal($withdrawalRequest)
     {
-        foreach ($withdrawal_request->commodities as $commodity) {
+        foreach ($withdrawalRequest->commodities as $commodity) {
             // Convert amount to main unit using CommodityUnitService
             $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
                 $commodity,
@@ -111,8 +134,8 @@ class WithdrawalRequestService extends BaseService
                 $commodity->pivot->unit_id
             );
             
-            // Check if we have enough stock in inventory
-            $available_stock = $this->inventoryService->getStockLevel($commodity->id, $commodity->unit_id);
+            // Check if we have enough stock in inventory using the pivot unit
+            $available_stock = $this->inventoryService->getStockLevel($commodity->id, $commodity->pivot->unit_id);
             
             if ($amountInMainUnit > $available_stock) {
                 $data['success'] = false;
@@ -125,6 +148,12 @@ class WithdrawalRequestService extends BaseService
         return $data;
     }
 
+    /**
+     * Check if withdrawal data is valid before creation
+     *
+     * @param array $data
+     * @return array
+     */
     public function checkWithdrawalData($data)
     {
         foreach ($data['commodity_id'] as $key => $commodityId) {
@@ -139,7 +168,7 @@ class WithdrawalRequestService extends BaseService
                 $unitId
             );
             
-            // Check if we have enough stock in inventory
+            // Check if we have enough stock in inventory using the requested unit
             $available_stock = $this->inventoryService->getStockLevel($commodity->id, $unitId);
             
             if ($amountInMainUnit > $available_stock) {
@@ -153,43 +182,56 @@ class WithdrawalRequestService extends BaseService
         return $result;
     }
 
-    public function approvalWithdrawal($withdrawal_request)
+    /**
+     * Approve a withdrawal request
+     *
+     * @param WithdrawalRequest $withdrawalRequest
+     * @return bool
+     */
+    public function approvalWithdrawal($withdrawalRequest)
     {
-        DB::transaction(function () use ($withdrawal_request) {
-            foreach ($withdrawal_request->commodities as $commodity) {
-                // Convert amount to main unit for inventory operations
-                $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
-                    $commodity,
-                    $commodity->pivot->amount,
-                    $commodity->pivot->unit_id
-                );
-                
-                // Remove stock from inventory using the main unit
-                $this->inventoryService->removeStock(
-                    $commodity->id,
-                    $commodity->unit_id, // Use commodity's main unit
-                    $amountInMainUnit
-                );
-                
-                // Check if commodity is running low and trigger warning
-                $this->warningCommodity($commodity);
-            }
+        foreach ($withdrawalRequest->commodities as $commodity) {
+            // Convert amount to main unit for inventory operations
+            $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
+                $commodity,
+                $commodity->pivot->amount,
+                $commodity->pivot->unit_id
+            );
             
-            $withdrawal_request->update([
-                'status' => 'approvaled',
-            ]);
-        });
+            // Remove stock from inventory using the pivot unit
+            $this->inventoryService->removeStock(
+                $commodity->id,
+                $commodity->pivot->unit_id, // Use pivot unit, not commodity's main unit
+                $amountInMainUnit
+            );
+        }
+        
+        $withdrawalRequest->update([
+            'status' => 'approvaled',
+        ]);
         
         return true;
     }
 
-    public function rejectWithdrawal($withdrawal_request)
+    /**
+     * Reject a withdrawal request
+     *
+     * @param WithdrawalRequest $withdrawalRequest
+     * @return bool
+     */
+    public function rejectWithdrawal($withdrawalRequest)
     {
-        return $withdrawal_request->update([
+        return $withdrawalRequest->update([
             'status' => 'rejected',
         ]);
     }
 
+    /**
+     * Validate the second layer of data
+     *
+     * @param array $data
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function validationSecondLayer($data)
     {
         $commodities = $data['commodity_id'];
@@ -211,10 +253,16 @@ class WithdrawalRequestService extends BaseService
         }
     }
 
-    public function checkExpiredRequest($withdrawal_request)
+    /**
+     * Check if request has expired
+     *
+     * @param WithdrawalRequest $withdrawalRequest
+     * @return array
+     */
+    public function checkExpiredRequest($withdrawalRequest)
     {
-        if (\Carbon\Carbon::now()->diffInDays($withdrawal_request->created_at) > 7) {
-            $withdrawal_request->update([
+        if (\Carbon\Carbon::now()->diffInDays($withdrawalRequest->created_at) > 7) {
+            $withdrawalRequest->update([
                 'status' => 'expired',
             ]);
             $data['success'] = false;

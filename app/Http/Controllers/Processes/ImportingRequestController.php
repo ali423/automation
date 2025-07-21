@@ -11,7 +11,6 @@ use App\Models\Seller;
 use App\Services\CommodityUnitService;
 use App\Services\Processes\ImportingRequestService;
 use Illuminate\Support\Facades\DB;
-use Morilog\Jalali\Jalalian;
 
 class ImportingRequestController extends Controller
 {
@@ -45,7 +44,7 @@ class ImportingRequestController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
     public function create()
     {
@@ -67,7 +66,7 @@ class ImportingRequestController extends Controller
         });
         
         return view('dashboard.processes.importing-request.create', [
-            'commodities' => $commodities,
+            'commodities' => $commoditiesWithUnits,
             'sellers' => $sellers,
         ]);
     }
@@ -75,7 +74,7 @@ class ImportingRequestController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param CreateImportingRequest $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
     public function store(CreateImportingRequest $request)
@@ -103,7 +102,7 @@ class ImportingRequestController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param \App\Models\ImportingRequest $importingRequest
+     * @param ImportingRequest $importingRequest
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
     public function show(ImportingRequest $importingRequest)
@@ -121,7 +120,7 @@ class ImportingRequestController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param \App\Models\ImportingRequest $importingRequest
+     * @param ImportingRequest $importingRequest
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
     public function edit(ImportingRequest $importingRequest)
@@ -140,23 +139,20 @@ class ImportingRequestController extends Controller
         foreach ($importingRequest->commodities as $commodity) {
             $selectableUnits = $this->commodityUnitService->getSelectableUnits($commodity);
             $commodity->selectable_units = $selectableUnits;
-            
-            // Debug: Log the selectable units
-            \Log::info("Commodity {$commodity->id} ({$commodity->title}) has " . $selectableUnits->count() . " selectable units");
         }
         
         return view('dashboard.processes.importing-request.edit', [
             'request' => $importingRequest,
             'commodities' => Commodity::query()->where('type', 'material')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get(),
-            'sellers'=>Seller::all(),
+            'sellers' => Seller::all(),
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\ImportingRequest $importingRequest
+     * @param CreateImportingRequest $request
+     * @param ImportingRequest $importingRequest
      * @return \Illuminate\Http\RedirectResponse
      */
     public function update(CreateImportingRequest $request, ImportingRequest $importingRequest)
@@ -187,7 +183,7 @@ class ImportingRequestController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param \App\Models\ImportingRequest $importingRequest
+     * @param ImportingRequest $importingRequest
      * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(ImportingRequest $importingRequest)
@@ -209,50 +205,65 @@ class ImportingRequestController extends Controller
         return redirect(route('importing-request.index'))->with('successful', 'درخواست با موفقیت حذف شد.');
     }
 
+    /**
+     * Approve an importing request
+     *
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function approvalRequest($id)
     {
         if (!auth()->user()->role->havePermission('status_importing')) {
             return redirect()->back()->withErrors('شما این دسترسی را ندارید .');
         }
-        $importing_request = ImportingRequest::query()->findOrFail($id);
-        if ($importing_request->status != 'awaiting_approval') {
+        $importingRequest = ImportingRequest::query()->findOrFail($id);
+        if ($importingRequest->status != 'awaiting_approval') {
             return redirect()->back()->withErrors('در این مرحله امکان تایید وجود ندارد .');
         }
-        $check_expired = $this->service->checkExpiredRequest($importing_request);
+        $check_expired = $this->service->checkExpiredRequest($importingRequest);
         if ($check_expired['success'] == false) {
             return redirect()->back()->withErrors($check_expired['error']);
         }
-        $check_warehouses = $this->service->checkImporting($importing_request);
+        $check_warehouses = $this->service->checkImporting($importingRequest);
         if ($check_warehouses['success'] == true) {
             
-            DB::transaction(function () use ($importing_request) {
-                $this->service->approvalImporting($importing_request);
+            DB::transaction(function () use ($importingRequest) {
+                $this->service->approvalImporting($importingRequest);
             });
         } else {
             return redirect()->back()->withErrors($check_warehouses['error']);
         }
-        return redirect(route('importing-request.show', $importing_request))->with('successful', 'درخواست با موفقیت تایید شد.');
+        return redirect(route('importing-request.show', $importingRequest))->with('successful', 'درخواست با موفقیت تایید شد.');
     }
 
+    /**
+     * Reject an importing request
+     *
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function rejectRequest($id)
     {
         if (!auth()->user()->role->havePermission('status_importing')) {
             return redirect()->back()->withErrors('شما این دسترسی را ندارید .');
         }
-        $importing_request = ImportingRequest::query()->findOrFail($id);
-        if ($importing_request->status != 'awaiting_approval') {
+        $importingRequest = ImportingRequest::query()->findOrFail($id);
+        if ($importingRequest->status != 'awaiting_approval') {
             return redirect()->back()->withErrors('در این مرحله امکان رد وجود ندارد .');
         }
-        $check_expired = $this->service->checkExpiredRequest($importing_request);
+        $check_expired = $this->service->checkExpiredRequest($importingRequest);
         if ($check_expired['success'] == false) {
             return redirect()->back()->withErrors($check_expired['error']);
         }
-        $this->service->rejectImporting($importing_request);
-        return redirect(route('importing-request.show', $importing_request))->with('successful', 'درخواست با موفقیت رد شد.');
+        $this->service->rejectImporting($importingRequest);
+        return redirect(route('importing-request.show', $importingRequest))->with('successful', 'درخواست با موفقیت رد شد.');
     }
 
-
-
+    /**
+     * Show the form for creating a report
+     *
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     */
     public function createReport()
     {
         $commodities = Commodity::query()->where('type', 'material')->whereHas('importingRequests')->get();
@@ -264,19 +275,21 @@ class ImportingRequestController extends Controller
         ]);
     }
 
+    /**
+     * Store and display the report
+     *
+     * @param importingReportRequest $request
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     */
     public function storeReport(importingReportRequest $request)
     {
         $data = $request->validated();
-        $requests=$this->service->getReportData($data);
-        if (isset($requests['error'])){
+        $requests = $this->service->getReportData($data);
+        if (isset($requests['error'])) {
             return redirect(route('importing.report.create'))->withErrors($requests['error']);
         }
         return view('dashboard.processes.importing-request.report-show', [
             'requests' => $requests,
         ]);
     }
-
-
-
-
 }

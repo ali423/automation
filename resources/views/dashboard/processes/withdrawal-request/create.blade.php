@@ -48,7 +48,7 @@
                                         <label for="unit"> {{ __('fields.unit') }}</label>
                                         <select id="unit" class="form-control" name="unit[0]" required>
                                             <option value="">انتخاب کنید...</option>
-                                            <!-- Options will be filled by AJAX, value should be unit_id -->
+                                            <!-- Options will be filled by preloaded data -->
                                         </select>
                                         <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
                                     </div>
@@ -105,6 +105,27 @@
 
 @section('page_scripts')
     <script type="text/javascript">
+        // Preload commodity units data
+        var commodityUnitsData = {};
+        @foreach($commodities as $commodity)
+            commodityUnitsData[{{ $commodity->id }}] = [
+                @foreach($commodity->selectable_units as $unit)
+                    {
+                        id: {{ $unit->id }},
+                        name: '{{ $unit->name }}',
+                        symbol: '{{ $unit->symbol }}',
+                        display_name: '{{ $unit->name }} ({{ $unit->symbol }})'
+                    }@if(!$loop->last),@endif
+                @endforeach
+            ];
+        @endforeach
+
+        // Preload commodity types data
+        var commodityTypesData = {};
+        @foreach($commodities as $commodity)
+            commodityTypesData[{{ $commodity->id }}] = '{{ $commodity->type }}';
+        @endforeach
+
         // add row
         $("#addRow").click(function() {
             var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-6"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]"  onchange="pricefunc(this)" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div> <div class="form-group col-md-6"> <label for="unit"> {{ __('fields.unit') }}</label> <select id="unit" class="form-control" name="unit[]" required> <option value="">انتخاب کنید...</option></select> <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div> </div> <div class="form-group col-md-6"> <label for="amount"> {{  __('fields.commodity.amount') }}</label> <input type="number" min="1" name="amount[]" class="form-control"id="amount" autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]"  required=""> <div class="invalid-feedback">لطفاً {{  __('fields.commodity.amount') }} را وارد کنید. </div></div><div id="priceholder" class="form-group col-md-3"><label for="price"> {{  __('fields.sell-price_per_unit') }}</label><input type="number" id="price" min="1" name="price[]" class="form-control" autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}" pattern="[0-9 .]"  ><div class="invalid-feedback">لطفاً {{  __('fields.sell-price_per_unit') }} را وارد کنید.</div></div> <i id="removeRow" type="submit" class="ti-close"></i></div></div>';
@@ -130,7 +151,7 @@
 
         function pricefunc(el) {
             var unitSelect = el.closest('#inputFormRow').querySelector('#unit');
-            var id = el.value; //request
+            var id = el.value;
 
             // Clear unit options first
             unitSelect.innerHTML = '<option value="">انتخاب کنید...</option>';
@@ -139,30 +160,28 @@
                 return;
             }
 
-            // Get selectable units for the commodity
-            $.ajax({
-                url: '{{ route("withdrawal-request.get-selectable-units") }}',
-                type: 'post',
-                data: {
-                    commodity_id: id,
-                    _token: '{{ csrf_token() }}'
-                },
-                dataType: 'json',
-                success: function (response) {
-                    if (response.success && response.units) {
-                        response.units.forEach(function(unit) {
-                            var option = document.createElement('option');
-                            option.value = unit.id;
-                            option.textContent = unit.display_name;
-                            unitSelect.appendChild(option);
-                        });
-                    }
-                },
-                error: function() {
-                    console.error('خطا در بارگذاری واحدهای قابل انتخاب');
-                }
-            });
+            // Get commodity type from preloaded data
+            var type = commodityTypesData[id];
+            if (type === "material") {
+                // For withdrawal requests, we might want to show price field for all commodities
+                // or handle it differently based on business logic
+            }
+
+            // Get selectable units from preloaded data
+            var units = commodityUnitsData[id];
+            if (units) {
+                units.forEach(function(unit) {
+                    var option = document.createElement('option');
+                    option.value = unit.id;
+                    option.textContent = unit.display_name;
+                    unitSelect.appendChild(option);
+                });
+            }
         }
     </script>
+    <!-- These plugins only need for the run this page -->
+    <script src="{{ asset('js/default-assets/active.js') }}"></script>
+    <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
+    <script src="{{asset('js/default-assets/file-upload.js')}}"></script>
 @endsection
 

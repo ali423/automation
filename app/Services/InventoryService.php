@@ -50,25 +50,42 @@ class InventoryService extends BaseService
      */
     public function removeStock($commodityId, $unitId, $amount)
     {
-        $inventory = Inventory::where('commodity_id', $commodityId)
-            ->where('unit_id', $unitId)
-            ->where('active', true)
-            ->where('amount', '>=', $amount)
-            ->first();
-
-        if (!$inventory) {
+        // Get total available stock for this commodity and unit
+        $totalStock = $this->getStockLevel($commodityId, $unitId);
+        
+        if ($totalStock < $amount) {
             throw new \Exception('موجودی کافی برای کالای مورد نظر وجود ندارد');
         }
 
-        $newAmount = $inventory->amount - $amount;
-        
-        if ($newAmount == 0) {
-            $inventory->update(['active' => false]);
-        } else {
-            $inventory->update(['amount' => $newAmount]);
+        // Get all active inventory records for this commodity and unit, ordered by creation date (FIFO)
+        $inventories = Inventory::where('commodity_id', $commodityId)
+            ->where('unit_id', $unitId)
+            ->where('active', true)
+            ->where('amount', '>', 0)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $remainingAmount = $amount;
+
+        foreach ($inventories as $inventory) {
+            if ($remainingAmount <= 0) {
+                break;
+            }
+
+            $availableInThisRecord = $inventory->amount;
+            $amountToRemove = min($remainingAmount, $availableInThisRecord);
+            
+            $newAmount = $availableInThisRecord - $amountToRemove;
+            $remainingAmount -= $amountToRemove;
+
+            if ($newAmount == 0) {
+                $inventory->update(['active' => false]);
+            } else {
+                $inventory->update(['amount' => $newAmount]);
+            }
         }
 
-        return $inventory;
+        return true;
     }
 
     /**
