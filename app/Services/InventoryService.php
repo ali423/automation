@@ -77,11 +77,11 @@ class InventoryService extends BaseService
             
             $newAmount = $availableInThisRecord - $amountToRemove;
             $remainingAmount -= $amountToRemove;
-
-            if ($newAmount == 0) {
-                $inventory->update(['active' => false]);
-            } else {
-                $inventory->update(['amount' => $newAmount]);
+        
+        if ($newAmount == 0) {
+            $inventory->update(['active' => false]);
+        } else {
+            $inventory->update(['amount' => $newAmount]);
             }
         }
 

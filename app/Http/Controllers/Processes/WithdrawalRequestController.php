@@ -176,14 +176,14 @@ class WithdrawalRequestController extends Controller
         
         $check_inventory = $this->service->checkWithdrawalData($data);
         if ($check_inventory['success'] == true) {
-            $file = null;
-            if ($request->hasFile('file')) {
-                $file = $request->file('file');
-            }
-            
-            DB::transaction(function () use ($withdrawalRequest, $data, $file) {
-                $this->service->update($withdrawalRequest, $data, $file);
-            });
+        $file = null;
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+        }
+        
+        DB::transaction(function () use ($withdrawalRequest, $data, $file) {
+            $this->service->update($withdrawalRequest, $data, $file);
+        });
         } else {
             return redirect()->back()->withErrors($check_inventory['error']);
         }

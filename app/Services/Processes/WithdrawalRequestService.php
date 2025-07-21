@@ -127,15 +127,15 @@ class WithdrawalRequestService extends BaseService
     public function checkWithdrawal($withdrawalRequest)
     {
         foreach ($withdrawalRequest->commodities as $commodity) {
-            // Convert amount to main unit using CommodityUnitService
+            // Convert requested amount to main unit for comparison
             $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
                 $commodity,
                 $commodity->pivot->amount,
                 $commodity->pivot->unit_id
             );
             
-            // Check if we have enough stock in inventory using the pivot unit
-            $available_stock = $this->inventoryService->getStockLevel($commodity->id, $commodity->pivot->unit_id);
+            // Check if we have enough stock in inventory using the main unit
+            $available_stock = $this->inventoryService->getStockLevel($commodity->id, $commodity->unit_id);
             
             if ($amountInMainUnit > $available_stock) {
                 $data['success'] = false;
@@ -161,15 +161,15 @@ class WithdrawalRequestService extends BaseService
             $amount = $data['amount'][$key];
             $unitId = $data['unit'][$key];
             
-            // Convert amount to main unit using CommodityUnitService
+            // Convert requested amount to main unit for comparison
             $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
                 $commodity,
                 $amount,
                 $unitId
             );
             
-            // Check if we have enough stock in inventory using the requested unit
-            $available_stock = $this->inventoryService->getStockLevel($commodity->id, $unitId);
+            // Check if we have enough stock in inventory using the main unit
+            $available_stock = $this->inventoryService->getStockLevel($commodity->id, $commodity->unit_id);
             
             if ($amountInMainUnit > $available_stock) {
                 $result['success'] = false;
@@ -191,17 +191,17 @@ class WithdrawalRequestService extends BaseService
     public function approvalWithdrawal($withdrawalRequest)
     {
         foreach ($withdrawalRequest->commodities as $commodity) {
-            // Convert amount to main unit for inventory operations
+            // Convert requested amount to main unit for inventory removal
             $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
                 $commodity,
                 $commodity->pivot->amount,
                 $commodity->pivot->unit_id
             );
             
-            // Remove stock from inventory using the pivot unit
+            // Remove stock from inventory using the main unit
             $this->inventoryService->removeStock(
                 $commodity->id,
-                $commodity->pivot->unit_id, // Use pivot unit, not commodity's main unit
+                $commodity->unit_id, // Use commodity's main unit
                 $amountInMainUnit
             );
         }
