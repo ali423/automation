@@ -74,6 +74,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('importing/report',[ImportingRequestController::class,'storeReport'])->name('importing.report.store');
 
+    Route::get('order/chart', [OrderController::class, 'chart'])->name('order.chart');
     Route::resource('order',OrderController::class);
 
     Route::resource('inventory',InventoryController::class)->only('index','show');
