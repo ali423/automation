@@ -90,8 +90,25 @@ class OrderController extends Controller
      */
     public function store(OrderRequest $request)
     {
-        $data = $request->only(['customer_id', 'commodity_id', 'unit', 'deadline', 'price', 'commodity_amount']);
-        $this->service->create($data);
+        $customer_id = $request->input('customer_id');
+        $commodity_ids = $request->input('commodity_id');
+        $units = $request->input('unit');
+        $deadline = $request->input('deadline'); // changed from $deadlines
+        $prices = $request->input('price');
+        $amounts = $request->input('commodity_amount');
+
+        foreach ($commodity_ids as $i => $commodity_id) {
+            $data = [
+                'customer_id' => $customer_id,
+                'commodity_id' => $commodity_id,
+                'unit' => $units[$i] ?? null,
+                'deadline' => $deadline, // changed from $deadlines[$i] ?? null
+                'price' => $prices[$i] ?? null,
+                'commodity_amount' => $amounts[$i] ?? null,
+            ];
+            $this->service->create($data);
+        }
+
         return redirect(route('order.index'))->with('successful', 'اطلاعات ثبت شد.');
     }
 

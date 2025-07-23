@@ -34,7 +34,7 @@
                         <div class="form-row">
                             <div class="form-group col-md-4">
                                 <label>{{ __('fields.deadline') }}</label>
-                              <input type="text"  class="form-control" value="{{ date('Y/m/d', strtotime($order->deadline)) }}" disabled>
+                              <input type="text"  class="form-control" value="{{ $order->deadline }}" disabled>
                             </div>
                             <div class="form-group col-md-4">
                                 <label for="amount"> {{  __('fields.commodity.amount') }}</label>

@@ -24,12 +24,12 @@ class OrderRequest extends FormRequest
     public function rules()
     {
         return [
-            'customer_id'=>['required','exists:customers,id'],
-            'commodity_id'=>['required','exists:commodities,id'],
-            'unit'=>['required','in:'.implode(',',array_keys(__('fields.commodity.units')))],
-            'deadline'=>['required','shamsi_date'],
-            'price'=>['nullable','numeric'],
-            'commodity_amount'=>['required','integer'],
+            'customer_id' => ['required', 'exists:customers,id'],
+            'commodity_id.*' => ['required', 'exists:commodities,id'],
+            'unit.*' => ['required', 'in:' . implode(',', array_keys(__('fields.commodity.units')))],
+            'deadline' => ['required', 'shamsi_date'],
+            'price.*' => ['nullable', 'numeric'],
+            'commodity_amount.*' => ['required', 'integer'],
         ];
     }
 }
