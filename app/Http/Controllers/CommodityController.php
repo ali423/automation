@@ -7,6 +7,7 @@ use App\Http\Requests\CommodityUpdateRequest;
 use App\Models\Commodity;
 use App\Models\Unit;
 use App\Services\CommodityService;
+use Illuminate\Support\Facades\DB;
 
 class CommodityController extends Controller
 {
