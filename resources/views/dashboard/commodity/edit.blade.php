@@ -123,7 +123,7 @@
                                                 <input type="number" step="0.01" name="material_amount[]"
                                                        class="form-control"
                                                        id="material_amount"
-                                                       value="{{ $used_material->pivot->amount ?? $used_material->pivot->percentage }}"
+                                                       value="{{ $used_material->pivot->amount }}"
                                                        placeholder="{{ __("fields.commodity.material_amount") }}"
                                                        min="0.01" required="">
                                                 <div class="invalid-feedback">

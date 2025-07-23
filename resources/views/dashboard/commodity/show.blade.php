@@ -68,7 +68,7 @@
                                         </div>
                                         <div class="form-group col-md-3">
                                             <label>{{ __('fields.commodity.material_amount') }}</label>
-                                            <input type="number" step="0.01" value="{{ $material->pivot->amount ?? $material->pivot->percentage }}" class="form-control" disabled>
+                                            <input type="number" step="0.01" value="{{ $material->pivot->amount }}" class="form-control" disabled>
                                         </div>
                                         <div class="form-group col-md-2">
                                             <label>{{ __('fields.unit') }}</label>

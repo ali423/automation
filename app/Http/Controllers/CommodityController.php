@@ -64,7 +64,9 @@ class CommodityController extends Controller
      */
     public function store(CommodityRequest $request)
     {
-        $this->service->create($request->validationData());
+        DB::transaction(function () use ($request) {
+            $this->service->create($request->validationData());
+        });
         return redirect(route('commodity.index'))->with('successful', 'اطلاعات ثبت شد.');
     }
 
@@ -119,7 +121,9 @@ class CommodityController extends Controller
      */
     public function update(CommodityUpdateRequest $request, Commodity $commodity)
     {
-        $this->service->update($commodity, $request->validationData());
+        DB::transaction(function () use ($request, $commodity) {
+            $this->service->update($commodity, $request->validationData());
+        });
         return redirect(route('commodity.show', $commodity))->with('successful', 'اطلاعات ویرایش شد.');
     }
 

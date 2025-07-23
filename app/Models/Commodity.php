@@ -39,7 +39,7 @@ class Commodity extends Model
     public function materials()
     {
         return $this->belongsToMany(Commodity::class, 'product_formula', 'product_id', 'material_id')
-            ->withPivot('percentage', 'amount', 'unit_id')
+            ->withPivot('amount', 'unit_id')
             ->withTimestamps();
     }
 
