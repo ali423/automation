@@ -7,6 +7,12 @@ use Illuminate\Support\Facades\DB;
 
 class CommodityService extends BaseService
 {
+    protected $productFormulaService;
+
+    public function __construct(ProductFormulaService $productFormulaService)
+    {
+        $this->productFormulaService = $productFormulaService;
+    }
 
     public function create($data)
     {
@@ -21,24 +27,29 @@ class CommodityService extends BaseService
                 'unit_id' => $data['unit_id'],
             ]);
         } else {
-            $materials = null;
-            foreach ($data['materials'] as $key => $value) {
-                $materials[$value] = [
-                    'percentage' => $data['material_amount'][$key],
+            // Create the product first
+            $product = Commodity::query()->create([
+                'number' => $number,
+                'title' => $data['title'],
+                'sales_price' => $data['sales_price'],
+                'type' => $data['type'],
+                'warning_limit'=>$data['warning_limit'],
+                'unit_id' => $data['unit_id']
+            ]);
+            
+            // Prepare materials data for unit-based formula
+            $materialsData = [];
+            foreach ($data['materials'] as $key => $materialId) {
+                $materialsData[] = [
+                    'material_id' => $materialId,
+                    'amount' => $data['material_amount'][$key],
+                    'unit_id' => $data['material_units'][$key] ?? $data['unit_id'], // Use product unit as default
                 ];
             }
-            return DB::transaction(function () use ($data, $number, $materials) {
-                $product = Commodity::query()->create([
-                    'number' => $number,
-                    'title' => $data['title'],
-                    'sales_price' => $data['sales_price'],
-                    'type' => $data['type'],
-                    'warning_limit'=>$data['warning_limit'],
-                    'unit_id' => $data['unit_id']
-                ]);
-                $product->materials()->attach($materials);
-                return true;
-            });
+            
+            // Create unit-based formula
+            $this->productFormulaService->createFormula($product, $materialsData);
+            return true;
         }
     }
 
@@ -53,22 +64,27 @@ class CommodityService extends BaseService
 
             ]);
         } else {
-            $materials = null;
-            foreach ($data['materials'] as $key => $value) {
-                $materials[$value] = [
-                    'percentage' => $data['material_amount'][$key],
+            // Update the product first
+            $commodity->update([
+                'title' => $data['title'],
+                'sales_price' => $data['sales_price'],
+                'warning_limit'=>$data['warning_limit'],
+                'unit_id' => $data['unit_id']
+            ]);
+            
+            // Prepare materials data for unit-based formula
+            $materialsData = [];
+            foreach ($data['materials'] as $key => $materialId) {
+                $materialsData[] = [
+                    'material_id' => $materialId,
+                    'amount' => $data['material_amount'][$key],
+                    'unit_id' => $data['material_units'][$key] ?? $data['unit_id'], // Use product unit as default
                 ];
             }
-            return DB::transaction(function () use ($data, $commodity, $materials) {
-                $commodity->update([
-                    'title' => $data['title'],
-                    'sales_price' => $data['sales_price'],
-                    'warning_limit'=>$data['warning_limit'],
-                    'unit_id' => $data['unit_id']
-                ]);
-                $commodity->materials()->sync($materials);
-                return true;
-            });
+            
+            // Update unit-based formula
+            $this->productFormulaService->updateFormula($commodity, $materialsData);
+            return true;
         }
     }
 }

@@ -66,7 +66,7 @@ return [
             'twenty_liters' => 'گالن (20 لیتری)',
         ],
         'material_type' => 'ماده اولیه تشکیل دهنده',
-        'material_amount' => 'مقدار درصد فرآورده',
+        'material_amount' => 'مقدار ماده',
         'types' => [
             'material' => 'ماده اولیه',
             'product' => 'فرآورده',

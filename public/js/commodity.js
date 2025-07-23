@@ -60,7 +60,7 @@ document.getElementById("type").onchange = function () {
     }
 };
 
-function percentage(e){
+// Unit-based validation - ensure positive amounts
+function validateAmount(e){
     if (e.value < 0) e.value = 0;
-    if (e.value > 100) e.value = 100;
 }

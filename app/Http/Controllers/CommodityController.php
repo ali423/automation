@@ -40,8 +40,18 @@ class CommodityController extends Controller
      */
     public function create()
     {
+        $materials = Commodity::query()->where('type','material')->get();
+        
+        // Preload all selectable units for each material
+        $commodityUnitService = app(\App\Services\CommodityUnitService::class);
+        $materialsWithUnits = $materials->map(function ($material) use ($commodityUnitService) {
+            $selectableUnits = $commodityUnitService->getSelectableUnits($material);
+            $material->selectable_units = $selectableUnits;
+            return $material;
+        });
+        
         return view('dashboard.commodity.create', [
-            'materials' => Commodity::query()->where('type','material')->get(),
+            'materials' => $materialsWithUnits,
             'units' => Unit::all()
         ]);
     }
@@ -66,7 +76,7 @@ class CommodityController extends Controller
      */
     public function show(Commodity $commodity)
     {
-        $materials = $commodity->materials;
+        $materials = $commodity->materials()->with('unit')->get();
         return view('dashboard.commodity.show', [
             'commodity' => $commodity,
             'materials' => $materials,
@@ -81,12 +91,21 @@ class CommodityController extends Controller
      */
     public function edit(Commodity $commodity)
     {
-        $used_materials = $commodity->materials;
+        $used_materials = $commodity->materials()->with('unit')->get();
+        $materials = Commodity::where('type', 'material')->get();
+        
+        // Preload all selectable units for each material
+        $commodityUnitService = app(\App\Services\CommodityUnitService::class);
+        $materialsWithUnits = $materials->map(function ($material) use ($commodityUnitService) {
+            $selectableUnits = $commodityUnitService->getSelectableUnits($material);
+            $material->selectable_units = $selectableUnits;
+            return $material;
+        });
 
         return view('dashboard.commodity.edit', [
             'commodity' => $commodity,
             'units' => Unit::all(),
-            'materials' => Commodity::all(),
+            'materials' => $materialsWithUnits,
             'used_materials' => $used_materials,
         ]);
     }
@@ -139,4 +158,6 @@ class CommodityController extends Controller
             'type'=>$commodity->type,
         ]);
     }
+
+
 }

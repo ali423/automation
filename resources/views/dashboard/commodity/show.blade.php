@@ -59,16 +59,20 @@
 
                         @if($commodity->type == 'product')
                             <div id="product_formul" class="col-lg-12">
-                                <p>فرمول ساخت برای صد {{ $commodity->unit ? $commodity->unit->symbol : 'واحد' }} فراورده</p>
+                                <p>فرمول ساخت محصول (مقادیر بر اساس واحد)</p>
                                 <div id="inputFormRow" class="form-row shadow p-4 mb-3">
                                     @foreach ($materials as $material)
                                         <div class="form-group col-md-5">
                                             <label>{{ __('fields.commodity.material_type') }}</label>
                                             <input type="text" value="{{ $material->title }}" class="form-control" disabled>
                                         </div>
-                                        <div class="form-group col-md-5">
+                                        <div class="form-group col-md-3">
                                             <label>{{ __('fields.commodity.material_amount') }}</label>
-                                            <input type="number" step="0.01" value="{{ $material->pivot->percentage }}" class="form-control" disabled>
+                                            <input type="number" step="0.01" value="{{ $material->pivot->amount ?? $material->pivot->percentage }}" class="form-control" disabled>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label>{{ __('fields.unit') }}</label>
+                                            <input type="text" value="{{ $material->unit ? $material->unit->name . ' (' . $material->unit->symbol . ')' : ($commodity->unit ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : 'نامشخص') }}" class="form-control" disabled>
                                         </div>
                                     @endforeach
                                 </div>
