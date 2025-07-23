@@ -33,12 +33,31 @@ class OrderController extends Controller
     public function index()
     {
         $orders = Order::query()->with(['customer', 'commodity','activities'])
+            ->whereHas('customer')
+            ->whereHas('commodity')
             ->orderByRaw("FIELD(status, \"pending\", \"done\")")
             ->orderBy('deadline', 'ASC')->get();
         return view('dashboard.order.index',
             [
                 'orders' => $orders,
             ]);
+    }
+
+    /**
+     * Display the order chart page.
+     *
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
+     */
+    public function chart()
+    {
+        $orders = Order::query()->with(['customer', 'commodity','activities'])
+            ->whereHas('customer')
+            ->whereHas('commodity')
+            ->orderByRaw("FIELD(status, 'pending', 'done')")
+            ->orderBy('deadline', 'ASC')->get();
+        return view('dashboard.order.chart', [
+            'orders' => $orders,
+        ]);
     }
 
     /**
