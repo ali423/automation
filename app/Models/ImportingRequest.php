@@ -19,10 +19,15 @@ class ImportingRequest extends Model
         'status',
         'number',
     ];
+    
+    // Remove main_unit_amount from appends to avoid issues with ActivityTrait
+    // protected $appends = ['main_unit_amount'];
+    
     public function commodities()
     {
         return $this->belongsToMany(Commodity::class, 'importing_commodities', 'importation_id', 'commodity_id')
-            ->withPivot('amount','warehouses_id','unit','purchase_price');
+            ->withPivot('amount','unit_id','purchase_price')
+            ->with('unit');
     }
     public function getCreatedDateAttribute() {
         return  $this->created_at->format('Y-m-d');
@@ -32,4 +37,50 @@ class ImportingRequest extends Model
     {
         return $this->belongsTo(Seller::class, 'seller_id');
     }
+    
+    /**
+     * Get the amount in main unit for each commodity
+     * This is a computed attribute that calculates the equivalent amount in the main unit
+     */
+    public function getMainUnitAmountAttribute()
+    {
+        $commodityUnitService = app(\App\Services\CommodityUnitService::class);
+        $mainUnitAmounts = [];
+        
+        foreach ($this->commodities as $commodity) {
+            $selectedUnitId = $commodity->pivot->unit_id;
+            $amountInMainUnit = $commodityUnitService->convertToMainUnit(
+                $commodity,
+                $commodity->pivot->amount,
+                $selectedUnitId
+            );
+            
+            $mainUnitAmounts[$commodity->id] = [
+                'commodity_title' => $commodity->title,
+                'original_amount' => $commodity->pivot->amount,
+                'original_unit_id' => $selectedUnitId,
+                'main_unit_amount' => $amountInMainUnit,
+                'main_unit_name' => $commodity->unit ? $commodity->unit->name : 'نامشخص',
+                'main_unit_symbol' => $commodity->unit ? $commodity->unit->symbol : '',
+            ];
+        }
+        
+        return $mainUnitAmounts;
+    }
+    
+    /**
+     * Override toArray method to exclude main_unit_amount from activity logging
+     * This prevents issues with ActivityTrait when dealing with computed attributes
+     */
+    public function toArray()
+    {
+        $array = parent::toArray();
+        
+        // Remove main_unit_amount from the array to prevent issues with ActivityTrait
+        unset($array['main_unit_amount']);
+        
+        return $array;
+    }
+    
+
 }

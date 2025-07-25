@@ -31,52 +31,45 @@
                                 </div>
                             </div>
                             <div id="product_formul" class="col-lg-12">
-                                <p>اطلاعات کالا</p>
+                                <p>اطلاعات فروش کالا</p>
                                 <div id="inputFormRow" class="form-row shadow p-4 mb-3">
-                                    <div class="form-group col-md-4">
+                                    <div class="form-group col-md-6">
                                         <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
-                                        <select id="commodity_id" class="form-control" name="commodity_id[0]" onchange="commodity_change(this)" required>
+                                        <select id="commodity_id" class="form-control" name="commodity_id[0]" onchange="pricefunc(this)" required>
                                             <option value="">انتخاب کنید</option>
                                             @foreach ($commodities as $commodity)
                                                 <option value="{{ $commodity->id }}">{{ $commodity->title }}
                                                 </option>
                                             @endforeach
                                         </select>
-                                        <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب
-                                            کنید.
-                                        </div>
+                                        <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
                                     </div>
-                                    <div class="form-group col-md-2">
+                                    <div class="form-group col-md-6">
                                         <label for="unit"> {{ __('fields.unit') }}</label>
-                                        <select id="unit" class="form-control" name="unit[0]" onchange="unitchange(this)" disabled required>
-                                            @foreach( __('fields.commodity.units') as $key=>$value)
-                                                <option value="{{$key}}"
-                                                >{{$value}}</option>
-                                            @endforeach
+                                        <select id="unit" class="form-control" name="unit[0]" required>
+                                            <option value="">انتخاب کنید...</option>
+                                            <!-- Options will be filled by preloaded data -->
                                         </select>
                                         <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
                                     </div>
-                                    <div class="form-group col-md-2">
-                                        <label for="total">مجموع</label>
-                                        <input type="number" value="0" id="total-amount" name="totalamount[0]" class="form-control"
-                                        placeholder="{{ __('fields.sell-price') }}" required disabled>
-                                    </div>
 
-                                    <div class="form-group col-md-4">
-                                        <label for="price"> {{ __('fields.sell-price_per_unit') }}</label>
-                                        <input type="text" id="price" name="price[0]" class="form-control"
-                                               placeholder="{{ __('fields.sell-price_per_unit') }}" >
-                                        <div class="invalid-feedback">{{ __('fields.sell-price_per_unit') }} را انتخاب کنید</div>
+                                    <div class="form-group col-md-3">
+                                        <label for="amount"> {{  __('fields.commodity.amount') }}</label>
+                                        <input type="number" id="amount" min="1" name="amount[0]" class="form-control"
+                                               autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]"  required="">
+                                        <div class="invalid-feedback">
+                                            لطفاً {{  __('fields.commodity.amount') }} را وارد کنید.
+                                        </div>
                                     </div>
-
-                                    <div class="warehouse-inputs position-relative" style="overflow: hidden;height:0;width:0;">
-                                        <input type="text" name="warehouse_id[1][0]" value="1">
-                                        <input type="text" name="warehouse_id[2][1]" value="2">
+                                    <div id="priceholder" class="form-group col-md-3">
+                                        <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
+                                        <input type="number" id="price" min="1" name="price[0]" class="form-control"
+                                               autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}" pattern="[0-9 .]" >
                                     </div>
                                 </div>
 
                                 <div id="newRow"></div>
-                                <button id="addRow" type="button" class="btn btn-dfprimary mb-3">+ افزودن</button>
+                                <button id="addRow" type="button" class="btn btn-dfprimary mb-3">+ افزودن کالا</button>
                             </div>
 
                             <div class="form-group">
@@ -111,106 +104,84 @@
 @endsection
 
 @section('page_scripts')
-
     <script type="text/javascript">
+        // Preload commodity units data
+        var commodityUnitsData = {};
+        @foreach($commodities as $commodity)
+            commodityUnitsData[{{ $commodity->id }}] = [
+                @foreach($commodity->selectable_units as $unit)
+                    {
+                        id: {{ $unit->id }},
+                        name: '{{ $unit->name }}',
+                        symbol: '{{ $unit->symbol }}',
+                        display_name: '{{ $unit->name }} ({{ $unit->symbol }})'
+                    }@if(!$loop->last),@endif
+                @endforeach
+            ];
+        @endforeach
 
-        var maximumAmount = [];
+        // Preload commodity types data
+        var commodityTypesData = {};
+        @foreach($commodities as $commodity)
+            commodityTypesData[{{ $commodity->id }}] = '{{ $commodity->type }}';
+        @endforeach
 
         // add row
-        $("#addRow").click(function () {
-            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-4"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]" onchange="commodity_change(this)" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div><div class="form-group col-md-2"><label for="unit"> {{ __('fields.unit') }}</label><select id="unit" class="form-control" name="unit[0]" onchange="unitchange(this)" disabled required>@foreach( __('fields.commodity.units') as $key=>$value)<option value="{{$key}}">{{$value}}</option>@endforeach</select><div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div></div><div class="form-group col-md-2"><label for="total">مجموع</label><input type="number" value="0" id="total-amount" name="totalamount[0]" class="form-control"placeholder="{{ __('fields.sell-price_per_unit') }}" required disabled></div><div class="form-group col-md-4"><label for="price"> {{ __('fields.sell-price_per_unit') }}</label><input type="text" id="price" name="price[0]" class="form-control"placeholder="{{ __('fields.sell-price_per_unit') }}" ><div class="invalid-feedback">{{ __('fields.sell-price_per_unit') }} را انتخاب کنید</div></div><i id="removeRow" type="submit" class="ti-close"></i></div></div>';
+        $("#addRow").click(function() {
+            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-6"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]"  onchange="pricefunc(this)" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div> <div class="form-group col-md-6"> <label for="unit"> {{ __('fields.unit') }}</label> <select id="unit" class="form-control" name="unit[]" required> <option value="">انتخاب کنید...</option></select> <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div> </div> <div class="form-group col-md-6"> <label for="amount"> {{  __('fields.commodity.amount') }}</label> <input type="number" min="1" name="amount[]" class="form-control"id="amount" autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]"  required=""> <div class="invalid-feedback">لطفاً {{  __('fields.commodity.amount') }} را وارد کنید. </div></div><div id="priceholder" class="form-group col-md-3"><label for="price"> {{  __('fields.sell-price_per_unit') }}</label><input type="number" id="price" min="1" name="price[]" class="form-control" autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}" pattern="[0-9 .]"  ><div class="invalid-feedback">لطفاً {{  __('fields.sell-price_per_unit') }} را وارد کنید.</div></div> <i id="removeRow" type="submit" class="ti-close"></i></div></div>';
             $('#newRow').append(html);
-            document.querySelectorAll('#inputFormRow').forEach((element, index) => {
-                element.querySelector('#commodity_id').setAttribute('name', 'commodity_id[' + index + ']');
-                element.querySelector('#price').setAttribute('name', 'price[' + index + ']');
-                element.querySelector('#unit').setAttribute('name', 'unit[' + index + ']');
-                element.querySelector('#total-amount').setAttribute('name', 'totalamount[' + index + ']');
+            document.querySelectorAll('#inputFormRow').forEach((element,index) => {
+                element.querySelector('#commodity_id').setAttribute('name', 'commodity_id['+index+']');
+                element.querySelector('#unit').setAttribute('name', 'unit['+index+']');
+                element.querySelector('#amount').setAttribute('name', 'amount['+index+']');
+                element.querySelector('#price').setAttribute('name', 'price['+index+']');
             });
         });
 
         // remove row
-        $(document).on('click', '#removeRow', function () {
+        $(document).on('click', '#removeRow', function() {
             $(this).closest('#inputFormRow').remove();
-            document.querySelectorAll('#inputFormRow').forEach((element, index) => {
-                element.querySelector('#commodity_id').setAttribute('name', 'commodity_id[' + index + ']');
-                element.querySelector('#price').setAttribute('name', 'price[' + index + ']');
-                element.querySelector('#unit').setAttribute('name', 'unit[' + index + ']');
-                element.querySelector('#total-amount').setAttribute('name', 'totalamount[' + index + ']');
+            document.querySelectorAll('#inputFormRow').forEach((element,index) => {
+                element.querySelector('#commodity_id').setAttribute('name', 'commodity_id['+index+']');
+                element.querySelector('#unit').setAttribute('name', 'unit['+index+']');
+                element.querySelector('#amount').setAttribute('name', 'amount['+index+']');
+                element.querySelector('#price').setAttribute('name', 'price['+index+']');
             });
         });
 
-        function commodity_change(e){
-            var commodity_id = e.value;
-            var thisForm = e.closest('#inputFormRow');
-            maximumAmount = [];
-            thisForm.querySelectorAll('.wares').forEach(element => {
-                element.remove();
-            });
-            if(commodity_id==""){
-                thisForm.querySelector('#unit').setAttribute('disabled','');
-                thisForm.querySelector('#unit').value = 'kg';
-            }
-            $.ajax({
-                url: '/inventory-ajax/' + commodity_id,
-                type: 'get',
-                dataType: 'json',
-                success: function (response) {
-                    var price = response['price'];
-                    var warehouses = response['warehouses'];
-                    var result = e.name.split('[');
-                    var result2 = result[1].split(']');
-                    $('input[name="price['+result2[0]+']"]').val(price);
-                    warehouses.forEach((ware,index)=>{
-                        var wareTemplate='<div class="input-group mb-3 wares"><div class="input-group-prepend"><span class="input-group-text" id="'+ware['title']+'">'+ware['title']+'</span></div><input type="number" class="ware-amount form-control" min="0" max="'+ware['amount']+'" value="0" name="amount['+commodity_id+']['+ware['id']+']" onkeyup="total(this,this.value)" required><div class="input-group-append"><span class="input-group-text" id="ware-amount">'+'حداکثر: '+ware['amount']+'</span></div><div class="warehouse-inputs position-relative" style="overflow: hidden;height:0;width:0;"><input type="text" name="warehouse_id['+commodity_id+']['+index+']" value="'+ware['id']+'"></div></div>';
-                        thisForm.insertAdjacentHTML('beforeend', wareTemplate);
-                        thisForm.querySelector('#unit').removeAttribute('disabled');
-                        maximumAmount.push(ware['amount']);
-                    })
-                }
-            });
-        }
-        function total(e,value){
-            var unit = e.closest('#inputFormRow').querySelector('#unit');
-            var totalamount = e.closest('#inputFormRow').querySelector('#total-amount');
-            var wareamount = e.closest('#inputFormRow').querySelectorAll('.ware-amount');
-            var total = 0;
-            wareamount.forEach(element=>{
-                total = total + parseFloat(element.value);
-            })
-            totalamount.value = total.toFixed(2);
-        }
+        function pricefunc(el) {
+            var unitSelect = el.closest('#inputFormRow').querySelector('#unit');
+            var id = el.value;
 
-        function unitchange(e){
-            e.closest('#inputFormRow').querySelectorAll('.ware-amount').forEach(element=>{
-                element.value = 0;
-                e.closest('#inputFormRow').querySelector('#total-amount').value = 0;
-            })
-            e.closest('#inputFormRow').querySelectorAll('#ware-amount').forEach((element,index) => {
-                switch (e.value) {
-                    case "kg":
-                        element.innerText = maximumAmount[index]
-                        break;
-                    case "keg":
-                        element.innerText = ((parseFloat(maximumAmount[index]))/185).toFixed(3);
-                        break;
-                    case "twenty_liters":
-                        element.innerText = ((parseFloat(maximumAmount[index]))/17.8).toFixed(3);
-                        break;
-                    default:
-                        break;
-                }
-            });
+            // Clear unit options first
+            unitSelect.innerHTML = '<option value="">انتخاب کنید...</option>';
+
+            if (!id) {
+                return;
+            }
+
+            // Get commodity type from preloaded data
+            var type = commodityTypesData[id];
+            if (type === "material") {
+                // For withdrawal requests, we might want to show price field for all commodities
+                // or handle it differently based on business logic
+            }
+
+            // Get selectable units from preloaded data
+            var units = commodityUnitsData[id];
+            if (units) {
+                units.forEach(function(unit) {
+                    var option = document.createElement('option');
+                    option.value = unit.id;
+                    option.textContent = unit.display_name;
+                    unitSelect.appendChild(option);
+                });
+            }
         }
     </script>
-
-
     <!-- These plugins only need for the run this page -->
-
     <script src="{{ asset('js/default-assets/active.js') }}"></script>
-
     <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
     <script src="{{asset('js/default-assets/file-upload.js')}}"></script>
-
-
 @endsection
 

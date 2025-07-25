@@ -170,8 +170,8 @@ class OrderController extends Controller
     }
 
     public function confirmStore(CreateWithdrawalRequest $request,Order $order){
-        $data = $request->only('commodity_id', 'warehouse_id', 'unit', 'amount', 'comment','price','customer_id');
-        $inventory_check = $this->withdrawal_service->checkInventory($data);
+        $data = $request->only('commodity_id', 'unit', 'amount', 'comment','price','customer_id');
+        $inventory_check = $this->withdrawal_service->checkWithdrawalData($data);
         if ($inventory_check['success'] == true) {
             $file=null;
             if ($request->hasFile('file')) {

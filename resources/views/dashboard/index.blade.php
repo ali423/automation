@@ -166,7 +166,7 @@
                             <div>
                                 <i class="ti-truck font-24"></i>
                             </div>
-                            <h6>ورود کالا به انبار</h6>
+                                                            <h6>خرید کالا</h6>
                         </div>
                         <div class="d-md-none">
                             <ul class="list-unstyled d-flex">
@@ -507,22 +507,7 @@
                         </div>
                     @endcan
                 <!-- Single Widget -->
-                    @can('read_warehouse',App\Models\Warehouse::class)
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    <a href="{{ route('inventory.index') }}" class="bg-green">
-                                        <div>
-                                            <div>
-                                                <i class="ti-bar-chart font-24"></i>
-                                            </div>
-                                            <h6>وضعیت موجودی انبار</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
+
                 </div>
                 {{-- end warehouse --}}
                 {{-- start proccess --}}

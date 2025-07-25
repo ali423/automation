@@ -58,12 +58,6 @@ class PermissionsSeeder extends Seeder
             ['title'=>'edit_order', 'name'=>'ویرایش سفارش '],
             ['title'=>'delete_order', 'name'=>'حذف سفارش '],
 
-            //warehouse permissions
-            ['title'=>'create_warehouse', 'name'=>'اضافه کردن انبار '],
-            ['title'=>'read_warehouse', 'name'=>'دیدن انبار'],
-            ['title'=>'edit_warehouse', 'name'=>'ویرایش انبار '],
-            ['title'=>'delete_warehouse', 'name'=>'حذف انبار '],
-
             //withdrawal permissions
             ['title'=>'create_withdrawal', 'name'=>'اضافه کردن فروش کالا '],
             ['title'=>'read_withdrawal', 'name'=>'دیدن فروش کالا'],

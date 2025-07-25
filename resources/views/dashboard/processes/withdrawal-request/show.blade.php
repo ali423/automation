@@ -20,7 +20,7 @@
                             <div class="form-group col-md-6">
                                 <label for="exampleInputEmail111"> {{ __('fields.status') }}</label>
                                 <input type="text" name="status"
-                                       value="{{ __('fields.withdrawal-request.status')[$request->status] }}"
+                                       value="{{ $request->status ? __('fields.withdrawal-request.status')[$request->status] : '-' }}"
                                        class="form-control" id="exampleInputEmail111"
                                        placeholder="{{ __('fields.status') }}"
                                        autocomplete="off" disabled>
@@ -64,58 +64,53 @@
                         @php($total_amount = 0)
                         @foreach ($request->commodities as $commodity)
                             <div id="inputFormRow" class="form-row shadow p-4 m-3">
-                                {{-- <div class="form-group col-md-6">
+                                <div class="showbarrel">
+                                    <i class="fa fa-database"></i>
+                                    <div>
+                                        <span>Main Unit Amount</span>
+                                        @php
+                                            $mainUnitData = $request->getMainUnitAmountAttribute();
+                                            $commodityMainUnit = $mainUnitData[$commodity->id] ?? null;
+                                        @endphp
+                                        <span>
+                                            @if($commodityMainUnit && isset($commodityMainUnit['main_unit_amount']))
+                                                {{ number_format($commodityMainUnit['main_unit_amount'], 2) }} {{ $commodityMainUnit['main_unit_name'] . ' (' . $commodityMainUnit['main_unit_symbol'] . ')' }}
+                                            @else
+                                                -
+                                            @endif
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-6">
                                     <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
                                     <select id="commodity_id" class="form-control" name="commodity_id[0]" disabled>
                                         <option value="{{ $commodity->id }}">{{ $commodity->title }}</option>
                                     </select>
-                                    <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.
-                                    </div>
+                                    <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
                                 </div>
                                 <div class="form-group col-md-6">
                                     <label for="unit"> {{ __('fields.unit') }}</label>
                                     <input type="text"
-                                           value="{{ __('fields.commodity.units')[$commodity->pivot->unit] }}"
-                                           id="unit" name="unit" class="form-control" disabled>
-                                    <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.
+                                        value="{{ $commodity->pivot->unit_id ? (\App\Models\Unit::find($commodity->pivot->unit_id)->name . ' (' . \App\Models\Unit::find($commodity->pivot->unit_id)->symbol . ')') : '-' }}"
+                                        id="unit" name="unit" class="form-control" disabled>
+                                    <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
+                                </div>
+
+                                <div class="form-group col-md-3">
+                                    <label for="amount"> {{ __('fields.commodity.amount') }}</label>
+                                    <input type="number" value="{{ $commodity->pivot->amount }}" id="amount"
+                                        min="1" name="amount[0]" class="form-control" autocomplete="off"
+                                        placeholder="{{ __('fields.commodity.amount') }}" pattern="[0-9 .]" disabled>
+                                    <div class="invalid-feedback">
+                                        لطفاً {{ __('fields.commodity.amount') }} را وارد کنید.
                                     </div>
                                 </div>
-                                <div class="form-group col-md-12">
-                                    @foreach ($commodity->withdrawal_amount as $withdrawal_amount)
-                                        <p>
-                                            مقدار {{ number_format($withdrawal_amount['amount']) .' '. __('fields.commodity.units')[$withdrawal_amount['unit']] }}
-                                            از
-                                            انبار {{$withdrawal_amount['warehouse']['title']}}</p>
-                                        <br>
-                                    @endforeach
-                                </div> --}}
-                                <table class="table">
-                                    <colgroup>
-                                        <col span="1" style="width: 5%;">
-                                        <col span="1" style="width: 40%;">
-                                        <col span="1" style="width: 25%;">
-                                        <col span="1" style="width: 30%;">
-                                    </colgroup>
-                                    <tr class="table-header table-dark">
-                                        <th scope="col">ردیف</th>
-                                        <th scope="col">نام کالا</th>
-                                        <th scope="col">مقدار</th>
-                                        <th scope="col">انبار</th>
-                                        <th scope="col">قسمت فروش (ریال)</th>
-                                    </tr>
-                                    @php($amonuts=json_decode($commodity->pivot->amount))
-                                    @foreach($amonuts as $key=>$value)
-                                        @php($total_amount += $value)
-                                        <tr>
-                                            <th scope="row">{{$i}}</th>
-                                            <td>{{ $commodity->title }}</td>
-                                            <td>{{ $value }} {{ __('fields.commodity.units')[$commodity->pivot->unit] }}</td>
-                                            <td>{{ $commodity->withdrawal_amount[0]['warehouse']['title'] ?? 'نامشخص' }}</td>
-                                            <td>{{ number_format($commodity->pivot->price) }}</td>
-                                        </tr>
-                                        @php($i++)
-                                    @endforeach
-                                </table>
+                                @if(isset($commodity->pivot->price))
+                                    <div class="form-group col-md-3">
+                                        <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
+                                        <input type="text" id="price" placeholder="{{number_format($commodity->pivot->price)}}" class="form-control" disabled>
+                                    </div>
+                                @endif
                             </div>
                         @endforeach
                         <tr>
@@ -273,44 +268,24 @@
                                         <col span="1" style="width: 14%;">
                                     @endif
                                 </colgroup>
-                                <thead>
-                                    <tr class="table-header">
-                                        <th scope="col">ردیف</th>
-                                        <th scope="col">برند</th>
-                                        <th scope="col">مدل</th>
-                                        <th scope="col">واحد</th>
-                                        <th scope="col">تعداد</th>
-                                        @if($receiptType == 'documentation')
-                                            <th scope="col">فی(ریال)</th>
-                                            <th scope="col">جمع(ریال)</th>
-                                        @endif
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php($i=1)
-                                    @php($total_amount = 0)
-                                    @foreach($request->commodities as $commodity)
-                                        @php($amonuts=json_decode($commodity->pivot->amount))
-                                        @foreach($amonuts as $key=>$value)
-                                            @php($total_amount += $value)
-                                            <tr>
-                                                <td scope="row">{{$i}}</td>
-                                                <td>{{$commodity->title}}</td>
-                                                <td>{{\App\Models\Warehouse::query()->where('id',$key)->first()->title}}</td>
-                                                <td>{{ $value }} {{ __('fields.commodity.units')[$commodity->pivot->unit] }}</td>
-                                                <td></td>
-                                                @if($receiptType == 'documentation')
-                                                    <td></td>
-                                                    <td></td>
-                                                @endif
-                                            </tr>
-                                            @php($i++)
-                                        @endforeach
-                                    @endforeach
-                                    <tr>
-                                        <td colspan="@if($receiptType == 'documentation') 7 @else 5 @endif" class="text-right">مجموع وزن / مقدار: {{$total_amount}} {{ __('fields.commodity.units')[$commodity->pivot->unit] }}</td>
-                                    </tr>
-                                </tbody>
+                                <tr class="table-header">
+                                    <th scope="col">ردیف</th>
+                                    <th scope="col">کالای ورودی</th>
+                                    <th scope="col">انبار</th>
+                                    <th scope="col">تعداد / مقدار</th>
+                                    <th scope="col">توضیحات</th>
+                                </tr>
+                                @php($i=1)
+                                @foreach($request->commodities as $commodity)
+                                <tr>
+                                    <th scope="row">{{$i}}</th>
+                                    <td>{{$commodity->title}}</td>
+    <td>-</td>
+                                        <td>{{ $commodity->pivot->amount }} {{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name . ' (' . $unit->symbol . ')' : '-') : '-' }}</td>
+                                    <td></td>
+                                </tr>
+                                        @php($i++)
+                                @endforeach
                             </table>
                         </div>
                         <div class="mb-5">
@@ -717,50 +692,26 @@
                             </tr>
                             </thead>
                             <tbody>
-                                @php($i=1)
-                                @foreach($request->commodities as $commodity)
-                                    @php($amount = array_sum(json_decode($commodity->pivot->amount, true)))
-                                    <tr>
-                                        <!-- <td scope="row">{{$i}}</td>
-                                        <td>{{$commodity->number}}</td>
-                                        <td>{{$commodity->title}}</td>
-                                        <td>{{$amount}}</td>
-                                        <td>{{__('fields.commodity.units')[$commodity->pivot->unit] }}</td>
-                                        <td colspan="1.5"></td>
-                                        <td colspan="1.5"></td> -->
-                                        
-                                        <td scope="row">1</td>
-                                        <td>8728028</td>
-                                        <td>موتور چهارلیتری پلاستیکی SAE:20w50</td>
-                                        <td>400</td>
-                                        <td>کارتن</td>
-                                        <td colspan="1.5">450,000</td>
-                                        <td colspan="1.5">180,000,000</td>
+                            @php($i=1)
+                            @foreach ($request->commodities as $commodity)
+                                <tr>
+                                    <th scope="row">{{$i}}</th>
+                                    <td>{{$commodity->number}}</td>
+                                    <td>{{$commodity->title}}</td>
+                                    <td>{{$commodity->pivot->amount}}</td>
+                                    <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name . ' (' . $unit->symbol . ')' : '-') : '-' }}</td>
+                                    @if(isset($commodity->pivot->price))
+                                    <td>{{number_format($price=$commodity->pivot->price)}}</td>
+                                    <td>{{ number_format($total_price[]=round($commodity->pivot->amount*$price)) }}</td>
+                                    @else
+                                        <td></td>
+                                        <td></td>
+                                    @endif
                                 </tr>
-                                <tr>
-                                        <td scope="row">2</td>
-                                        <td>8728029</td>
-                                        <td>موتور یک لیتری پلاستیکی SAE:50</td>
-                                        <td>50</td>
-                                        <td>کارتن</td>
-                                        <td colspan="1.5">400,000</td>
-                                        <td colspan="1.5">20,000,000</td>
-                                </tr>
-                                <tr>
-                                        <td scope="row">3</td>
-                                        <td>8728030</td>
-                                        <td>گریس</td>
-                                        <td>400</td>
-                                        <td>کارتن</td>
-                                        <td colspan="1.5">630,000</td>
-                                        <td colspan="1.5">252,000,000</td>                                        
-                                        
-                                    </tr>
-                                    @php($i++)
-                                @endforeach
-
-                                <tr>
-                                <td colspan="5" rowspan="4" class="text-left" style="vertical-align: top">
+                                @php($i++)
+                            @endforeach
+                            <tr>
+                                <td colspan="5" rowspan="3" class="text-left" style="vertical-align: top">
                                     <div class="d-flex justify-content-between">
                                         <span>شرایط و نحوه تسویه: </span>
                                         <span>نقدی <span class="border"
