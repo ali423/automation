@@ -23,7 +23,7 @@ return new class extends Migration
                         break;
                     }
                 }
-                
+
                 if ($foreignKeyExists) {
                     $table->dropForeign(['warehouses_id']);
                 }
@@ -42,4 +42,4 @@ return new class extends Migration
             $table->foreignId('warehouses_id')->constrained()->after('commodity_id');
         });
     }
-}; 
+};
