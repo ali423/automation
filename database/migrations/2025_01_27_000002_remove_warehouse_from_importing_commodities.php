@@ -14,18 +14,11 @@ return new class extends Migration
         Schema::table('importing_commodities', function (Blueprint $table) {
             // Drop the warehouse foreign key and column if they exist
             if (Schema::hasColumn('importing_commodities', 'warehouses_id')) {
-                // Check if foreign key exists before dropping
-                $foreignKeys = Schema::getConnection()->getDoctrineSchemaManager()->listTableForeignKeys('importing_commodities');
-                $foreignKeyExists = false;
-                foreach ($foreignKeys as $foreignKey) {
-                    if (in_array('warehouses_id', $foreignKey->getLocalColumns())) {
-                        $foreignKeyExists = true;
-                        break;
-                    }
-                }
-
-                if ($foreignKeyExists) {
+                // Try to drop foreign key constraint, ignore if it doesn't exist
+                try {
                     $table->dropForeign(['warehouses_id']);
+                } catch (\Exception $e) {
+                    // Foreign key doesn't exist, continue
                 }
                 $table->dropColumn('warehouses_id');
             }
@@ -42,4 +35,4 @@ return new class extends Migration
             $table->foreignId('warehouses_id')->constrained()->after('commodity_id');
         });
     }
-};
+}; 
