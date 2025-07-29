@@ -103,6 +103,23 @@ return [
                 ],
             ]
         ],
+        'App\Models\ProductionRequest' => [
+            'fa_name' => 'درخواست تولید',
+            'url' => 'production-request',
+            'relations' => [
+                'commodities' => [
+                    'fa_name' => 'کالا ها',
+                    'primary_key' => 'production_request_id',
+                    'pivots' => [
+                        'type' => 'نوع کالا',
+                        'amount' => 'مقدار کالا',
+                        'unit_id' => 'واحد اندازه گیری',
+                        'unit_cost' => 'قیمت واحد',
+                        'total_cost' => 'قیمت کل',
+                    ],
+                ],
+            ]
+        ],
         'App\Models\Order' => [
             'fa_name' => 'سفارشات',
             'url' => 'order',

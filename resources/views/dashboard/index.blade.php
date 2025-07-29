@@ -220,6 +220,27 @@
                 </div>
             </div>
     @endif
+    @if(Gate::check('read_production') || Gate::check('create_production'))
+        <!-- Single Widget -->
+            <div class="col-12 col-md box-margin height-card">
+                <div class="card">
+                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="production">
+                        <div class="text-center">
+                            <div>
+                                <i class="ti-settings font-24"></i>
+                            </div>
+                            <h6>تولید</h6>
+                        </div>
+                        <div class="d-md-none">
+                            <ul class="list-unstyled d-flex">
+                                <li><a href="#" class="btn btn-white m-1">لیست درخواست های تولید</a></li>
+                                <li><a href="#" class="btn btn-white m-1">ثبت درخواست تولید</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    @endif
 
     @if(Gate::check('read_order') || Gate::check('create_order'))
         <!-- Single Widget -->
@@ -627,6 +648,45 @@
                     @endcan
                 </div>
                 {{-- end customer --}}
+                {{-- start production --}}
+                <div id="production" class="d-none card-body row">
+                @can('read_production',App\Models\ProductionRequest::class)
+                    <!-- Single Widget -->
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    </br></br>
+                                    <a href="{{ route('production-request.index') }}" class="bg-red">
+                                        <div>
+                                            <div>
+                                                <i class="ti-list-ol font-24"></i>
+                                            </div>
+                                            <h6>لیست درخواست های تولید</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                @endcan
+                @can('create_production',App\Models\ProductionRequest::class)
+                    <!-- Single Widget -->
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('production-request.create') }}" class="bg-blue">
+                                        <div>
+                                            <div>
+                                                <i class="ti-write font-24"></i>
+                                            </div>
+                                            <h6>ثبت درخواست تولید جدید</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endcan
+                </div>
+                {{-- end production --}}
                 {{-- start order --}}
                 <div id="order" class="d-none card-body row">
                 @can('read_order',App\Models\Order::class)

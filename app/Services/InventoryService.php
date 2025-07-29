@@ -89,6 +89,32 @@ class InventoryService extends BaseService
     }
 
     /**
+     * Get average cost for a commodity from inventory
+     */
+    public function getAverageCost($commodityId)
+    {
+        $inventory = Inventory::where('commodity_id', $commodityId)
+            ->where('active', true)
+            ->where('amount', '>', 0)
+            ->whereNotNull('purchase_price')
+            ->get();
+
+        if ($inventory->isEmpty()) {
+            return null;
+        }
+
+        $totalValue = 0;
+        $totalAmount = 0;
+
+        foreach ($inventory as $item) {
+            $totalValue += $item->amount * $item->purchase_price;
+            $totalAmount += $item->amount;
+        }
+
+        return $totalAmount > 0 ? $totalValue / $totalAmount : null;
+    }
+
+    /**
      * Get current stock level for a commodity and unit
      */
     public function getStockLevel($commodityId, $unitId)

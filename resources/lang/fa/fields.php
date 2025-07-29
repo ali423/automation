@@ -103,6 +103,24 @@ return [
             'done' => 'کامل شده',
         ]
     ],
+    'production-request' => [
+        'number' => 'شماره درخواست تولید',
+        'title' => 'عنوان درخواست تولید',
+        'description' => 'توضیحات',
+        'input_materials' => 'مواد اولیه',
+        'output_products' => 'محصولات خروجی',
+        'total_cost' => 'هزینه کل',
+        'total_input_cost' => 'هزینه کل مواد اولیه',
+        'total_output_value' => 'ارزش کل محصولات',
+        'profit' => 'سود',
+        'status' => [
+            'awaiting_approval' => 'در انتظار تایید',
+            'approvaled' => 'تایید شده',
+            'rejected' => 'رد شده',
+            'expired' => 'منقضی شده',
+            'done' => 'تکمیل شده',
+        ],
+    ],
     'order' => [
         'status' => [
             'pending' => 'درحال پردازش',
@@ -127,5 +145,13 @@ return [
     'unit_id' => 'واحد',
     'amount' => 'مقدار موجودی',
     'active' => 'وضعیت',
+    'add_material' => 'افزودن ماده اولیه',
+    'add_product' => 'افزودن محصول',
+    'summary' => 'خلاصه',
+    'unit_cost' => 'هزینه واحد',
+    'select_commodity' => 'انتخاب کالا',
+    'select_unit' => 'انتخاب واحد',
+    'save' => 'ذخیره',
+    'cancel' => 'انصراف',
 ];
 ?>
