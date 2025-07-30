@@ -1008,6 +1008,7 @@
                         <th scope="col">تعداد / مقدار</th>
                         <th scope="col">واحد</th>
                         <th scope="col" colspan="1.5">فی</th>
+                        <th scope="col" colspan="1.5">مالیات بر ارزش افزوده</th>
                         <th scope="col" colspan="1.5">جمع کل</th>
                     </tr>
                     </thead>
@@ -1020,7 +1021,8 @@
                             <td>1,000</td>
                             <td>لیتر</td>
                             <td colspan="1.5">810,000</td>
-                            <td colspan="1.5">810,000,000</td>
+                            <td colspan="1.5">10%</td>
+                            <td colspan="1.5">891,000,000</td>
                         </tr>
                             <tr>
                                 <td scope="row">2</td>
@@ -1030,7 +1032,8 @@
                                 <td>1,200</td>
                                 <td>لیتر</td>
                                 <td colspan="1.5">750,000</td>
-                                <td colspan="1.5">900,000,000</td>
+                                <td colspan="1.5">10%</td>
+                                <td colspan="1.5">990,000,000</td>
                             </tr>
                             <tr>
                                 <td scope="row">3</td>
@@ -1040,9 +1043,11 @@
                                 <td>10,000</td>
                                 <td>لیتر</td>
                                 <td colspan="1.5">675,000</td>
-                                <td colspan="1.5">6,750,000,000</td>
+                                <td colspan="1.5">10%</td>
+                                <td colspan="1.5">7,425,000,000</td>
+                            </tr>
                         <tr>
-                        <td colspan="5" rowspan="4" class="text-left" style="vertical-align: top">
+                        <td colspan="5" rowspan="3" class="text-left" style="vertical-align: top">
                             <div class="d-flex justify-content-between">
                                 <span>شرایط و نحوه تسویه: </span>
                                 <span>نقدی <span class="border"
@@ -1052,9 +1057,6 @@
                             </div>
                             <p>توضیحات:</p>
                         </td>
-                    </tr>
-                    <tr>
-                    <td colspan="4" class="text-left">مالیات بر ارزش افزوده : %10</td>
                     </tr>
                     <tr>
                         <td colspan="4" class="text-left">جمع کل : 
