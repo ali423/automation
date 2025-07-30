@@ -30,19 +30,25 @@ class CommodityRequest extends FormRequest
             'warning_limit'=>['required','numeric'],
             'unit_id' =>['required', 'exists:units,id']
         ];
-        if ($this->get('type') == 'product'){
+        
+        // For products, ensure unit is kg only
+        if ($this->get('type') == 'product') {
+            $rules['unit_id'] = ['required', 'exists:units,id', function ($attribute, $value, $fail) {
+                $unit = \App\Models\Unit::find($value);
+                if ($unit && $unit->symbol !== 'kg') {
+                    $fail('Products must use kg as the unit.');
+                }
+            }];
+            
             $rules['materials']=['required','array','min:1'];
             $rules['materials.*']=['required',Rule::exists('commodities', 'id')->where('type','material'),'distinct'];
             $rules['material_amount']=['required','array','min:1'];
-            $rules['material_amount.*']=['required','numeric','max:100'];
+            $rules['material_amount.*']=['required','numeric','min:0.01'];
+            $rules['material_units']=['required','array','min:1'];
+            $rules['material_units.*']=['required','exists:units,id']; // Allow any unit for materials
             $rules['sales_price']=['required','integer'];
 
-            $total_materials=round(array_sum($this->get('material_amount')),2);
-            if ($total_materials > 100 ){
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'material_amount' => ['مجموع مقدار مواد تشکیل دهنده نباید از صد بیشتر باشد.'],
-                ]);
-            }
+            // Validate that material amounts are reasonable (not percentage-based validation)
             $materials=$this->get('materials');
             $material_amount=$this->get('material_amount');
 
@@ -51,9 +57,20 @@ class CommodityRequest extends FormRequest
                     'materials' => ['اطلاعات نوع ماده و مقدار آن باید متناظر باشند.'],
                 ]);
             }
-        }else{
-            $rules['purchase_price']=['required','integer'];
         }
-        return  $rules;
+        return $rules;
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
+    public function messages()
+    {
+        return [
+            'unit_id.required' => 'واحد باید انتخاب شود.',
+            'unit_id.exists' => 'واحد انتخاب شده معتبر نیست.',
+        ];
     }
 }

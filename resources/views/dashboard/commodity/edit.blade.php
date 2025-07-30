@@ -44,9 +44,11 @@
                                     <select id="unit" class="form-control" name="unit_id" required>
                                         <option value="">انتخاب کنید...</option>
                                         @foreach($units as $unit)
-                                            <option value="{{ $unit->id }}" {{ $commodity->unit_id == $unit->id ? 'selected' : '' }}>
-                                                {{ $unit->name }} ({{ $unit->symbol }})
-                                            </option>
+                                            @if($unit->symbol === 'kg' || $commodity->type !== 'product')
+                                                <option value="{{ $unit->id }}" {{ $commodity->unit_id == $unit->id ? 'selected' : '' }}>
+                                                    {{ $unit->name }} ({{ $unit->symbol }})
+                                                </option>
+                                            @endif
                                         @endforeach
                                     </select>
                                     <div class="invalid-feedback">واحد را انتخاب کنید</div>
@@ -91,13 +93,17 @@
 
                             @if ($commodity->type == 'product')
                                 <div id="product_formul" class="col-lg-12">
-                                    <p>فرمول ساخت برای صد کیلوگرم فراورده</p>
+                                    <p>فرمول ساخت محصول (مقادیر بر اساس واحد)</p>
+                                    <div class="alert alert-info">
+                                        <i class="ti-info-alt"></i>
+                                        <strong>راهنما:</strong> فرمول ساخت برای هر ۱۸۵ کیلوگرم محصول نهایی تعریف می‌شود.
+                                    </div>
                                     @foreach($used_materials as $used_material)
                                         <div id="inputFormRow" class="form-row shadow p-4 mb-3">
                                             <div class="form-group col-md-5"><label
                                                     for="materials"> {{ __("fields.commodity.material_type") }}</label>
-                                                <select id="materials" class="form-control" name="materials[]"
-                                                        required>
+                                                <select id="materials" class="form-control material-select" name="materials[]"
+                                                        onchange="loadMaterialUnits(this)" required>
                                                     @foreach ($materials as $material)
                                                         <option value="{{ $material->id }}"
                                                                 @if($material->id == $used_material->id )
@@ -111,19 +117,26 @@
                                                     انتخاب کنید
                                                 </div>
                                             </div>
-                                            <div class="form-group col-md-5">
+                                            <div class="form-group col-md-3">
                                                 <label
                                                     for="material_amount">{{ __("fields.commodity.material_amount") }}</label>
                                                 <input type="number" step="0.01" name="material_amount[]"
                                                        class="form-control"
                                                        id="material_amount"
-                                                       value="{{ $used_material->pivot->percentage }}"
+                                                       value="{{ $used_material->pivot->amount }}"
                                                        placeholder="{{ __("fields.commodity.material_amount") }}"
-                                                       max="100" onchange="percentage(this)" required="">
+                                                       min="0.01" required="">
                                                 <div class="invalid-feedback">
                                                     لطفاً {{ __("fields.commodity.material_amount") }}
                                                     را وارد کنید
                                                 </div>
+                                            </div>
+                                            <div class="form-group col-md-2">
+                                                <label for="material_unit">{{ __('fields.unit') }}</label>
+                                                <select name="material_units[]" class="form-control material-unit-select" required>
+                                                    <option value="">انتخاب کنید...</option>
+                                                </select>
+                                                <div class="invalid-feedback">واحد را انتخاب کنید</div>
                                             </div>
                                         </div>
                                     @endforeach
@@ -143,15 +156,82 @@
 
 @section('page_scripts')
     <script type="text/javascript">
+        // Preload material units data
+        var materialUnitsData = {};
+        @foreach($materials as $material)
+            materialUnitsData[{{ $material->id }}] = [
+                @foreach($material->selectable_units as $unit)
+                    {
+                        id: {{ $unit->id }},
+                        name: '{{ $unit->name }}',
+                        symbol: '{{ $unit->symbol }}',
+                        display_name: '{{ $unit->name }} ({{ $unit->symbol }})'
+                    }@if(!$loop->last),@endif
+                @endforeach
+            ];
+        @endforeach
+
+        // Function to load material units when material is selected
+        function loadMaterialUnits(materialSelect) {
+            var materialId = materialSelect.value;
+            var unitSelect = materialSelect.closest('#inputFormRow').querySelector('.material-unit-select');
+            
+            // Clear unit options first
+            unitSelect.innerHTML = '<option value="">انتخاب کنید...</option>';
+            
+            if (!materialId) {
+                return;
+            }
+            
+            // Get selectable units from preloaded data
+            var units = materialUnitsData[materialId];
+            if (units) {
+                units.forEach(function(unit) {
+                    var option = document.createElement('option');
+                    option.value = unit.id;
+                    option.textContent = unit.display_name;
+                    unitSelect.appendChild(option);
+                });
+            }
+        }
+        
+        // Initialize existing material rows on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.material-select').forEach(function(materialSelect) {
+                if (materialSelect.value) {
+                    loadMaterialUnits(materialSelect);
+                    
+                    // Set the selected unit for existing materials
+                    var unitSelect = materialSelect.closest('#inputFormRow').querySelector('.material-unit-select');
+                    var selectedUnitId = '{{ $commodity->unit_id }}'; // Default to product unit
+                    
+                    // Try to get the unit from the pivot data if available
+                    @foreach($used_materials as $used_material)
+                        if (materialSelect.value == {{ $used_material->id }}) {
+                            selectedUnitId = '{{ $used_material->pivot->unit_id ?? $commodity->unit_id }}';
+                        }
+                    @endforeach
+                    
+                    // Set the selected option after units are loaded
+                    setTimeout(function() {
+                        if (unitSelect && selectedUnitId) {
+                            unitSelect.value = selectedUnitId;
+                        }
+                    }, 100);
+                }
+            });
+        });
+        
         // add row
         $("#addRow").click(function () {
-            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"><div class="form-group col-md-5"><label for="materials"> {{ __("fields.commodity.material_type") }}</label><select id="materials" class="form-control" name="materials[1]" required><option value="">انتخاب کنید...</option>@foreach ($materials as $material)<option value="{{ $material->id }}">{{ $material->title }}</option>@endforeach</select><div class="invalid-feedback">{{ __("fields.commodity.material_type") }} را انتخاب کنید</div></div><div class="form-group col-md-5"><label for="material_amount">{{ __("fields.commodity.material_amount") }}</label><input type="number" step="0.01" name="material_amount[0]" class="form-control"id="material_amount"placeholder="{{ __("fields.commodity.material_amount") }}" max="100" onchange="percentage(this)" required=""><div class="invalid-feedback">لطفاً {{ __("fields.commodity.material_amount") }} را وارد کنید</div></div><div class="form-group col-sm-auto"><label for="" class="d-none d-md-block">&nbsp;</label></div><i id="removeRow" type="submit" class="ti-close"></i></div>';
+            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"><div class="form-group col-md-5"><label for="materials"> {{ __("fields.commodity.material_type") }}</label><select id="materials" class="form-control material-select" name="materials[1]" onchange="loadMaterialUnits(this)" required><option value="">انتخاب کنید...</option>@foreach ($materials as $material)<option value="{{ $material->id }}">{{ $material->title }}</option>@endforeach</select><div class="invalid-feedback">{{ __("fields.commodity.material_type") }} را انتخاب کنید</div></div><div class="form-group col-md-3"><label for="material_amount">{{ __("fields.commodity.material_amount") }}</label><input type="number" step="0.01" name="material_amount[0]" class="form-control"id="material_amount"placeholder="{{ __("fields.commodity.material_amount") }}" min="0.01" required=""><div class="invalid-feedback">لطفاً {{ __("fields.commodity.material_amount") }} را وارد کنید</div></div><div class="form-group col-md-2"><label for="material_unit">{{ __("fields.unit") }}</label><select name="material_units[0]" class="form-control material-unit-select" required><option value="">انتخاب کنید...</option></select><div class="invalid-feedback">واحد را انتخاب کنید</div></div><div class="form-group col-sm-auto"><label for="" class="d-none d-md-block">&nbsp;</label></div><i id="removeRow" type="submit" class="ti-close"></i></div>';
 
             $('#newRow').append(html);
 
             document.querySelectorAll('#inputFormRow').forEach((element, index) => {
-                element.querySelector('select').setAttribute('name', 'materials[' + index + ']');
-                element.querySelector('input').setAttribute('name', 'material_amount[' + index + ']');
+                element.querySelector('select[name^="materials"]').setAttribute('name', 'materials[' + index + ']');
+                element.querySelector('input[name^="material_amount"]').setAttribute('name', 'material_amount[' + index + ']');
+                element.querySelector('select[name^="material_units"]').setAttribute('name', 'material_units[' + index + ']');
             });
         });
 
@@ -159,8 +239,9 @@
         $(document).on('click', '#removeRow', function () {
             $(this).closest('#inputFormRow').remove();
             document.querySelectorAll('#inputFormRow').forEach((element, index) => {
-                element.querySelector('select').setAttribute('name', 'materials[' + index + ']');
-                element.querySelector('input').setAttribute('name', 'material_amount[' + index + ']');
+                element.querySelector('select[name^="materials"]').setAttribute('name', 'materials[' + index + ']');
+                element.querySelector('input[name^="material_amount"]').setAttribute('name', 'material_amount[' + index + ']');
+                element.querySelector('select[name^="material_units"]').setAttribute('name', 'material_units[' + index + ']');
             });
         });
 
@@ -289,6 +370,37 @@
             }
             updatevals();
         })
+
+        // Trigger type change on page load if type is already selected
+        $(document).ready(function() {
+            if ($('#type').val()) {
+                $('#type').trigger('change');
+            }
+        });
+
+        // Form validation before submission
+        $('form').on('submit', function(e) {
+            var selectedType = $('#type').val();
+            var selectedUnit = $('#unit').val();
+            
+            if (selectedType === 'product') {
+                if (!selectedUnit) {
+                    e.preventDefault();
+                    alert('لطفاً واحد کیلوگرم را برای محصول انتخاب کنید.');
+                    $('#unit').focus();
+                    return false;
+                }
+                
+                // Check if the selected unit is kg
+                var unitText = $('#unit option:selected').text();
+                if (!unitText.includes('kg') && !unitText.includes('کیلوگرم')) {
+                    e.preventDefault();
+                    alert('محصولات باید از واحد کیلوگرم استفاده کنند.');
+                    $('#unit').focus();
+                    return false;
+                }
+            }
+        });
     </script>
     <!-- These plugins only need for the run this page -->
     <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>

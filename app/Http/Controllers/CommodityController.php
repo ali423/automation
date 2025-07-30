@@ -7,6 +7,7 @@ use App\Http\Requests\CommodityUpdateRequest;
 use App\Models\Commodity;
 use App\Models\Unit;
 use App\Services\CommodityService;
+use Illuminate\Support\Facades\DB;
 
 class CommodityController extends Controller
 {
@@ -40,8 +41,18 @@ class CommodityController extends Controller
      */
     public function create()
     {
+        $materials = Commodity::query()->where('type','material')->get();
+        
+        // Preload all selectable units for each material
+        $commodityUnitService = app(\App\Services\CommodityUnitService::class);
+        $materialsWithUnits = $materials->map(function ($material) use ($commodityUnitService) {
+            $selectableUnits = $commodityUnitService->getSelectableUnits($material);
+            $material->selectable_units = $selectableUnits;
+            return $material;
+        });
+        
         return view('dashboard.commodity.create', [
-            'materials' => Commodity::query()->where('type','material')->get(),
+            'materials' => $materialsWithUnits,
             'units' => Unit::all()
         ]);
     }
@@ -54,7 +65,9 @@ class CommodityController extends Controller
      */
     public function store(CommodityRequest $request)
     {
-        $this->service->create($request->validationData());
+        DB::transaction(function () use ($request) {
+            $this->service->create($request->validationData());
+        });
         return redirect(route('commodity.index'))->with('successful', 'اطلاعات ثبت شد.');
     }
 
@@ -66,7 +79,7 @@ class CommodityController extends Controller
      */
     public function show(Commodity $commodity)
     {
-        $materials = $commodity->materials;
+        $materials = $commodity->materials()->with('unit')->get();
         return view('dashboard.commodity.show', [
             'commodity' => $commodity,
             'materials' => $materials,
@@ -81,12 +94,21 @@ class CommodityController extends Controller
      */
     public function edit(Commodity $commodity)
     {
-        $used_materials = $commodity->materials;
+        $used_materials = $commodity->materials()->with('unit')->get();
+        $materials = Commodity::where('type', 'material')->get();
+        
+        // Preload all selectable units for each material
+        $commodityUnitService = app(\App\Services\CommodityUnitService::class);
+        $materialsWithUnits = $materials->map(function ($material) use ($commodityUnitService) {
+            $selectableUnits = $commodityUnitService->getSelectableUnits($material);
+            $material->selectable_units = $selectableUnits;
+            return $material;
+        });
 
         return view('dashboard.commodity.edit', [
             'commodity' => $commodity,
             'units' => Unit::all(),
-            'materials' => Commodity::all(),
+            'materials' => $materialsWithUnits,
             'used_materials' => $used_materials,
         ]);
     }
@@ -100,7 +122,9 @@ class CommodityController extends Controller
      */
     public function update(CommodityUpdateRequest $request, Commodity $commodity)
     {
-        $this->service->update($commodity, $request->validationData());
+        DB::transaction(function () use ($request, $commodity) {
+            $this->service->update($commodity, $request->validationData());
+        });
         return redirect(route('commodity.show', $commodity))->with('successful', 'اطلاعات ویرایش شد.');
     }
 
@@ -139,4 +163,6 @@ class CommodityController extends Controller
             'type'=>$commodity->type,
         ]);
     }
+
+
 }

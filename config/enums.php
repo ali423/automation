@@ -33,7 +33,8 @@ return [
                     'fa_name' => 'فرمول ساخت',
                     'primary_key' => 'material_id',
                     'pivots' => [
-                        'percentage' => 'درصد تشکیل دهنده'
+                        'amount' => 'مقدار ماده',
+                        'unit_id' => 'واحد ماده'
                     ],
                 ],
                 'warehouses' => [

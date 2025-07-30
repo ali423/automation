@@ -39,7 +39,7 @@ class Commodity extends Model
     public function materials()
     {
         return $this->belongsToMany(Commodity::class, 'product_formula', 'product_id', 'material_id')
-            ->withPivot('percentage')
+            ->withPivot('amount', 'unit_id')
             ->withTimestamps();
     }
 
@@ -52,16 +52,8 @@ class Commodity extends Model
     public function getBasePriceAttribute()
     {
         if ($this->type == 'product') {
-            $total_amount = 0;
-            $materials = $this->materials()->get();
-            foreach ($materials as $material) {
-                if ($material->type == 'material') {
-                    $total_amount = $total_amount + round(($material->pivot->percentage / 100) * $material->purchase_price, 2);
-                } else {
-                    $total_amount = $total_amount + round(($material->pivot->percentage / 100) * $material->base_price, 2);
-                }
-            }
-            return $total_amount;
+            $productFormulaService = app(\App\Services\ProductFormulaService::class);
+            return $productFormulaService->calculateMaterialCost($this);
         }
         return $this->purchase_price;
     }
