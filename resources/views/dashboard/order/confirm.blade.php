@@ -20,7 +20,7 @@
                                 <div class="form-group col">
                                     <label for="customer_id">نام مشتری</label>
                                     <select id="customer_id" class="form-control" name="customer_id" required>
-                                        <option value="{{ $order->customer_id }}">{{ $order->customer->name }}</option>
+                                        <option value="{{ $order->customer_id }}">{{ $order->customer ? $order->customer->name : 'مشتری حذف شده' }}</option>
                                     </select>
                                     <div class="invalid-feedback">
                                         مشتری را انتخاب کنید
@@ -34,7 +34,7 @@
                                         <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
                                         <select id="commodity_id" class="form-control" name="commodity_id[0]"
                                             onchange="commodity_change(this)" required>
-                                            <option value="{{ $order->commodity_id }}">{{ $order->commodity->title }}
+                                            <option value="{{ $order->commodity_id }}">{{ $order->commodity ? $order->commodity->title : 'کالا حذف شده' }}
                                             </option>
                                         </select>
                                         <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب
@@ -64,43 +64,49 @@
                                         <div class="invalid-feedback">{{ __('fields.sell-price') }} را انتخاب کنید</div>
                                     </div>
                                     @php($fixed_amount = $order->commodity_amount)
-                                    @foreach ($order->commodity->warehouses()->orderBy('commodity_amount', 'DESC')->get() as $warehouse)
-                                        @switch ($order->unit)
-                                            @case ('keg')
-                                                @php($warehouse_max = round($warehouse->pivot->commodity_amount * 185, 2))
-                                            @break
+                                    @if($order->commodity)
+                                        @foreach ($order->commodity->warehouses()->orderBy('commodity_amount', 'DESC')->get() as $warehouse)
+                                            @switch ($order->unit)
+                                                @case ('keg')
+                                                    @php($warehouse_max = round($warehouse->pivot->commodity_amount * 185, 2))
+                                                @break
 
-                                            @case ('kg')
-                                                @php($warehouse_max = $warehouse->pivot->commodity_amount)
-                                            @break
+                                                @case ('kg')
+                                                    @php($warehouse_max = $warehouse->pivot->commodity_amount)
+                                                @break
 
-                                            @case ('twenty_liters')
-                                                @php($warehouse_max = round($warehouse->pivot->commodity_amount * 17.8, 2))
-                                            @break
-                                        @endswitch
-                                        <div class="input-group mb-3 wares">
-                                            <div class="input-group-prepend">
-                                                <span class="input-group-text"
-                                                    id="انبار مرکزی">{{ $warehouse->title }}</span>
+                                                @case ('twenty_liters')
+                                                    @php($warehouse_max = round($warehouse->pivot->commodity_amount * 17.8, 2))
+                                                @break
+                                            @endswitch
+                                            <div class="input-group mb-3 wares">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"
+                                                        id="انبار مرکزی">{{ $warehouse->title }}</span>
+                                                </div>
+                                                <input id="commodityamount" onkeyup="commodityamountfunc(this)" type="number" class="ware-amount form-control" min="0"
+                                                    max="{{ $warehouse_max }}"
+                                                    @if ($fixed_amount <= $warehouse_max) value="{{ $fixed_amount }}"
+                                                       @else
+                                                       @php($fixed_amount = $fixed_amount- $warehouse_max)
+                                                       value="{{ $warehouse_max }}" @endif
+                                                    name="amount[{{ $order->commodity_id }}][{{ $warehouse->id }}]"
+                                                    required="">
+                                                <div class="input-group-append"><span class="input-group-text"
+                                                        id="ware-amount">حداکثر:{{ $warehouse_max }}</span>
+                                                </div>
+                                                <div class="warehouse-inputs position-relative"
+                                                    style="overflow: hidden;height:0;width:0;">
+                                                    <input type="text" name="warehouse_id[{{ $order->commodity_id }}][]"
+                                                        value="{{ $warehouse->id }}">
+                                                </div>
                                             </div>
-                                            <input id="commodityamount" onkeyup="commodityamountfunc(this)" type="number" class="ware-amount form-control" min="0"
-                                                max="{{ $warehouse_max }}"
-                                                @if ($fixed_amount <= $warehouse_max) value="{{ $fixed_amount }}"
-                                                   @else
-                                                   @php($fixed_amount = $fixed_amount- $warehouse_max)
-                                                   value="{{ $warehouse_max }}" @endif
-                                                name="amount[{{ $order->commodity_id }}][{{ $warehouse->id }}]"
-                                                required="">
-                                            <div class="input-group-append"><span class="input-group-text"
-                                                    id="ware-amount">حداکثر:{{ $warehouse_max }}</span>
-                                            </div>
-                                            <div class="warehouse-inputs position-relative"
-                                                style="overflow: hidden;height:0;width:0;">
-                                                <input type="text" name="warehouse_id[{{ $order->commodity_id }}][]"
-                                                    value="{{ $warehouse->id }}">
-                                            </div>
+                                        @endforeach
+                                    @else
+                                        <div class="alert alert-warning">
+                                            کالای مربوط به این سفارش حذف شده است.
                                         </div>
-                                    @endforeach
+                                    @endif
                                 </div>
                             </div>
 

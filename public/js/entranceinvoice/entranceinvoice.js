@@ -1,102 +1,126 @@
-// printable invoice titles
-let customer = document.querySelector('.customer');
-let doc = document.querySelector('.documentation');
-let ware = document.querySelector('.warehouse');
+// Select invoice and factor elements
+const customerInvoice = document.querySelector("#invoice-customer");
+const documentationInvoice = document.querySelector("#invoice-documentation");
+const warehouseInvoice = document.querySelector("#invoice-warehouse");
+const finvoice = document.querySelector("#finvoice");
+const factorBtn2 = document.querySelector(".factorbtn2");
+const finvoice2 = document.querySelector("#finvoice2");
+const finvoiceTejarat = document.querySelector("#finvoice-tejarat");
+const tejaratBtn = document.querySelector(".tejaratbtn");
 
-// print buttons
-let customerbtn = document.querySelector('.customerbtn');
-let docbtn = document.querySelector('.documentationbtn');
-let warebtn = document.querySelector('.warehousebtn');
-let factorbtn = document.querySelector('.factorbtn');
+// Select print buttons
+const customerBtn = document.querySelector(".customerbtn");
+const documentationBtn = document.querySelector(".documentationbtn");
+const warehouseBtn = document.querySelector(".warehousebtn");
+const factorBtn = document.querySelector(".factorbtn");
 
-//export import invoice
-let invoice = document.querySelector('#invoice')
+// Function to manage display and print
+function showInvoice(activeInvoice) {
+    // List of all elements
+    const invoices = [
+        customerInvoice,
+        documentationInvoice,
+        warehouseInvoice,
+        finvoice,
+        finvoice2,
+        finvoiceTejarat,
+    ];
 
-//factor invoice
-let finvoice = document.querySelector('#finvoice')
-
-customerbtn.addEventListener('click', function(){
-    if(!(doc.classList.contains('d-none'))){
-        doc.classList.add('d-none');
-    }else if(!(ware.classList.contains('d-none'))){
-        ware.classList.add('d-none');
-    }
-    
-    if(!(invoice.classList.contains('showprint'))&&(finvoice.classList.contains('showprint'))){
-        finvoice.classList.remove('showprint');
-        if(!(finvoice.classList.contains('hideprint'))){
-            finvoice.classList.add('hideprint');
+    // Disable all elements
+    invoices.forEach((invoice) => {
+        if (invoice) {
+            invoice.classList.remove("showprint", "print-active");
+            invoice.classList.add("d-none");
+            if (
+                invoice === finvoice ||
+                invoice === finvoice2 ||
+                invoice === finvoiceTejarat
+            ) {
+                invoice.classList.add("hideprint");
+            }
         }
-        if(invoice.classList.contains('hideprint')){
-            invoice.classList.remove('hideprint');
-        }
-        invoice.classList.add('showprint');
+    });
+
+    // Enable the selected element
+    if (activeInvoice) {
+        activeInvoice.classList.remove("d-none", "hideprint");
+        activeInvoice.classList.add("showprint", "print-active");
     }
-    customer.classList.remove('d-none')
+}
+
+// Reset display after print
+window.onafterprint = function () {
+    const invoices = [
+        customerInvoice,
+        documentationInvoice,
+        warehouseInvoice,
+        finvoice,
+        finvoice2,
+        finvoiceTejarat,
+    ];
+    invoices.forEach((invoice) => {
+        if (invoice) {
+            invoice.classList.remove("showprint", "print-active");
+            invoice.classList.add("d-none");
+            if (
+                invoice === finvoice ||
+                invoice === finvoice2 ||
+                invoice === finvoiceTejarat
+            ) {
+                invoice.classList.add("hideprint");
+            }
+        }
+    });
+};
+
+// Event listener for customer invoice button
+customerBtn.addEventListener("click", function () {
+    showInvoice(customerInvoice);
     window.print();
-})
-docbtn.addEventListener('click', function(){
-    if(!(customer.classList.contains('d-none'))){
-        customer.classList.add('d-none');
-    }else if(!(ware.classList.contains('d-none'))){
-        ware.classList.add('d-none');
-    }
-    
-    if(!(invoice.classList.contains('showprint'))&&(finvoice.classList.contains('showprint'))){
-        finvoice.classList.remove('showprint');
-        if(!(finvoice.classList.contains('hideprint'))){
-            finvoice.classList.add('hideprint');
-        }
-        if(invoice.classList.contains('hideprint')){
-            invoice.classList.remove('hideprint');
-        }
-        invoice.classList.add('showprint');
-    }
-    doc.classList.remove('d-none')
-    window.print();
-})
-warebtn.addEventListener('click', function(){
-    if(!(doc.classList.contains('d-none'))){
-        doc.classList.add('d-none');
-    }else if(!(customer.classList.contains('d-none'))){
-        customer.classList.add('d-none');
-    }
-    
-    if(!(invoice.classList.contains('showprint'))&&(finvoice.classList.contains('showprint'))){
-        finvoice.classList.remove('showprint');
-        if(!(finvoice.classList.contains('hideprint'))){
-            finvoice.classList.add('hideprint');
-        }
-        if(invoice.classList.contains('hideprint')){
-            invoice.classList.remove('hideprint');
-        }
-        invoice.classList.add('showprint');
-    }
-    ware.classList.remove('d-none')
-    window.print();
-})
-
-factorbtn.addEventListener('click', function(){
-    
-    if(!(finvoice.classList.contains('showprint'))&&(invoice.classList.contains('showprint'))){
-        invoice.classList.remove('showprint');
-        if(!(invoice.classList.contains('hideprint'))){
-            invoice.classList.add('hideprint');
-        }
-        if(finvoice.classList.contains('hideprint')){
-            finvoice.classList.remove('hideprint');
-        }
-        finvoice.classList.add('showprint');
-    }
-    window.print();
-})
-
-var table = document.querySelectorAll('th[scope="row"]');
-for(var i=0;i<table.length;i++){
-    table[i].innerHTML = i+1;
-} 
-
-var rownubmer =  document.querySelectorAll('#rownumbers');
-rownubmer.forEach((element,index) => {
-    element.innerHTML = index+1;
 });
+
+// Event listener for documentation invoice button
+documentationBtn.addEventListener("click", function () {
+    showInvoice(documentationInvoice);
+    window.print();
+});
+
+// Event listener for warehouse invoice button
+warehouseBtn.addEventListener("click", function () {
+    showInvoice(warehouseInvoice);
+    window.print();
+});
+
+// Event listener for factor button
+factorBtn.addEventListener("click", function () {
+    showInvoice(finvoice);
+    window.print();
+});
+
+// Event listener for factor button 2
+factorBtn2.addEventListener("click", function () {
+    showInvoice(finvoice2);
+    window.print();
+});
+
+// Event listener for tejarat button
+if (tejaratBtn && finvoiceTejarat) {
+    tejaratBtn.addEventListener("click", function () {
+        showInvoice(finvoiceTejarat);
+        window.print();
+    });
+}
+
+// Set row numbers for invoice tables
+document
+    .querySelectorAll('.invoice table th[scope="row"]')
+    .forEach((th, index) => {
+        th.innerHTML = index + 1;
+    });
+
+// Set row numbers for factor table
+document
+    .querySelectorAll('#finvoice .factortable th[scope="row"]')
+    .forEach((th, index) => {
+        th.innerHTML = index + 1;
+    });
