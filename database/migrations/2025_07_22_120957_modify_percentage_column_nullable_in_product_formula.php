@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,10 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('product_formula', function (Blueprint $table) {
-            // Modify percentage column to allow NULL values
-            $table->double('percentage')->nullable()->change();
-        });
+        // Check if the percentage column exists before trying to modify it
+        if (Schema::hasColumn('product_formula', 'percentage')) {
+            // Modify percentage column to allow NULL values using raw SQL
+            DB::statement('ALTER TABLE product_formula MODIFY percentage DOUBLE NULL');
+        }
     }
 
     /**
@@ -22,9 +24,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('product_formula', function (Blueprint $table) {
-            // Revert percentage column to not allow NULL values
-            $table->double('percentage')->nullable(false)->change();
-        });
-    }
-}; 
+        // Check if the percentage column exists before trying to modify it
+        if (Schema::hasColumn('product_formula', 'percentage')) {
+            // Revert percentage column to not allow NULL values using raw SQL
+            DB::statement('ALTER TABLE product_formula MODIFY percentage DOUBLE NOT NULL');
+        }    }
+};
