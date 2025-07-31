@@ -13,9 +13,10 @@ class ProductionRequest extends Model
 {
     use HasFactory, SoftDeletes, ActivityTrait, FileTrait, CommentTrait;
     
-
-    
     protected $fillable = [
+        'product_id',
+        'production_amount',
+        'unit_id',
         'description',
         'status',
         'number',
@@ -23,41 +24,73 @@ class ProductionRequest extends Model
     ];
 
     protected $casts = [
+        'production_amount' => 'decimal:2',
         'total_cost' => 'decimal:2',
     ];
 
-
-    
-    public function commodities()
+    /**
+     * Production request belongs to a product
+     */
+    public function product()
     {
-        return $this->belongsToMany(Commodity::class, 'production_commodities', 'production_request_id', 'commodity_id')
-            ->using(ProductionCommodity::class)
-            ->withPivot('type', 'amount', 'unit_id', 'unit_cost', 'total_cost')
-            ->with('unit')
+        return $this->belongsTo(Commodity::class, 'product_id');
+    }
+
+    /**
+     * Production request belongs to a unit
+     */
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
+    }
+
+    /**
+     * Production request has many materials through pivot table
+     */
+    public function materials()
+    {
+        return $this->belongsToMany(Commodity::class, 'production_materials', 'production_request_id', 'material_id')
+            ->withPivot('required_amount', 'unit_id', 'unit_cost', 'total_cost')
             ->withTimestamps();
     }
-    
-    public function inputMaterials()
+
+    /**
+     * Get created date attribute
+     */
+    public function getCreatedDateAttribute() 
     {
-        return $this->belongsToMany(Commodity::class, 'production_commodities', 'production_request_id', 'commodity_id')
-            ->using(ProductionCommodity::class)
-            ->withPivot('type', 'amount', 'unit_id', 'unit_cost', 'total_cost')
-            ->with('unit')
-            ->withTimestamps()
-            ->wherePivot('type', 'input');
-    }
-    
-    public function outputProducts()
-    {
-        return $this->belongsToMany(Commodity::class, 'production_commodities', 'production_request_id', 'commodity_id')
-            ->using(ProductionCommodity::class)
-            ->withPivot('type', 'amount', 'unit_id', 'unit_cost', 'total_cost')
-            ->with('unit')
-            ->withTimestamps()
-            ->wherePivot('type', 'output');
+        return $this->created_at->format('Y-m-d');
     }
 
-
+    /**
+     * Get the amount in main unit for each material
+     * This is a computed attribute that calculates the equivalent amount in the main unit
+     */
+    public function getMainUnitAmountAttribute()
+    {
+        $commodityUnitService = app(\App\Services\CommodityUnitService::class);
+        $mainUnitAmounts = [];
+        
+        foreach ($this->materials as $material) {
+            $selectedUnitId = $material->pivot->unit_id;
+            $amountInMainUnit = $commodityUnitService->convertToMainUnit(
+                $material,
+                $material->pivot->required_amount,
+                $selectedUnitId
+            );
+            
+            $mainUnitAmounts[$material->id] = [
+                'material_title' => $material->title,
+                'original_amount' => $material->pivot->required_amount,
+                'original_unit_id' => $selectedUnitId,
+                'main_unit_amount' => $amountInMainUnit ?? 0,
+                'main_unit_name' => $material->unit ? $material->unit->name : 'نامشخص',
+                'main_unit_symbol' => $material->unit ? $material->unit->symbol : '',
+            ];
+        }
+        
+        return $mainUnitAmounts;
+    }
 
     // Scopes
     public function scopeAwaitingApproval($query)
@@ -87,51 +120,30 @@ class ProductionRequest extends Model
 
     public function scopeActive($query)
     {
-        return $query->whereIn('status', ['awaiting_approval', 'approvaled']);
+        return $query->whereIn('status', ['awaiting_approval', 'approvaled', 'approved']);
     }
     
-    // Computed Attributes
-    public function getCreatedDateAttribute() 
-    {
-        return $this->created_at->format('Y-m-d');
-    }
-    
-    public function getTotalInputCostAttribute()
-    {
-        return $this->inputMaterials->sum('pivot.total_cost');
-    }
-    
-    public function getTotalOutputValueAttribute()
-    {
-        return $this->outputProducts->sum('pivot.total_cost');
-    }
-    
-    public function getProfitAttribute()
-    {
-        return $this->total_output_value - $this->total_input_cost;
-    }
-    
+    // Computed Attributes - simplified
     public function getStatusTextAttribute()
     {
-        $statuses = [
+        return [
             'awaiting_approval' => 'در انتظار تایید',
             'approvaled' => 'تایید شده',
+            'approved' => 'تایید شده', // Legacy support for existing data
             'rejected' => 'رد شده',
             'expired' => 'منقضی شده',
             'done' => 'تکمیل شده',
-        ];
-        
-        return $statuses[$this->status] ?? $this->status;
+        ][$this->status] ?? 'نامشخص';
     }
 
     public function getIsEditableAttribute()
     {
-        return $this->status === 'awaiting_approval';
+        return in_array($this->status, ['awaiting_approval']);
     }
 
     public function getIsDeletableAttribute()
     {
-        return $this->status === 'awaiting_approval';
+        return in_array($this->status, ['awaiting_approval']);
     }
 
     public function getCanBeApprovedAttribute()
@@ -144,111 +156,54 @@ class ProductionRequest extends Model
         return $this->status === 'awaiting_approval';
     }
 
+    // Financial calculations - simplified
+    public function getTotalInputCostAttribute()
+    {
+        return $this->materials->sum('pivot.total_cost');
+    }
+    
+    public function getTotalOutputValueAttribute()
+    {
+        return $this->production_amount * ($this->product->sales_price ?? 0);
+    }
+    
+    public function getProfitAttribute()
+    {
+        return $this->total_output_value - $this->total_input_cost;
+    }
+
     /**
-     * Override toArray method to exclude computed attributes from activity logging
-     * This prevents issues with ActivityTrait when dealing with computed attributes
+     * Get profit percentage attribute
+     */
+    public function getProfitPercentageAttribute()
+    {
+        if ($this->total_output_value > 0) {
+            return ($this->profit / $this->total_output_value) * 100;
+        }
+        return 0;
+    }
+
+    /**
+     * Override toArray to exclude computed attributes from activity logging
      */
     public function toArray()
     {
         $array = parent::toArray();
         
-        // Remove computed attributes from the array to prevent issues with ActivityTrait
-        unset($array['created_date']);
-        unset($array['total_input_cost']);
-        unset($array['total_output_value']);
-        unset($array['profit']);
+        // Remove computed attributes that shouldn't be logged
         unset($array['status_text']);
         unset($array['is_editable']);
         unset($array['is_deletable']);
         unset($array['can_be_approved']);
         unset($array['can_be_rejected']);
-        
-        // Ensure we have the basic fields needed for activity tracking
-        $array['id'] = $this->id;
-        $array['status'] = $this->status;
-        $array['number'] = $this->number;
-        $array['description'] = $this->description;
-        $array['total_cost'] = $this->total_cost;
-        $array['created_at'] = $this->created_at;
-        $array['updated_at'] = $this->updated_at;
-        
-        // Add relationships data for activity tracking
-        if ($this->relationLoaded('commodities')) {
-            $array['commodities'] = $this->commodities->toArray();
-        }
+        unset($array['total_input_cost']);
+        unset($array['total_output_value']);
+        unset($array['profit']);
+        unset($array['profit_percentage']);
+        unset($array['main_unit_amount']);
         
         return $array;
     }
 
-    /**
-     * Override getRelatedData method to fix ActivityTrait compatibility
-     * This method is called by ActivityTrait during pivot events
-     */
-    public static function getRelatedData($item, $relationName, $pivotIdsAttributes)
-    {
-        $changed_relations = array_column($item->$relationName()->whereIn('id', $pivotIdsAttributes)->get()->toArray(), 'pivot');
-        $relation_data = config('enums.models')[get_class($item)]['relations'][$relationName] ?? null;
-        $pivot_exits = $relation_data['pivots'] ?? null;
-        
-        if (!empty($pivot_exits)) {
-            foreach ($changed_relations as $value) {
-                foreach (array_keys($pivot_exits) as $pivot) {
-                    $pivot_res[$value[$relation_data['primary_key']]]['pivots'][$pivot] = $value[$pivot];
-                }
-            }
-        } else {
-            $pivot_res = $pivotIdsAttributes;
-        }
-        
-        return $pivot_res ?? null;
-    }
 
-    // ActivityTrait compatibility methods - these are called by the trait
-    public static function createActivity()
-    {
-        // This method is called by ActivityTrait but we don't need to implement it
-        // since the trait handles it internally
-    }
-
-    public static function updateActivity()
-    {
-        // This method is called by ActivityTrait but we don't need to implement it
-        // since the trait handles it internally
-    }
-
-    public static function deleteActivity()
-    {
-        // This method is called by ActivityTrait but we don't need to implement it
-        // since the trait handles it internally
-    }
-
-    public static function pivotActivity()
-    {
-        // This method is called by ActivityTrait but we don't need to implement it
-        // since the trait handles it internally
-    }
-
-    public static function pivotSyncActivity()
-    {
-        // This method is called by ActivityTrait but we don't need to implement it
-        // since the trait handles it internally
-    }
-
-    public static function pivotAttachActivity()
-    {
-        // This method is called by ActivityTrait but we don't need to implement it
-        // since the trait handles it internally
-    }
-
-    public static function pivotDetachActivity()
-    {
-        // This method is called by ActivityTrait but we don't need to implement it
-        // since the trait handles it internally
-    }
-
-    public static function pivotUpdateActivity()
-    {
-        // This method is called by ActivityTrait but we don't need to implement it
-        // since the trait handles it internally
-    }
 } 

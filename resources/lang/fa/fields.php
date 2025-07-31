@@ -10,6 +10,7 @@ return [
     'sell-price' => 'قیمت فروش',
     'sell-price_per_unit' => 'قیمت فروش هر واحد کالا',
     'sales_price' => 'قیمت فروش',
+    'sale_price' => 'قیمت فروش',
     'purchase_price' => 'قیمت خرید',
     'purchase_unit_price' => 'قیمت خرید (ریال)',
     'avr_purchase_price' => 'میانگین قیمت خرید (ریال)',
@@ -113,9 +114,14 @@ return [
         'total_input_cost' => 'هزینه کل مواد اولیه',
         'total_output_value' => 'ارزش کل محصولات',
         'profit' => 'سود',
+        'production_amount' => 'مقدار تولید',
+        'product_id' => 'محصول تولیدی',
+        'materials_data' => 'مواد اولیه',
+        'unit_cost' => 'هزینه واحد',
         'status' => [
             'awaiting_approval' => 'در انتظار تایید',
             'approvaled' => 'تایید شده',
+            'approved' => 'تایید شده', // Legacy support for existing data
             'rejected' => 'رد شده',
             'expired' => 'منقضی شده',
             'done' => 'تکمیل شده',

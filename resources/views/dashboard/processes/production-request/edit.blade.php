@@ -16,14 +16,16 @@
                             @method('PATCH')
                             @csrf
                             
-                            <!-- Product Selection -->
                             <div class="form-row m-3">
                                 <div class="form-group col-md-6">
-                                    <label for="product_id">{{ __('fields.commodity.name') }}</label>
-                                    <select id="product_id" class="form-control" name="product_id" onchange="loadProductFormula(this)" required>
+                                    <label for="product_id">{{ __('fields.production-request.product_id') }}</label>
+                                    <select id="product_id" class="form-control" name="product_id" required>
                                         <option value="">انتخاب کنید</option>
                                         @foreach ($products as $product)
-                                            <option value="{{ $product->id }}" {{ $currentProductId == $product->id ? 'selected' : '' }}>
+                                            <option value="{{ $product->id }}" 
+                                                    {{ $request->product_id == $product->id ? 'selected' : '' }}
+                                                    data-materials="{{ $product->materials->count() }}"
+                                                    data-unit="{{ $product->unit ? $product->unit->symbol : '' }}">
                                                 {{ $product->title }}
                                             </option>
                                         @endforeach
@@ -33,19 +35,28 @@
                                     </div>
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label for="amount">{{ __('fields.commodity.amount') }} (کیلوگرم)</label>
-                                    <input type="number" class="form-control" id="amount" name="amount" min="0.001" step="0.001" value="{{ old('amount', $currentAmount) }}" required>
+                                    <label for="amount">{{ __('fields.production-request.production_amount') }} <span id="unit-display"></span></label>
+                                    <input type="number" class="form-control" id="amount" name="amount" min="0.001" step="0.001" value="{{ old('amount', $request->production_amount) }}" required>
                                     <div class="invalid-feedback">
                                         مقدار تولید را وارد کنید
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Product Formula Display -->
-                            <div id="product_formula_section" class="col-lg-12" style="display: none;">
-                                <p>فرمول ساخت محصول</p>
-                                <div id="formula_display" class="form-row shadow p-4 mb-3">
-                                    <!-- Formula will be loaded here by JavaScript -->
+                            <!-- Required Materials Section -->
+                            <div id="materials-section" class="m-3" style="display: none;">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">مواد اولیه مورد نیاز</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="materials-list">
+                                            <!-- Materials will be loaded here dynamically -->
+                                        </div>
+                                        <div id="materials-summary" class="mt-3">
+                                            <!-- Summary will be shown here -->
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -80,63 +91,132 @@
 @endsection
 
 @section('page_scripts')
-    <!-- These plugins only need for the run this page -->
     <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
-    <script type="text/javascript">
-        // Preload product formulas data
-        var productFormulas = {};
-        @foreach($products as $product)
-            productFormulas[{{ $product->id }}] = [
-                @foreach($product->materials as $material)
-                    {
-                        material_id: {{ $material->id }},
-                        material_title: '{{ $material->title }}',
-                        amount: {{ $material->pivot->amount }},
-                        unit_id: {{ $material->pivot->unit_id }},
-                        unit_name: '{{ $material->unit->name }}',
-                        unit_symbol: '{{ $material->unit->symbol }}'
-                    }@if(!$loop->last),@endif
-                @endforeach
-            ];
-        @endforeach
+    <script>
+        $(document).ready(function() {
+            let currentProductData = null;
 
-        // Load product formula when product is selected
-        function loadProductFormula(el) {
-            var productId = el.value;
-            var formulaSection = document.getElementById('product_formula_section');
-            var formulaDisplay = document.getElementById('formula_display');
+            // Initialize with current values
+            const currentProductId = $('#product_id').val();
+            const currentAmount = parseFloat($('#amount').val()) || 0;
             
-            if (productId && productFormulas[productId]) {
-                var formula = productFormulas[productId];
-                var html = '';
-                
-                formula.forEach(function(material) {
-                    html += '<div class="form-group col-md-4">';
-                    html += '<label>نام ماده</label>';
-                    html += '<input type="text" value="' + material.material_title + '" class="form-control" disabled>';
-                    html += '</div>';
-                    html += '<div class="form-group col-md-4">';
-                    html += '<label>مقدار مورد نیاز</label>';
-                    html += '<input type="text" value="' + material.amount + '" class="form-control" disabled>';
-                    html += '</div>';
-                    html += '<div class="form-group col-md-4">';
-                    html += '<label>واحد</label>';
-                    html += '<input type="text" value="' + material.unit_name + ' (' + material.unit_symbol + ')" class="form-control" disabled>';
-                    html += '</div>';
-                });
-                
-                formulaDisplay.innerHTML = html;
-                formulaSection.style.display = 'block';
-            } else {
-                formulaSection.style.display = 'none';
+            if (currentProductId) {
+                const unitDisplay = $('#product_id').find('option:selected').data('unit');
+                $('#unit-display').text(unitDisplay ? `(${unitDisplay})` : '');
+                loadProductMaterials(currentProductId);
+                if (currentAmount > 0) {
+                    // Wait for data to load, then update display
+                    setTimeout(() => {
+                        updateMaterialsDisplay(currentAmount);
+                    }, 100);
+                }
             }
-        }
 
-        // Load formula on page load if product is already selected
-        document.addEventListener('DOMContentLoaded', function() {
-            var productSelect = document.getElementById('product_id');
-            if (productSelect.value) {
-                loadProductFormula(productSelect);
+            $('#product_id').change(function() {
+                const productId = $(this).val();
+                const unitDisplay = $(this).find('option:selected').data('unit');
+                
+                $('#unit-display').text(unitDisplay ? `(${unitDisplay})` : '');
+                
+                if (productId) {
+                    loadProductMaterials(productId);
+                } else {
+                    hideMaterials();
+                }
+            });
+
+            $('#amount').on('input', function() {
+                const amount = parseFloat($(this).val()) || 0;
+                
+                if (currentProductData && amount > 0) {
+                    updateMaterialsDisplay(amount);
+                }
+            });
+
+            function loadProductMaterials(productId) {
+                // Show loading state
+                showMaterials();
+                $('#materials-list').html(`
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">در حال بارگذاری...</span>
+                        </div>
+                        <p class="mt-2">در حال بارگذاری مواد اولیه...</p>
+                    </div>
+                `);
+                
+                // Load product data via AJAX
+                $.ajax({
+                    url: '{{ route("api.production.inventory") }}',
+                    method: 'GET',
+                    data: { product_id: productId },
+                    success: function(response) {
+                        currentProductData = response;
+                        updateMaterialsDisplay(parseFloat($('#amount').val()) || 0);
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading materials:', xhr);
+                        $('#materials-list').html(`
+                            <div class="alert alert-danger">
+                                <strong>خطا:</strong> در بارگذاری مواد اولیه مشکلی پیش آمده است.
+                            </div>
+                        `);
+                    }
+                });
+            }
+
+            function updateMaterialsDisplay(amount) {
+                if (!currentProductData || !currentProductData.materials) {
+                    return;
+                }
+
+                let materialsHtml = '';
+
+                currentProductData.materials.forEach(function(material) {
+                    const requiredAmount = material.amount * amount;
+                    
+                    materialsHtml += `
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <strong>${material.title}</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted">مقدار مورد نیاز:</span>
+                                <span class="font-weight-bold">${requiredAmount.toFixed(4)} ${material.unit_symbol}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                $('#materials-list').html(materialsHtml);
+                
+                // Show summary
+                $('#materials-summary').html(`
+                    <div class="alert alert-info">
+                        <strong>خلاصه:</strong> برای تولید ${amount} ${currentProductData.product.unit} از محصول "${currentProductData.product.title}"، 
+                        ${currentProductData.materials.length} ماده اولیه مورد نیاز است.
+                    </div>
+                `);
+            }
+
+            function showMaterials() {
+                $('#materials-section').show();
+            }
+
+            function hideMaterials() {
+                $('#materials-section').hide();
+                currentProductData = null;
+            }
+
+            function showNoMaterials() {
+                $('#materials-section').show();
+                $('#materials-list').html(`
+                    <div class="alert alert-warning">
+                        <strong>هشدار:</strong> این محصول فرمول ساخت ندارد. 
+                        ابتدا فرمول ساخت محصول را در بخش کالاها تعریف کنید.
+                    </div>
+                `);
+                $('#materials-summary').html('');
             }
         });
     </script>

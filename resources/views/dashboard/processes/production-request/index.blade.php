@@ -22,10 +22,9 @@
                                 <th>ردیف</th>
                                 <th>{{ __('fields.status') }}</th>
                                 <th>{{ __('fields.production-request.number') }}</th>
-                                <th>محصول تولیدی</th>
-                                <th>مقدار تولید</th>
+                                <th>{{ __('fields.production-request.product_id') }}</th>
+                                <th>{{ __('fields.production-request.production_amount') }}</th>
                                 <th>{{ __('fields.production-request.total_cost') }}</th>
-                                <th>{{ __('fields.production-request.profit') }}</th>
                                 <th>{{ __('fields.created_at') }}</th>
                                 <th>{{ __('fields.creator') }}</th>
                                 <th>{{ __('fields.details') }}</th>
@@ -33,26 +32,22 @@
                         </thead>
 
                         <tbody class="text-center">
-                            @php $i = 1; @endphp
+                            @php($i = 1)
                             @foreach ($requests as $request)
-                                @php
-                                    $mainProduct = $request->outputProducts->first();
-                                @endphp
                                 <tr>
                                     <td>{{ $i }}</td>
-                                    <td>{{ $request->status_text }}</td>
-                                    <td>{{ $request->number }}</td>
-                                    <td>{{ $mainProduct ? $mainProduct->title : 'نامشخص' }}</td>
+                                    <td>{{__('fields.production-request.status')[$request->status]  }}</td>
+                                    <td>{{$request->number }}</td>
+                                    <td>{{$request->product ? $request->product->title : 'نامشخص' }}</td>
                                     <td>
-                                        @if($mainProduct)
-                                            {{ number_format($mainProduct->pivot->amount) }} 
-                                            {{ $mainProduct->unit ? $mainProduct->unit->name : '' }}
+                                        @if($request->product)
+                                            {{ number_format($request->production_amount) }} 
+                                            {{ $request->unit ? $request->unit->name : '' }}
                                         @else
                                             -
                                         @endif
                                     </td>
                                     <td>{{ number_format($request->total_cost) }}</td>
-                                    <td>{{ number_format($request->profit) }}</td>
                                     <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}</td>
                                     @if(isset($request->creator_user))
                                         <td>{{ $request->creator_user->full_name }}</td>
@@ -61,7 +56,7 @@
                                     @endif
                                     <td><a href="{{ route('production-request.show', $request) }}" class=""><i class="ti-more-alt font-24"></i></a></td>
                                 </tr>
-                                @php $i++; @endphp
+                                @php($i++)
                             @endforeach
                         </tbody>
                     </table>
@@ -73,25 +68,15 @@
 @endsection
 
 @section('page_scripts')
-    <!-- These plugins only need for the run this page -->
     <script src="{{ asset('js/default-assets/jquery.datatables.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/datatables.bootstrap4.js') }}"></script>
+    <script src="{{ asset('js/default-assets/dataTables.bootstrap5.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/datatable-responsive.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/responsive.bootstrap4.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/datatable-button.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/button.bootstrap4.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/button.html5.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/button.flash.min.js') }}"></script>
+    <script src="{{ asset('js/default-assets/dataTables.buttons.min.js') }}"></script>
+    <script src="{{ asset('js/default-assets/jszip.min.js') }}"></script>
+    <script src="{{ asset('js/default-assets/pdfmake/pdfmake.min.js') }}"></script>
+    <script src="{{ asset('js/default-assets/pdfmake/vfs_fonts.js') }}"></script>
+    <script src="{{ asset('js/default-assets/buttons.html5.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/button.print.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/datatables-keytable.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/datatables-select.min.js') }}"></script>
-
-    <script>
-        $(document).ready(function() {
-            $('#datatable-buttons').DataTable({
-                lengthChange: false,
-                buttons: ['copy', 'excel', 'pdf', 'colvis']
-            });
-        });
-    </script>
+    <script src="{{ asset('js/default-assets/dataTables.sorting.persian.js') }}"></script>
+    <script src="{{ asset('js/default-assets/customDataTable.js') }}"></script>
 @endsection 

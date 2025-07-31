@@ -2,491 +2,298 @@
 
 namespace App\Services\Processes;
 
-use App\Models\Commodity;
 use App\Models\ProductionRequest;
+use App\Models\Commodity;
 use App\Services\BaseService;
 use App\Services\InventoryService;
-use App\Services\CommodityUnitService;
 use Illuminate\Support\Facades\DB;
 
 class ProductionRequestService extends BaseService
 {
     protected $inventoryService;
-    protected $commodityUnitService;
 
-    public function __construct(InventoryService $inventoryService, CommodityUnitService $commodityUnitService)
+    public function __construct(InventoryService $inventoryService)
     {
         $this->inventoryService = $inventoryService;
-        $this->commodityUnitService = $commodityUnitService;
     }
 
     /**
      * Create a new production request
-     *
-     * @param array $data
-     * @param mixed $file
-     * @return ProductionRequest
      */
-    public function create($data, $file)
+    public function create($data, $file = null)
     {
-        $product = Commodity::findOrFail($data['product_id']);
-        $productionAmount = $data['amount'];
-        
-        // Get product formula to calculate required materials
-        $productFormula = $product->materials;
-        
-        $commodities = [];
-        $totalInputCost = 0;
-        
-        // Add input materials based on product formula
-        foreach ($productFormula as $material) {
-            // Calculate required amount based on production amount
-            $requiredAmount = ($material->pivot->amount * $productionAmount) / 185; // Based on 185kg standard
+        return DB::transaction(function () use ($data, $file) {
+            // Validate product exists and is of type 'product'
+            $product = Commodity::where('type', 'product')->findOrFail($data['product_id']);
             
-            // Get current inventory cost for this material
-            $materialCost = $this->inventoryService->getAverageCost($material->id);
-            $unitCost = $materialCost ?? 0;
-            $totalCost = $requiredAmount * $unitCost;
-            $totalInputCost += $totalCost;
+            // Calculate required materials based on product formula
+            $materials = $this->calculateRequiredMaterials($product, $data['amount']);
             
-            $commodities[$material->id] = [
-                'amount' => $requiredAmount,
-                'unit_id' => $material->pivot->unit_id,
-                'type' => 'input',
-                'unit_cost' => $unitCost,
+            // Calculate total cost
+            $totalCost = $materials->sum('total_cost');
+            
+            // Create production request
+            $productionRequest = ProductionRequest::create([
+                'product_id' => $product->id,
+                'production_amount' => $data['amount'],
+                'unit_id' => $product->unit_id,
+                'description' => $data['description'] ?? null,
+                'status' => 'awaiting_approval',
+                'number' => $this->generateUniqueNumber(ProductionRequest::class, 'number'),
                 'total_cost' => $totalCost,
-            ];
-        }
-        
-        // Calculate output product cost and value
-        $outputUnitCost = $totalInputCost / $productionAmount; // Cost per unit
-        $outputTotalCost = $productionAmount * $product->sales_price; // Sales value
-        
-        // Add output product
-        $commodities[$product->id] = [
-            'amount' => $productionAmount,
-            'unit_id' => $product->unit_id,
-            'type' => 'output',
-            'unit_cost' => $outputUnitCost,
-            'total_cost' => $outputTotalCost,
-        ];
-        
-        $number = $this->generateUniqueNumber(ProductionRequest::class, 'number');
-        $user = auth()->user();
-        
-        $request = ProductionRequest::create([
-            'status' => 'awaiting_approval',
-            'number' => $number,
-            'description' => $data['description'] ?? null,
-            'total_cost' => $totalInputCost, // Store total input cost
-        ]);
-        
-        // Attach commodities using sync to trigger proper pivot events for activity tracking
-        $this->attachCommodities($request, $commodities);
-        
-        if (isset($data['comment'])) {
-            $request->comments()->create([
-                'user_id' => $user->id,
-                'body' => $data['comment'],
             ]);
-        }
-        
-        if (!empty($file)) {
-            $this->uploadFile($file, 'production-request', $request);
-        }
-        
-        return $request;
+
+            // Store materials in pivot table
+            foreach ($materials as $material) {
+                $productionRequest->materials()->attach($material['material_id'], [
+                    'required_amount' => $material['required_amount'],
+                    'unit_id' => $material['unit_id'],
+                    'unit_cost' => $material['unit_cost'],
+                    'total_cost' => $material['total_cost'],
+                ]);
+            }
+
+            // Add comment if provided
+            if (!empty($data['comment'])) {
+                $productionRequest->comments()->create([
+                    'user_id' => auth()->user()->id,
+                    'body' => $data['comment'],
+                ]);
+            }
+
+            // Upload file if provided
+            if ($file) {
+                $this->uploadFile($file, 'production-request', $productionRequest);
+            }
+
+            return $productionRequest;
+        });
     }
 
     /**
      * Update an existing production request
-     *
-     * @param ProductionRequest $productionRequest
-     * @param array $data
-     * @param mixed $file
-     * @return bool
      */
-    public function update($productionRequest, $data, $file)
+    public function update($productionRequest, $data, $file = null)
     {
-        // Check if product or amount has changed
-        $currentProduct = $productionRequest->outputProducts->first();
-        $currentAmount = $currentProduct ? $currentProduct->pivot->amount : null;
-        $currentProductId = $currentProduct ? $currentProduct->id : null;
-        
-        $productChanged = isset($data['product_id']) && $data['product_id'] != $currentProductId;
-        $amountChanged = isset($data['amount']) && $data['amount'] != $currentAmount;
-        
-        if ($productChanged || $amountChanged) {
-            // Recalculate the entire production request with new product/amount
-            $newProduct = Commodity::findOrFail($data['product_id']);
-            $newAmount = $data['amount'];
+        return DB::transaction(function () use ($productionRequest, $data, $file) {
+            // Check if product or amount has changed
+            $productChanged = isset($data['product_id']) && $data['product_id'] != $productionRequest->product_id;
+            $amountChanged = isset($data['amount']) && $data['amount'] != $productionRequest->production_amount;
             
-            // Get product formula to calculate required materials
-            $productFormula = $newProduct->materials;
-            
-            $commodities = [];
-            $totalInputCost = 0;
-            
-            // Add input materials based on product formula
-            foreach ($productFormula as $material) {
-                // Calculate required amount based on production amount
-                $requiredAmount = ($material->pivot->amount * $newAmount) / 185; // Based on 185kg standard
+            if ($productChanged || $amountChanged) {
+                // Recalculate everything
+                $product = Commodity::where('type', 'product')->findOrFail($data['product_id']);
+                $materials = $this->calculateRequiredMaterials($product, $data['amount']);
+                $totalCost = $materials->sum('total_cost');
                 
-                // Get current inventory cost for this material
-                $materialCost = $this->inventoryService->getAverageCost($material->id);
-                $unitCost = $materialCost ?? 0;
-                $totalCost = $requiredAmount * $unitCost;
-                $totalInputCost += $totalCost;
-                
-                $commodities[$material->id] = [
-                    'amount' => $requiredAmount,
-                    'unit_id' => $material->pivot->unit_id,
-                    'type' => 'input',
-                    'unit_cost' => $unitCost,
+                // Update production request
+                $productionRequest->update([
+                    'product_id' => $product->id,
+                    'production_amount' => $data['amount'],
+                    'unit_id' => $product->unit_id,
+                    'description' => $data['description'] ?? $productionRequest->description,
                     'total_cost' => $totalCost,
-                ];
+                ]);
+
+                // Update materials in pivot table
+                $productionRequest->materials()->detach(); // Remove existing materials
+                foreach ($materials as $material) {
+                    $productionRequest->materials()->attach($material['material_id'], [
+                        'required_amount' => $material['required_amount'],
+                        'unit_id' => $material['unit_id'],
+                        'unit_cost' => $material['unit_cost'],
+                        'total_cost' => $material['total_cost'],
+                    ]);
+                }
+            } else {
+                // Only update description
+                $productionRequest->update([
+                    'description' => $data['description'] ?? $productionRequest->description,
+                ]);
             }
-            
-            // Calculate output product cost and value
-            $outputUnitCost = $totalInputCost / $newAmount; // Cost per unit
-            $outputTotalCost = $newAmount * $newProduct->sales_price; // Sales value
-            
-            // Add output product
-            $commodities[$newProduct->id] = [
-                'amount' => $newAmount,
-                'unit_id' => $newProduct->unit_id,
-                'type' => 'output',
-                'unit_cost' => $outputUnitCost,
-                'total_cost' => $outputTotalCost,
-            ];
-            
-            // Update the production request
-            $productionRequest->update([
-                'description' => $data['description'] ?? null,
-                'total_cost' => $totalInputCost,
-            ]);
-            
-            // Sync commodities (this will replace all existing relationships)
-            $this->syncCommodities($productionRequest, $commodities);
-        } else {
-            // Only update description if no product/amount changes
-            $productionRequest->update([
-                'description' => $data['description'] ?? null,
-            ]);
-        }
-        
-        if (isset($data['comment'])) {
-            $productionRequest->comments()->create([
-                'user_id' => auth()->user()->id,
-                'body' => $data['comment'],
-            ]);
-        }
-        
-        if (!empty($file)) {
-            $this->uploadFile($file, 'production-request', $productionRequest);
-        }
-        
-        return true;
+
+            // Add comment if provided
+            if (!empty($data['comment'])) {
+                $productionRequest->comments()->create([
+                    'user_id' => auth()->user()->id,
+                    'body' => $data['comment'],
+                ]);
+            }
+
+            // Upload file if provided
+            if ($file) {
+                $this->uploadFile($file, 'production-request', $productionRequest);
+            }
+
+
+
+            return $productionRequest;
+        });
     }
 
     /**
      * Delete a production request
-     *
-     * @param ProductionRequest $productionRequest
-     * @return bool
      */
     public function delete($productionRequest)
     {
-        // Detach commodities
-        $productionRequest->commodities()->detach();
-        
-        // Delete the request
-        $productionRequest->delete();
-        
-        return true;
+        return DB::transaction(function () use ($productionRequest) {
+
+            
+            // Materials are handled through pivot table, no need to clear JSON field
+            
+            // Delete the production request
+            $productionRequest->delete();
+            
+            return true;
+        });
     }
 
     /**
      * Approve a production request
-     *
-     * @param ProductionRequest $productionRequest
-     * @return bool
      */
-    public function approvalProduction($productionRequest)
+    public function approve($productionRequest)
     {
-        // Deduct input materials from inventory
-        foreach ($productionRequest->inputMaterials as $material) {
-            $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
-                $material,
-                $material->pivot->amount,
-                $material->pivot->unit_id
-            );
-            
-            $this->inventoryService->removeStock(
-                $material->id,
-                $material->unit_id,
-                $amountInMainUnit
-            );
-        }
-        
-        // Add output products to inventory
-        foreach ($productionRequest->outputProducts as $product) {
-            $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
-                $product,
-                $product->pivot->amount,
-                $product->pivot->unit_id
-            );
-            
+        return DB::transaction(function () use ($productionRequest) {
+            // Step 1: Deduct the exact required raw materials from inventory
+            foreach ($productionRequest->materials as $material) {
+                $requiredAmount = $material->pivot->required_amount;
+                $requiredUnitId = $material->pivot->unit_id;
+                
+                // Remove from inventory using the material's unit (no conversion needed)
+                $this->inventoryService->removeStock(
+                    $material->id,
+                    $requiredUnitId, // Use the material's unit as specified in pivot
+                    $requiredAmount
+                );
+            }
+
+            // Step 2: Add the final product to inventory
             $this->inventoryService->addStock(
-                $product->id,
-                $product->unit_id,
-                $amountInMainUnit,
-                $product->pivot->unit_cost,
-                $product->sales_price
+                $productionRequest->product_id,
+                $productionRequest->unit_id, // Use production request unit
+                $productionRequest->production_amount,
+                $productionRequest->total_cost / $productionRequest->production_amount, // unit cost
+                $productionRequest->product->sales_price
             );
-        }
-        
-        $productionRequest->update([
-            'status' => 'approvaled',
-        ]);
-        
-        return true;
+
+            // Step 3: Update production request status
+            $productionRequest->update(['status' => 'approvaled']);
+
+            return $productionRequest;
+        });
     }
 
     /**
      * Reject a production request
-     *
-     * @param ProductionRequest $productionRequest
-     * @return bool
      */
-    public function rejectProduction($productionRequest)
+    public function reject($productionRequest)
     {
-        $productionRequest->update([
-            'status' => 'rejected',
-        ]);
+        $productionRequest->update(['status' => 'rejected']);
+        return $productionRequest;
+    }
+
+
+
+    /**
+     * Calculate required materials for a product
+     */
+    protected function calculateRequiredMaterials($product, $productionAmount)
+    {
+        $materials = collect();
         
+        foreach ($product->materials as $material) {
+            // Calculate required amount based on product formula
+            $requiredAmount = $material->pivot->amount * $productionAmount;
+            
+            // Get current inventory cost for this material
+            $unitCost = $this->inventoryService->getAverageCost($material->id) ?? 0;
+            $totalCost = $requiredAmount * $unitCost;
+            
+            $materials->push([
+                'material_id' => $material->id,
+                'required_amount' => $requiredAmount,
+                'unit_id' => $material->pivot->unit_id,
+                'unit_cost' => $unitCost,
+                'total_cost' => $totalCost,
+            ]);
+        }
+        
+        return $materials;
+    }
+
+
+
+    /**
+     * Check if production request can be approved
+     */
+    public function checkProduction($productionRequest)
+    {
+        foreach ($productionRequest->materials as $material) {
+            $requiredAmount = $material->pivot->required_amount;
+            $requiredUnitId = $material->pivot->unit_id;
+            
+            // Check if we have enough inventory in the material's unit
+            $availableStock = $this->inventoryService->getStockLevel($material->id, $requiredUnitId);
+            
+            if ($availableStock < $requiredAmount) {
+                return [
+                    'success' => false,
+                    'error' => "موجودی کافی برای ماده {$material->title} وجود ندارد. مورد نیاز: {$requiredAmount} {$material->unit->symbol}، موجود: {$availableStock} {$material->unit->symbol}"
+                ];
+            }
+        }
+
+        return ['success' => true];
+    }
+
+
+
+    /**
+     * Second layer validation
+     */
+    public function validationSecondLayer($data)
+    {
+        // Add any additional validation logic here if needed
         return true;
     }
 
     /**
-     * Attach commodities to production request manually
-     *
-     * @param ProductionRequest $productionRequest
-     * @param array $commodities
-     * @return void
-     */
-    protected function attachCommodities(ProductionRequest $productionRequest, array $commodities)
-    {
-        // Use sync method which properly triggers pivot events for activity tracking
-        $productionRequest->commodities()->sync($commodities);
-    }
-
-    /**
-     * Sync commodities for production request manually
-     *
-     * @param ProductionRequest $productionRequest
-     * @param array $commodities
-     * @return void
-     */
-    protected function syncCommodities(ProductionRequest $productionRequest, array $commodities)
-    {
-        // Use sync method which properly triggers pivot events for activity tracking
-        $productionRequest->commodities()->sync($commodities);
-    }
-
-    /**
-     * Check production request data
-     *
-     * @param array $data
-     * @return array
+     * Check production data validation
      */
     public function checkProductionData($data)
     {
-        $errors = [];
-
-        // Validate product exists
-        if (!isset($data['product_id']) || empty($data['product_id'])) {
-            $errors['product_id'] = 'محصول باید انتخاب شود';
-        } else {
-            $product = Commodity::find($data['product_id']);
-            if (!$product) {
-                $errors['product_id'] = 'محصول انتخاب شده وجود ندارد';
-            } elseif (!$product->materials || $product->materials->isEmpty()) {
-                $errors['product_id'] = 'فرمول ساخت برای این محصول تعریف نشده است';
-            }
-        }
-
-        // Validate amount
-        if (!isset($data['amount']) || empty($data['amount']) || $data['amount'] <= 0) {
-            $errors['amount'] = 'مقدار تولید باید بیشتر از صفر باشد';
-        }
-
-        // Return format expected by controller
-        if (empty($errors)) {
-            return ['success' => true];
-        } else {
-            return ['success' => false, 'error' => $errors];
-        }
-    }
-
-    /**
-     * Check if production is possible (for approval)
-     *
-     * @param ProductionRequest $productionRequest
-     * @return array
-     */
-    public function checkProduction($productionRequest)
-    {
-        foreach ($productionRequest->inputMaterials as $material) {
-            $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
-                $material,
-                $material->pivot->amount,
-                $material->pivot->unit_id
-            );
-
-            $availableStock = $this->inventoryService->getStockLevel($material->id, $material->pivot->unit_id);
-
-            if ($amountInMainUnit > $availableStock) {
-                return [
-                    'success' => false,
-                    'error' => "موجودی کافی برای ماده اولیه '{$material->title}' وجود ندارد. موجودی: {$availableStock}، مورد نیاز: {$amountInMainUnit}"
-                ];
-            }
-        }
-
-        return ['success' => true];
-    }
-
-    /**
-     * Check if production request is expired
-     *
-     * @param ProductionRequest $productionRequest
-     * @return array
-     */
-    public function checkExpiredRequest($productionRequest)
-    {
-        // Set expiry to 30 days from creation
-        $expiryDate = $productionRequest->created_at->addDays(30);
-        
-        if (now()->isAfter($expiryDate)) {
-            $productionRequest->update(['status' => 'expired']);
-            
+        // Validate required fields
+        if (empty($data['product_id'])) {
             return [
                 'success' => false,
-                'error' => 'درخواست تولید منقضی شده است. درخواست‌های تولید پس از ۳۰ روز منقضی می‌شوند.'
+                'error' => 'محصول تولیدی انتخاب نشده است.'
+            ];
+        }
+
+        if (empty($data['amount']) || $data['amount'] <= 0) {
+            return [
+                'success' => false,
+                'error' => 'مقدار تولید باید بیشتر از صفر باشد.'
+            ];
+        }
+
+        // Check if product exists and is of type 'product'
+        $product = Commodity::where('type', 'product')->find($data['product_id']);
+        if (!$product) {
+            return [
+                'success' => false,
+                'error' => 'محصول انتخاب شده یافت نشد یا نوع آن صحیح نیست.'
+            ];
+        }
+
+        // Check if product has materials (formula)
+        if ($product->materials->isEmpty()) {
+            return [
+                'success' => false,
+                'error' => 'محصول انتخاب شده فرمول ساخت ندارد. ابتدا فرمول ساخت محصول را تعریف کنید.'
             ];
         }
 
         return ['success' => true];
-    }
-
-    /**
-     * Get all production requests
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function getAll()
-    {
-        return ProductionRequest::with(['commodities.unit'])
-            ->orderBy('id', 'DESC')
-            ->get();
-    }
-
-    /**
-     * Get active production requests
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function getActive()
-    {
-        return ProductionRequest::active()
-            ->with(['commodities.unit'])
-            ->orderBy('id', 'DESC')
-            ->get();
-    }
-
-    /**
-     * Get awaiting approval production requests
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function getAwaitingApproval()
-    {
-        return ProductionRequest::awaitingApproval()
-            ->with(['commodities.unit'])
-            ->orderBy('id', 'DESC')
-            ->get();
-    }
-
-    /**
-     * Get the main product being produced in this request
-     *
-     * @param ProductionRequest $productionRequest
-     * @return Commodity|null
-     */
-    public function getMainProduct(ProductionRequest $productionRequest)
-    {
-        return $productionRequest->outputProducts->first();
-    }
-
-    /**
-     * Get production summary information
-     *
-     * @param ProductionRequest $productionRequest
-     * @return array
-     */
-    public function getProductionSummary(ProductionRequest $productionRequest)
-    {
-        $mainProduct = $this->getMainProduct($productionRequest);
-        
-        // Get inventory data for input materials
-        $inputMaterialsWithInventory = [];
-        foreach ($productionRequest->inputMaterials as $material) {
-            try {
-                // Get current stock level for this material
-                $currentStock = $this->inventoryService->getStockLevel($material->id, $material->pivot->unit_id);
-                $requiredAmount = $material->pivot->amount;
-                
-                            // Calculate availability status
-            $isSufficient = $currentStock >= $requiredAmount;
-            $shortage = max(0, $requiredAmount - $currentStock);
-            $surplus = max(0, $currentStock - $requiredAmount);
-            
-            $inputMaterialsWithInventory[] = [
-                'material' => $material,
-                'current_stock' => $currentStock,
-                'required_amount' => $requiredAmount,
-                'is_sufficient' => $isSufficient,
-                'shortage' => $shortage,
-                'surplus' => $surplus,
-            ];
-            } catch (\Exception $e) {
-                // Log error and continue with default values
-                \Log::error("Error getting inventory for material {$material->id}: " . $e->getMessage());
-                
-                $inputMaterialsWithInventory[] = [
-                    'material' => $material,
-                    'current_stock' => 0,
-                    'required_amount' => $material->pivot->amount,
-                    'is_sufficient' => false,
-                    'shortage' => $material->pivot->amount,
-                    'surplus' => 0,
-                ];
-            }
-        }
-        
-        return [
-            'main_product' => $mainProduct,
-            'production_amount' => $mainProduct ? $mainProduct->pivot->amount : 0,
-            'production_unit' => $mainProduct ? $mainProduct->unit : null,
-            'input_materials_count' => $productionRequest->inputMaterials->count(),
-            'input_materials_with_inventory' => $inputMaterialsWithInventory,
-            'total_input_cost' => $productionRequest->total_input_cost,
-            'total_output_value' => $productionRequest->total_output_value,
-            'profit' => $productionRequest->profit,
-            // Overall availability status
-            'all_materials_available' => collect($inputMaterialsWithInventory)->every('is_sufficient'),
-            'materials_with_shortage' => collect($inputMaterialsWithInventory)->where('is_sufficient', false)->count(),
-        ];
     }
 } 

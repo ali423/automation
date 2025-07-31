@@ -107,15 +107,20 @@ return [
             'fa_name' => 'درخواست تولید',
             'url' => 'production-request',
             'relations' => [
-                'commodities' => [
-                    'fa_name' => 'کالا ها',
+                'product' => [
+                    'fa_name' => 'محصول تولیدی',
+                ],
+                'unit' => [
+                    'fa_name' => 'واحد اندازه گیری',
+                ],
+                'materials' => [
+                    'fa_name' => 'مواد اولیه',
                     'primary_key' => 'production_request_id',
                     'pivots' => [
-                        'type' => 'نوع کالا',
-                        'amount' => 'مقدار کالا',
-                        'unit_id' => 'واحد اندازه گیری',
-                        'unit_cost' => 'قیمت واحد',
-                        'total_cost' => 'قیمت کل',
+                        'required_amount' => 'مقدار مورد نیاز',
+                        'unit_id' => 'واحد ماده',
+                        'unit_cost' => 'هزینه واحد',
+                        'total_cost' => 'هزینه کل',
                     ],
                 ],
             ]
