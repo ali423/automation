@@ -150,7 +150,10 @@ class ProductionRequestController extends Controller
             $file = $request->file('file');
         }
         
-        $this->service->update($productionRequest, $data, $file);
+        DB::transaction(function () use ($productionRequest, $data, $file) {
+            $this->service->update($productionRequest, $data, $file);
+        });
+        
         return redirect(route('production-request.index'))->with('successful', 'اطلاعات درخواست ویرایش شد.');
     }
 
@@ -167,7 +170,10 @@ class ProductionRequestController extends Controller
             return redirect()->back()->withErrors('در این مرحله امکان حذف وجود ندارد. درخواست‌های تایید شده، رد شده، منقضی شده یا تکمیل شده قابل حذف نیستند.');
         }
         
-        $this->service->delete($productionRequest);
+        DB::transaction(function () use ($productionRequest) {
+            $this->service->delete($productionRequest);
+        });
+        
         return redirect(route('production-request.index'))->with('successful', 'درخواست حذف شد.');
     }
 
@@ -191,7 +197,9 @@ class ProductionRequestController extends Controller
         
         $check_production = $this->service->checkProduction($productionRequest);
         if ($check_production['success'] == true) {
-            $this->service->approve($productionRequest);
+            DB::transaction(function () use ($productionRequest) {
+                $this->service->approve($productionRequest);
+            });
             return redirect(route('production-request.show', $productionRequest))->with('successful', 'درخواست تولید تایید شد.');
         } else {
             return redirect()->back()->withErrors($check_production['error']);

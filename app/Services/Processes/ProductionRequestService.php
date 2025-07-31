@@ -22,28 +22,78 @@ class ProductionRequestService extends BaseService
      */
     public function create($data, $file = null)
     {
-        return DB::transaction(function () use ($data, $file) {
-            // Validate product exists and is of type 'product'
+        // Validate product exists and is of type 'product'
+        $product = Commodity::where('type', 'product')->findOrFail($data['product_id']);
+        
+        // Calculate required materials based on product formula
+        $materials = $this->calculateRequiredMaterials($product, $data['amount']);
+        
+        // Calculate total cost
+        $totalCost = $materials->sum('total_cost');
+        
+        // Create production request
+        $productionRequest = ProductionRequest::create([
+            'product_id' => $product->id,
+            'production_amount' => $data['amount'],
+            'unit_id' => $product->unit_id,
+            'description' => $data['description'] ?? null,
+            'status' => 'awaiting_approval',
+            'number' => $this->generateUniqueNumber(ProductionRequest::class, 'number'),
+            'total_cost' => $totalCost,
+        ]);
+
+        // Store materials in pivot table
+        foreach ($materials as $material) {
+            $productionRequest->materials()->attach($material['material_id'], [
+                'required_amount' => $material['required_amount'],
+                'unit_id' => $material['unit_id'],
+                'unit_cost' => $material['unit_cost'],
+                'total_cost' => $material['total_cost'],
+            ]);
+        }
+
+        // Add comment if provided
+        if (!empty($data['comment'])) {
+            $productionRequest->comments()->create([
+                'user_id' => auth()->user()->id,
+                'body' => $data['comment'],
+            ]);
+        }
+
+        // Upload file if provided
+        if ($file) {
+            $this->uploadFile($file, 'production-request', $productionRequest);
+        }
+
+        return $productionRequest;
+    }
+
+    /**
+     * Update an existing production request
+     */
+    public function update($productionRequest, $data, $file = null)
+    {
+        // Check if product or amount has changed
+        $productChanged = isset($data['product_id']) && $data['product_id'] != $productionRequest->product_id;
+        $amountChanged = isset($data['amount']) && $data['amount'] != $productionRequest->production_amount;
+        
+        if ($productChanged || $amountChanged) {
+            // Recalculate everything
             $product = Commodity::where('type', 'product')->findOrFail($data['product_id']);
-            
-            // Calculate required materials based on product formula
             $materials = $this->calculateRequiredMaterials($product, $data['amount']);
-            
-            // Calculate total cost
             $totalCost = $materials->sum('total_cost');
             
-            // Create production request
-            $productionRequest = ProductionRequest::create([
+            // Update production request
+            $productionRequest->update([
                 'product_id' => $product->id,
                 'production_amount' => $data['amount'],
                 'unit_id' => $product->unit_id,
-                'description' => $data['description'] ?? null,
-                'status' => 'awaiting_approval',
-                'number' => $this->generateUniqueNumber(ProductionRequest::class, 'number'),
+                'description' => $data['description'] ?? $productionRequest->description,
                 'total_cost' => $totalCost,
             ]);
 
-            // Store materials in pivot table
+            // Update materials in pivot table
+            $productionRequest->materials()->detach(); // Remove existing materials
             foreach ($materials as $material) {
                 $productionRequest->materials()->attach($material['material_id'], [
                     'required_amount' => $material['required_amount'],
@@ -52,83 +102,27 @@ class ProductionRequestService extends BaseService
                     'total_cost' => $material['total_cost'],
                 ]);
             }
+        } else {
+            // Only update description
+            $productionRequest->update([
+                'description' => $data['description'] ?? $productionRequest->description,
+            ]);
+        }
 
-            // Add comment if provided
-            if (!empty($data['comment'])) {
-                $productionRequest->comments()->create([
-                    'user_id' => auth()->user()->id,
-                    'body' => $data['comment'],
-                ]);
-            }
+        // Add comment if provided
+        if (!empty($data['comment'])) {
+            $productionRequest->comments()->create([
+                'user_id' => auth()->user()->id,
+                'body' => $data['comment'],
+            ]);
+        }
 
-            // Upload file if provided
-            if ($file) {
-                $this->uploadFile($file, 'production-request', $productionRequest);
-            }
+        // Upload file if provided
+        if ($file) {
+            $this->uploadFile($file, 'production-request', $productionRequest);
+        }
 
-            return $productionRequest;
-        });
-    }
-
-    /**
-     * Update an existing production request
-     */
-    public function update($productionRequest, $data, $file = null)
-    {
-        return DB::transaction(function () use ($productionRequest, $data, $file) {
-            // Check if product or amount has changed
-            $productChanged = isset($data['product_id']) && $data['product_id'] != $productionRequest->product_id;
-            $amountChanged = isset($data['amount']) && $data['amount'] != $productionRequest->production_amount;
-            
-            if ($productChanged || $amountChanged) {
-                // Recalculate everything
-                $product = Commodity::where('type', 'product')->findOrFail($data['product_id']);
-                $materials = $this->calculateRequiredMaterials($product, $data['amount']);
-                $totalCost = $materials->sum('total_cost');
-                
-                // Update production request
-                $productionRequest->update([
-                    'product_id' => $product->id,
-                    'production_amount' => $data['amount'],
-                    'unit_id' => $product->unit_id,
-                    'description' => $data['description'] ?? $productionRequest->description,
-                    'total_cost' => $totalCost,
-                ]);
-
-                // Update materials in pivot table
-                $productionRequest->materials()->detach(); // Remove existing materials
-                foreach ($materials as $material) {
-                    $productionRequest->materials()->attach($material['material_id'], [
-                        'required_amount' => $material['required_amount'],
-                        'unit_id' => $material['unit_id'],
-                        'unit_cost' => $material['unit_cost'],
-                        'total_cost' => $material['total_cost'],
-                    ]);
-                }
-            } else {
-                // Only update description
-                $productionRequest->update([
-                    'description' => $data['description'] ?? $productionRequest->description,
-                ]);
-            }
-
-            // Add comment if provided
-            if (!empty($data['comment'])) {
-                $productionRequest->comments()->create([
-                    'user_id' => auth()->user()->id,
-                    'body' => $data['comment'],
-                ]);
-            }
-
-            // Upload file if provided
-            if ($file) {
-                $this->uploadFile($file, 'production-request', $productionRequest);
-            }
-
-
-
-            return $productionRequest;
-        });
+        return $productionRequest;
     }
 
     /**
@@ -136,16 +130,12 @@ class ProductionRequestService extends BaseService
      */
     public function delete($productionRequest)
     {
-        return DB::transaction(function () use ($productionRequest) {
-
-            
-            // Materials are handled through pivot table, no need to clear JSON field
-            
-            // Delete the production request
-            $productionRequest->delete();
-            
-            return true;
-        });
+        // Materials are handled through pivot table, no need to clear JSON field
+        
+        // Delete the production request
+        $productionRequest->delete();
+        
+        return true;
     }
 
     /**
@@ -153,81 +143,79 @@ class ProductionRequestService extends BaseService
      */
     public function approve($productionRequest)
     {
-        return DB::transaction(function () use ($productionRequest) {
-            $unitConversionService = app(\App\Services\UnitConversionService::class);
+        $unitConversionService = app(\App\Services\UnitConversionService::class);
+        
+        // Step 1: Deduct the required raw materials from inventory with unit conversion support
+        foreach ($productionRequest->materials as $material) {
+            $requiredAmount = $material->pivot->required_amount;
+            $requiredUnitId = $material->pivot->unit_id;
+            $remainingRequired = $requiredAmount;
             
-            // Step 1: Deduct the required raw materials from inventory with unit conversion support
-            foreach ($productionRequest->materials as $material) {
-                $requiredAmount = $material->pivot->required_amount;
-                $requiredUnitId = $material->pivot->unit_id;
-                $remainingRequired = $requiredAmount;
+            // Get all available inventory for this material
+            $allInventory = $this->inventoryService->getAllInventoryForCommodity($material->id);
+            
+            // Sort inventory by unit - prioritize exact matches first, then conversions
+            $exactMatches = $allInventory->where('unit_id', $requiredUnitId)->where('amount', '>', 0);
+            $otherUnits = $allInventory->where('unit_id', '!=', $requiredUnitId)->where('amount', '>', 0);
+            
+            // First, try to consume from exact matches
+            foreach ($exactMatches as $inventory) {
+                if ($remainingRequired <= 0) break;
                 
-                // Get all available inventory for this material
-                $allInventory = $this->inventoryService->getAllInventoryForCommodity($material->id);
+                $amountToConsume = min($remainingRequired, $inventory->amount);
+                $this->inventoryService->removeStock($material->id, $inventory->unit_id, $amountToConsume);
+                $remainingRequired -= $amountToConsume;
+            }
+            
+            // If still need more, consume from other units with conversion
+            foreach ($otherUnits as $inventory) {
+                if ($remainingRequired <= 0) break;
                 
-                // Sort inventory by unit - prioritize exact matches first, then conversions
-                $exactMatches = $allInventory->where('unit_id', $requiredUnitId)->where('amount', '>', 0);
-                $otherUnits = $allInventory->where('unit_id', '!=', $requiredUnitId)->where('amount', '>', 0);
+                // Convert the remaining required amount to the inventory unit
+                $requiredInInventoryUnit = $unitConversionService->convert(
+                    $remainingRequired,
+                    $requiredUnitId,
+                    $inventory->unit_id,
+                    $material->id
+                );
                 
-                // First, try to consume from exact matches
-                foreach ($exactMatches as $inventory) {
-                    if ($remainingRequired <= 0) break;
-                    
-                    $amountToConsume = min($remainingRequired, $inventory->amount);
+                if ($requiredInInventoryUnit !== null && $requiredInInventoryUnit > 0) {
+                    $amountToConsume = min($requiredInInventoryUnit, $inventory->amount);
                     $this->inventoryService->removeStock($material->id, $inventory->unit_id, $amountToConsume);
-                    $remainingRequired -= $amountToConsume;
-                }
-                
-                // If still need more, consume from other units with conversion
-                foreach ($otherUnits as $inventory) {
-                    if ($remainingRequired <= 0) break;
                     
-                    // Convert the remaining required amount to the inventory unit
-                    $requiredInInventoryUnit = $unitConversionService->convert(
-                        $remainingRequired,
-                        $requiredUnitId,
+                    // Convert back to required unit to update remaining amount
+                    $consumedInRequiredUnit = $unitConversionService->convert(
+                        $amountToConsume,
                         $inventory->unit_id,
+                        $requiredUnitId,
                         $material->id
                     );
                     
-                    if ($requiredInInventoryUnit !== null && $requiredInInventoryUnit > 0) {
-                        $amountToConsume = min($requiredInInventoryUnit, $inventory->amount);
-                        $this->inventoryService->removeStock($material->id, $inventory->unit_id, $amountToConsume);
-                        
-                        // Convert back to required unit to update remaining amount
-                        $consumedInRequiredUnit = $unitConversionService->convert(
-                            $amountToConsume,
-                            $inventory->unit_id,
-                            $requiredUnitId,
-                            $material->id
-                        );
-                        
-                        if ($consumedInRequiredUnit !== null) {
-                            $remainingRequired -= $consumedInRequiredUnit;
-                        }
+                    if ($consumedInRequiredUnit !== null) {
+                        $remainingRequired -= $consumedInRequiredUnit;
                     }
                 }
-                
-                // If we still have remaining required amount, throw an error
-                if ($remainingRequired > 0) {
-                    throw new \Exception("موجودی کافی برای ماده {$material->title} وجود ندارد. مورد نیاز: {$requiredAmount}، مصرف شده: " . ($requiredAmount - $remainingRequired));
-                }
             }
+            
+            // If we still have remaining required amount, throw an error
+            if ($remainingRequired > 0) {
+                throw new \Exception("موجودی کافی برای ماده {$material->title} وجود ندارد. مورد نیاز: {$requiredAmount}، مصرف شده: " . ($requiredAmount - $remainingRequired));
+            }
+        }
 
-            // Step 2: Add the final product to inventory
-            $this->inventoryService->addStock(
-                $productionRequest->product_id,
-                $productionRequest->unit_id, // Use production request unit
-                $productionRequest->production_amount,
-                $productionRequest->total_cost / $productionRequest->production_amount, // unit cost
-                $productionRequest->product->sales_price
-            );
+        // Step 2: Add the final product to inventory
+        $this->inventoryService->addStock(
+            $productionRequest->product_id,
+            $productionRequest->unit_id, // Use production request unit
+            $productionRequest->production_amount,
+            $productionRequest->total_cost / $productionRequest->production_amount, // unit cost
+            $productionRequest->product->sales_price
+        );
 
-            // Step 3: Update production request status
-            $productionRequest->update(['status' => 'approvaled']);
+        // Step 3: Update production request status
+        $productionRequest->update(['status' => 'approvaled']);
 
-            return $productionRequest;
-        });
+        return $productionRequest;
     }
 
     /**

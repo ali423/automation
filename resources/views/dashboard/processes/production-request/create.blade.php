@@ -136,7 +136,6 @@
                         updateMaterialsDisplay(parseFloat($('#amount').val()) || 0);
                     },
                     error: function(xhr) {
-                        console.error('Error loading materials:', xhr);
                         $('#materials-list').html(`
                             <div class="alert alert-danger">
                                 <strong>خطا:</strong> در بارگذاری مواد اولیه مشکلی پیش آمده است.
