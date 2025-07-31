@@ -147,6 +147,19 @@ class InventoryService extends BaseService
             ->get();
     }
 
+    /**
+     * Get all inventory items for a specific commodity
+     */
+    public function getAllInventoryForCommodity($commodityId)
+    {
+        return Inventory::with(['commodity', 'unit'])
+            ->where('commodity_id', $commodityId)
+            ->where('active', true)
+            ->where('amount', '>', 0)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
 
 
     /**

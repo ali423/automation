@@ -40,9 +40,7 @@
                             <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
                                 <input type="text" name="name"
-                                    @if (isset($request->creator_user)) value="{{ $request->creator_user->full_name }}"
-                                       @else
-                                       value="سیستم" @endif
+                                    value="سیستم"
                                     class="form-control" id="exampleInputEmail111"
                                     placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
                             </div>
@@ -187,64 +185,7 @@
                 </div>
             </div>
         </div>
-        <div id="invoice" class="col-xl-12 box-margin height-card">
-            <div class="card card-body">
-                {{-- <h4 class="card-title"></h4> --}}
-                <div class="row">
-                    <div class="col-sm-12 col-xs-12">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <img src="{{ asset('img/logo/darklogo.png') }}" class="logo" />
-                            <div class="text-center">
-                                <h4>
-                                    خرید کالا
-                                </h4>
-                                <div class="d-none factor customer">( رسید خریدار )</div>
-                                <div class="d-none factor documentation">( رسید پرونده )</div>
-                                <div class="d-none factor warehouse">( رسید انبار )</div>
-                            </div>
-                            <div>تاریخ: <span>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}</span></div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>فروشنده/ نماینده فروشنده: <span>  {{$request->seller->name}} </span></div>
-                            <div>شماره درخواست: <span>{{$request->number}}</span></div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <table class="table-borderless">
-                                <colgroup>
-                                    <col span="1" style="width: 5%;">
-                                    <col span="1" style="width: 30%;">
-                                    <col span="1" style="width: 25%;">
-                                    <col span="1" style="width: 15%;">
-                                    <col span="1" style="width: 25%;">
-                                </colgroup>
-                                <tr class="table-header">
-                                    <th scope="col">ردیف</th>
-                                    <th scope="col">کالای خریداری شده</th>
-                                    <th scope="col">قیمت واحد</th>
-                                    <th scope="col">تعداد / مقدار</th>
-                                    <th scope="col">توضیحات</th>
-                                </tr>
-                                @php($i=1)
-                                @foreach ($request->commodities as $commodity)
-                                <tr>
-                                    <th scope="row">{{$i}}</th>
-                                    <td>{{ $commodity->title }}</td>
-                                    <td>{{ number_format($commodity->pivot->purchase_price) }}</td>
-                                    <td>{{ $commodity->pivot->amount }} {{ $commodity->pivot->unit_id ? (\App\Models\Unit::find($commodity->pivot->unit_id)->name . ' (' . \App\Models\Unit::find($commodity->pivot->unit_id)->symbol . ')') : '-' }}</td>
-                                    <td></td>
-                                </tr>
-                                    @php($i++)
-                                @endforeach
-                            </table>
-                        </div>
-                        <div class="d-flex justify-content-around align-items-center mb-3">
-                            <h6>امضاء تحویل گیرنده کالا</h6>
-                            <h6>امضاء متصدی شرکت</h6>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
         <div id="finvoice"><div class="factorbtn d-none"></div></div>
     </div>
 @endsection
