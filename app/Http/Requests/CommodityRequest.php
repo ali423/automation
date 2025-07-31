@@ -33,12 +33,7 @@ class CommodityRequest extends FormRequest
         
         // For products, ensure unit is kg only
         if ($this->get('type') == 'product') {
-            $rules['unit_id'] = ['required', 'exists:units,id', function ($attribute, $value, $fail) {
-                $unit = \App\Models\Unit::find($value);
-                if ($unit && $unit->symbol !== 'kg') {
-                    $fail('Products must use kg as the unit.');
-                }
-            }];
+            $rules['unit_id'] = ['required', Rule::exists('units', 'id')->where('symbol', 'kg')];
             
             $rules['materials']=['required','array','min:1'];
             $rules['materials.*']=['required',Rule::exists('commodities', 'id')->where('type','material'),'distinct'];
@@ -72,5 +67,15 @@ class CommodityRequest extends FormRequest
             'unit_id.required' => 'واحد باید انتخاب شود.',
             'unit_id.exists' => 'واحد انتخاب شده معتبر نیست.',
         ];
+    }
+
+    /**
+     * Get validated data.
+     *
+     * @return array
+     */
+    public function validationData()
+    {
+        return $this->all();
     }
 }

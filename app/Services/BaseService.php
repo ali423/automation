@@ -11,45 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class BaseService
 {
-    public function calculateCommodityAmount($amount, $unit_id){
-        // Get unit from database
-        $unit = \App\Models\Unit::find($unit_id);
-        if (!$unit) {
-            return $amount; // Return original amount if unit not found
-        }
-        
-        // Convert amount based on unit conversion rate to main unit (kg)
-        switch ($unit->name) {
-            case 'keg':
-                return round($amount*185, 2);
-            case 'kg':
-                return $amount;
-            case 'twenty_liters':
-                return round($amount*17.8, 2);
-            default:
-                return $amount; // Return original amount for unknown units
-        }
-    }
-    public function calculateCommodityPrice($price, $unit_id){
-        // Get unit from database
-        $unit = \App\Models\Unit::find($unit_id);
-        if (!$unit) {
-            return $price; // Return original price if unit not found
-        }
-        
-        // For now, we'll use a simple conversion based on unit name
-        // This should be replaced with proper conversion logic when commodity context is available
-        switch ($unit->name) {
-            case 'keg':
-                return round($price/185, 2); // Convert keg price to kg price
-            case 'kg':
-                return $price; // Already in main unit
-            case 'twenty_liters':
-                return round($price/17.8, 2); // Convert 20L price to kg price
-            default:
-                return $price; // Return original price for unknown units
-        }
-    }
+    
+  
     public function uploadFile($file,$patch,$attached){
         $user=auth()->user();
         $file_name=$file->getClientOriginalName();

@@ -58,15 +58,15 @@
                                     <div class="invalid-feedback">{{ __('fields.warning_limit') }} را وارد کنید</div>
                                 </div>
                                 <div id="sales_price" class="form-group col-md-6">
-                                    <label for="sales_price"> {{ __('fields.sales_price') }} هر <span class="unit_label2">کیلوگرم</span> (ریال)</label>
+                                    <label for="fake_sales_price"> {{ __('fields.sales_price') }} هر <span class="unit_label2">کیلوگرم</span> (ریال)</label>
                                     <input type="number" step="0.01" min="100" name="fake_sales_price"
                                            value="{{ old('sales_price') }}"
-                                           class="form-control" placeholder="{{ __('fields.sales_price') }}" required>
+                                           class="form-control" placeholder="{{ __('fields.sales_price') }}">
                                            <input type="number" name="sales_price" class="d-none">
                                     <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
                                 </div>
                                 <div id="purchase_price" class="form-group col-md-6">
-                                    <label for="purchase_price"> {{ __('fields.purchase_price') }} هر <span class="unit_label2">کیلوگرم</span> (ریال)</label>
+                                    <label for="fake_purchase_price"> {{ __('fields.purchase_price') }} هر <span class="unit_label2">کیلوگرم</span> (ریال)</label>
                                     <input type="number" step="0.01" min="100" name="fake_purchase_price"
                                            value="{{ old('purchase_price') }}" class="form-control"
                                            placeholder="{{ __('fields.purchase_price') }}" required>
@@ -84,7 +84,7 @@
                                 <div id="inputFormRow" class="form-row shadow p-4 mb-3">
                                     <div class="form-group col-md-5">
                                         <label for="materials"> {{ __('fields.commodity.material_type') }}</label>
-                                        <select id="materials" class="form-control material-select" name="materials[0]" onchange="loadMaterialUnits(this)" required>
+                                        <select id="materials" class="form-control material-select" name="materials[0]" onchange="loadMaterialUnits(this)">
                                             <option value="">انتخاب کنید...</option>
                                             @foreach ($materials as $material)
                                                 <option value="{{ $material->id }}">{{ $material->title }}</option>
@@ -100,14 +100,14 @@
                                         <input type="number" step="0.01" name="material_amount[0]" class="form-control"
                                                id="material_amount"
                                                placeholder="{{ __('fields.commodity.material_amount') }}"
-                                               min="0.01" required="">
+                                               min="0.01">
                                         <div class="invalid-feedback">
                                             لطفاً {{ __('fields.commodity.material_amount') }} را وارد کنید
                                         </div>
                                     </div>
                                     <div class="form-group col-md-2">
                                         <label for="material_unit">{{ __('fields.unit') }}</label>
-                                        <select name="material_units[0]" class="form-control material-unit-select" required>
+                                        <select name="material_units[0]" class="form-control material-unit-select">
                                             <option value="">انتخاب کنید...</option>
                                         </select>
                                         <div class="invalid-feedback">واحد را انتخاب کنید</div>
@@ -190,18 +190,32 @@
                     }
                 });
                 
-                // Show product formula section
+                // Show product formula section and make fields required
                 productFormula.show();
+                $('input[name="fake_sales_price"]').attr('required', 'required');
+                $('select[name^="materials"]').attr('required', 'required');
+                $('input[name^="material_amount"]').attr('required', 'required');
+                $('select[name^="material_units"]').attr('required', 'required');
+                
             } else if (selectedType === 'material') {
                 // For materials, show all units
                 unitSelect.find('option').show();
                 
-                // Hide product formula section
+                // Hide product formula section and remove required attributes
                 productFormula.hide();
+                $('input[name="fake_sales_price"]').removeAttr('required');
+                $('select[name^="materials"]').removeAttr('required');
+                $('input[name^="material_amount"]').removeAttr('required');
+                $('select[name^="material_units"]').removeAttr('required');
+                
             } else {
                 // No type selected, show all units and hide formula
                 unitSelect.find('option').show();
                 productFormula.hide();
+                $('input[name="fake_sales_price"]').removeAttr('required');
+                $('select[name^="materials"]').removeAttr('required');
+                $('input[name^="material_amount"]').removeAttr('required');
+                $('select[name^="material_units"]').removeAttr('required');
             }
         });
         
@@ -216,6 +230,14 @@
         $('form').on('submit', function(e) {
             var selectedType = $('#type').val();
             var selectedUnit = $('#unit').val();
+            
+            // Synchronize hidden fields with visible fields before submission
+            $('input[name="warning_limit"]').val($('input[name="fake_warning_limit"]').val());
+            $('input[name="sales_price"]').val($('input[name="fake_sales_price"]').val());
+            $('input[name="purchase_price"]').val($('input[name="fake_purchase_price"]').val());
+            
+            // Temporarily remove validation classes to allow submission
+            $('form').removeClass('needs-validation was-validated');
             
             if (selectedType === 'product') {
                 if (!selectedUnit) {
@@ -233,12 +255,40 @@
                     $('#unit').focus();
                     return false;
                 }
+                
+                // Validate product formula fields
+                var hasMaterials = false;
+                $('select[name^="materials"]').each(function() {
+                    if ($(this).val()) {
+                        hasMaterials = true;
+                        return false; // break the loop
+                    }
+                });
+                
+                if (!hasMaterials) {
+                    e.preventDefault();
+                    alert('لطفاً حداقل یک ماده اولیه برای محصول انتخاب کنید.');
+                    return false;
+                }
+            } else if (selectedType === 'material') {
+                // Validate material fields
+                var purchasePrice = $('input[name="fake_purchase_price"]').val();
+                if (!purchasePrice || purchasePrice <= 0) {
+                    e.preventDefault();
+                    alert('لطفاً قیمت خرید را برای ماده اولیه وارد کنید.');
+                    $('input[name="fake_purchase_price"]').focus();
+                    return false;
+                }
             }
+            
+            return true;
         });
 
         // add row
         $("#addRow").click(function () {
-            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"><div class="form-group col-md-5"><label for="materials"> {{ __("fields.commodity.material_type") }}</label><select id="materials" class="form-control material-select" name="materials[1]" onchange="loadMaterialUnits(this)" required><option value="">انتخاب کنید...</option>@foreach ($materials as $material)<option value="{{ $material->id }}">{{ $material->title }}</option>@endforeach</select><div class="invalid-feedback">{{ __("fields.commodity.material_type") }} را انتخاب کنید</div></div><div class="form-group col-md-3"><label for="material_amount">{{ __("fields.commodity.material_amount") }}</label><input type="number" step="0.01" name="material_amount[0]" class="form-control"id="material_amount"placeholder="{{ __("fields.commodity.material_amount") }}" min="0.01" required=""><div class="invalid-feedback">لطفاً {{ __("fields.commodity.material_amount") }} را وارد کنید</div></div><div class="form-group col-md-2"><label for="material_unit">{{ __("fields.unit") }}</label><select name="material_units[0]" class="form-control material-unit-select" required><option value="">انتخاب کنید...</option></select><div class="invalid-feedback">واحد را انتخاب کنید</div></div><div class="form-group col-sm-auto"><label for="" class="d-none d-md-block">&nbsp;</label><button id="removeRowbtn" type="submit" class="btn btn-danger btn-block py-2">حذف</button></div></div>';
+            var selectedType = $('#type').val();
+            var requiredAttr = selectedType === 'product' ? 'required' : '';
+            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"><div class="form-group col-md-5"><label for="materials"> {{ __("fields.commodity.material_type") }}</label><select id="materials" class="form-control material-select" name="materials[1]" onchange="loadMaterialUnits(this)" ' + requiredAttr + '><option value="">انتخاب کنید...</option>@foreach ($materials as $material)<option value="{{ $material->id }}">{{ $material->title }}</option>@endforeach</select><div class="invalid-feedback">{{ __("fields.commodity.material_type") }} را انتخاب کنید</div></div><div class="form-group col-md-3"><label for="material_amount">{{ __("fields.commodity.material_amount") }}</label><input type="number" step="0.01" name="material_amount[0]" class="form-control"id="material_amount"placeholder="{{ __("fields.commodity.material_amount") }}" min="0.01" ' + requiredAttr + '><div class="invalid-feedback">لطفاً {{ __("fields.commodity.material_amount") }} را وارد کنید</div></div><div class="form-group col-md-2"><label for="material_unit">{{ __("fields.unit") }}</label><select name="material_units[0]" class="form-control material-unit-select" ' + requiredAttr + '><option value="">انتخاب کنید...</option></select><div class="invalid-feedback">واحد را انتخاب کنید</div></div><div class="form-group col-sm-auto"><label for="" class="d-none d-md-block">&nbsp;</label><button id="removeRowbtn" type="button" class="btn btn-danger btn-block py-2">حذف</button></div></div>';
 
             $('#newRow').append(html);
 
@@ -285,6 +335,8 @@
         $('input[name="fake_purchase_price"]').on('change keyup paste', function(){
             $('input[name="purchase_price"]').val(Math.floor(this.value));
         });
+
+
 
     </script>
 
