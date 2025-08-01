@@ -91,28 +91,7 @@ class InventoryService extends BaseService
     /**
      * Get average cost for a commodity from inventory
      */
-    public function getAverageCost($commodityId)
-    {
-        $inventory = Inventory::where('commodity_id', $commodityId)
-            ->where('active', true)
-            ->where('amount', '>', 0)
-            ->whereNotNull('purchase_price')
-            ->get();
 
-        if ($inventory->isEmpty()) {
-            return null;
-        }
-
-        $totalValue = 0;
-        $totalAmount = 0;
-
-        foreach ($inventory as $item) {
-            $totalValue += $item->amount * $item->purchase_price;
-            $totalAmount += $item->amount;
-        }
-
-        return $totalAmount > 0 ? $totalValue / $totalAmount : null;
-    }
 
     /**
      * Get average cost for a commodity from inventory
@@ -204,15 +183,15 @@ class InventoryService extends BaseService
     /**
      * Get all inventory records for a commodity across all units (for debugging)
      */
-    public function getAllInventoryForCommodity($commodityId)
-    {
-        return Inventory::where('commodity_id', $commodityId)
-            ->where('active', true)
-            ->with(['unit'])
-            ->orderBy('unit_id', 'asc')
-            ->orderBy('created_at', 'asc')
-            ->get();
-    }
+    // public function getAllInventoryForCommodity($commodityId)
+    // {
+    //     return Inventory::where('commodity_id', $commodityId)
+    //         ->where('active', true)
+    //         ->with(['unit'])
+    //         ->orderBy('unit_id', 'asc')
+    //         ->orderBy('created_at', 'asc')
+    //         ->get();
+    // }
 
     /**
      * Get all active inventory items
