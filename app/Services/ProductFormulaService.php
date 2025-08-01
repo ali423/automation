@@ -38,7 +38,7 @@ class ProductFormulaService extends BaseService
                 // Store amount in original unit (no conversion)
                 $material = Commodity::find($materialId);
                 if (!$material) {
-                    throw new \Exception("Material with ID {$materialId} not found.");
+                    throw new \Exception("ماده با شناسه {$materialId} یافت نشد.");
                 }
                 
                 $formulaData[$materialId] = [
@@ -99,7 +99,7 @@ class ProductFormulaService extends BaseService
         $amountInMaterialUnit = $this->commodityUnitService->convertToMainUnit($material, $amount, $unitId);
         
         if ($amountInMaterialUnit === null) {
-            throw new \Exception("Cannot convert amount to material's main unit");
+            throw new \Exception("نمی‌توان مقدار را به واحد اصلی ماده تبدیل کرد");
         }
         
         // If material's main unit is already kg, return the amount as is
@@ -110,7 +110,7 @@ class ProductFormulaService extends BaseService
         // Find kg unit
         $kgUnit = Unit::where('symbol', 'kg')->first();
         if (!$kgUnit) {
-            throw new \Exception('kg unit not found in database');
+            throw new \Exception('واحد کیلوگرم در پایگاه داده یافت نشد');
         }
         
         // Try to convert from material's main unit to kg
@@ -209,7 +209,7 @@ class ProductFormulaService extends BaseService
         
         // Ensure product unit is kg
         if ($product->unit->symbol !== 'kg') {
-            $errors[] = "Products must use kg as their unit.";
+            $errors[] = "محصولات باید از کیلوگرم به عنوان واحد استفاده کنند.";
             return [
                 'valid' => false,
                 'errors' => $errors,
@@ -221,12 +221,12 @@ class ProductFormulaService extends BaseService
             $material = Commodity::find($materialData['material_id']);
             
             if (!$material) {
-                $errors[] = "Material not found at index {$index}";
+                $errors[] = "ماده در شاخص {$index} یافت نشد";
                 continue;
             }
             
             if ($material->type !== 'material') {
-                $errors[] = "Only materials can be used in product formulas";
+                $errors[] = "فقط مواد می‌توانند در فرمول محصولات استفاده شوند";
                 continue;
             }
             
@@ -234,7 +234,7 @@ class ProductFormulaService extends BaseService
             $unitId = $materialData['unit_id'];
             
             if ($amount <= 0) {
-                $errors[] = "Amount must be greater than 0 for {$material->title}";
+                $errors[] = "مقدار باید بزرگتر از 0 باشد برای {$material->title}";
                 continue;
             }
             
@@ -243,12 +243,12 @@ class ProductFormulaService extends BaseService
                 $amountInKg = $this->convertToKg($material, $amount, $unitId);
                 $totalAmount += $amountInKg;
             } catch (\Exception $e) {
-                $errors[] = "Cannot convert amount for {$material->title}: " . $e->getMessage();
+                $errors[] = "نمی‌توان مقدار را برای {$material->title} تبدیل کرد: " . $e->getMessage();
             }
         }
         
         if ($totalAmount <= 0) {
-            $errors[] = "Total material amount must be greater than 0";
+            $errors[] = "مجموع مقدار مواد باید بزرگتر از 0 باشد";
         }
         
         return [

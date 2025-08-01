@@ -6,9 +6,9 @@ use App\Http\Requests\InventoryUpdateRequest;
 use App\Models\Inventory;
 use App\Models\Commodity;
 use App\Models\Unit;
-
 use App\Services\InventoryService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class InventoryController extends Controller
 {
@@ -74,8 +74,10 @@ class InventoryController extends Controller
      */
     public function update(InventoryUpdateRequest $request, Inventory $inventory)
     {
-        $this->service->update($inventory, $request->validated());
-        return redirect()->route('inventory.index')->with('success', __('messages.updated_successfully'));
+        DB::transaction(function () use ($request, $inventory) {
+            $this->service->update($inventory, $request->validated());
+        });
+        return redirect()->route('inventory.index')->with('successful', 'اطلاعات ویرایش شد.');
     }
 
     /**
@@ -86,8 +88,10 @@ class InventoryController extends Controller
      */
     public function destroy(Inventory $inventory)
     {
-        $this->service->delete($inventory);
-        return redirect()->route('inventory.index')->with('success', __('messages.deleted_successfully'));
+        DB::transaction(function () use ($inventory) {
+            $this->service->delete($inventory);
+        });
+        return redirect()->route('inventory.index')->with('successful', 'اطلاعات حذف شدند.');
     }
 
     /**
@@ -105,8 +109,10 @@ class InventoryController extends Controller
             'reason' => 'nullable|string|max:255'
         ]);
 
-        $this->service->adjustStock($inventory, $request->all());
-        return redirect()->route('inventory.show', $inventory)->with('success', __('messages.stock_adjusted_successfully'));
+        DB::transaction(function () use ($request, $inventory) {
+            $this->service->adjustStock($inventory, $request->all());
+        });
+        return redirect()->route('inventory.show', $inventory)->with('successful', 'موجودی با موفقیت تنظیم شد.');
     }
 
     /**
@@ -123,7 +129,9 @@ class InventoryController extends Controller
             'reason' => 'nullable|string|max:255'
         ]);
 
-        $this->service->adjustPrice($inventory, $request->all());
-        return redirect()->route('inventory.show', $inventory)->with('success', __('messages.price_adjusted_successfully'));
+        DB::transaction(function () use ($request, $inventory) {
+            $this->service->adjustPrice($inventory, $request->all());
+        });
+        return redirect()->route('inventory.index')->with('successful', 'قیمت با موفقیت تنظیم شد.');
     }
 } 
