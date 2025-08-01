@@ -91,6 +91,11 @@ class InventoryService extends BaseService
     /**
      * Get average cost for a commodity from inventory
      */
+
+
+    /**
+     * Get average cost for a commodity from inventory
+     */
     public function getAverageCost($commodityId)
     {
         $inventory = Inventory::where('commodity_id', $commodityId)
@@ -114,6 +119,7 @@ class InventoryService extends BaseService
         return $totalAmount > 0 ? $totalValue / $totalAmount : null;
     }
 
+    
     /**
      * Get stock level for a specific commodity and unit
      */
@@ -177,15 +183,15 @@ class InventoryService extends BaseService
     /**
      * Get all inventory records for a commodity across all units (for debugging)
      */
-    public function getAllInventoryForCommodity($commodityId)
-    {
-        return Inventory::where('commodity_id', $commodityId)
-            ->where('active', true)
-            ->with(['unit'])
-            ->orderBy('unit_id', 'asc')
-            ->orderBy('created_at', 'asc')
-            ->get();
-    }
+    // public function getAllInventoryForCommodity($commodityId)
+    // {
+    //     return Inventory::where('commodity_id', $commodityId)
+    //         ->where('active', true)
+    //         ->with(['unit'])
+    //         ->orderBy('unit_id', 'asc')
+    //         ->orderBy('created_at', 'asc')
+    //         ->get();
+    // }
 
     /**
      * Get all active inventory items
@@ -205,6 +211,19 @@ class InventoryService extends BaseService
     public function getAllInventory()
     {
         return Inventory::with(['commodity', 'unit'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Get all inventory items for a specific commodity
+     */
+    public function getAllInventoryForCommodity($commodityId)
+    {
+        return Inventory::with(['commodity', 'unit'])
+            ->where('commodity_id', $commodityId)
+            ->where('active', true)
+            ->where('amount', '>', 0)
             ->orderBy('created_at', 'desc')
             ->get();
     }

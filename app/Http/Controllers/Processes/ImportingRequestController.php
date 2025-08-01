@@ -33,7 +33,7 @@ class ImportingRequestController extends Controller
     public function index()
     {
         $requests = ImportingRequest::query()
-            ->with(['activities', 'commodities.unit', 'seller'])
+            ->with(['commodities.unit', 'seller'])
             ->orderBy('id', 'DESC')->get();
         return view('dashboard.processes.importing-request.index',
             [

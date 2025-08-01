@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Processes\ImportingRequestController;
+use App\Http\Controllers\Processes\ProductionRequestController;
 use App\Http\Controllers\Processes\WithdrawalRequestController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SellerController;
@@ -55,6 +56,8 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('withdrawal-request',WithdrawalRequestController::class);
 
+    Route::resource('production-request',ProductionRequestController::class);
+
     Route::get('importing-request/approval/{id}',[ImportingRequestController::class,'approvalRequest'])->name('approval.importing');
 
     Route::get('importing-request/reject/{id}',[ImportingRequestController::class,'rejectRequest'])->name('reject.importing');
@@ -62,6 +65,10 @@ Route::middleware('auth')->group(function () {
     Route::get('withdrawal-request/approval/{id}',[WithdrawalRequestController::class,'approvalRequest'])->name('approval.withdrawal');
 
     Route::get('withdrawal-request/reject/{id}',[WithdrawalRequestController::class,'rejectRequest'])->name('reject.withdrawal');
+
+    Route::get('production-request/approval/{id}',[ProductionRequestController::class,'approvalRequest'])->name('approval.production');
+
+    Route::get('production-request/reject/{id}',[ProductionRequestController::class,'rejectRequest'])->name('reject.production');
 
 
 

@@ -236,6 +236,24 @@
                         </ul>
                     </li>
                 @endif
+                @if(Gate::check('read_production') || Gate::check('create_production'))
+                        <li
+                            @if($first_url_part== 'production-request')
+                            class="treeview active"
+                            @else
+                            class="treeview"
+                            @endif>                        <a href="javascript:void(0)"><i class="ti-settings"></i> <span>تولید</span> <i
+                                class="fa fa-angle-left"></i></a>
+                        <ul class="treeview-menu">
+                            @can('read_production',App\Models\ProductionRequest::class)
+                                <li @if($first_url_part== 'production-request' && $second_url_part== 'index') class="active" @endif><a href="{{ route('production-request.index') }}">لیست درخواست ها</a></li>
+                            @endcan
+                            @can('create_production',App\Models\ProductionRequest::class)
+                                <li @if($first_url_part== 'production-request' && $second_url_part== 'create') class="active" @endif><a href="{{ route('production-request.create') }}">ثبت درخواست</a></li>
+                            @endcan
+                        </ul>
+                    </li>
+                @endif
                 @if(Gate::check('read_order') || Gate::check('create_order'))
                         <li
                             @if($first_url_part== 'order')

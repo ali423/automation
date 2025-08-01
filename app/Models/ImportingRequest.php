@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\ActivityTrait;
 use App\Traits\CommentTrait;
 use App\Traits\FileTrait;
 use Carbon\Carbon;
@@ -13,16 +12,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ImportingRequest extends Model
 {
-    use HasFactory,SoftDeletes,ActivityTrait,FileTrait,CommentTrait;
+    use HasFactory,SoftDeletes,FileTrait,CommentTrait;
     protected $fillable = [
         'seller_id',
         'status',
         'number',
     ];
-    
-    // Remove main_unit_amount from appends to avoid issues with ActivityTrait
-    // protected $appends = ['main_unit_amount'];
-    
+
     public function commodities()
     {
         return $this->belongsToMany(Commodity::class, 'importing_commodities', 'importation_id', 'commodity_id')
@@ -67,20 +63,4 @@ class ImportingRequest extends Model
         
         return $mainUnitAmounts;
     }
-    
-    /**
-     * Override toArray method to exclude main_unit_amount from activity logging
-     * This prevents issues with ActivityTrait when dealing with computed attributes
-     */
-    public function toArray()
-    {
-        $array = parent::toArray();
-        
-        // Remove main_unit_amount from the array to prevent issues with ActivityTrait
-        unset($array['main_unit_amount']);
-        
-        return $array;
-    }
-    
-
 }

@@ -103,6 +103,28 @@ return [
                 ],
             ]
         ],
+        'App\Models\ProductionRequest' => [
+            'fa_name' => 'درخواست تولید',
+            'url' => 'production-request',
+            'relations' => [
+                'product' => [
+                    'fa_name' => 'محصول تولیدی',
+                ],
+                'unit' => [
+                    'fa_name' => 'واحد اندازه گیری',
+                ],
+                'materials' => [
+                    'fa_name' => 'مواد اولیه',
+                    'primary_key' => 'production_request_id',
+                    'pivots' => [
+                        'required_amount' => 'مقدار مورد نیاز',
+                        'unit_id' => 'واحد ماده',
+                        'unit_cost' => 'هزینه واحد',
+                        'total_cost' => 'هزینه کل',
+                    ],
+                ],
+            ]
+        ],
         'App\Models\Order' => [
             'fa_name' => 'سفارشات',
             'url' => 'order',

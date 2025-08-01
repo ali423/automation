@@ -17,6 +17,7 @@ use App\Policies\UnitConversionPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\WithdrawalRequestPolicy;
 use App\Policies\InventoryPolicy;
+use App\Policies\ProductionRequestPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -66,6 +67,9 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('read_withdrawal',[WithdrawalRequestPolicy::class,'viewAny']);
         Gate::define('create_withdrawal',[WithdrawalRequestPolicy::class,'create']);
+
+        Gate::define('read_production',[ProductionRequestPolicy::class,'viewAny']);
+        Gate::define('create_production',[ProductionRequestPolicy::class,'create']);
 
         Gate::define('read_seller',[SellerPolicy::class,'viewAny']);
         Gate::define('create_seller',[SellerPolicy::class,'create']);
