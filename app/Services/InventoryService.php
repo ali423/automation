@@ -89,7 +89,33 @@ class InventoryService extends BaseService
     }
 
     /**
-     * Get current stock level for a commodity and unit
+     * Get average cost for a commodity from inventory
+     */
+    public function getAverageCost($commodityId)
+    {
+        $inventory = Inventory::where('commodity_id', $commodityId)
+            ->where('active', true)
+            ->where('amount', '>', 0)
+            ->whereNotNull('purchase_price')
+            ->get();
+
+        if ($inventory->isEmpty()) {
+            return null;
+        }
+
+        $totalValue = 0;
+        $totalAmount = 0;
+
+        foreach ($inventory as $item) {
+            $totalValue += $item->amount * $item->purchase_price;
+            $totalAmount += $item->amount;
+        }
+
+        return $totalAmount > 0 ? $totalValue / $totalAmount : null;
+    }
+
+    /**
+     * Get stock level for a specific commodity and unit
      */
     public function getStockLevel($commodityId, $unitId)
     {
@@ -97,6 +123,68 @@ class InventoryService extends BaseService
             ->where('unit_id', $unitId)
             ->where('active', true)
             ->sum('amount');
+    }
+
+    /**
+     * Get stock levels for multiple commodity-unit pairs in a single query (performance optimized)
+     */
+    public function getBatchStockLevels(array $commodityUnitPairs)
+    {
+        if (empty($commodityUnitPairs)) {
+            return [];
+        }
+
+        $results = Inventory::where('active', true)
+            ->where(function ($query) use ($commodityUnitPairs) {
+                foreach ($commodityUnitPairs as $pair) {
+                    $query->orWhere(function ($q) use ($pair) {
+                        $q->where('commodity_id', $pair['material_id'])
+                          ->where('unit_id', $pair['unit_id']);
+                    });
+                }
+            })
+            ->selectRaw('commodity_id, unit_id, SUM(amount) as total_amount')
+            ->groupBy('commodity_id', 'unit_id')
+            ->get()
+            ->keyBy(function ($item) {
+                return $item->commodity_id . '_' . $item->unit_id;
+            });
+
+        // Format results to match expected structure - ensure numbers, not strings
+        $formattedResults = [];
+        foreach ($commodityUnitPairs as $pair) {
+            $key = $pair['material_id'] . '_' . $pair['unit_id'];
+            $amount = $results->get($key)->total_amount ?? 0;
+            $formattedResults[$key] = is_numeric($amount) ? (float) $amount : 0;
+        }
+
+        return $formattedResults;
+    }
+
+    /**
+     * Get detailed inventory information for a commodity and unit
+     */
+    public function getDetailedInventory($commodityId, $unitId)
+    {
+        return Inventory::where('commodity_id', $commodityId)
+            ->where('unit_id', $unitId)
+            ->where('active', true)
+            ->where('amount', '>', 0)
+            ->orderBy('created_at', 'asc')
+            ->get();
+    }
+
+    /**
+     * Get all inventory records for a commodity across all units (for debugging)
+     */
+    public function getAllInventoryForCommodity($commodityId)
+    {
+        return Inventory::where('commodity_id', $commodityId)
+            ->where('active', true)
+            ->with(['unit'])
+            ->orderBy('unit_id', 'asc')
+            ->orderBy('created_at', 'asc')
+            ->get();
     }
 
     /**
@@ -158,17 +246,15 @@ class InventoryService extends BaseService
      */
     public function update($inventory, $data)
     {
-        return DB::transaction(function () use ($inventory, $data) {
-            $inventory->update([
-                'commodity_id' => $data['commodity_id'],
-                'unit_id' => $data['unit_id'],
-                'amount' => $data['amount'],
-                'purchase_price' => $data['purchase_price'],
-                'sale_price' => $data['sale_price'],
-            ]);
-            
-            return $inventory;
-        });
+        $inventory->update([
+            'commodity_id' => $data['commodity_id'],
+            'unit_id' => $data['unit_id'],
+            'amount' => $data['amount'],
+            'purchase_price' => $data['purchase_price'],
+            'sale_price' => $data['sale_price'],
+        ]);
+        
+        return $inventory;
     }
 
     /**
@@ -176,10 +262,8 @@ class InventoryService extends BaseService
      */
     public function delete($inventory)
     {
-        return DB::transaction(function () use ($inventory) {
-            $inventory->update(['active' => false]);
-            return $inventory;
-        });
+        $inventory->update(['active' => false]);
+        return $inventory;
     }
 
     /**
@@ -187,30 +271,28 @@ class InventoryService extends BaseService
      */
     public function adjustStock($inventory, $data)
     {
-        return DB::transaction(function () use ($inventory, $data) {
-            $adjustmentType = $data['adjustment_type'];
-            $quantity = $data['quantity'];
-            $reason = $data['reason'];
+        $adjustmentType = $data['adjustment_type'];
+        $quantity = $data['quantity'];
+        $reason = $data['reason'];
 
-            if ($adjustmentType === 'add') {
-                $newAmount = $inventory->amount + $quantity;
-            } else {
-                $newAmount = $inventory->amount - $quantity;
-                if ($newAmount < 0) {
-                    throw new \Exception('مقدار موجودی نمی‌تواند منفی باشد');
-                }
+        if ($adjustmentType === 'add') {
+            $newAmount = $inventory->amount + $quantity;
+        } else {
+            $newAmount = $inventory->amount - $quantity;
+            if ($newAmount < 0) {
+                throw new \Exception('مقدار موجودی نمی‌تواند منفی باشد');
             }
+        }
 
-            $inventory->update([
-                'amount' => $newAmount,
-                'active' => $newAmount > 0
-            ]);
+        $inventory->update([
+            'amount' => $newAmount,
+            'active' => $newAmount > 0
+        ]);
 
-            // Log the adjustment
-            $this->logStockAdjustment($inventory, $adjustmentType, $quantity, $reason);
+        // Log the adjustment
+        $this->logStockAdjustment($inventory, $adjustmentType, $quantity, $reason);
 
-            return $inventory;
-        });
+        return $inventory;
     }
 
     /**
@@ -218,19 +300,17 @@ class InventoryService extends BaseService
      */
     public function adjustPrice($inventory, $data)
     {
-        return DB::transaction(function () use ($inventory, $data) {
-            $newPrice = $data['new_price'];
-            $reason = $data['reason'];
+        $newPrice = $data['new_price'];
+        $reason = $data['reason'];
 
-            $inventory->update([
-                'sale_price' => $newPrice
-            ]);
+        $inventory->update([
+            'sale_price' => $newPrice
+        ]);
 
-            // Log the price adjustment
-            $this->logPriceAdjustment($inventory, $newPrice, $reason);
+        // Log the price adjustment
+        $this->logPriceAdjustment($inventory, $newPrice, $reason);
 
-            return $inventory;
-        });
+        return $inventory;
     }
 
     /**
