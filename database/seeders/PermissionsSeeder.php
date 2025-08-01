@@ -58,12 +58,6 @@ class PermissionsSeeder extends Seeder
             ['title'=>'edit_order', 'name'=>'ویرایش سفارش '],
             ['title'=>'delete_order', 'name'=>'حذف سفارش '],
 
-            //warehouse permissions
-            ['title'=>'create_warehouse', 'name'=>'اضافه کردن انبار '],
-            ['title'=>'read_warehouse', 'name'=>'دیدن انبار'],
-            ['title'=>'edit_warehouse', 'name'=>'ویرایش انبار '],
-            ['title'=>'delete_warehouse', 'name'=>'حذف انبار '],
-
             //withdrawal permissions
             ['title'=>'create_withdrawal', 'name'=>'اضافه کردن فروش کالا '],
             ['title'=>'read_withdrawal', 'name'=>'دیدن فروش کالا'],
@@ -84,7 +78,14 @@ class PermissionsSeeder extends Seeder
             ['title'=>'create_unit_conversion', 'name'=>'اضافه کردن تبدیل واحد'],
             ['title'=>'read_unit_conversion', 'name'=>'دیدن تبدیل واحد'],
             ['title'=>'edit_unit_conversion', 'name'=>'ویرایش تبدیل واحد'],
-            ['title'=>'delete_unit_conversion', 'name'=>'حذف تبدیل واحد']
+            ['title'=>'delete_unit_conversion', 'name'=>'حذف تبدیل واحد'],
+
+            //production request permissions
+            ['title'=>'create_production', 'name'=>'اضافه کردن درخواست تولید'],
+            ['title'=>'read_production', 'name'=>'دیدن درخواست تولید'],
+            ['title'=>'edit_production', 'name'=>'ویرایش درخواست تولید'],
+            ['title'=>'delete_production', 'name'=>'حذف درخواست تولید'],
+            ['title'=>'status_production', 'name'=>'تغییر وضعیت درخواست تولید']
         ];
 
         foreach ($permissions as $permission) {

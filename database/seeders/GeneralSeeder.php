@@ -205,167 +205,196 @@ class GeneralSeeder extends Seeder
             $createdProducts[] = Commodity::create($product);
         }
 
-        // Create product formulas (materials used in products)
+        // Create product formulas (materials used in products) - Unit-based amounts
         $formulas = [
-            // Engine Oil 5W-30 formula
+            // Engine Oil 5W-30 formula (for 1 kg of product)
             [
                 'product_id' => $createdProducts[0]->id, // Engine Oil 5W-30
-                'material_id' => $createdMaterials[0]->id, // Base Oil - 85%
-                'percentage' => 85,
-            ],
-            [
-                'product_id' => $createdProducts[0]->id, // Engine Oil 5W-30
-                'material_id' => $createdMaterials[1]->id, // Additive Package - 8%
-                'percentage' => 8,
+                'material_id' => $createdMaterials[0]->id, // Base Oil - 0.85 kg
+                'amount' => 0.85,
+                'unit_id' => $createdProducts[0]->unit_id, // Use product's unit (kg)
             ],
             [
                 'product_id' => $createdProducts[0]->id, // Engine Oil 5W-30
-                'material_id' => $createdMaterials[2]->id, // Viscosity Modifier - 5%
-                'percentage' => 5,
+                'material_id' => $createdMaterials[1]->id, // Additive Package - 0.08 kg
+                'amount' => 0.08,
+                'unit_id' => $createdProducts[0]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[0]->id, // Engine Oil 5W-30
-                'material_id' => $createdMaterials[3]->id, // Anti-Wear Additive - 2%
-                'percentage' => 2,
+                'material_id' => $createdMaterials[2]->id, // Viscosity Modifier - 0.05 kg
+                'amount' => 0.05,
+                'unit_id' => $createdProducts[0]->unit_id,
+            ],
+            [
+                'product_id' => $createdProducts[0]->id, // Engine Oil 5W-30
+                'material_id' => $createdMaterials[3]->id, // Anti-Wear Additive - 0.02 kg
+                'amount' => 0.02,
+                'unit_id' => $createdProducts[0]->unit_id,
             ],
 
-            // Engine Oil 10W-40 formula
+            // Engine Oil 10W-40 formula (for 1 kg of product)
             [
                 'product_id' => $createdProducts[1]->id, // Engine Oil 10W-40
-                'material_id' => $createdMaterials[0]->id, // Base Oil - 80%
-                'percentage' => 80,
-            ],
-            [
-                'product_id' => $createdProducts[1]->id, // Engine Oil 10W-40
-                'material_id' => $createdMaterials[1]->id, // Additive Package - 10%
-                'percentage' => 10,
-            ],
-            [
-                'product_id' => $createdProducts[1]->id, // Engine Oil 10W-40
-                'material_id' => $createdMaterials[2]->id, // Viscosity Modifier - 8%
-                'percentage' => 8,
+                'material_id' => $createdMaterials[0]->id, // Base Oil - 0.80 kg
+                'amount' => 0.80,
+                'unit_id' => $createdProducts[1]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[1]->id, // Engine Oil 10W-40
-                'material_id' => $createdMaterials[3]->id, // Anti-Wear Additive - 2%
-                'percentage' => 2,
+                'material_id' => $createdMaterials[1]->id, // Additive Package - 0.10 kg
+                'amount' => 0.10,
+                'unit_id' => $createdProducts[1]->unit_id,
+            ],
+            [
+                'product_id' => $createdProducts[1]->id, // Engine Oil 10W-40
+                'material_id' => $createdMaterials[2]->id, // Viscosity Modifier - 0.08 kg
+                'amount' => 0.08,
+                'unit_id' => $createdProducts[1]->unit_id,
+            ],
+            [
+                'product_id' => $createdProducts[1]->id, // Engine Oil 10W-40
+                'material_id' => $createdMaterials[3]->id, // Anti-Wear Additive - 0.02 kg
+                'amount' => 0.02,
+                'unit_id' => $createdProducts[1]->unit_id,
             ],
 
-            // Engine Oil 15W-50 formula
+            // Engine Oil 15W-50 formula (for 1 kg of product)
             [
                 'product_id' => $createdProducts[2]->id, // Engine Oil 15W-50
-                'material_id' => $createdMaterials[0]->id, // Base Oil - 75%
-                'percentage' => 75,
+                'material_id' => $createdMaterials[0]->id, // Base Oil - 0.75 kg
+                'amount' => 0.75,
+                'unit_id' => $createdProducts[2]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[2]->id, // Engine Oil 15W-50
-                'material_id' => $createdMaterials[1]->id, // Additive Package - 12%
-                'percentage' => 12,
+                'material_id' => $createdMaterials[1]->id, // Additive Package - 0.12 kg
+                'amount' => 0.12,
+                'unit_id' => $createdProducts[2]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[2]->id, // Engine Oil 15W-50
-                'material_id' => $createdMaterials[2]->id, // Viscosity Modifier - 10%
-                'percentage' => 10,
+                'material_id' => $createdMaterials[2]->id, // Viscosity Modifier - 0.10 kg
+                'amount' => 0.10,
+                'unit_id' => $createdProducts[2]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[2]->id, // Engine Oil 15W-50
-                'material_id' => $createdMaterials[3]->id, // Anti-Wear Additive - 3%
-                'percentage' => 3,
+                'material_id' => $createdMaterials[3]->id, // Anti-Wear Additive - 0.03 kg
+                'amount' => 0.03,
+                'unit_id' => $createdProducts[2]->unit_id,
             ],
 
-            // Transmission Oil formula
+            // Transmission Oil formula (for 1 kg of product)
             [
                 'product_id' => $createdProducts[3]->id, // Transmission Oil
-                'material_id' => $createdMaterials[0]->id, // Base Oil - 70%
-                'percentage' => 70,
+                'material_id' => $createdMaterials[0]->id, // Base Oil - 0.70 kg
+                'amount' => 0.70,
+                'unit_id' => $createdProducts[3]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[3]->id, // Transmission Oil
-                'material_id' => $createdMaterials[1]->id, // Additive Package - 15%
-                'percentage' => 15,
+                'material_id' => $createdMaterials[1]->id, // Additive Package - 0.15 kg
+                'amount' => 0.15,
+                'unit_id' => $createdProducts[3]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[3]->id, // Transmission Oil
-                'material_id' => $createdMaterials[4]->id, // Detergent Additive - 8%
-                'percentage' => 8,
+                'material_id' => $createdMaterials[4]->id, // Detergent Additive - 0.08 kg
+                'amount' => 0.08,
+                'unit_id' => $createdProducts[3]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[3]->id, // Transmission Oil
-                'material_id' => $createdMaterials[5]->id, // Dispersant Additive - 7%
-                'percentage' => 7,
+                'material_id' => $createdMaterials[5]->id, // Dispersant Additive - 0.07 kg
+                'amount' => 0.07,
+                'unit_id' => $createdProducts[3]->unit_id,
             ],
 
-            // Hydraulic Oil formula
+            // Hydraulic Oil formula (for 1 kg of product)
             [
                 'product_id' => $createdProducts[4]->id, // Hydraulic Oil
-                'material_id' => $createdMaterials[0]->id, // Base Oil - 90%
-                'percentage' => 90,
+                'material_id' => $createdMaterials[0]->id, // Base Oil - 0.90 kg
+                'amount' => 0.90,
+                'unit_id' => $createdProducts[4]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[4]->id, // Hydraulic Oil
-                'material_id' => $createdMaterials[1]->id, // Additive Package - 6%
-                'percentage' => 6,
+                'material_id' => $createdMaterials[1]->id, // Additive Package - 0.06 kg
+                'amount' => 0.06,
+                'unit_id' => $createdProducts[4]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[4]->id, // Hydraulic Oil
-                'material_id' => $createdMaterials[8]->id, // Antioxidant Additive - 4%
-                'percentage' => 4,
+                'material_id' => $createdMaterials[8]->id, // Antioxidant Additive - 0.04 kg
+                'amount' => 0.04,
+                'unit_id' => $createdProducts[4]->unit_id,
             ],
 
-            // Gear Oil formula
+            // Gear Oil formula (for 1 kg of product)
             [
                 'product_id' => $createdProducts[5]->id, // Gear Oil
-                'material_id' => $createdMaterials[0]->id, // Base Oil - 65%
-                'percentage' => 65,
+                'material_id' => $createdMaterials[0]->id, // Base Oil - 0.65 kg
+                'amount' => 0.65,
+                'unit_id' => $createdProducts[5]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[5]->id, // Gear Oil
-                'material_id' => $createdMaterials[1]->id, // Additive Package - 20%
-                'percentage' => 20,
+                'material_id' => $createdMaterials[1]->id, // Additive Package - 0.20 kg
+                'amount' => 0.20,
+                'unit_id' => $createdProducts[5]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[5]->id, // Gear Oil
-                'material_id' => $createdMaterials[3]->id, // Anti-Wear Additive - 10%
-                'percentage' => 10,
+                'material_id' => $createdMaterials[3]->id, // Anti-Wear Additive - 0.10 kg
+                'amount' => 0.10,
+                'unit_id' => $createdProducts[5]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[5]->id, // Gear Oil
-                'material_id' => $createdMaterials[8]->id, // Antioxidant Additive - 5%
-                'percentage' => 5,
+                'material_id' => $createdMaterials[8]->id, // Antioxidant Additive - 0.05 kg
+                'amount' => 0.05,
+                'unit_id' => $createdProducts[5]->unit_id,
             ],
 
-            // Brake Fluid formula
+            // Brake Fluid formula (for 1 kg of product)
             [
                 'product_id' => $createdProducts[6]->id, // Brake Fluid
-                'material_id' => $createdMaterials[0]->id, // Base Oil - 60%
-                'percentage' => 60,
+                'material_id' => $createdMaterials[0]->id, // Base Oil - 0.60 kg
+                'amount' => 0.60,
+                'unit_id' => $createdProducts[6]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[6]->id, // Brake Fluid
-                'material_id' => $createdMaterials[1]->id, // Additive Package - 25%
-                'percentage' => 25,
+                'material_id' => $createdMaterials[1]->id, // Additive Package - 0.25 kg
+                'amount' => 0.25,
+                'unit_id' => $createdProducts[6]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[6]->id, // Brake Fluid
-                'material_id' => $createdMaterials[9]->id, // Corrosion Inhibitor - 15%
-                'percentage' => 15,
+                'material_id' => $createdMaterials[9]->id, // Corrosion Inhibitor - 0.15 kg
+                'amount' => 0.15,
+                'unit_id' => $createdProducts[6]->unit_id,
             ],
 
-            // Power Steering Fluid formula
+            // Power Steering Fluid formula (for 1 kg of product)
             [
                 'product_id' => $createdProducts[7]->id, // Power Steering Fluid
-                'material_id' => $createdMaterials[0]->id, // Base Oil - 75%
-                'percentage' => 75,
+                'material_id' => $createdMaterials[0]->id, // Base Oil - 0.75 kg
+                'amount' => 0.75,
+                'unit_id' => $createdProducts[7]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[7]->id, // Power Steering Fluid
-                'material_id' => $createdMaterials[1]->id, // Additive Package - 15%
-                'percentage' => 15,
+                'material_id' => $createdMaterials[1]->id, // Additive Package - 0.15 kg
+                'amount' => 0.15,
+                'unit_id' => $createdProducts[7]->unit_id,
             ],
             [
                 'product_id' => $createdProducts[7]->id, // Power Steering Fluid
-                'material_id' => $createdMaterials[8]->id, // Antioxidant Additive - 10%
-                'percentage' => 10,
+                'material_id' => $createdMaterials[8]->id, // Antioxidant Additive - 0.10 kg
+                'amount' => 0.10,
+                'unit_id' => $createdProducts[7]->unit_id,
             ],
         ];
 

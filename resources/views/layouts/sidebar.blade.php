@@ -124,7 +124,7 @@
                 @endif
                 @if(Gate::check('read_warehouse') || Gate::check('create_warehouse'))
                         <li
-                            @if($first_url_part== 'warehouse' || $first_url_part== 'inventory')
+                            @if($first_url_part== 'warehouse')
                             class="treeview active"
                             @else
                             class="treeview"
@@ -138,8 +138,24 @@
                                 <li @if($first_url_part== 'warehouse' && $second_url_part== 'create') class="active" @endif><a href="{{ route('warehouse.create') }}">افزودن انبار جدید</a></li>
                             @endcan
                             @can('read_warehouse',App\Models\Warehouse::class)
-                                <li @if($first_url_part== 'inventory' && $second_url_part== 'index') class="active" @endif><a href="{{ route('inventory.index') }}">وضعیت موجودی انبار</a></li>
+        
                             @endcan
+                        </ul>
+                    </li>
+                @endif
+                @if(Gate::check('read_inventory'))
+                    <li
+                        @if($first_url_part== 'inventory')
+                        class="treeview active"
+                        @else
+                        class="treeview"
+                        @endif>
+                        <a href="javascript:void(0)"><i class="ti-package"></i> <span>مدیریت موجودی</span> <i
+                                class="fa fa-angle-left"></i></a>
+                        <ul class="treeview-menu">
+                                            @can('read_inventory',App\Models\Inventory::class)
+                <li @if($first_url_part== 'inventory' && $second_url_part== 'index') class="active" @endif><a href="{{ route('inventory.index') }}">لیست موجودی ها</a></li>
+                @endcan
                         </ul>
                     </li>
                 @endif
@@ -149,7 +165,7 @@
                             class="treeview active"
                             @else
                             class="treeview"
-                            @endif>                        <a href="javascript:void(0)"><i class="ti-truck"></i> <span>ورود کالا به انبار</span> <i
+                            @endif>                        <a href="javascript:void(0)"><i class="ti-truck"></i> <span>خرید کالا</span> <i
                                 class="fa fa-angle-left"></i></a>
                         <ul class="treeview-menu">
                             @can('read_importing',App\Models\ImportingRequest::class)
@@ -216,6 +232,24 @@
                             @endcan
                             @can('create_withdrawal',App\Models\WithdrawalRequest::class)
                                 <li @if($first_url_part== 'withdrawal-request' && $second_url_part== 'create') class="active" @endif><a href="{{ route('withdrawal-request.create') }}">ثبت درخواست</a></li>
+                            @endcan
+                        </ul>
+                    </li>
+                @endif
+                @if(Gate::check('read_production') || Gate::check('create_production'))
+                        <li
+                            @if($first_url_part== 'production-request')
+                            class="treeview active"
+                            @else
+                            class="treeview"
+                            @endif>                        <a href="javascript:void(0)"><i class="ti-settings"></i> <span>تولید</span> <i
+                                class="fa fa-angle-left"></i></a>
+                        <ul class="treeview-menu">
+                            @can('read_production',App\Models\ProductionRequest::class)
+                                <li @if($first_url_part== 'production-request' && $second_url_part== 'index') class="active" @endif><a href="{{ route('production-request.index') }}">لیست درخواست ها</a></li>
+                            @endcan
+                            @can('create_production',App\Models\ProductionRequest::class)
+                                <li @if($first_url_part== 'production-request' && $second_url_part== 'create') class="active" @endif><a href="{{ route('production-request.create') }}">ثبت درخواست</a></li>
                             @endcan
                         </ul>
                     </li>

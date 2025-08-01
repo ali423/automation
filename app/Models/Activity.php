@@ -54,6 +54,22 @@ class Activity extends Model
 
     public function getChangesAttribute()
     {
+        // Check if this is a custom adjustment activity
+        $data = json_decode($this->data, true);
+        if (isset($data['adjustment_type'])) {
+            return [
+                'custom_adjustment' => true,
+                'adjustment_type' => $data['adjustment_type'],
+                'operation' => $data['operation'] ?? null,
+                'quantity' => $data['quantity'] ?? null,
+                'old_amount' => $data['old_amount'] ?? null,
+                'new_amount' => $data['new_amount'] ?? null,
+                'old_price' => $data['old_price'] ?? null,
+                'new_price' => $data['new_price'] ?? null,
+                'reason' => $data['reason'] ?? null,
+            ];
+        }
+
         switch ($this->action) {
             case "create":
                 return false;
@@ -128,7 +144,8 @@ class Activity extends Model
     }
 
     protected function calculatePivotValues($items){
-
+        $data = [];
+        
         foreach ($items ?? array() as $key=>$value){
             if (is_array($value)){
                 $search_obj=$key;

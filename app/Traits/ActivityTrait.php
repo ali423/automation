@@ -126,9 +126,34 @@ trait ActivityTrait
                 DB::beginTransaction();
             });
             static::pivotSynced(function ($item, $model, $relationName, $pivotIdsAttributes) {
-                $pivot_res['attached']=self::getRelatedData($item,$relationName,$pivotIdsAttributes['attached']);
-                $pivot_res['detached']=self::getRelatedData($item,$relationName,$pivotIdsAttributes['detached']);
-                $pivot_res['updated']=self::getRelatedData($item,$relationName,$pivotIdsAttributes['updated']);
+                // Handle array format from LaravelPivotEvents
+                if (is_array($relationName)) {
+                    if (get_class($item) === 'App\Models\ProductionRequest') {
+                        $relationName = 'materials';
+                    } else {
+                        $relationName = 'materials'; // Default fallback
+                    }
+                    
+                    \Log::info('ActivityTrait pivotSynced: Converted array relationName to string', [
+                        'original_relationName' => $relationName,
+                        'item_class' => get_class($item)
+                    ]);
+                }
+                
+                // Validate parameters before processing
+                if (!is_string($relationName) || !method_exists($item, $relationName)) {
+                    \Log::warning('ActivityTrait pivotSynced: Invalid relationName', [
+                        'relationName' => $relationName,
+                        'relationName_type' => gettype($relationName),
+                        'item_class' => get_class($item)
+                    ]);
+                    DB::rollback();
+                    return;
+                }
+
+                $pivot_res['attached']=static::getRelatedData($item,$relationName,$pivotIdsAttributes['attached']);
+                $pivot_res['detached']=static::getRelatedData($item,$relationName,$pivotIdsAttributes['detached']);
+                $pivot_res['updated']=static::getRelatedData($item,$relationName,$pivotIdsAttributes['updated']);
                 $previous_activities=$item->activities()->get()->toArray();
                 if (auth()->check()) {
                     $last_activity = !empty($previous_activities) ? end($previous_activities) : null;
@@ -136,7 +161,7 @@ trait ActivityTrait
                         'previous_activity_id' => $last_activity['id'] ?? null,
                         'record_change_id' => $item->id,
                         'record_change_type' => get_class($item),
-                        'relation_model'=>get_class($item->$relationName()->first()),
+                        'relation_model'=>static::getRelationModel($item, $relationName),
                         'user_id' => auth()->user()->id,
                         'relation_name' => $relationName,
                         'action' => 'sync',
@@ -148,6 +173,7 @@ trait ActivityTrait
                 DB::commit();
             });
         } catch (\Exception $e) {
+            \Log::error('ActivityTrait pivotSync error: ' . $e->getMessage());
             DB::rollback();
         }
     }
@@ -159,26 +185,74 @@ trait ActivityTrait
                 DB::beginTransaction();
             });
             static::pivotAttached(function ($item, $model, $relationName, $pivotIdsAttributes) {
-                 $pivot_res=self::getRelatedData($item,$relationName,$pivotIdsAttributes);
-                $previous_activities=$item->activities()->get()->toArray();
-                if (auth()->check()) {
-                    $last_activity = !empty($previous_activities) ? end($previous_activities) : null;
-                    $data = [
-                        'previous_activity_id' => $last_activity['id'] ?? null,
-                        'record_change_id' => $item->id,
-                        'record_change_type' => get_class($item),
-                        'relation_model'=>get_class($item->$relationName()->first()),
-                        'user_id' => auth()->user()->id,
-                        'relation_name' => $relationName,
+                try {
+                    // Handle array format from LaravelPivotEvents
+                    if (is_array($relationName)) {
+                        // If relationName is an array, it's likely the material IDs
+                        // We need to determine the actual relation name based on the model
+                        if (get_class($item) === 'App\Models\ProductionRequest') {
+                            $relationName = 'materials';
+                        } else {
+                            // For other models, try to determine the relation name
+                            $relationName = 'materials'; // Default fallback
+                        }
+                        
+                        \Log::info('ActivityTrait pivotAttached: Converted array relationName to string', [
+                            'original_relationName' => $relationName,
+                            'item_class' => get_class($item)
+                        ]);
+                    }
+                    
+                    // Validate parameters before processing
+                    if (!is_string($relationName) || !method_exists($item, $relationName)) {
+                        \Log::warning('ActivityTrait pivotAttached: Invalid relationName', [
+                            'relationName' => $relationName,
+                            'relationName_type' => gettype($relationName),
+                            'item_class' => get_class($item)
+                        ]);
+                        DB::rollback();
+                        return;
+                    }
+
+                    $pivot_res = static::getRelatedData($item, $relationName, $pivotIdsAttributes);
+                    $previous_activities = $item->activities()->get()->toArray();
+                    if (auth()->check()) {
+                        $last_activity = !empty($previous_activities) ? end($previous_activities) : null;
+                        $data = [
+                            'previous_activity_id' => $last_activity['id'] ?? null,
+                            'record_change_id' => $item->id,
+                            'record_change_type' => get_class($item),
+                            'relation_model' => static::getRelationModel($item, $relationName),
+                            'user_id' => auth()->user()->id,
+                            'relation_name' => $relationName,
+                            'action' => 'attach',
+                            'data' => json_encode($item->toArray()),
+                            'pivot_data' => json_encode($pivot_res),
+                        ];
+                        Activity::query()->insert($data);
+                    }
+                    DB::commit();
+                } catch (\Exception $e) {
+                    \Log::error('ActivityTrait pivotAttached activity failed: ' . $e->getMessage(), [
+                        'model' => get_class($item),
+                        'relation' => $relationName ?? 'unknown',
                         'action' => 'attach',
-                        'data'=>json_encode($item->toArray()),
-                        'pivot_data' => json_encode($pivot_res),
-                    ];
-                    Activity::query()->insert($data);
+                        'user_id' => auth()->user()->id ?? null,
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    // Don't throw the error, just log it and continue
+                    DB::rollback();
+                    // Try to commit without activity tracking
+                    try {
+                        DB::commit();
+                    } catch (\Exception $commitError) {
+                        \Log::error('Failed to commit transaction after activity error: ' . $commitError->getMessage());
+                        DB::rollback();
+                    }
                 }
-                DB::commit();
             });
         } catch (\Exception $e) {
+            \Log::error('ActivityTrait pivotAttached error: ' . $e->getMessage());
             DB::rollback();
         }
     }
@@ -187,31 +261,75 @@ trait ActivityTrait
     {
         try {
             static::pivotDetaching(function ($item, $model, $relationName, $pivotIdsAttributes) {
-                DB::beginTransaction();
-                $pivot_res=self::getRelatedData($item,$relationName,$pivotIdsAttributes);
-                $previous_activities=$item->activities()->get()->toArray();
-                if (auth()->check()) {
-                    $last_activity = !empty($previous_activities) ? end($previous_activities) : null;
-                    $data = [
-                        'previous_activity_id' => $last_activity['id'] ?? null,
-                        'record_change_id' => $item->id,
-                        'record_change_type' => get_class($item),
-                        'relation_model'=>get_class($item->$relationName()->first()),
-                        'user_id' => auth()->user()->id,
-                        'relation_name' => $relationName,
+                try {
+                    DB::beginTransaction();
+                    
+                    // Handle array format from LaravelPivotEvents
+                    if (is_array($relationName)) {
+                        if (get_class($item) === 'App\Models\ProductionRequest') {
+                            $relationName = 'materials';
+                        } else {
+                            $relationName = 'materials'; // Default fallback
+                        }
+                        
+                        \Log::info('ActivityTrait pivotDetaching: Converted array relationName to string', [
+                            'original_relationName' => $relationName,
+                            'item_class' => get_class($item)
+                        ]);
+                    }
+                    
+                    // Validate parameters before processing
+                    if (!is_string($relationName) || !method_exists($item, $relationName)) {
+                        \Log::warning('ActivityTrait pivotDetaching: Invalid relationName', [
+                            'relationName' => $relationName,
+                            'relationName_type' => gettype($relationName),
+                            'item_class' => get_class($item)
+                        ]);
+                        DB::rollback();
+                        return;
+                    }
+
+                    $pivot_res = static::getRelatedData($item, $relationName, $pivotIdsAttributes);
+                    $previous_activities = $item->activities()->get()->toArray();
+                    if (auth()->check()) {
+                        $last_activity = !empty($previous_activities) ? end($previous_activities) : null;
+                        $data = [
+                            'previous_activity_id' => $last_activity['id'] ?? null,
+                            'record_change_id' => $item->id,
+                            'record_change_type' => get_class($item),
+                            'relation_model' => static::getRelationModel($item, $relationName),
+                            'user_id' => auth()->user()->id,
+                            'relation_name' => $relationName,
+                            'action' => 'detach',
+                            'data' => json_encode($item->toArray()),
+                            'pivot_data' => json_encode($pivot_res),
+                        ];
+                        Activity::query()->insert($data);
+                    }
+                    DB::commit();
+                } catch (\Exception $e) {
+                    \Log::error('ActivityTrait pivotDetaching activity failed: ' . $e->getMessage(), [
+                        'model' => get_class($item),
+                        'relation' => $relationName ?? 'unknown',
                         'action' => 'detach',
-                        'data'=>json_encode($item->toArray()),
-                        'pivot_data' => json_encode($pivot_res),
-                    ];
-                    Activity::query()->insert($data);
+                        'user_id' => auth()->user()->id ?? null,
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    DB::rollback();
+                    try {
+                        DB::commit();
+                    } catch (\Exception $commitError) {
+                        \Log::error('Failed to commit transaction after detach activity error: ' . $commitError->getMessage());
+                        DB::rollback();
+                    }
                 }
-                DB::commit();
             });
 
             static::pivotDetached(function ($item, $model, $relationName, $pivotIdsAttributes) {
 
             });
         } catch (\Exception $e) {
+            \Log::error('ActivityTrait pivotDetach error: ' . $e->getMessage());
             DB::rollback();
         }
     }
@@ -223,43 +341,161 @@ trait ActivityTrait
                 DB::beginTransaction();
             });
             static::pivotUpdated(function ($item, $model, $relationName, $pivotIdsAttributes) {
-                $pivot_res=self::getRelatedData($item,$relationName,$pivotIdsAttributes);
-                $previous_activities=$item->activities()->get()->toArray();
-                if (auth()->check()) {
-                    $last_activity = !empty($previous_activities) ? end($previous_activities) : null;
-                    $data = [
-                        'previous_activity_id' => $last_activity['id'] ?? null,
-                        'record_change_id' => $item->id,
-                        'record_change_type' => get_class($item),
-                        'user_id' => auth()->user()->id,
-                        'relation_model'=>get_class($item->$relationName()->first()),
-                        'relation_name' => $relationName,
+                try {
+                    // Handle array format from LaravelPivotEvents
+                    if (is_array($relationName)) {
+                        if (get_class($item) === 'App\Models\ProductionRequest') {
+                            $relationName = 'materials';
+                        } else {
+                            $relationName = 'materials'; // Default fallback
+                        }
+                        
+                        \Log::info('ActivityTrait pivotUpdated: Converted array relationName to string', [
+                            'original_relationName' => $relationName,
+                            'item_class' => get_class($item)
+                        ]);
+                    }
+                    
+                    // Validate parameters before processing
+                    if (!is_string($relationName) || !method_exists($item, $relationName)) {
+                        \Log::warning('ActivityTrait pivotUpdated: Invalid relationName', [
+                            'relationName' => $relationName,
+                            'relationName_type' => gettype($relationName),
+                            'item_class' => get_class($item)
+                        ]);
+                        DB::rollback();
+                        return;
+                    }
+
+                    $pivot_res = static::getRelatedData($item, $relationName, $pivotIdsAttributes);
+                    $previous_activities = $item->activities()->get()->toArray();
+                    if (auth()->check()) {
+                        $last_activity = !empty($previous_activities) ? end($previous_activities) : null;
+                        $data = [
+                            'previous_activity_id' => $last_activity['id'] ?? null,
+                            'record_change_id' => $item->id,
+                            'record_change_type' => get_class($item),
+                            'user_id' => auth()->user()->id,
+                            'relation_model' => static::getRelationModel($item, $relationName),
+                            'relation_name' => $relationName,
+                            'action' => 'pivot_update',
+                            'data' => json_encode($item->toArray()),
+                            'pivot_data' => json_encode($pivot_res),
+                        ];
+                        Activity::query()->insert($data);
+                    }
+                    DB::commit();
+                } catch (\Exception $e) {
+                    \Log::error('ActivityTrait pivotUpdated activity failed: ' . $e->getMessage(), [
+                        'model' => get_class($item),
+                        'relation' => $relationName ?? 'unknown',
                         'action' => 'pivot_update',
-                        'data'=>json_encode($item->toArray()),
-                        'pivot_data' => json_encode($pivot_res),
-                    ];
-                    Activity::query()->insert($data);
+                        'user_id' => auth()->user()->id ?? null,
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    DB::rollback();
+                    try {
+                        DB::commit();
+                    } catch (\Exception $commitError) {
+                        \Log::error('Failed to commit transaction after pivot update activity error: ' . $commitError->getMessage());
+                        DB::rollback();
+                    }
                 }
-                DB::commit();
             });
         } catch (\Exception $e) {
+            \Log::error('ActivityTrait pivotUpdate error: ' . $e->getMessage());
             DB::rollback();
         }
     }
 
-    static function getRelatedData($item,$relationName,$pivotIdsAttributes){
-        $changed_relations=array_column($item->$relationName()->whereIn('id',$pivotIdsAttributes)->get()->toArray(),'pivot');
-        $relation_data=config('enums.models')[get_class($item)]['relations'][$relationName] ?? null;
-        $pivot_exits=$relation_data['pivots'] ?? null;
-        if (!empty($pivot_exits)){
-            foreach ($changed_relations as $value){
-                foreach (array_keys($pivot_exits) as $pivot){
-                    $pivot_res[$value[$relation_data['primary_key']]]['pivots'][$pivot]=$value[$pivot];
-                }
+    /**
+     * Safely get the relation model class
+     */
+    protected static function getRelationModel($item, $relationName)
+    {
+        try {
+            // Ensure $relationName is a string
+            if (!is_string($relationName)) {
+                return null;
             }
+
+            // Check if the relation method exists
+            if (!method_exists($item, $relationName)) {
+                return null;
+            }
+
+            // Get the first related model to determine the class
+            $relation = $item->$relationName();
+            if ($relation && method_exists($relation, 'first')) {
+                $firstModel = $relation->first();
+                return $firstModel ? get_class($firstModel) : null;
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            \Log::error('ActivityTrait getRelationModel error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    static function getRelatedData($item,$relationName,$pivotIdsAttributes){
+        // Log the incoming parameters for debugging
+        \Log::info('ActivityTrait getRelatedData called with:', [
+            'item_class' => get_class($item),
+            'relationName' => $relationName,
+            'relationName_type' => gettype($relationName),
+            'pivotIdsAttributes' => $pivotIdsAttributes
+        ]);
+
+        // Ensure $relationName is a string
+        if (!is_string($relationName)) {
+            \Log::warning('ActivityTrait getRelatedData: relationName is not a string: ' . var_export($relationName, true));
+            return null;
+        }
+
+        // Check if the relation method exists
+        if (!method_exists($item, $relationName)) {
+            \Log::warning('ActivityTrait getRelatedData: method does not exist: ' . $relationName . ' on ' . get_class($item));
+            return null;
+        }
+
+        try {
+            // Handle case where $pivotIdsAttributes is an array of arrays (full pivot data)
+            // instead of just an array of IDs
+            $ids = $pivotIdsAttributes;
+            if (is_array($pivotIdsAttributes) && !empty($pivotIdsAttributes) && is_array($pivotIdsAttributes[0])) {
+                // If it's an array of arrays, extract the IDs from the pivot data
+                $ids = array_keys($pivotIdsAttributes);
+            }
+
+            // Safely call the relation method
+            $relation = $item->$relationName();
+            if (!$relation) {
+                \Log::warning('ActivityTrait getRelatedData: relation returned null for: ' . $relationName);
+                return null;
+            }
+
+            $changed_relations=array_column($relation->whereIn('id',$ids)->get()->toArray(),'pivot');
+            $relation_data=config('enums.models')[get_class($item)]['relations'][$relationName] ?? null;
+            $pivot_exits=$relation_data['pivots'] ?? null;
+            if (!empty($pivot_exits)){
+                foreach ($changed_relations as $value){
+                    foreach (array_keys($pivot_exits) as $pivot){
+                        $pivot_res[$value[$relation_data['primary_key']]]['pivots'][$pivot]=$value[$pivot];
+                    }
+                }
         }else{
             $pivot_res=$pivotIdsAttributes;
         }
         return $pivot_res ?? null;
+        } catch (\Exception $e) {
+            // Log the error and return null to prevent crashes
+            \Log::error('ActivityTrait getRelatedData error: ' . $e->getMessage(), [
+                'relationName' => $relationName,
+                'item_class' => get_class($item),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return null;
+        }
     }
 }

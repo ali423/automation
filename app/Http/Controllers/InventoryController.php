@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\InventoryEditRequest;
 use App\Http\Requests\InventoryUpdateRequest;
-use App\Models\Warehouse;
+use App\Models\Inventory;
+use App\Models\Commodity;
+use App\Models\Unit;
 use App\Services\InventoryService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
-
+use Illuminate\Support\Facades\DB;
 
 class InventoryController extends Controller
 {
@@ -16,9 +16,11 @@ class InventoryController extends Controller
 
     public function __construct(InventoryService $service)
     {
-        $this->service=$service;
+        $this->service = $service;
+        $this->authorizeResource(Inventory::class);
         $this->shareView();
     }
+
     /**
      * Display a listing of the resource.
      *
@@ -26,94 +28,110 @@ class InventoryController extends Controller
      */
     public function index()
     {
-        Gate::authorize('read_warehouse');
-        $warehouses=Warehouse::query()->orderBy('id', 'DESC')->get();
-        return view('dashboard.inventory.index',
-            [
-                'warehouses'=>$warehouses,
-            ]);
+        $inventories = $this->service->getActiveInventory();
+        
+        // Add empty state handling
+        if ($inventories->isEmpty()) {
+            return view('dashboard.inventory.index', compact('inventories'))
+                ->with('message', 'هیچ موجودی فعالی یافت نشد. موجودی ها از طریق فرآیندهای خرید و فروش ایجاد می‌شوند.');
+        }
+        
+        return view('dashboard.inventory.index', compact('inventories'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param Inventory $inventory
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Inventory $inventory)
     {
-        Gate::authorize('read_warehouse');
-        $warehouse=Warehouse::query()->findOrFail($id);
-        return view('dashboard.inventory.show',[
-            'warehouse'=>$warehouse,
-            'commodities'=>$warehouse->commodities,
-        ]);
+        return view('dashboard.inventory.show', compact('inventory'));
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param Inventory $inventory
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function edit(InventoryEditRequest $request)
+    public function edit(Inventory $inventory)
     {
-        $warehouse=Warehouse::query()->findOrFail($request->get('warehouse'));
-        Gate::authorize('edit_warehouse',$warehouse);
-        $commodity=$warehouse->commodities()->where('commodity_id',$request->get('commodity'))->firstOrFail();
-        return view('dashboard.inventory.edit',[
-            'warehouse'=>$warehouse,
-            'commodity'=>$commodity,
-        ]);
+        $commodities = Commodity::all();
+        $units = Unit::all();
+        return view('dashboard.inventory.edit', compact('inventory', 'commodities', 'units'));
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
+     * @param InventoryUpdateRequest $request
+     * @param Inventory $inventory
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(InventoryUpdateRequest $request)
+    public function update(InventoryUpdateRequest $request, Inventory $inventory)
     {
-        $warehouse=Warehouse::query()->findOrFail($request->get('warehouse'));
-        Gate::authorize('edit_warehouse',$warehouse);
-        $res=$this->service->updateAmount($warehouse,$request->only('commodity','commodity_amount'));
-        if (isset($res['success']) && $res['success']== false){
-            return redirect()->back()->withErrors($res['error']);
-        }
-        return redirect(route('inventory.show',$warehouse))->with('successful', 'اطلاعات ویرایش شدند.');
+        DB::transaction(function () use ($request, $inventory) {
+            $this->service->update($inventory, $request->validated());
+        });
+        return redirect()->route('inventory.index')->with('successful', 'اطلاعات ویرایش شد.');
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param Inventory $inventory
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy($id)
+    public function destroy(Inventory $inventory)
     {
-        //
+        DB::transaction(function () use ($inventory) {
+            $this->service->delete($inventory);
+        });
+        return redirect()->route('inventory.index')->with('successful', 'اطلاعات حذف شدند.');
     }
-}
+
+    /**
+     * Manual stock adjustment
+     *
+     * @param Request $request
+     * @param Inventory $inventory
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function adjustStock(Request $request, Inventory $inventory)
+    {
+        $request->validate([
+            'adjustment_type' => 'required|in:add,subtract',
+            'quantity' => 'required|numeric|min:0.01',
+            'reason' => 'nullable|string|max:255'
+        ]);
+
+        DB::transaction(function () use ($request, $inventory) {
+            $this->service->adjustStock($inventory, $request->all());
+        });
+        return redirect()->route('inventory.show', $inventory)->with('successful', 'موجودی با موفقیت تنظیم شد.');
+    }
+
+    /**
+     * Manual price adjustment
+     *
+     * @param Request $request
+     * @param Inventory $inventory
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function adjustPrice(Request $request, Inventory $inventory)
+    {
+        $request->validate([
+            'new_price' => 'required|numeric|min:0.01',
+            'reason' => 'nullable|string|max:255'
+        ]);
+
+        DB::transaction(function () use ($request, $inventory) {
+            $this->service->adjustPrice($inventory, $request->all());
+        });
+        return redirect()->route('inventory.index')->with('successful', 'قیمت با موفقیت تنظیم شد.');
+    }
+} 

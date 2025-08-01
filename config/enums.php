@@ -33,7 +33,8 @@ return [
                     'fa_name' => 'فرمول ساخت',
                     'primary_key' => 'material_id',
                     'pivots' => [
-                        'percentage' => 'درصد تشکیل دهنده'
+                        'amount' => 'مقدار ماده',
+                        'unit_id' => 'واحد ماده'
                     ],
                 ],
                 'warehouses' => [
@@ -67,8 +68,8 @@ return [
                     'primary_key' => 'importation_id',
                     'pivots' => [
                         'amount' => 'مقدار کالا',
-                        'warehouses_id' => 'انبار',
-                        'unit' => 'واحد اندازه گیری',
+                        'unit_id' => 'واحد اندازه گیری',
+                        'purchase_price' => 'قیمت خرید',
                     ],
                 ],
             ]
@@ -97,7 +98,29 @@ return [
                     'pivots' => [
                         'amount' => 'مقدار کالا',
                         'price' => 'قیمت فروش',
-                        'unit' => 'واحد اندازه گیری',
+                        'unit_id' => 'واحد اندازه گیری',
+                    ],
+                ],
+            ]
+        ],
+        'App\Models\ProductionRequest' => [
+            'fa_name' => 'درخواست تولید',
+            'url' => 'production-request',
+            'relations' => [
+                'product' => [
+                    'fa_name' => 'محصول تولیدی',
+                ],
+                'unit' => [
+                    'fa_name' => 'واحد اندازه گیری',
+                ],
+                'materials' => [
+                    'fa_name' => 'مواد اولیه',
+                    'primary_key' => 'production_request_id',
+                    'pivots' => [
+                        'required_amount' => 'مقدار مورد نیاز',
+                        'unit_id' => 'واحد ماده',
+                        'unit_cost' => 'هزینه واحد',
+                        'total_cost' => 'هزینه کل',
                     ],
                 ],
             ]
@@ -133,6 +156,20 @@ return [
             'relations' => [
                 'commodities' => [
                     'fa_name' => 'کالاها',
+                    'primary_key' => 'unit_id',
+                ],
+            ]
+        ],
+        'App\Models\Inventory' => [
+            'fa_name' => 'موجودی ها',
+            'url' => 'inventory',
+            'relations' => [
+                'commodity' => [
+                    'fa_name' => 'کالا',
+                    'primary_key' => 'commodity_id',
+                ],
+                'unit' => [
+                    'fa_name' => 'واحد',
                     'primary_key' => 'unit_id',
                 ],
             ]

@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title', 'لیست موجودی انبار')
+@section('title', 'لیست موجودی ها')
 @section('page_styles')
     <!-- These plugins only need for the run this page -->
     <link rel="stylesheet" href="{{ asset('css/default-assets/datatables.bootstrap4.css') }}">
@@ -12,91 +12,58 @@
 
 @section('content')
     <div class="row">
-        <div class="col-xl-12 height-card box-margin">
-            <div class="card">
-                <div class="card-body">
-                    <!-- Stacked Bar -->
-                    <div id="panel-15" class="panel">
-                        <h4 class="card-title">وضعیت انبار ها</h4>
-                        <div class="row">
-                            <div class="col-md-10">
-                                <div id="mychart" class="row">
-                                    @php($i = 1)
-                                    @foreach ($warehouses as $warehouse)
-                                        <div class="col mr-1 mt-5 mt-3">
-                                            <span class="size">
-                                                {{ number_format($warehouse->capacity) }} کیلوگرم
-                                            </span>
-                                            <div class="full-size">
-                                                <span></span>
-                                                <span
-                                                    @switch($i) @case(1)
-                                          class="current-size bg-primary"
-                                        @break
-                                        @case(2)
-                                        class="current-size bg-success"
-                                        @break
-                                    @case(3)
-                                    class="current-size bg-danger"
-                                    @break
-                                    @case(4)
-                                    class="current-size bg-secondary"
-                                    @break
-                                    @case(5)
-                                    class="current-size bg-warning"
-                                    @php($i=0)
-                                    @break @endswitch
-                                                    data-current="{{ $warehouse->full_space_percentage }}"></span>
-                                            </div>
-                                            <span>
-                                                {{ $warehouse->title }}
-                                            </span>
-                                        </div>
-                                        @php($i++)
-                                    @endforeach
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <img src="{{ asset('img/ware-capacity/warechartex.png')}}" alt="">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-2">لیست انبار ها</h4>
+                    <h4 class="card-title mb-2">لیست موجودی ها</h4>
                     <table id="datatable-buttons-inventory" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
-                            <tr>
-                                <th>ردیف</th>
-                                <th> {{ __('fields.title') }}</th>
-                                <th> {{ __('fields.type') }}</th>
-                                <th> {{ __('fields.status') }}</th>
-                                <th> {{ __('fields.capacity') }}</th>
-                                <th> {{ __('fields.empty_space') }}</th>
-                                <th>{{ __('fields.commodities_list') }}</th>
-                            </tr>
+                        <tr>
+                            <th>ردیف</th>
+                            <th>کالا</th>
+                            <th>واحد</th>
+                            <th>مقدار موجودی</th>
+                            <th>قیمت خرید</th>
+                            <th>قیمت فروش</th>
+                            <th>وضعیت</th>
+                            <th>{{ __('fields.details') }}</th>
+                        </tr>
                         </thead>
 
                         <tbody class="text-center">
+                        @if($inventories->count() > 0)
                             @php($i = 1)
-                            @foreach ($warehouses as $warehouse)
+                            @foreach ($inventories as $inventory)
                                 <tr>
                                     <td>{{ $i }}</td>
-                                    <td>{{ $warehouse->title }}</td>
-                                    <td>{{ __('fields.warehouse.types')[$warehouse->type] }}</td>
-                                    <td>{{ __('fields.warehouse.status')[$warehouse->status] }}</td>
-                                    <td>{{ number_format($warehouse->capacity) }}</td>
-                                    <td>{{ number_format($warehouse->empty_space) }}</td>
-                                    <td><a href="{{ route('inventory.show', $warehouse) }}" class=""><i
+                                    <td>{{ $inventory->commodity->title ?? 'نامشخص' }}</td>
+                                    <td>{{ $inventory->unit->name ?? 'نامشخص' }}</td>
+                                    <td>{{ number_format($inventory->amount, 2) }}</td>
+                                    <td>{{ number_format($inventory->purchase_price ?? 0) }} تومان</td>
+                                    <td>{{ number_format($inventory->sale_price ?? 0) }} تومان</td>
+                                    <td>
+                                        @if($inventory->active)
+                                            <span class="badge badge-success">فعال</span>
+                                        @else
+                                            <span class="badge badge-danger">غیرفعال</span>
+                                        @endif
+                                    </td>
+                                    <td><a href="{{ route('inventory.show', $inventory) }}" class=""><i
                                                 class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>
                                 @php($i++)
                             @endforeach
+                        @else
+                            <tr>
+                                <td colspan="8" class="text-center">
+                                    <div class="alert alert-info">
+                                        <i class="ti-info-alt"></i>
+                                        {{ $message ?? 'هیچ موجودی یافت نشد.' }}
+                                    </div>
+                                </td>
+                            </tr>
+                        @endif
                         </tbody>
                     </table>
 
@@ -119,10 +86,8 @@
     <script src="{{ asset('js/default-assets/buttons.html5.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/button.print.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/dataTables.sorting.persian.js') }}"></script>
-    {{-- chart --}}
-    <script src="{{ asset('js/store-chart/store-chart.js') }}"></script>
     <script type="text/javascript">
-        $(document).ready(function() {
+        $(document).ready(function () {
             pdfMake.fonts = {
                 Roboto: {
                     normal: 'Roboto-Regular.ttf',
@@ -141,31 +106,33 @@
             $('#datatable-buttons-inventory').DataTable({
                 dom: 'Bfrtip',
                 buttons: [{
-                        extend: 'copy',
-                        text: "کپی",
-                        className: 'btn btn-outline-primary',
-                        exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
-                            modifier: {
-                                page: 'current'
-                            },
-                            orthogonal: "rtlexport"
-                        }
-                    },
+                    extend: 'copy',
+                    text: "کپی",
+                    className: 'btn btn-outline-primary',
+                    exportOptions: {
+                        columns: [6, 5, 4, 3, 2, 1, 0],
+                        modifier: {
+                            page: 'current'
+                        },
+                        orthogonal: "rtlexport"
+                    }
+                },
                     {
                         extend: 'pdf',
                         text: 'pdf',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
+                            columns: [6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
                             orthogonal: "rtlexport"
                         },
-                        customize: function(doc) {
+                        customize: function (doc) {
                             doc.defaultStyle.font = "IRANSansWeb";
-                            doc.content[1].table.widths = ['20%','20%', '20%', '20%', '20%', '20%'];
+                            doc.content[1].table.widths = ['20%', '20%', '20%', '20%', '20%', '20%',
+                                '20%'
+                            ];
                             doc.styles.tableBodyEven.alignment = 'center';
                             doc.styles.tableBodyOdd.alignment = 'center';
                         }
@@ -174,7 +141,7 @@
                         extend: 'excel',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
+                            columns: [6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             }
@@ -184,7 +151,7 @@
                         extend: 'csv',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
+                            columns: [6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             }
@@ -195,7 +162,7 @@
                         text: "پرینت",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5],
+                            columns: [0, 1, 2, 3, 4, 5, 6],
                             modifier: {
                                 page: 'current'
                             },
@@ -205,20 +172,21 @@
                 ],
                 columnDefs: [{
                     targets: '_all',
-                    render: function(data, type, row) {
+                    render: function (data, type, row) {
                         if (type === 'rtlexport') {
                             return data.split(' ').reverse().join(' ');
                         }
                         return data;
                     }
                 }],
-        "language": {
-            "paginate": {
-                "previous": "قبلی",
-                "next": "بعدی"
-            }
-        }
+                "language": {
+                    "paginate": {
+                        "previous": "قبلی",
+                        "next": "بعدی"
+                    }
+                }
             });
         });
     </script>
-@endsection
+
+@endsection 

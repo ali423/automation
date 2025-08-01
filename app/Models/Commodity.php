@@ -39,29 +39,21 @@ class Commodity extends Model
     public function materials()
     {
         return $this->belongsToMany(Commodity::class, 'product_formula', 'product_id', 'material_id')
-            ->withPivot('percentage')
+            ->withPivot('amount', 'unit_id')
             ->withTimestamps();
     }
 
     public function importingRequests()
     {
         return $this->belongsToMany(ImportingRequest::class, 'importing_commodities', 'commodity_id', 'importation_id')
-            ->withPivot('amount','warehouses_id','unit','purchase_price');
+            ->withPivot('amount','unit_id','purchase_price');
     }
 
     public function getBasePriceAttribute()
     {
         if ($this->type == 'product') {
-            $total_amount = 0;
-            $materials = $this->materials()->get();
-            foreach ($materials as $material) {
-                if ($material->type == 'material') {
-                    $total_amount = $total_amount + round(($material->pivot->percentage / 100) * $material->purchase_price, 2);
-                } else {
-                    $total_amount = $total_amount + round(($material->pivot->percentage / 100) * $material->base_price, 2);
-                }
-            }
-            return $total_amount;
+            $productFormulaService = app(\App\Services\ProductFormulaService::class);
+            return $productFormulaService->calculateMaterialCost($this);
         }
         return $this->purchase_price;
     }
@@ -106,5 +98,16 @@ class Commodity extends Model
             case 'twenty_liters':
                 return round(($this->pivot->amount*17.8)/185,1);
         }
+    }
+    
+    /**
+     * Get all selectable units for this commodity
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getSelectableUnitsAttribute()
+    {
+        $commodityUnitService = app(\App\Services\CommodityUnitService::class);
+        return $commodityUnitService->getSelectableUnits($this);
     }
 }

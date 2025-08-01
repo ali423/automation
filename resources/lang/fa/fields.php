@@ -10,6 +10,7 @@ return [
     'sell-price' => 'قیمت فروش',
     'sell-price_per_unit' => 'قیمت فروش هر واحد کالا',
     'sales_price' => 'قیمت فروش',
+    'sale_price' => 'قیمت فروش',
     'purchase_price' => 'قیمت خرید',
     'purchase_unit_price' => 'قیمت خرید (ریال)',
     'avr_purchase_price' => 'میانگین قیمت خرید (ریال)',
@@ -66,7 +67,7 @@ return [
             'twenty_liters' => 'گالن (20 لیتری)',
         ],
         'material_type' => 'ماده اولیه تشکیل دهنده',
-        'material_amount' => 'مقدار درصد فرآورده',
+        'material_amount' => 'مقدار ماده',
         'types' => [
             'material' => 'ماده اولیه',
             'product' => 'فرآورده',
@@ -103,6 +104,29 @@ return [
             'done' => 'کامل شده',
         ]
     ],
+    'production-request' => [
+        'number' => 'شماره درخواست تولید',
+        'title' => 'عنوان درخواست تولید',
+        'description' => 'توضیحات',
+        'input_materials' => 'مواد اولیه',
+        'output_products' => 'محصولات خروجی',
+        'total_cost' => 'هزینه کل',
+        'total_input_cost' => 'هزینه کل مواد اولیه',
+        'total_output_value' => 'ارزش کل محصولات',
+        'profit' => 'سود',
+        'production_amount' => 'مقدار تولید',
+        'product_id' => 'محصول تولیدی',
+        'materials_data' => 'مواد اولیه',
+        'unit_cost' => 'هزینه واحد',
+        'status' => [
+            'awaiting_approval' => 'در انتظار تایید',
+            'approvaled' => 'تایید شده',
+            'approved' => 'تایید شده', // Legacy support for existing data
+            'rejected' => 'رد شده',
+            'expired' => 'منقضی شده',
+            'done' => 'تکمیل شده',
+        ],
+    ],
     'order' => [
         'status' => [
             'pending' => 'درحال پردازش',
@@ -122,5 +146,18 @@ return [
     'example_g_to_kg' => 'مثال: برای تبدیل گرم به کیلوگرم، نرخ تبدیل 0.001 است',
     'delete_conversion' => 'حذف تبدیل',
     'back_to_list' => 'بازگشت به لیست',
+    'id' => 'شناسه',
+    'commodity_id' => 'کالا',
+    'unit_id' => 'واحد',
+    'amount' => 'مقدار موجودی',
+    'active' => 'وضعیت',
+    'add_material' => 'افزودن ماده اولیه',
+    'add_product' => 'افزودن محصول',
+    'summary' => 'خلاصه',
+    'unit_cost' => 'هزینه واحد',
+    'select_commodity' => 'انتخاب کالا',
+    'select_unit' => 'انتخاب واحد',
+    'save' => 'ذخیره',
+    'cancel' => 'انصراف',
 ];
 ?>

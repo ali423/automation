@@ -5,31 +5,14 @@ namespace App\Services;
 use App\Jobs\NotifyAdminsJob;
 use App\Models\Commodity;
 use App\Models\Warehouse;
+use App\Services\InventoryService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class BaseService
 {
-    public function calculateCommodityAmount($amount,$unit){
-        switch ($unit) {
-            case 'keg':
-                return round($amount*185,2);
-            case 'kg':
-                return $amount;
-            case 'twenty_liters':
-                return round($amount*17.8,2);
-        }
-    }
-    public function calculateCommodityPrice($price,$unit){
-        switch ($unit) {
-            case 'keg':
-                return round($price/185,2);
-            case 'kg':
-                return $price;
-            case 'twenty_liters':
-                return round($price/17.8,2);
-        }
-    }
+    
+  
     public function uploadFile($file,$patch,$attached){
         $user=auth()->user();
         $file_name=$file->getClientOriginalName();
@@ -57,16 +40,18 @@ class BaseService
         });
     }
     public function warningCommodity(Commodity $commodity){
-        $amounts=array_column(array_column($commodity->warehouses()->get()->toArray(),'pivot'),'commodity_amount');
-        $total_amount = array_sum($amounts);
-        if ($total_amount < $commodity-> warning_limit){
+        // Get total stock from inventory system
+        $inventoryService = app(InventoryService::class);
+        $total_amount = $inventoryService->getStockLevel($commodity->id, $commodity->unit_id);
+        
+        if ($total_amount < $commodity->warning_limit){
             NotifyAdminsJob::dispatch($commodity);
         }
     }
     protected function generateUniqueNumber($model,$field)
     {
         $number = rand(1000000, 9999999);
-        while ($model::query()->where('number', $field)->exists()) {
+        while ($model::query()->where($field, $number)->exists()) {
             $number = rand(1000000, 9999999);
         }
         return $number;

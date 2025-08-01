@@ -4,10 +4,11 @@ use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\CommodityController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\InventoryController;
+
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Processes\ImportingRequestController;
+use App\Http\Controllers\Processes\ProductionRequestController;
 use App\Http\Controllers\Processes\WithdrawalRequestController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SellerController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UnitConversionController;
+use App\Http\Controllers\InventoryController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -54,6 +56,8 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('withdrawal-request',WithdrawalRequestController::class);
 
+    Route::resource('production-request',ProductionRequestController::class);
+
     Route::get('importing-request/approval/{id}',[ImportingRequestController::class,'approvalRequest'])->name('approval.importing');
 
     Route::get('importing-request/reject/{id}',[ImportingRequestController::class,'rejectRequest'])->name('reject.importing');
@@ -62,9 +66,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('withdrawal-request/reject/{id}',[WithdrawalRequestController::class,'rejectRequest'])->name('reject.withdrawal');
 
-    Route::get('inventory/edit',[InventoryController::class,'edit'])->name('inventory.edit');
+    Route::get('production-request/approval/{id}',[ProductionRequestController::class,'approvalRequest'])->name('approval.production');
 
-    Route::patch('inventory/update',[InventoryController::class,'update'])->name('inventory.update');
+    Route::get('production-request/reject/{id}',[ProductionRequestController::class,'rejectRequest'])->name('reject.production');
+
+
 
     Route::get('order/confirm/{order}',[OrderController::class,'confirm'])->name('order.confirm');
 
@@ -77,9 +83,7 @@ Route::middleware('auth')->group(function () {
     Route::get('order/chart', [OrderController::class, 'chart'])->name('order.chart');
     Route::resource('order',OrderController::class);
 
-    Route::resource('inventory',InventoryController::class)->only('index','show');
 
-    Route::get('inventory-ajax/{id}',[CommodityController::class,'inventory'])->name('inventory');
 
     Route::get('commodity-type-ajax/{id}',[CommodityController::class,'commodityType']);
 
@@ -89,6 +93,10 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('unit-conversion', UnitConversionController::class);
     Route::post('unit-conversion/convert', [UnitConversionController::class, 'convert'])->name('unit-conversion.convert');
+
+    Route::resource('inventory', InventoryController::class)->except(['create', 'store']);
+    Route::post('inventory/{inventory}/adjust-stock', [InventoryController::class, 'adjustStock'])->name('inventory.adjust-stock');
+    Route::post('inventory/{inventory}/adjust-price', [InventoryController::class, 'adjustPrice'])->name('inventory.adjust-price');
 
 });
 

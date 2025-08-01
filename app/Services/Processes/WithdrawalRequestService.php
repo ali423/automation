@@ -3,106 +3,273 @@
 namespace App\Services\Processes;
 
 use App\Models\Commodity;
-use App\Models\ImportingRequest;
-use App\Models\Warehouse;
 use App\Models\WithdrawalRequest;
 use App\Services\BaseService;
+use App\Services\InventoryService;
+use App\Services\CommodityUnitService;
 use Illuminate\Support\Facades\DB;
 
 class WithdrawalRequestService extends BaseService
 {
-    public function checkInventory($data)
+    protected $inventoryService;
+    protected $commodityUnitService;
+
+    public function __construct(InventoryService $inventoryService, CommodityUnitService $commodityUnitService)
     {
-        foreach ($data['commodity_id'] as $key => $value) {
-            $commodity = Commodity::query()->findOrFail($value);
-            $warehouse_ids = array_keys($data['amount'][$value]);
-            foreach ($warehouse_ids as $warehouse_id) {
-                $warehouse = Warehouse::query()->findOrFail($warehouse_id);
-                $amount = $data['amount'][$commodity->id][$warehouse->id];
-                $unit = $data['unit'][$key];
-                $commodity_amount = $this->calculateCommodityAmount($amount, $unit);
-                $exits_amount = $commodity->warehouses->find($warehouse->id)->pivot->commodity_amount ?? 0;
-                if ( $exits_amount < $commodity_amount) {
-                    $data['success'] = false;
-                    $data['error'] = ' مقدار انتخابی برای کالای ' . $commodity->title . ' به اندازه کافی در انبار ' . $warehouse->title . ' وجود ندارد ';
-                    return $data;
-                }
-            }
-        }
-        return [
-            'success' => true,
-        ];
+        $this->inventoryService = $inventoryService;
+        $this->commodityUnitService = $commodityUnitService;
     }
 
+    /**
+     * Create a new withdrawal request
+     *
+     * @param array $data
+     * @param mixed $file
+     * @return WithdrawalRequest
+     */
     public function create($data, $file)
     {
-      return  DB::transaction(function () use ($data, $file) {
-            $number = $this->generateUniqueNumber(WithdrawalRequest::class, 'number');
-            $request = WithdrawalRequest::query()->create([
-                'customer_id' => $data['customer_id'],
-                'status' => 'awaiting_approval',
-                'number' => $number,
-            ]);
-            foreach ($data['commodity_id'] as $key => $value) {
-                $commodity[$value] = [
-                    'amount' => json_encode(array_filter($data['amount'][$value])),
-                    'unit' => $data['unit'][$key],
-                    'price' => $data['price'][$key] ?? null,
-                ];
-            }
-                $user = auth()->user();
-                $request->commodities()->attach($commodity);
-                if (isset($data['comment'])) {
-                    $request->comments()->create([
-                        'user_id' => $user->id,
-                        'body' => $data['comment'],
-                    ]);
-                }
-                if (!empty($file)) {
-                    $this->uploadFile($file, 'withdrawal-request', $request);
-                }
-                return $request;
-        });
-    }
-    public function checkInventoryApproval(WithdrawalRequest $request){
-        foreach ($request->commodities as $commodity){
-            foreach ($commodity->withdrawal_amount as $value){
-                $exits_inventory = $value['warehouse']->commodities->find($commodity->id)->pivot->commodity_amount ?? 0;
-                $amount=$this->calculateCommodityAmount($value['amount'],$value['unit']);
-                if ($amount > $exits_inventory){
-                    $data['success'] = false;
-                    $data['error'] = ' مقدار انتخابی برای کالای ' . $commodity->title . ' به اندازه کافی در انبار ' . $value['warehouse']['title'] . 'وجود ندارد ';
-                    return $data;
-                }
-            }
+        $commodity = [];
+        foreach ($data['commodity_id'] as $key => $value) {
+            $commodity[$value] = [
+                'amount' => $data['amount'][$key],
+                'unit_id' => $data['unit'][$key],
+                'price' => $data['price'][$key] ?? null,
+            ];
         }
-        return [
-            'success' => true,
-        ];
-    }
-    public function approvalRequest(WithdrawalRequest $request){
-        DB::transaction(function () use ($request) {
-            foreach ($request->commodities as $commodity) {
-                foreach ($commodity->withdrawal_amount as $value){
-                    $amount=$this->calculateCommodityAmount($value['amount'],$value['unit']);
-                    $exits_commodity = $value['warehouse']->commodities->find($commodity->id);
-                    $new_amount = round($exits_commodity->pivot->commodity_amount - $amount,2);
-                    $value['warehouse']->commodities()->updateExistingPivot($commodity->id, ['commodity_amount' => $new_amount], false);
-                    $warehouses[$value['warehouse']->id] = $value['warehouse'];
-                }
-                $this->warningCommodity($commodity);
-            }
-            $request->update([
-                'status' => 'approvaled',
+        
+        $number = $this->generateUniqueNumber(WithdrawalRequest::class, 'number');
+        $user = auth()->user();
+        
+        $request = WithdrawalRequest::query()->create([
+            'customer_id' => $data['customer_id'],
+            'status' => 'awaiting_approval',
+            'number' => $number,
+        ]);
+        
+        $request->commodities()->attach($commodity);
+        
+        if (isset($data['comment'])) {
+            $request->comments()->create([
+                'user_id' => $user->id,
+                'body' => $data['comment'],
             ]);
-            $this->recalculateWarehousesEmptySpace($warehouses);
-        });
+        }
+        
+        if (!empty($file)) {
+            $this->uploadFile($file, 'withdrawal-request', $request);
+        }
+        
+        return $request;
+    }
+
+    /**
+     * Update an existing withdrawal request
+     *
+     * @param WithdrawalRequest $withdrawalRequest
+     * @param array $data
+     * @param mixed $file
+     * @return bool
+     */
+    public function update($withdrawalRequest, $data, $file)
+    {
+        $commodity = [];
+        foreach ($data['commodity_id'] as $key => $value) {
+            $commodity[$value] = [
+                'amount' => $data['amount'][$key],
+                'unit_id' => $data['unit'][$key],
+                'price' => $data['price'][$key] ?? null,
+            ];
+        }
+        
+        $user = auth()->user();
+        
+        $withdrawalRequest->commodities()->sync($commodity);
+        
+        $withdrawalRequest->update([
+            'customer_id' => $data['customer_id'],
+        ]);
+        
+        if (isset($data['comment'])) {
+            $withdrawalRequest->comments()->create([
+                'user_id' => $user->id,
+                'body' => $data['comment'],
+            ]);
+        }
+        
+        if (!empty($file)) {
+            $this->uploadFile($file, 'withdrawal-request', $withdrawalRequest);
+        }
+        
         return true;
     }
 
-    public function rejectRequest(WithdrawalRequest $request){
-        return $request->update([
-            'status'=>'rejected',
+    /**
+     * Delete a withdrawal request
+     *
+     * @param WithdrawalRequest $withdrawalRequest
+     * @return bool
+     */
+    public function delete($withdrawalRequest)
+    {
+        $withdrawalRequest->commodities()->detach();
+        $withdrawalRequest->delete();
+        
+        return true;
+    }
+
+    /**
+     * Check if withdrawal is possible for existing request
+     *
+     * @param WithdrawalRequest $withdrawalRequest
+     * @return array
+     */
+    public function checkWithdrawal($withdrawalRequest)
+    {
+        foreach ($withdrawalRequest->commodities as $commodity) {
+            // Convert requested amount to main unit for comparison
+            $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
+                $commodity,
+                $commodity->pivot->amount,
+                $commodity->pivot->unit_id
+            );
+            
+            // Check if we have enough stock in inventory using the main unit
+            $available_stock = $this->inventoryService->getStockLevel($commodity->id, $commodity->unit_id);
+            
+            if ($amountInMainUnit > $available_stock) {
+                $data['success'] = false;
+                $data['error'] = 'کالای ' . $commodity->title . ' به مقدار کافی در موجودی وجود ندارد';
+                return $data;
+            }
+        }
+        
+        $data['success'] = true;
+        return $data;
+    }
+
+    /**
+     * Check if withdrawal data is valid before creation
+     *
+     * @param array $data
+     * @return array
+     */
+    public function checkWithdrawalData($data)
+    {
+        foreach ($data['commodity_id'] as $key => $commodityId) {
+            $commodity = Commodity::find($commodityId);
+            $amount = $data['amount'][$key];
+            $unitId = $data['unit'][$key];
+            
+            // Convert requested amount to main unit for comparison
+            $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
+                $commodity,
+                $amount,
+                $unitId
+            );
+            
+            // Check if we have enough stock in inventory using the main unit
+            $available_stock = $this->inventoryService->getStockLevel($commodity->id, $commodity->unit_id);
+            
+            if ($amountInMainUnit > $available_stock) {
+                $result['success'] = false;
+                $result['error'] = 'کالای ' . $commodity->title . ' به مقدار کافی در موجودی وجود ندارد';
+                return $result;
+            }
+        }
+        
+        $result['success'] = true;
+        return $result;
+    }
+
+    /**
+     * Approve a withdrawal request
+     *
+     * @param WithdrawalRequest $withdrawalRequest
+     * @return bool
+     */
+    public function approvalWithdrawal($withdrawalRequest)
+    {
+        foreach ($withdrawalRequest->commodities as $commodity) {
+            // Convert requested amount to main unit for inventory removal
+            $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
+                $commodity,
+                $commodity->pivot->amount,
+                $commodity->pivot->unit_id
+            );
+            
+            // Remove stock from inventory using the main unit
+            $this->inventoryService->removeStock(
+                $commodity->id,
+                $commodity->unit_id, // Use commodity's main unit
+                $amountInMainUnit
+            );
+        }
+        
+        $withdrawalRequest->update([
+            'status' => 'approvaled',
         ]);
+        
+        return true;
+    }
+
+    /**
+     * Reject a withdrawal request
+     *
+     * @param WithdrawalRequest $withdrawalRequest
+     * @return bool
+     */
+    public function rejectWithdrawal($withdrawalRequest)
+    {
+        return $withdrawalRequest->update([
+            'status' => 'rejected',
+        ]);
+    }
+
+    /**
+     * Validate the second layer of data
+     *
+     * @param array $data
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function validationSecondLayer($data)
+    {
+        $commodities = $data['commodity_id'];
+        $units = $data['unit'];
+        $amounts = $data['amount'];
+        
+        $array_counts = [
+            count($commodities),
+            count($units),
+            count($amounts),
+        ];
+        
+        $array_keys = array_merge(array_keys($commodities), array_keys($units), array_keys($amounts));
+        
+        if (count(array_unique($array_counts)) != 1 || count(array_unique($array_keys)) != count($commodities)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'materials' => ['اطلاعات نوع ماده و مقدار آن باید متناظر باشند.'],
+            ]);
+        }
+    }
+
+    /**
+     * Check if request has expired
+     *
+     * @param WithdrawalRequest $withdrawalRequest
+     * @return array
+     */
+    public function checkExpiredRequest($withdrawalRequest)
+    {
+        if (\Carbon\Carbon::now()->diffInDays($withdrawalRequest->created_at) > 7) {
+            $withdrawalRequest->update([
+                'status' => 'expired',
+            ]);
+            $data['success'] = false;
+            $data['error'] = 'درخواست منقضی شده است';
+            return $data;
+        }
+        $data['success'] = true;
+        return $data;
     }
 }

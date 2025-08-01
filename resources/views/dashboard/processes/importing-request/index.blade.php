@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title', 'لیست درخواست های ورود کالا به انبار')
+@section('title', 'لیست درخواست های خرید کالا')
 @section('page_styles')
     <!-- These plugins only need for the run this page -->
     <link rel="stylesheet" href="{{ asset('css/default-assets/datatables.bootstrap4.css') }}">
@@ -15,7 +15,7 @@
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-2">لیست درخواست های ورود کالا به انبار</h4>
+                    <h4 class="card-title mb-2">لیست درخواست های خرید کالا</h4>
                     <table id="datatable-buttons" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                             <tr>
@@ -37,11 +37,7 @@
                                     <td>{{$request->number }}</td>
                                     <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}
                                     </td>
-                                    @if(isset($request->creator_user))
-                                    <td>{{ $request->creator_user->full_name }}</td>
-                                    @else
-                                        <td>سیستم</td>
-                                    @endif
+                                    <td>سیستم</td>
                                     <td><a href="{{ route('importing-request.show', $request) }}" class=""><i class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>

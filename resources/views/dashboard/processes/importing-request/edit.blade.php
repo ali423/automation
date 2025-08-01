@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title','ویرایش درخواست ورود کالا به انبار')
+@section('title','ویرایش درخواست خرید کالا')
 
 @section('page_styles')
 
@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-xl-12 box-margin height-card">
             <div class="card card-body">
-                <h4 class="card-title">ویرایش درخواست ورود کالا به انبار</h4>
+                <h4 class="card-title">ویرایش درخواست خرید کالا</h4>
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <form method="post" action="{{ route('importing-request.update', $request) }}"
@@ -36,7 +36,7 @@
                                 </div>
                             </div>
                             <div id="product_formul" class="col-lg-12">
-                                <p>اطلاعات ورود کالا به انبار</p>
+                                <p>اطلاعات خرید کالا</p>
                                 @foreach($request->commodities as $request_commodity)
                                     <div id="inputFormRow" class="form-row shadow p-4 mb-3">
                                         <div class="form-group col-md-6">
@@ -62,34 +62,17 @@
                                             <label for="unit"> {{ __('fields.unit') }}</label>
                                             <select id="unit" class="form-control" name="unit[]" required>
                                                 <option value="">انتخاب کنید...</option>
-                                                @foreach( __('fields.commodity.units') as $key=>$value)
-                                                    <option value="{{$key}}"
-                                                            @if($key == $request_commodity->pivot->unit)
+                                                @foreach($request_commodity->selectable_units ?? [] as $unit)
+                                                    <option value="{{$unit->id}}"
+                                                        @if($unit->id == $request_commodity->pivot->unit_id)
                                                             selected
                                                         @endif
-                                                    >{{$value}}</option>
+                                                    >{{$unit->name}} ({{$unit->symbol}})</option>
                                                 @endforeach
                                             </select>
                                             <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
                                         </div>
-                                        <div class="form-group col-md-6">
-                                            <label for="warehouse_id"> {{ __('fields.warehouse.name') }}</label>
-                                            <select id="warehouse_id" class="form-control" name="warehouse_id[]"
-                                                    required>
-                                                <option value="">انتخاب کنید</option>
-                                                @foreach ($warehouses as $warehouse)
-                                                    <option value="{{ $warehouse->id }}"
-                                                            @if($warehouse->id == $request_commodity->pivot->warehouses_id)
-                                                            selected
-                                                        @endif
-                                                    >{{ $warehouse->title }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            <div class="invalid-feedback">{{ __('fields.warehouse.name') }} را انتخاب
-                                                کنید.
-                                            </div>
-                                        </div>
+
                                         <div class="form-group col-md-3">
                                             <label for="amount"> {{  __('fields.commodity.amount') }}</label>
                                             <input type="number" id="amount" min="1" name="amount[]"
@@ -188,12 +171,11 @@
     <script type="text/javascript">
         // add row
         $("#addRow").click(function () {
-            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-6"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]"  onchange="pricefunc(this)" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select><img class="d-none" src onerror="priceload(this)"> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div> <div class="form-group col-md-6"> <label for="unit"> {{ __('fields.unit') }}</label> <select id="unit" class="form-control" name="unit[]" required> <option value="">انتخاب کنید...</option>@foreach( __('fields.commodity.units') as $key=>$value)<option value="{{$key}}">{{$value}}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div> </div> <div class="form-group col-md-6"> <label for="warehouse_id"> {{ __('fields.warehouse.name') }}</label> <select id="warehouse_id" class="form-control" name="warehouse_id[]" required> <option value="">انتخاب کنید</option>@foreach ($warehouses as $warehouse)<option value="{{ $warehouse->id }}">{{ $warehouse->title }}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.warehouse.name') }} را انتخاب کنید.</div> </div> <div class="form-group col-md-3"> <label for="amount"> {{  __('fields.commodity.amount') }}</label> <input type="number" min="1" name="amount[]" class="form-control"id="amount" autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]"  required=""> <div class="invalid-feedback">لطفاً {{  __('fields.commodity.amount') }} را وارد کنید. </div></div> <div id="priceholder" class="form-group col-md-3 d-none"><label for="price"> قیمت خرید</label><input type="number" id="price" min="1" name="purchase_price[]" class="form-control"autocomplete="off" placeholder="قیمت خرید" pattern="[0-9 .]"  ><div class="invalid-feedback">لطفاً قیمت خرید را وارد کنید.</div></div> <i id="removeRow" type="submit" class="ti-close"></i></div></div>';
+            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-6"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]"  onchange="pricefunc(this)" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select><img class="d-none" src onerror="priceload(this)"> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div> <div class="form-group col-md-6"> <label for="unit"> {{ __('fields.unit') }}</label> <select id="unit" class="form-control" name="unit[]" required> <option value="">انتخاب کنید...</option></select> <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div> </div> <div class="form-group col-md-3"> <label for="amount"> {{  __('fields.commodity.amount') }}</label> <input type="number" min="1" name="amount[]" class="form-control"id="amount" autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]"  required=""> <div class="invalid-feedback">لطفاً {{  __('fields.commodity.amount') }} را وارد کنید. </div></div> <div id="priceholder" class="form-group col-md-3 d-none"><label for="price"> قیمت خرید</label><input type="number" id="price" min="1" name="purchase_price[]" class="form-control"autocomplete="off" placeholder="قیمت خرید" pattern="[0-9 .]"  ><div class="invalid-feedback">لطفاً قیمت خرید را وارد کنید.</div></div> <i id="removeRow" type="submit" class="ti-close"></i></div></div>';
             $('#newRow').append(html);
             document.querySelectorAll('#inputFormRow').forEach((element, index) => {
                 element.querySelector('#commodity_id').setAttribute('name', 'commodity_id[' + index + ']');
                 element.querySelector('#unit').setAttribute('name', 'unit[' + index + ']');
-                element.querySelector('#warehouse_id').setAttribute('name', 'warehouse_id[' + index + ']');
                 element.querySelector('#amount').setAttribute('name', 'amount[' + index + ']');
                 element.querySelector('#price').setAttribute('name', 'purchase_price[' + index + ']');
             });
@@ -205,7 +187,6 @@
             document.querySelectorAll('#inputFormRow').forEach((element, index) => {
                 element.querySelector('#commodity_id').setAttribute('name', 'commodity_id[' + index + ']');
                 element.querySelector('#unit').setAttribute('name', 'unit[' + index + ']');
-                element.querySelector('#warehouse_id').setAttribute('name', 'warehouse_id[' + index + ']');
                 element.querySelector('#amount').setAttribute('name', 'amount[' + index + ']');
                 element.querySelector('#price').setAttribute('name', 'purchase_price[' + index + ']');
             });
@@ -213,24 +194,56 @@
 
         function pricefunc(el) {
             var holder = el.closest('#inputFormRow').querySelector('#priceholder');
-
-            //ajax ...
+            var unitSelect = el.closest('#inputFormRow').querySelector('#unit');
             var id = el.value; //request
-            var res = 'material'; //resposnse
 
-            if (id !== "") {
-                if (res === "material") {
-                    holder.classList.remove('d-none');
-                } else {
-                    if (!(holder.classList.contains('d-none'))) {
-                        holder.classList.add('d-none');
+            // Clear unit options first
+            unitSelect.innerHTML = '<option value="">انتخاب کنید...</option>';
+
+            if (!id) {
+                return;
+            }
+
+            // Get commodity type and selectable units
+            $.ajax({
+                url: '/commodity-type-ajax/' + id,
+                type: 'get',
+                dataType: 'json',
+                success: function (response) {
+                    var type = response['type'];
+                    if(type==="material"){
+                        holder.classList.remove('d-none');
+                    }else{
+                        if(!(holder.classList.contains('d-none'))){
+                            holder.classList.add('d-none');
+                        }
                     }
                 }
-            } else {
-                if (!(holder.classList.contains('d-none'))) {
-                    holder.classList.add('d-none');
+            });
+
+            // Get selectable units for the commodity
+            $.ajax({
+                url: '{{ route("importing-request.get-selectable-units") }}',
+                type: 'post',
+                data: {
+                    commodity_id: id,
+                    _token: '{{ csrf_token() }}'
+                },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success && response.units) {
+                        response.units.forEach(function(unit) {
+                            var option = document.createElement('option');
+                            option.value = unit.id;
+                            option.textContent = unit.display_name;
+                            unitSelect.appendChild(option);
+                        });
+                    }
+                },
+                error: function() {
+                    console.error('Error loading selectable units');
                 }
-            }
+            });
         }
 
         function priceload(el) {
@@ -259,6 +272,17 @@
 
 
         }
+
+        // Initialize price fields on page load for existing commodities
+        $(document).ready(function() {
+            document.querySelectorAll('#inputFormRow').forEach(function(row) {
+                var commoditySelect = row.querySelector('#commodity_id');
+                if (commoditySelect && commoditySelect.value) {
+                    // Trigger the price function to show/hide price field based on commodity type
+                    pricefunc(commoditySelect);
+                }
+            });
+        });
     </script>
     <!-- These plugins only need for the run this page -->
     <script src="{{ asset('js/default-assets/active.js') }}"></script>
