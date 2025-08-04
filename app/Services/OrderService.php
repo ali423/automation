@@ -33,11 +33,23 @@ class OrderService extends BaseService
         // Create order items
         if (isset($data['commodity_id']) && is_array($data['commodity_id'])) {
             foreach ($data['commodity_id'] as $index => $commodityId) {
+                // Validate unit for this commodity
+                $unitId = $data['unit_id'][$index] ?? null;
+                if ($unitId) {
+                    $commodity = Commodity::find($commodityId);
+                    if ($commodity) {
+                        $selectableUnits = $this->commodityUnitService->getSelectableUnits($commodity);
+                        if (!$selectableUnits->contains('id', $unitId)) {
+                            throw new \Exception("واحد انتخاب شده برای کالای {$commodity->title} معتبر نیست.");
+                        }
+                    }
+                }
+                
                 OrderItem::create([
                     'order_id' => $order->id,
                     'commodity_id' => $commodityId,
                     'commodity_amount' => $data['commodity_amount'][$index] ?? 0,
-                    'unit_id' => $data['unit_id'][$index] ?? 1, // Default to kg unit (ID: 1)
+                    'unit_id' => $unitId,
                     'price' => $data['price'][$index] ?? 0,
                 ]);
             }
@@ -79,11 +91,23 @@ class OrderService extends BaseService
 
             // Create new items
             foreach ($data['commodity_id'] as $index => $commodityId) {
+                // Validate unit for this commodity
+                $unitId = $data['unit_id'][$index] ?? null;
+                if ($unitId) {
+                    $commodity = Commodity::find($commodityId);
+                    if ($commodity) {
+                        $selectableUnits = $this->commodityUnitService->getSelectableUnits($commodity);
+                        if (!$selectableUnits->contains('id', $unitId)) {
+                            throw new \Exception("واحد انتخاب شده برای کالای {$commodity->title} معتبر نیست.");
+                        }
+                    }
+                }
+                
                 OrderItem::create([
                     'order_id' => $order->id,
                     'commodity_id' => $commodityId,
                     'commodity_amount' => $data['commodity_amount'][$index] ?? 0,
-                    'unit_id' => $data['unit_id'][$index] ?? 1, // Default to kg unit (ID: 1)
+                    'unit_id' => $unitId,
                     'price' => $data['price'][$index] ?? 0,
                 ]);
             }
