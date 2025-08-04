@@ -34,19 +34,33 @@
                                         <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
                                         <select id="commodity_id" class="form-control" name="commodity_id[0]"
                                             onchange="commodity_change(this)" required>
-                                            <option value="{{ $order->commodity_id }}">{{ $order->commodity ? $order->commodity->title : 'کالا حذف شده' }}
-                                            </option>
+                                            @if($order->orderItems->count() > 0)
+                                                @foreach($order->orderItems as $item)
+                                                    <option value="{{ $item->commodity_id }}" {{ $loop->first ? 'selected' : '' }}>
+                                                        {{ $item->commodity ? $item->commodity->title : 'کالا حذف شده' }}
+                                                    </option>
+                                                @endforeach
+                                            @else
+                                                <option value="">کالایی یافت نشد</option>
+                                            @endif
                                         </select>
                                         <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب
                                             کنید.
                                         </div>
                                     </div>
                                     <div class="form-group col-md-2">
-                                        <label for="unit"> {{ __('fields.unit') }}</label>
-                                        <select id="unit" class="form-control" name="unit[0]"
+                                        <label for="unit_id"> {{ __('fields.unit') }}</label>
+                                        <select id="unit_id" class="form-control" name="unit_id[0]"
                                             onchange="unitchange(this)" required>
-                                            <option value="{{ $order->unit }}">
-                                                {{ __('fields.commodity.units')[$order->unit] }}</option>
+                                            @if($order->orderItems->count() > 0)
+                                                @foreach($order->orderItems as $item)
+                                                    <option value="{{ $item->unit_id }}" {{ $loop->first ? 'selected' : '' }}>
+                                                        {{ $item->unit_symbol }}
+                                                    </option>
+                                                @endforeach
+                                            @else
+                                                <option value="">واحدی یافت نشد</option>
+                                            @endif
                                         </select>
                                         <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
                                     </div>
@@ -59,48 +73,33 @@
 
                                     <div class="form-group col-md-4">
                                         <label for="price"> {{ __('fields.sell-price') }}</label>
-                                        <input type="text" id="price" value="{{ $order->price }}" name="price[0]"
+                                        <input type="text" id="price" value="{{ $order->total_price }}" name="price[0]"
                                             class="form-control" placeholder="{{ __('fields.sell-price') }}" required>
                                         <div class="invalid-feedback">{{ __('fields.sell-price') }} را انتخاب کنید</div>
                                     </div>
-                                    @php($fixed_amount = $order->commodity_amount)
-                                    @if($order->commodity)
-                                        @foreach ($order->commodity->warehouses()->orderBy('commodity_amount', 'DESC')->get() as $warehouse)
-                                            @switch ($order->unit)
-                                                @case ('keg')
-                                                    @php($warehouse_max = round($warehouse->pivot->commodity_amount * 185, 2))
-                                                @break
-
-                                                @case ('kg')
-                                                    @php($warehouse_max = $warehouse->pivot->commodity_amount)
-                                                @break
-
-                                                @case ('twenty_liters')
-                                                    @php($warehouse_max = round($warehouse->pivot->commodity_amount * 17.8, 2))
-                                                @break
-                                            @endswitch
-                                            <div class="input-group mb-3 wares">
-                                                <div class="input-group-prepend">
-                                                    <span class="input-group-text"
-                                                        id="انبار مرکزی">{{ $warehouse->title }}</span>
+                                    @php($fixed_amount = $order->orderItems->sum('commodity_amount'))
+                                    @if($order->orderItems->count() > 0)
+                                        @foreach($order->orderItems as $item)
+                                            @if($item->commodity)
+                                                <div class="input-group mb-3 wares">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text"
+                                                            id="انبار مرکزی">{{ $item->commodity->title }} - {{ $item->unit_symbol }}</span>
+                                                    </div>
+                                                    <input id="commodityamount" onkeyup="commodityamountfunc(this)" type="number" class="ware-amount form-control" min="0"
+                                                        value="{{ $item->commodity_amount }}"
+                                                        name="amount[{{ $item->commodity_id }}][0]"
+                                                        required="">
+                                                    <div class="input-group-append"><span class="input-group-text"
+                                                            id="ware-amount">مقدار سفارش: {{ $item->commodity_amount }}</span>
+                                                    </div>
+                                                    <div class="warehouse-inputs position-relative"
+                                                        style="overflow: hidden;height:0;width:0;">
+                                                        <input type="text" name="warehouse_id[{{ $item->commodity_id }}][]"
+                                                            value="1">
+                                                    </div>
                                                 </div>
-                                                <input id="commodityamount" onkeyup="commodityamountfunc(this)" type="number" class="ware-amount form-control" min="0"
-                                                    max="{{ $warehouse_max }}"
-                                                    @if ($fixed_amount <= $warehouse_max) value="{{ $fixed_amount }}"
-                                                       @else
-                                                       @php($fixed_amount = $fixed_amount- $warehouse_max)
-                                                       value="{{ $warehouse_max }}" @endif
-                                                    name="amount[{{ $order->commodity_id }}][{{ $warehouse->id }}]"
-                                                    required="">
-                                                <div class="input-group-append"><span class="input-group-text"
-                                                        id="ware-amount">حداکثر:{{ $warehouse_max }}</span>
-                                                </div>
-                                                <div class="warehouse-inputs position-relative"
-                                                    style="overflow: hidden;height:0;width:0;">
-                                                    <input type="text" name="warehouse_id[{{ $order->commodity_id }}][]"
-                                                        value="{{ $warehouse->id }}">
-                                                </div>
-                                            </div>
+                                            @endif
                                         @endforeach
                                     @else
                                         <div class="alert alert-warning">

@@ -55,12 +55,9 @@
                                         </div>
                                     </div>
                                     <div class="form-group col-md-2">
-                                        <label for="unit"> {{ __('fields.unit') }}</label>
-                                        <select id="unit" class="form-control" name="unit[0]" required>
+                                        <label for="unit_id"> {{ __('fields.unit') }}</label>
+                                        <select id="unit_id" class="form-control" name="unit_id[0]" required>
                                             <option value="">انتخاب کنید...</option>
-                                            @foreach( __('fields.commodity.units') as $key=>$value)
-                                                <option value="{{$key}}">{{$value}}</option>
-                                            @endforeach
                                         </select>
                                         <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
                                     </div>
@@ -100,6 +97,25 @@
             $(document).on('change', '#commodity_id', function () {
                 var commodity_id = $(this).val();
                 var priceInput = $(this).closest('.form-row').find('#price');
+                var unitSelect = $(this).closest('.form-row').find('#unit_id');
+                
+                // Get commodity units
+                $.ajax({
+                    url: '/order/commodity-units/' + commodity_id,
+                    type: 'get',
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response.success) {
+                            // Clear and populate unit options
+                            unitSelect.empty().append('<option value="">انتخاب کنید...</option>');
+                            response.units.forEach(function(unit) {
+                                unitSelect.append('<option value="' + unit.id + '">' + unit.name + ' (' + unit.symbol + ')</option>');
+                            });
+                        }
+                    }
+                });
+                
+                // Get commodity price
                 $.ajax({
                     url: '/inventory-ajax/' + commodity_id,
                     type: 'get',
@@ -110,25 +126,13 @@
                     }
                 });
             });
-            $(document).on('change', '#unit', function () {
+            $(document).on('change', '#unit_id', function () {
                 var new_price = $(this).closest('.form-row').find('#price').val();
                 if (price == new_price && price != null ){
                     var unit = $(this).val();
                     var priceInput = $(this).closest('.form-row').find('#price');
-                    switch (unit) {
-                        case "kg":
-                            priceInput.val(price);
-                            break;
-                        case "keg":
-                            priceInput.val(Math.round(price / 185));
-                            break;
-                        case "twenty_liters":
-                            priceInput.val(Math.round(price / 17.8));
-                            break;
-                        default:
-                            priceInput.val(price);
-                            break;
-                    }
+                    // Price will be handled by the backend based on unit conversions
+                    priceInput.val(price);
                 }
             });
             // Add row
@@ -148,12 +152,9 @@
                         </div>
                     </div>
                     <div class="form-group col-md-2">
-                        <label for="unit"> {{ __('fields.unit') }}</label>
-                        <select id="unit" class="form-control" name="unit[${index}]" required>
+                        <label for="unit_id"> {{ __('fields.unit') }}</label>
+                        <select id="unit_id" class="form-control" name="unit_id[${index}]" required>
                             <option value="">انتخاب کنید...</option>
-                            @foreach( __('fields.commodity.units') as $key=>$value)
-                                <option value="{{$key}}">{{$value}}</option>
-                            @endforeach
                         </select>
                         <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
                     </div>

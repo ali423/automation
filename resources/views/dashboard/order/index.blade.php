@@ -21,9 +21,8 @@
                             <tr>
                                 <th>ردیف</th>
                                 <th> {{ __('fields.customer') }}</th>
-                                <th> {{ __('fields.commodity.name') }}</th>
                                 <th> {{ __('fields.commodity.amount') }}</th>
-                                <th> {{ __('fields.unit') }}</th>
+                                <th>تعداد کالا</th>
                                 <th>{{ __('fields.deadline') }}</th>
                                 <th>{{ __('fields.status') }}</th>
                                 <th>{{ __('fields.creator') }}</th>
@@ -36,9 +35,8 @@
                                 <tr>
                                     <td></td>
                                     <td>{{ $order->customer ? $order->customer->name : 'مشتری حذف شده' }}</td>
-                                    <td>{{ $order->commodity ? $order->commodity->title : 'کالا حذف شده' }}</td>
-                                    <td>{{ number_format($order->commodity_amount) }}</td>
-                                    <td>{{ __('fields.commodity.units')[$order->unit] }}</td>
+                                    <td>{{ $order->formatted_total_amount }}</td>
+                                    <td>{{ $order->orderItems->count() }} کالا</td>
                                     <td>{{ $order->deadline }}</td>
                                    <td>{{  __('fields.order.status')[$order->status] }}</td>
                                     @if(isset($order->creator_user))

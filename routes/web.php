@@ -81,6 +81,7 @@ Route::middleware('auth')->group(function () {
     Route::post('importing/report',[ImportingRequestController::class,'storeReport'])->name('importing.report.store');
 
     Route::get('order/chart', [OrderController::class, 'chart'])->name('order.chart');
+    Route::post('order/chart-data', [OrderController::class, 'getChartData'])->name('order.chart.data');
     Route::resource('order',OrderController::class);
 
 
@@ -97,6 +98,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('inventory', InventoryController::class)->except(['create', 'store']);
     Route::post('inventory/{inventory}/adjust-stock', [InventoryController::class, 'adjustStock'])->name('inventory.adjust-stock');
     Route::post('inventory/{inventory}/adjust-price', [InventoryController::class, 'adjustPrice'])->name('inventory.adjust-price');
+    Route::get('inventory-ajax/{commodityId}', [InventoryController::class, 'getCommodityInventory'])->name('inventory.ajax');
+    Route::get('order/commodity-units/{commodityId}', [OrderController::class, 'getCommodityUnits'])->name('order.commodity.units');
 
 });
 
