@@ -253,7 +253,11 @@ class OrderController extends Controller
      * @return \Illuminate\Http\RedirectResponse
      */
     public function confirmStore(CreateWithdrawalRequest $request, Order $order){
-        $data = $request->only('commodity_id', 'unit', 'amount', 'comment','price','customer_id');
+        $data = $request->only('commodity_id', 'unit_id', 'amount', 'comment','price','customer_id');
+        
+        // Debug: Log the extracted data
+        \Log::info('OrderController::confirmStore - Extracted data:', $data);
+        
         $inventory_check = $this->withdrawal_service->checkWithdrawalData($data);
         if ($inventory_check['success'] == true) {
             $file = null;

@@ -65,7 +65,7 @@
                                                 </div>
                                                 <div class="form-group col-md-2">
                                                     <label for="unit_id_{{ $loop->index }}">{{ __('fields.unit') }}</label>
-                                                    <select id="unit_id_{{ $loop->index }}" class="form-control" name="unit[{{ $loop->index }}]" required>
+                                                    <select id="unit_id_{{ $loop->index }}" class="form-control" name="unit_id[{{ $loop->index }}]" required>
                                                         <option value="{{ $item->unit_id }}" selected>
                                                             {{ $item->unit ? $item->unit->symbol : 'نامشخص' }}
                                                         </option>

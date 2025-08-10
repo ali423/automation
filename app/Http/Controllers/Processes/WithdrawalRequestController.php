@@ -78,7 +78,11 @@ class WithdrawalRequestController extends Controller
      */
     public function store(CreateWithdrawalRequest $request)
     {
-        $data = $request->only('commodity_id', 'unit', 'amount', 'comment', 'price', 'customer_id');
+        $data = $request->only('commodity_id', 'unit_id', 'amount', 'comment', 'price', 'customer_id');
+        
+        // Debug: Log the extracted data
+        \Log::info('WithdrawalRequestController::store - Extracted data:', $data);
+        
         $this->service->validationSecondLayer($data);
         
         $check_inventory = $this->service->checkWithdrawalData($data);
@@ -171,7 +175,7 @@ class WithdrawalRequestController extends Controller
             return redirect()->back()->withErrors($check_expired['error']);
         }
         
-        $data = $request->only('commodity_id', 'unit', 'amount', 'comment', 'price', 'customer_id');
+        $data = $request->only('commodity_id', 'unit_id', 'amount', 'comment', 'price', 'customer_id');
         $this->service->validationSecondLayer($data);
         
         $check_inventory = $this->service->checkWithdrawalData($data);
