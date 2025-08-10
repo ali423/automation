@@ -31,11 +31,11 @@ class Order extends Model
         return $this->belongsTo(Commodity::class, 'commodity_id');
     }
 
-    public function getKgAmountAttribute()
+/*    public function getKgAmountAttribute()
     {
           $obj=new BaseService();
           return $obj->calculateCommodityAmount($this->commodity_amount,$this->unit);
-    }
+    }*/
     public function getDeadlineDiffAttribute()
     {
       $shamsi_date=$this->deadline;
