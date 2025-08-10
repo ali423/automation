@@ -30,7 +30,7 @@
                                 <input type="text" name="status"
                                        value="{{ $request->customer ? $request->customer->name : 'نامشخص' }}"
                                        class="form-control" id="exampleInputEmail111"
-                                       placeholder="{{ __('fields.customer') }} }}"
+                                       placeholder="{{ __('fields.customer') }}"
                                        autocomplete="off" disabled>
                             </div>
                         </div>
@@ -45,9 +45,11 @@
                             <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
                                 <input type="text" name="name"
-                                       @if (isset($request->creator_user) && $request->creator_user) value="{{ $request->creator_user->full_name }}"
+                                       @if (isset($request->creator_user) && $request->creator_user)
+                                           value="{{ $request->creator_user->full_name }}"
                                        @else
-                                       value="سیستم" @endif
+                                           value="سیستم"
+                                       @endif
                                        class="form-control" id="exampleInputEmail111"
                                        placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
                             </div>
@@ -56,12 +58,14 @@
                                 <input type="text" name="status"
                                        value="{{ $request->number}}"
                                        class="form-control" id="exampleInputEmail111"
-                                       placeholder="{{ __('fields.importing_request.number') }} }}"
+                                       placeholder="{{ __('fields.importing_request.number') }}"
                                        autocomplete="off" disabled>
                             </div>
                         </div>
-                        @php($i=1)
-                        @php($total_amount = 0)
+                        @php
+                            $i = 1;
+                            $total_amount = 0;
+                        @endphp
                         @foreach ($request->commodities as $commodity)
                             <div id="inputFormRow" class="form-row shadow p-4 m-3">
                                 <div class="showbarrel">
@@ -108,14 +112,11 @@
                                 @if(isset($commodity->pivot->price))
                                     <div class="form-group col-md-3">
                                         <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
-                                        <input type="text" id="price" placeholder="{{number_format($commodity->pivot->price)}}" class="form-control" disabled>
+                                        <input type="text" id="price" placeholder="{{ number_format($commodity->pivot->price) }}" class="form-control" disabled>
                                     </div>
                                 @endif
                             </div>
                         @endforeach
-                        <tr>
-                            <td colspan="5" class="text-right">مجموع وزن: {{$total_amount}} {{ __('fields.commodity.units')[$commodity->pivot->unit] }}</td>
-                        </tr>
                         @foreach ($request->comments as $comment)
                             <div class="form-group mb-20">
                                 <label for="comment"> {{ $comment->user ? $comment->user->full_name : 'کاربر نامشخص' }} در تاریخ :
@@ -1013,7 +1014,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                        </tr><tr>
+                        <tr>
                             <td scope="row">1</td>
                             <td>104</td>
                             <td>2923649785421</td>

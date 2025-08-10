@@ -80,4 +80,37 @@ class CreateWithdrawalRequest extends FormRequest
             }
         });
     }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
+    public function messages()
+    {
+        return [
+            'customer_id.required' => 'انتخاب مشتری الزامی است.',
+            'customer_id.exists' => 'مشتری انتخاب شده معتبر نیست.',
+            'commodity_id.required' => 'انتخاب حداقل یک کالا الزامی است.',
+            'commodity_id.array' => 'فرمت کالاها صحیح نیست.',
+            'commodity_id.min' => 'حداقل یک کالا باید انتخاب شود.',
+            'commodity_id.*.required' => 'انتخاب کالا الزامی است.',
+            'commodity_id.*.exists' => 'کالای انتخاب شده معتبر نیست.',
+            'commodity_id.*.distinct' => 'کالای تکراری انتخاب شده است.',
+            'unit.required' => 'انتخاب واحد الزامی است.',
+            'unit.array' => 'فرمت واحدها صحیح نیست.',
+            'unit.min' => 'حداقل یک واحد باید انتخاب شود.',
+            'unit.*.required' => 'انتخاب واحد الزامی است.',
+            'unit.*.exists' => 'واحد انتخاب شده معتبر نیست.',
+            'amount.required' => 'مقدار کالا الزامی است.',
+            'amount.array' => 'فرمت مقادیر صحیح نیست.',
+            'amount.min' => 'حداقل یک مقدار باید وارد شود.',
+            'amount.*.required' => 'مقدار کالا الزامی است.',
+            'amount.*.numeric' => 'مقدار کالا باید عدد باشد.',
+            'amount.*.min' => 'مقدار کالا باید بیشتر از صفر باشد.',
+            'price.*.numeric' => 'قیمت باید عدد باشد.',
+            'file.mimes' => 'فرمت فایل مجاز نیست.',
+            'file.max' => 'حجم فایل نباید بیشتر از 5 مگابایت باشد.',
+        ];
+    }
 }
