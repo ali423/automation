@@ -458,4 +458,190 @@ class OrderController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Display factory status page.
+     *
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     */
+    public function factoryStatus()
+    {
+        // Mock pending orders data
+        $pendingOrders = collect([
+            (object)[
+                'id' => 101,
+                'customer' => (object)['name' => 'شرکت آلفا'],
+                'orderItems' => collect([
+                    (object)['commodity' => (object)['title' => 'روغن موتور']]
+                ]),
+                'deadline' => '1402/10/15'
+            ],
+            (object)[
+                'id' => 102,
+                'customer' => (object)['name' => 'کارخانه بتا'],
+                'orderItems' => collect([
+                    (object)['commodity' => (object)['title' => 'گریس صنعتی']]
+                ]),
+                'deadline' => '1402/10/18'
+            ],
+            (object)[
+                'id' => 103,
+                'customer' => (object)['name' => 'شرکت گاما'],
+                'orderItems' => collect([
+                    (object)['commodity' => (object)['title' => 'روغن هیدرولیک']]
+                ]),
+                'deadline' => '1402/10/20'
+            ],
+            (object)[
+                'id' => 104,
+                'customer' => (object)['name' => 'کارخانه دلتا'],
+                'orderItems' => collect([
+                    (object)['commodity' => (object)['title' => 'روغن گیربکس']]
+                ]),
+                'deadline' => '1402/10/22'
+            ],
+            (object)[
+                'id' => 105,
+                'customer' => (object)['name' => 'شرکت اپسیلون'],
+                'orderItems' => collect([
+                    (object)['commodity' => (object)['title' => 'روغن موتور']]
+                ]),
+                'deadline' => '1402/10/25'
+            ]
+        ]);
+
+        // Get warehouse chart data
+        $warehouseChartData = $this->getWarehouseChartData();
+
+        return view('dashboard.order.factory-status', [
+            'pendingOrders' => $pendingOrders,
+            'warehouseChartData' => $warehouseChartData,
+        ]);
+    }
+
+    /**
+     * Get individual orders chart data with mock data.
+     *
+     * @return array
+     */
+    private function getWarehouseChartData()
+    {
+        // Mock data for demonstration (without order #108)
+        $mockData = [
+            [
+                'orderId' => 101,
+                'customerName' => 'شرکت آلفا',
+                'productName' => 'روغن موتور',
+                'orderedAmount' => 500,
+                'inventory' => 1200
+            ],
+            [
+                'orderId' => 102,
+                'customerName' => 'کارخانه بتا',
+                'productName' => 'گریس صنعتی',
+                'orderedAmount' => 300,
+                'inventory' => 800
+            ],
+            [
+                'orderId' => 103,
+                'customerName' => 'شرکت گاما',
+                'productName' => 'روغن هیدرولیک',
+                'orderedAmount' => 750,
+                'inventory' => 450
+            ],
+            [
+                'orderId' => 104,
+                'customerName' => 'کارخانه دلتا',
+                'productName' => 'روغن گیربکس',
+                'orderedAmount' => 200,
+                'inventory' => 150
+            ],
+            [
+                'orderId' => 105,
+                'customerName' => 'شرکت اپسیلون',
+                'productName' => 'روغن موتور',
+                'orderedAmount' => 400,
+                'inventory' => 1200
+            ],
+            [
+                'orderId' => 106,
+                'customerName' => 'کارخانه زتا',
+                'productName' => 'گریس صنعتی',
+                'orderedAmount' => 600,
+                'inventory' => 800
+            ],
+            [
+                'orderId' => 107,
+                'customerName' => 'شرکت اتا',
+                'productName' => 'روغن هیدرولیک',
+                'orderedAmount' => 350,
+                'inventory' => 450
+            ]
+        ];
+
+        return [
+            'orders' => $mockData
+        ];
+    }
+
+    /**
+     * Display customer details page with all orders for a specific customer.
+     *
+     * @param int $id
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     */
+    public function customerDetails($id)
+    {
+        // Mock customer data
+        $customer = (object)[
+            'id' => $id,
+            'name' => 'شرکت آلفا',
+            'details' => 'صنایع خودروسازی - تهران',
+            'phone' => '021-12345678',
+            'email' => 'info@alpha.com',
+            'address' => 'تهران، خیابان ولیعصر، پلاک 123'
+        ];
+
+        // Mock orders for this customer
+        $customerOrders = collect([
+            (object)[
+                'id' => 1,
+                'order_number' => 'ORD-001',
+                'commodity' => (object)['title' => 'روغن موتور'],
+                'commodity_amount' => 5000,
+                'unit' => (object)['symbol' => 'لیتر'],
+                'deadline' => '1402/10/15',
+                'status' => 'pending',
+                'total_value' => 25000000,
+                'created_at' => '1402/09/01'
+            ],
+            (object)[
+                'id' => 2,
+                'order_number' => 'ORD-002',
+                'commodity' => (object)['title' => 'گریس صنعتی'],
+                'commodity_amount' => 2000,
+                'unit' => (object)['symbol' => 'کیلوگرم'],
+                'deadline' => '1402/10/20',
+                'status' => 'processing',
+                'total_value' => 15000000,
+                'created_at' => '1402/09/05'
+            ],
+            (object)[
+                'id' => 3,
+                'order_number' => 'ORD-003',
+                'commodity' => (object)['title' => 'روغن هیدرولیک'],
+                'commodity_amount' => 3000,
+                'unit' => (object)['symbol' => 'لیتر'],
+                'deadline' => '1402/10/25',
+                'status' => 'done',
+                'total_value' => 18000000,
+                'created_at' => '1402/09/10'
+            ]
+        ]);
+
+        return view('dashboard.order.customer-details', [
+            'customer' => $customer,
+            'orders' => $customerOrders
+        ]);
+    }
 }

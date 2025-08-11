@@ -266,6 +266,7 @@
                             @can('read_order',App\Models\Order::class)
                                 <li @if($first_url_part== 'order' && $second_url_part== 'index') class="active" @endif><a href="{{ route('order.index') }}">لیست سفارشات</a></li>
                                 <li @if($first_url_part== 'order' && $second_url_part== 'chart') class="active" @endif><a href="{{ route('order.chart') }}">نمودار سفارشات</a></li>
+                                <li @if($first_url_part== 'order' && $second_url_part== 'factory-status') class="active" @endif><a href="{{ route('order.factory-status') }}">وضعیت کارخانه</a></li>
                             @endcan
                             @can('create_order',App\Models\Order::class)
                                 <li @if($first_url_part== 'order' && $second_url_part== 'create') class="active" @endif><a href="{{ route('order.create') }}">ثبت سفارش جدید</a></li>
