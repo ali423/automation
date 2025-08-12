@@ -27,6 +27,34 @@
             font-weight: 600;
             margin-left: 10px;
         }
+        .summary-card {
+            transition: transform 0.2s ease-in-out;
+            margin-bottom: 15px;
+        }
+        .summary-card:hover {
+            transform: translateY(-5px);
+        }
+        .summary-card .card-body {
+            padding: 15px;
+        }
+        .summary-card h5 {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        .summary-card h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+        @media (max-width: 768px) {
+            .summary-card h3 {
+                font-size: 1.4rem;
+            }
+            .summary-card h5 {
+                font-size: 0.8rem;
+            }
+        }
     </style>
 @endsection
 
@@ -50,24 +78,34 @@
                                 <div class="info-item">
                                     <i class="ti-briefcase"></i>
                                     <span class="info-label">نوع کسب‌وکار:</span>
-                                    {{ $customer->details }}
+                                    {{ $customer->comp_name ?? 'نامشخص' }}
                                 </div>
                                 <div class="info-item">
                                     <i class="ti-mobile"></i>
                                     <span class="info-label">تلفن:</span>
-                                    {{ $customer->phone }}
+                                    {{ $customer->phone ?? $customer->mobile ?? 'نامشخص' }}
+                                </div>
+                                <div class="info-item">
+                                    <i class="ti-id-badge"></i>
+                                    <span class="info-label">شماره اقتصادی:</span>
+                                    {{ $customer->economic_code ?? 'نامشخص' }}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="info-item">
                                     <i class="ti-email"></i>
                                     <span class="info-label">ایمیل:</span>
-                                    {{ $customer->email }}
+                                    {{ $customer->email ?? 'نامشخص' }}
                                 </div>
                                 <div class="info-item">
                                     <i class="ti-location-pin"></i>
                                     <span class="info-label">آدرس:</span>
-                                    {{ $customer->address }}
+                                    {{ $customer->address ?? 'نامشخص' }}
+                                </div>
+                                <div class="info-item">
+                                    <i class="ti-map-pin"></i>
+                                    <span class="info-label">کد پستی:</span>
+                                    {{ $customer->zip_code ?? 'نامشخص' }}
                                 </div>
                             </div>
                         </div>
@@ -80,6 +118,51 @@
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title mb-2">لیست سفارشات {{ $customer->name }}</h4>
+                    
+                    <!-- Orders Summary -->
+                    @if($orders->count() > 0)
+                        @php
+                            $totalOrders = $orders->count();
+                            $totalValue = $orders->sum('total_value');
+                            $canDeliverCount = $orders->where('can_deliver', true)->count();
+                            $cannotDeliverCount = $orders->where('can_deliver', false)->count();
+                        @endphp
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white summary-card">
+                                    <div class="card-body text-center">
+                                        <h5>کل سفارشات</h5>
+                                        <h3>{{ $totalOrders }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white summary-card">
+                                    <div class="card-body text-center">
+                                        <h5>قابل تحویل</h5>
+                                        <h3>{{ $canDeliverCount }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-danger text-white summary-card">
+                                    <div class="card-body text-center">
+                                        <h5>غیرقابل تحویل</h5>
+                                        <h3>{{ $cannotDeliverCount }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white summary-card">
+                                    <div class="card-body text-center">
+                                        <h5>ارزش کل</h5>
+                                        <h3>{{ number_format($totalValue) }} ریال</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                    
                     <table id="datatable-buttons-customer" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                             <tr>
@@ -94,80 +177,26 @@
                             </tr>
                         </thead>
                         <tbody class="text-center">
-                            @php
-                                // Mock data for orders with delivery evaluation
-                                $orders = collect([
-                                    (object)[
-                                        'id' => 1,
-                                        'order_number' => 'ORD-001',
-                                        'commodity_title' => 'روغن موتور',
-                                        'amount' => 5000,
-                                        'unit' => 'لیتر',
-                                        'deadline' => '1403/02/15',
-                                        'inventory' => 8000,
-                                        'total_value' => 25000000,
-                                        'can_deliver' => true
-                                    ],
-                                    (object)[
-                                        'id' => 2,
-                                        'order_number' => 'ORD-002',
-                                        'commodity_title' => 'گریس صنعتی',
-                                        'amount' => 3000,
-                                        'unit' => 'کیلوگرم',
-                                        'deadline' => '1403/02/20',
-                                        'inventory' => 2000,
-                                        'total_value' => 15000000,
-                                        'can_deliver' => false
-                                    ],
-                                    (object)[
-                                        'id' => 3,
-                                        'order_number' => 'ORD-003',
-                                        'commodity_title' => 'روغن هیدرولیک',
-                                        'amount' => 4000,
-                                        'unit' => 'لیتر',
-                                        'deadline' => '1403/02/18',
-                                        'inventory' => 6000,
-                                        'total_value' => 20000000,
-                                        'can_deliver' => true
-                                    ],
-                                    (object)[
-                                        'id' => 4,
-                                        'order_number' => 'ORD-004',
-                                        'commodity_title' => 'روغن دنده',
-                                        'amount' => 2000,
-                                        'unit' => 'لیتر',
-                                        'deadline' => '1403/02/25',
-                                        'inventory' => 1500,
-                                        'total_value' => 12000000,
-                                        'can_deliver' => false
-                                    ],
-                                    (object)[
-                                        'id' => 5,
-                                        'order_number' => 'ORD-005',
-                                        'commodity_title' => 'روغن ترمز',
-                                        'amount' => 1500,
-                                        'unit' => 'لیتر',
-                                        'deadline' => '1403/02/12',
-                                        'inventory' => 3000,
-                                        'total_value' => 8000000,
-                                        'can_deliver' => true
-                                    ]
-                                ]);
-                            @endphp
-                            @php($i = 1)
-                            @foreach ($orders as $order)
-                                <tr class="@if($order->can_deliver) table-success @else table-danger @endif">
-                                    <td>{{ $i }}</td>
-                                    <td>{{ $order->order_number }}</td>
-                                    <td>{{ $order->commodity_title }}</td>
-                                    <td>{{ number_format($order->amount) }}</td>
-                                    <td>{{ $order->unit }}</td>
-                                    <td>{{ $order->deadline }}</td>
-                                    <td>{{ number_format($order->inventory) }}</td>
-                                    <td>{{ number_format($order->total_value) }} ریال</td>
+                            @if($orders->count() > 0)
+                                @php($i = 1)
+                                @foreach ($orders as $order)
+                                    <tr class="@if($order->can_deliver) table-success @else table-danger @endif">
+                                        <td>{{ $i }}</td>
+                                        <td>{{ $order->order_number }}</td>
+                                        <td>{{ $order->commodity_title }}</td>
+                                        <td>{{ number_format($order->amount) }}</td>
+                                        <td>{{ $order->unit }}</td>
+                                        <td>{{ $order->deadline }}</td>
+                                        <td>{{ number_format($order->inventory) }}</td>
+                                        <td>{{ number_format($order->total_value) }} ریال</td>
+                                    </tr>
+                                    @php($i++)
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="8" class="text-center">هیچ سفارشی برای این مشتری یافت نشد.</td>
                                 </tr>
-                                @php($i++)
-                            @endforeach
+                            @endif
                         </tbody>
                     </table>
                 </div>

@@ -44,6 +44,34 @@
                 max-width: 100%;
             }
         }
+        .summary-card {
+            transition: transform 0.2s ease-in-out;
+            margin-bottom: 15px;
+        }
+        .summary-card:hover {
+            transform: translateY(-2px);
+        }
+        .summary-card .card-body {
+            padding: 15px;
+        }
+        .summary-card h6 {
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+        .summary-card h4 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+        @media (max-width: 768px) {
+            .summary-card h4 {
+                font-size: 1.2rem;
+            }
+            .summary-card h6 {
+                font-size: 0.7rem;
+            }
+        }
     </style>
 @endsection
 
@@ -61,12 +89,70 @@
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title mb-2">ارزیابی تحویل سفارشات بر اساس موجودی انبار</h4>
+                    
+                    <!-- Orders Summary -->
+                    @if($pendingOrders->count() > 0)
+                        @php
+                            $totalOrders = $pendingOrders->count();
+                            $totalValue = $pendingOrders->sum('total_value');
+                            $canDeliverCount = $pendingOrders->where('can_deliver', true)->count();
+                            $cannotDeliverCount = $pendingOrders->where('can_deliver', false)->count();
+                            $totalAmount = $pendingOrders->sum('total_amount');
+                            $totalInventory = $pendingOrders->sum('inventory_available');
+                        @endphp
+                        <div class="row mb-3">
+                            <div class="col-md-2">
+                                <div class="card bg-primary text-white text-center summary-card">
+                                    <div class="card-body">
+                                        <h6>کل سفارشات</h6>
+                                        <h4>{{ $totalOrders }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="card bg-success text-white text-center summary-card">
+                                    <div class="card-body">
+                                        <h6>قابل تحویل</h6>
+                                        <h4>{{ $canDeliverCount }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="card bg-danger text-white text-center summary-card">
+                                    <div class="card-body">
+                                        <h6>غیرقابل تحویل</h6>
+                                        <h4>{{ $cannotDeliverCount }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="card bg-info text-white text-center summary-card">
+                                    <div class="card-body">
+                                        <h6>ارزش کل</h6>
+                                        <h6>{{ number_format($totalValue) }} ریال</h6>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="card bg-warning text-white text-center summary-card">
+                                    <div class="card-body">
+                                        <h6>مقدار سفارش</h6>
+                                        <h6>{{ number_format($totalAmount) }}</h6>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    @endif
+                    
                     <!-- Date fields and calculate button in a flex row -->
                     <div id="factory-filter-group" class=" justify-content-start gap-2 mb-2" style="width: auto;">
                         <input type="text" id="date_from" class="form-control usage" placeholder="از تاریخ" autocomplete="off" style="min-width: 110px;">
                         <input type="text" id="date_to" class="form-control usage" placeholder="تا تاریخ" autocomplete="off" style="min-width: 110px;">
                         <button id="calculate-factory" class="btn btn-success ml-2" type="button">محاسبه</button>
+                        <button id="clear-filters" class="btn btn-outline-secondary ml-2" type="button">پاک کردن فیلترها</button>
                     </div>
+                    <div id="filter-status" class="text-info small mb-2" style="display: none;"></div>
                     <table id="datatable-buttons-factory" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                             <tr>
@@ -76,89 +162,47 @@
                                 </th>
                                 <th>ردیف</th>
                                 <th>خریدار</th>
-                                <th>مشخصات خریدار</th>
+
                                 <th>تاریخ تحویل</th>
                                 <th>وضعیت تحویل</th>
                                 <th>جزئیات</th>
                             </tr>
                         </thead>
                         <tbody class="text-center">
-                            @php
-                                // Mock data for customers with delivery evaluation
-                                $customers = collect([
-                                    (object)[
-                                        'id' => 1,
-                                        'name' => 'شرکت آلفا',
-                                        'details' => 'صنایع خودروسازی - تهران',
-                                        'delivery_date' => '1403/02/15',
-                                        'total_orders' => 15000,
-                                        'inventory_available' => 18000,
-                                        'can_deliver' => true,
-                                        'delivery_status' => 'قابل تحویل'
-                                    ],
-                                    (object)[
-                                        'id' => 2,
-                                        'name' => 'کارخانه بتا',
-                                        'details' => 'صنایع پتروشیمی - اصفهان',
-                                        'delivery_date' => '1403/02/20',
-                                        'total_orders' => 8000,
-                                        'inventory_available' => 6000,
-                                        'can_deliver' => false,
-                                        'delivery_status' => 'غیرقابل تحویل'
-                                    ],
-                                    (object)[
-                                        'id' => 3,
-                                        'name' => 'شرکت گاما',
-                                        'details' => 'صنایع فولاد - کرج',
-                                        'delivery_date' => '1403/02/18',
-                                        'total_orders' => 12000,
-                                        'inventory_available' => 12000,
-                                        'can_deliver' => true,
-                                        'delivery_status' => 'قابل تحویل'
-                                    ],
-                                    (object)[
-                                        'id' => 4,
-                                        'name' => 'صنایع دلتا',
-                                        'details' => 'صنایع غذایی - شیراز',
-                                        'delivery_date' => '1403/02/25',
-                                        'total_orders' => 25000,
-                                        'inventory_available' => 15000,
-                                        'can_deliver' => false,
-                                        'delivery_status' => 'غیرقابل تحویل'
-                                    ],
-                                    (object)[
-                                        'id' => 5,
-                                        'name' => 'شرکت زتا',
-                                        'details' => 'صنایع دارویی - مشهد',
-                                        'delivery_date' => '1403/02/12',
-                                        'total_orders' => 5000,
-                                        'inventory_available' => 8000,
-                                        'can_deliver' => true,
-                                        'delivery_status' => 'قابل تحویل'
-                                    ]
-                                ]);
-                            @endphp
-                            @php($i = 1)
-                            @foreach ($customers as $customer)
-                                <tr data-customer-id="{{ $customer->id }}" 
-                                    class="@if($customer->can_deliver) table-success @else table-danger @endif">
-                                    <td><input type="checkbox" class="factory-checkbox"></td>
-                                    <td>{{ $i }}</td>
-                                    <td>{{ $customer->name }}</td>
-                                    <td>{{ $customer->details }}</td>
-                                    <td>{{ $customer->delivery_date }}</td>
-                                    <td>
-                                        <span class="badge @if($customer->can_deliver) bg-success @else bg-danger @endif">
-                                            {{ $customer->delivery_status }}
-                                        </span>
-                                    </td>
-                                    <td><a href="{{ route('order.factory-status.customer', $customer->id) }}" class=""><i class="ti-more-alt font-24"></i></a></td>
-                                </tr>
-                                @php($i++)
+                            @if($pendingOrders->count() > 0)
+                                @php($i = 1)
+                                @foreach ($pendingOrders as $order)
+                                    <tr data-order-id="{{ $order->id }}" 
+                                        class="@if($order->can_deliver) table-success @else table-danger @endif">
+                                        <td><input type="checkbox" class="factory-checkbox" checked></td>
+                                        <td>{{ $i }}</td>
+                                        <td>{{ $order->customer->name ?? 'نامشخص' }}</td>
+
+                                        <td>{{ $order->deadline ?? 'نامشخص' }}</td>
+                                        <td>
+                                            <span class="badge @if($order->can_deliver) bg-success @else bg-danger @endif">
+                                                @if($order->can_deliver)
+                                                    قابل تحویل
+                                                @else
+                                                    غیرقابل تحویل
+                                                @endif
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('order.factory-status.customer', $order->customer->id ?? 0) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="ti-more-alt"></i> جزئیات
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    @php($i++)
                                 @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                            @else
+                                <tr>
+                                    <td colspan="6" class="text-center">هیچ سفارش معلقی یافت نشد.</td>
+                                </tr>
+                            @endif
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -288,9 +332,24 @@
             $('#select-all-factory').prop('checked', true);
             $('.factory-checkbox').prop('checked', false);
 
-            var mockMode = false; // If true, generates mock data
+            // Initial chart data - use real data from controller
+            var factoryData = @json($warehouseChartData['orders']);
+            
+            if (factoryData.length > 0) {
+                var chartData = {
+                    names: factoryData.map(function(item) { return item.productName; }),
+                    inventory: factoryData.map(function(item) { return item.inventory; }),
+                    orders: factoryData.map(function(item) { return item.orderedAmount; }),
+                    units: factoryData.map(function(item) { return item.unitSymbol || item.unit; })
+                };
+                
+                renderFactoryCharts(chartData);
+            } else {
+                $('#factory-charts').html('<div class="alert alert-info text-center">هیچ سفارش معلقی برای نمایش نمودار وجود ندارد.</div>');
+            }
 
-            function getSelectedFactoryData() {
+            // Function to filter table rows based on date range
+            function filterTableByDate() {
                 // Convert Persian digits to English digits
                 function faToEn(str) {
                     if (!str) return '';
@@ -298,7 +357,6 @@
                         return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d);
                     });
                 }
-                
                 // Convert date string to number for comparison (YYYY/MM/DD -> YYYYMMDD)
                 function toNum(str) {
                     if (!str) return null;
@@ -311,6 +369,97 @@
                     return parseInt(y + m + d);
                 }
                 
+                var dateFrom = $('#date_from').val();
+                var dateTo = $('#date_to').val();
+                
+                var fromNum = toNum(dateFrom);
+                var toNumVal = toNum(dateTo);
+                
+                // If both date fields are empty, show all rows
+                var filterByDate = !!(fromNum || toNumVal);
+                
+                // Update filter status indicator
+                if (filterByDate) {
+                    var filterText = '';
+                    if (dateFrom && dateTo) {
+                        filterText = 'فیلتر: از ' + dateFrom + ' تا ' + dateTo;
+                    } else if (dateFrom) {
+                        filterText = 'فیلتر: از ' + dateFrom;
+                    } else if (dateTo) {
+                        filterText = 'فیلتر: تا ' + dateTo;
+                    }
+                    $('#filter-status').text(filterText).show();
+                } else {
+                    $('#filter-status').hide();
+                }
+                
+                $('#datatable-buttons-factory tbody tr').each(function() {
+                    var $row = $(this);
+                    var dateStr = $row.find('td').eq(4).text().trim(); // Deadline column
+                    var dateNum = toNum(dateStr);
+                    
+                    if (!filterByDate) {
+                        $row.show();
+                        return;
+                    }
+                    
+                    // Check if date is within range
+                    var inRange = true;
+                    if (fromNum && dateNum < fromNum) inRange = false;
+                    if (toNumVal && dateNum > toNumVal) inRange = false;
+                    
+                    if (inRange) {
+                        $row.show();
+                    } else {
+                        $row.hide();
+                    }
+                });
+                
+                // Update select all checkbox state
+                var visibleRows = $('#datatable-buttons-factory tbody tr:visible');
+                var checkedVisibleRows = visibleRows.find('.factory-checkbox:checked');
+                $('#select-all-factory').prop('checked', visibleRows.length > 0 && checkedVisibleRows.length === visibleRows.length);
+            }
+
+            // Clear filters button click handler
+            $('#clear-filters').on('click', function() {
+                $('#date_from').val('');
+                $('#date_to').val('');
+                filterTableByDate();
+                updateCharts();
+            });
+
+            // Update charts when date filters change (with debounce to prevent too many calls)
+            var dateUpdateTimeout;
+            $('#date_from, #date_to').on('change', function() {
+                clearTimeout(dateUpdateTimeout);
+                dateUpdateTimeout = setTimeout(function() {
+                    filterTableByDate();
+                    updateCharts();
+                }, 500); // 500ms delay
+            });
+
+            // Function to update charts based on current filters
+            function updateCharts() {
+                var selectedData = getSelectedFactoryData();
+                
+                if (selectedData.names.length === 0) {
+                    var message = 'هیچ سفارشی انتخاب نشده است.';
+                    if ($('#date_from').val() || $('#date_to').val()) {
+                        message += ' (ممکن است فیلتر تاریخ باعث شده باشد هیچ ردیفی نمایش داده نشود)';
+                    }
+                    $('#factory-charts').html('<div class="alert alert-warning text-center">' + message + '</div>');
+                } else {
+                    renderFactoryCharts({
+                        names: selectedData.names,
+                        inventory: selectedData.inventory,
+                        orders: selectedData.orders,
+                        units: selectedData.units
+                    });
+                }
+            }
+
+            function getSelectedFactoryData() {
                 var data = {
                     names: [],
                     inventory: [],
@@ -318,127 +467,61 @@
                     units: []
                 };
 
-                // Get date filter values
-                var dateFrom = $('#date_from').val();
-                var dateTo = $('#date_to').val();
-                var fromNum = toNum(dateFrom);
-                var toNumVal = toNum(dateTo);
-
-                // Filter rows by date range
-                var dateFilteredRows = $('#datatable-buttons-factory tbody tr').filter(function() {
-                    var dateStr = $(this).find('td').eq(4).text().trim(); // Delivery date column
-                    var dateNum = toNum(dateStr);
-                    
-                    // If no date filter is applied, show all rows
-                    if (!fromNum && !toNumVal) return true;
-                    
-                    var inRange = true;
-                    if (fromNum && dateNum < fromNum) inRange = false;
-                    if (toNumVal && dateNum > toNumVal) inRange = false;
-                    return inRange;
-                });
-
-                // Get checked rows from date-filtered rows
-                var checkedRows = dateFilteredRows.filter(function() {
+                // Get checked rows from visible (filtered) rows
+                var checkedRows = $('#datatable-buttons-factory tbody tr:visible').filter(function() {
                     var checkbox = $(this).find('.factory-checkbox');
                     return checkbox.length && checkbox.is(':checked');
                 });
 
-                // If no row is checked but 'select all' is checked, include all date-filtered rows
+                // If no row is checked but 'select all' is checked, include all visible rows
                 if (checkedRows.length === 0 && $('#select-all-factory').is(':checked')) {
-                    checkedRows = dateFilteredRows;
+                    checkedRows = $('#datatable-buttons-factory tbody tr:visible');
                 }
 
-                // Generate random chart data based on selected rows
+                // Get real data from selected rows
                 if (checkedRows.length > 0) {
                     checkedRows.each(function(index) {
                         var $row = $(this);
-                        var rowId = $row.data('customer-id');
+                        var rowId = $row.data('order-id');
                         
-                        // Generate random data based on row ID for consistency
-                        var seed = rowId || (index + 1);
-                        var randomInventory = 5000 + (seed * 1234) % 20000;
-                        var randomOrders = 3000 + (seed * 567) % 15000;
+                        // Find the corresponding order data from the initial factory data
+                        var orderData = factoryData.find(function(item) {
+                            return item.orderId == rowId;
+                        });
                         
-                        // Different units based on row ID
-                        var units = ['لیتر', 'کیلوگرم', 'تن', 'متر مکعب'];
-                        var unit = units[seed % units.length];
-                        
-                        // Product names based on row ID
-                        var productNames = ['روغن موتور', 'گریس صنعتی', 'روغن هیدرولیک', 'روغن دنده', 'روغن ترمز'];
-                        var productName = productNames[seed % productNames.length];
-                        
-                        data.names.push(productName);
-                        data.inventory.push(randomInventory);
-                        data.orders.push(randomOrders);
-                        data.units.push(unit);
+                        if (orderData) {
+                            data.names.push(orderData.productName);
+                            data.inventory.push(orderData.inventory);
+                            data.orders.push(orderData.orderedAmount);
+                            data.units.push(orderData.unitSymbol || orderData.unit);
+                        }
                     });
                 }
 
                 return data;
             }
 
-            // Initial chart data - show all data at first
-            var factoryData = {
-                names: ['روغن موتور', 'گریس صنعتی', 'روغن هیدرولیک', 'روغن دنده', 'روغن ترمز'],
-                inventory: [18000, 12000, 15000, 8000, 10000],
-                orders: [15000, 8000, 12000, 6000, 9000],
-                units: ['لیتر', 'کیلوگرم', 'لیتر', 'لیتر', 'لیتر']
-            };
-
-            renderFactoryCharts({
-                names: factoryData.names,
-                inventory: factoryData.inventory,
-                orders: factoryData.orders,
-                units: factoryData.units
-            });
-
             // Calculate button click handler
             $('#calculate-factory').on('click', function() {
-                var selectedData = getSelectedFactoryData();
-                
-                // Show loading message
-                $('#factory-charts').html('<div class="alert alert-info text-center">در حال محاسبه نمودارها...</div>');
-                
-                // Small delay to show loading message
-                setTimeout(function() {
-                    if (selectedData.names.length === 0) {
-                        var message = 'هیچ سفارشی انتخاب نشده است.';
-                        if ($('#date_from').val() || $('#date_to').val()) {
-                            message += ' (ممکن است فیلتر تاریخ باعث شده باشد هیچ ردیفی نمایش داده نشود)';
-                        }
-                        $('#factory-charts').html('<div class="alert alert-warning text-center">' + message + '</div>');
-                    } else {
-                        renderFactoryCharts({
-                            names: selectedData.names,
-                            inventory: selectedData.inventory,
-                            orders: selectedData.orders,
-                            units: selectedData.units
-                        });
-                        
-                        // Show success message
-                        var totalOrders = selectedData.names.length;
-                        var message = 'نمودارها بر اساس ' + totalOrders + ' سفارش انتخاب شده به‌روزرسانی شدند.';
-                        if ($('#date_from').val() || $('#date_to').val()) {
-                            message += ' (فیلتر تاریخ اعمال شده)';
-                        }
-                        
-                        // You can add a toast notification here if you have a notification system
-                        console.log(message);
-                    }
-                }, 500);
+                filterTableByDate();
+                updateCharts();
             });
 
             // Select all functionality for factory checkboxes
             $('#select-all-factory').on('change', function() {
                 var checked = $(this).is(':checked');
-                $('.factory-checkbox').prop('checked', checked);
+                // Only check visible rows (filtered by date)
+                $('.factory-checkbox:visible').prop('checked', checked);
+                // Update chart automatically when select all changes
+                updateCharts();
             });
             
             $(document).on('change', '.factory-checkbox', function() {
-                var total = $('.factory-checkbox').length;
-                var checked = $('.factory-checkbox:checked').length;
-                $('#select-all-factory').prop('checked', total === checked);
+                var visibleCheckboxes = $('.factory-checkbox:visible');
+                var checkedVisibleCheckboxes = visibleCheckboxes.filter(':checked');
+                $('#select-all-factory').prop('checked', visibleCheckboxes.length > 0 && checkedVisibleCheckboxes.length === visibleCheckboxes.length);
+                // Update chart automatically when individual checkboxes change
+                updateCharts();
             });
         });
 

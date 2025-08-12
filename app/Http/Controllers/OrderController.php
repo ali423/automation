@@ -466,51 +466,40 @@ class OrderController extends Controller
      */
     public function factoryStatus()
     {
-        // Mock pending orders data
-        $pendingOrders = collect([
-            (object)[
-                'id' => 101,
-                'customer' => (object)['name' => 'شرکت آلفا'],
-                'orderItems' => collect([
-                    (object)['commodity' => (object)['title' => 'روغن موتور']]
-                ]),
-                'deadline' => '1402/10/15'
-            ],
-            (object)[
-                'id' => 102,
-                'customer' => (object)['name' => 'کارخانه بتا'],
-                'orderItems' => collect([
-                    (object)['commodity' => (object)['title' => 'گریس صنعتی']]
-                ]),
-                'deadline' => '1402/10/18'
-            ],
-            (object)[
-                'id' => 103,
-                'customer' => (object)['name' => 'شرکت گاما'],
-                'orderItems' => collect([
-                    (object)['commodity' => (object)['title' => 'روغن هیدرولیک']]
-                ]),
-                'deadline' => '1402/10/20'
-            ],
-            (object)[
-                'id' => 104,
-                'customer' => (object)['name' => 'کارخانه دلتا'],
-                'orderItems' => collect([
-                    (object)['commodity' => (object)['title' => 'روغن گیربکس']]
-                ]),
-                'deadline' => '1402/10/22'
-            ],
-            (object)[
-                'id' => 105,
-                'customer' => (object)['name' => 'شرکت اپسیلون'],
-                'orderItems' => collect([
-                    (object)['commodity' => (object)['title' => 'روغن موتور']]
-                ]),
-                'deadline' => '1402/10/25'
-            ]
-        ]);
+        // Get real pending orders with customer and commodity information
+        $pendingOrders = Order::where('status', 'pending')
+            ->with(['customer', 'orderItems.commodity', 'orderItems.unit'])
+            ->get()
+            ->map(function ($order) {
+                // Get total order amount and value
+                $totalAmount = $order->orderItems->sum('commodity_amount');
+                $totalValue = $order->orderItems->sum(function ($item) {
+                    return $item->price ? ($item->price * $item->commodity_amount) : 0;
+                });
+                
+                // Get inventory for this commodity
+                $inventory = 0;
+                if ($order->orderItems->isNotEmpty()) {
+                    $firstItem = $order->orderItems->first();
+                    $inventory = Inventory::where('commodity_id', $firstItem->commodity_id)
+                        ->where('unit_id', $firstItem->unit_id)
+                        ->where('active', true)
+                        ->sum('amount');
+                }
+                
+                return (object)[
+                    'id' => $order->id,
+                    'customer' => $order->customer,
+                    'orderItems' => $order->orderItems,
+                    'deadline' => $order->deadline,
+                    'total_amount' => $totalAmount,
+                    'total_value' => $totalValue,
+                    'inventory_available' => $inventory,
+                    'can_deliver' => $inventory >= $totalAmount
+                ];
+            });
 
-        // Get warehouse chart data
+        // Get real warehouse chart data
         $warehouseChartData = $this->getWarehouseChartData();
 
         return view('dashboard.order.factory-status', [
@@ -520,67 +509,41 @@ class OrderController extends Controller
     }
 
     /**
-     * Get individual orders chart data with mock data.
+     * Get individual orders chart data with real data.
      *
      * @return array
      */
     private function getWarehouseChartData()
     {
-        // Mock data for demonstration (without order #108)
-        $mockData = [
-            [
-                'orderId' => 101,
-                'customerName' => 'شرکت آلفا',
-                'productName' => 'روغن موتور',
-                'orderedAmount' => 500,
-                'inventory' => 1200
-            ],
-            [
-                'orderId' => 102,
-                'customerName' => 'کارخانه بتا',
-                'productName' => 'گریس صنعتی',
-                'orderedAmount' => 300,
-                'inventory' => 800
-            ],
-            [
-                'orderId' => 103,
-                'customerName' => 'شرکت گاما',
-                'productName' => 'روغن هیدرولیک',
-                'orderedAmount' => 750,
-                'inventory' => 450
-            ],
-            [
-                'orderId' => 104,
-                'customerName' => 'کارخانه دلتا',
-                'productName' => 'روغن گیربکس',
-                'orderedAmount' => 200,
-                'inventory' => 150
-            ],
-            [
-                'orderId' => 105,
-                'customerName' => 'شرکت اپسیلون',
-                'productName' => 'روغن موتور',
-                'orderedAmount' => 400,
-                'inventory' => 1200
-            ],
-            [
-                'orderId' => 106,
-                'customerName' => 'کارخانه زتا',
-                'productName' => 'گریس صنعتی',
-                'orderedAmount' => 600,
-                'inventory' => 800
-            ],
-            [
-                'orderId' => 107,
-                'customerName' => 'شرکت اتا',
-                'productName' => 'روغن هیدرولیک',
-                'orderedAmount' => 350,
-                'inventory' => 450
-            ]
-        ];
+        // Get real pending orders with inventory data
+        $orders = Order::where('status', 'pending')
+            ->with(['orderItems.commodity', 'orderItems.unit'])
+            ->get();
+
+        $chartData = [];
+        
+        foreach ($orders as $order) {
+            foreach ($order->orderItems as $item) {
+                // Get inventory for this commodity
+                $inventory = Inventory::where('commodity_id', $item->commodity_id)
+                    ->where('unit_id', $item->unit_id)
+                    ->where('active', true)
+                    ->sum('amount');
+                
+                $chartData[] = [
+                    'orderId' => $order->id,
+                    'customerName' => $order->customer->name ?? 'نامشخص',
+                    'productName' => $item->commodity->title ?? 'نامشخص',
+                    'orderedAmount' => $item->commodity_amount,
+                    'inventory' => $inventory,
+                    'unit' => $item->unit->name ?? 'نامشخص',
+                    'unitSymbol' => $item->unit->symbol ?? ''
+                ];
+            }
+        }
 
         return [
-            'orders' => $mockData
+            'orders' => $chartData
         ];
     }
 
@@ -592,52 +555,37 @@ class OrderController extends Controller
      */
     public function customerDetails($id)
     {
-        // Mock customer data
-        $customer = (object)[
-            'id' => $id,
-            'name' => 'شرکت آلفا',
-            'details' => 'صنایع خودروسازی - تهران',
-            'phone' => '021-12345678',
-            'email' => 'info@alpha.com',
-            'address' => 'تهران، خیابان ولیعصر، پلاک 123'
-        ];
-
-        // Mock orders for this customer
-        $customerOrders = collect([
-            (object)[
-                'id' => 1,
-                'order_number' => 'ORD-001',
-                'commodity' => (object)['title' => 'روغن موتور'],
-                'commodity_amount' => 5000,
-                'unit' => (object)['symbol' => 'لیتر'],
-                'deadline' => '1402/10/15',
-                'status' => 'pending',
-                'total_value' => 25000000,
-                'created_at' => '1402/09/01'
-            ],
-            (object)[
-                'id' => 2,
-                'order_number' => 'ORD-002',
-                'commodity' => (object)['title' => 'گریس صنعتی'],
-                'commodity_amount' => 2000,
-                'unit' => (object)['symbol' => 'کیلوگرم'],
-                'deadline' => '1402/10/20',
-                'status' => 'processing',
-                'total_value' => 15000000,
-                'created_at' => '1402/09/05'
-            ],
-            (object)[
-                'id' => 3,
-                'order_number' => 'ORD-003',
-                'commodity' => (object)['title' => 'روغن هیدرولیک'],
-                'commodity_amount' => 3000,
-                'unit' => (object)['symbol' => 'لیتر'],
-                'deadline' => '1402/10/25',
-                'status' => 'done',
-                'total_value' => 18000000,
-                'created_at' => '1402/09/10'
-            ]
-        ]);
+        // Get real customer data
+        $customer = Customer::findOrFail($id);
+        
+        // Get real orders for this customer with related data
+        $customerOrders = Order::where('customer_id', $id)
+            ->with(['orderItems.commodity', 'orderItems.unit'])
+            ->get()
+            ->flatMap(function ($order) {
+                return $order->orderItems->map(function ($item) use ($order) {
+                    // Get inventory for this commodity
+                    $inventory = Inventory::where('commodity_id', $item->commodity_id)
+                        ->where('unit_id', $item->unit_id)
+                        ->where('active', true)
+                        ->sum('amount');
+                    
+                    return (object)[
+                        'id' => $item->id,
+                        'order_number' => $order->id,
+                        'commodity_title' => $item->commodity->title ?? 'نامشخص',
+                        'amount' => $item->commodity_amount,
+                        'unit' => $item->unit->name ?? 'نامشخص',
+                        'unit_symbol' => $item->unit->symbol ?? '',
+                        'deadline' => $order->deadline,
+                        'status' => $order->status,
+                        'total_value' => $item->price ? ($item->price * $item->commodity_amount) : 0,
+                        'inventory' => $inventory,
+                        'can_deliver' => $inventory >= $item->commodity_amount,
+                        'created_at' => $order->created_at
+                    ];
+                });
+            });
 
         return view('dashboard.order.customer-details', [
             'customer' => $customer,
