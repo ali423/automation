@@ -17,7 +17,8 @@ class CreateImportingCommoditiesTable extends Migration
             $table->foreignId('importation_id')->references('id')->on('importing_requests')->onDelete('cascade');
             $table->foreignId('commodity_id')->constrained();
             $table->foreignId('warehouses_id')->constrained();
-            $table->enum('unit',['kg','keg','twenty_liters']);
+            $table->unsignedBigInteger('unit_id'); // Unit of measurement
+            $table->foreign('unit_id')->references('id')->on('units')->onDelete('cascade');
             $table->primary(['importation_id','commodity_id']);
             $table->double('amount');
             $table->double('purchase_price')->nullable();
