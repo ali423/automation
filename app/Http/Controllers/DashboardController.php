@@ -34,6 +34,11 @@ class DashboardController extends Controller
         $orders=Order::query()->with('commodity.warehouses')->where('status','pending')->get();
 
         foreach ($orders as $order){
+            // Skip if order doesn't have an associated commodity
+            if (!$order->commodity) {
+                continue;
+            }
+            
             $orders_res[]=[
                 'title'=> $order->commodity->title.'('.$order->deadline_diff.'روز)',
                 'amount'=>$order->kg_amount,
