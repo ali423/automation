@@ -33,7 +33,7 @@ class WithdrawalRequestService extends BaseService
         foreach ($data['commodity_id'] as $key => $value) {
             $commodity[$value] = [
                 'amount' => $data['amount'][$key],
-                'unit_id' => $data['unit'][$key],
+                'unit_id' => $data['unit_id'][$key],
                 'price' => $data['price'][$key] ?? null,
             ];
         }
@@ -77,7 +77,7 @@ class WithdrawalRequestService extends BaseService
         foreach ($data['commodity_id'] as $key => $value) {
             $commodity[$value] = [
                 'amount' => $data['amount'][$key],
-                'unit_id' => $data['unit'][$key],
+                'unit_id' => $data['unit_id'][$key],
                 'price' => $data['price'][$key] ?? null,
             ];
         }
@@ -159,7 +159,7 @@ class WithdrawalRequestService extends BaseService
         foreach ($data['commodity_id'] as $key => $commodityId) {
             $commodity = Commodity::find($commodityId);
             $amount = $data['amount'][$key];
-            $unitId = $data['unit'][$key];
+            $unitId = $data['unit_id'][$key];
             
             // Convert requested amount to main unit for comparison
             $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
@@ -235,7 +235,7 @@ class WithdrawalRequestService extends BaseService
     public function validationSecondLayer($data)
     {
         $commodities = $data['commodity_id'];
-        $units = $data['unit'];
+        $units = $data['unit_id'];
         $amounts = $data['amount'];
         
         $array_counts = [

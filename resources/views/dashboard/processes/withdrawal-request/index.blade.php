@@ -41,11 +41,7 @@
                                     <td>{{ number_format($request->total_price['number']) }}</td>
                                     <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}
                                     </td>
-                                    @if(isset($request->creator_user))
-                                    <td>{{ $request->creator_user->full_name }}</td>
-                                    @else
-                                        <td>سیستم</td>
-                                    @endif
+                                    <td>سیستم</td>
                                     <td><a href="{{ route('withdrawal-request.show', $request) }}" class=""><i class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>

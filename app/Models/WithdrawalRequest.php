@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\ActivityTrait;
 use App\Traits\CommentTrait;
 use App\Traits\FileTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,7 +11,7 @@ use NumberToWords\NumberToWords;
 
 class WithdrawalRequest extends Model
 {
-    use HasFactory, SoftDeletes, ActivityTrait, FileTrait, CommentTrait;
+    use HasFactory, SoftDeletes, FileTrait, CommentTrait;
     
     protected $fillable = [
         'customer_id',
@@ -68,14 +67,13 @@ class WithdrawalRequest extends Model
     }
     
     /**
-     * Override toArray method to exclude main_unit_amount from activity logging
-     * This prevents issues with ActivityTrait when dealing with computed attributes
+     * Override toArray method to exclude main_unit_amount from serialization
      */
     public function toArray()
     {
         $array = parent::toArray();
         
-        // Remove main_unit_amount from the array to prevent issues with ActivityTrait
+        // Remove main_unit_amount from the array
         unset($array['main_unit_amount']);
         
         return $array;

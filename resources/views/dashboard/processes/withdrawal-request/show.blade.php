@@ -30,7 +30,7 @@
                                 <input type="text" name="status"
                                        value="{{ $request->customer ? $request->customer->name : 'نامشخص' }}"
                                        class="form-control" id="exampleInputEmail111"
-                                       placeholder="{{ __('fields.customer') }} }}"
+                                       placeholder="{{ __('fields.customer') }}"
                                        autocomplete="off" disabled>
                             </div>
                         </div>
@@ -45,9 +45,7 @@
                             <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
                                 <input type="text" name="name"
-                                       @if (isset($request->creator_user) && $request->creator_user) value="{{ $request->creator_user->full_name }}"
-                                       @else
-                                       value="سیستم" @endif
+                                       value="سیستم"
                                        class="form-control" id="exampleInputEmail111"
                                        placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
                             </div>
@@ -56,12 +54,14 @@
                                 <input type="text" name="status"
                                        value="{{ $request->number}}"
                                        class="form-control" id="exampleInputEmail111"
-                                       placeholder="{{ __('fields.importing_request.number') }} }}"
+                                       placeholder="{{ __('fields.importing_request.number') }}"
                                        autocomplete="off" disabled>
                             </div>
                         </div>
-                        @php($i=1)
-                        @php($total_amount = 0)
+                        @php
+                            $i = 1;
+                            $total_amount = 0;
+                        @endphp
                         @foreach ($request->commodities as $commodity)
                             <div id="inputFormRow" class="form-row shadow p-4 m-3">
                                 <div class="showbarrel">
@@ -108,14 +108,11 @@
                                 @if(isset($commodity->pivot->price))
                                     <div class="form-group col-md-3">
                                         <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
-                                        <input type="text" id="price" placeholder="{{number_format($commodity->pivot->price)}}" class="form-control" disabled>
+                                        <input type="text" id="price" placeholder="{{ number_format($commodity->pivot->price) }}" class="form-control" disabled>
                                     </div>
                                 @endif
                             </div>
                         @endforeach
-                        <tr>
-                            <td colspan="5" class="text-right">مجموع وزن: {{$total_amount}} {{ __('fields.commodity.units')[$commodity->pivot->unit] }}</td>
-                        </tr>
                         @foreach ($request->comments as $comment)
                             <div class="form-group mb-20">
                                 <label for="comment"> {{ $comment->user ? $comment->user->full_name : 'کاربر نامشخص' }} در تاریخ :
@@ -207,11 +204,6 @@
                                     <a href="{{ route('reject.withdrawal', $request) }}" class="btn btn-danger px-1">رد
                                         درخواست</a>
                                 @endif
-                                <a href="{{ route('activity.index', [
-                                    'object_id' => $request->id,
-                                    'object_type' => class_basename($request),
-                                ]) }}"
-                                   class="btn btn-dfprimary px-1 px-md-4 m-md-0">تاریخچه تغییرات</a>
                             </div>
                         </div>
                     </div>
@@ -326,9 +318,9 @@
                             <table style="border: none;">
                                 <tr style="border: none;">
                                     <td style="border: none;"></td>
-                                    <td class="text-left" style="border: none; font-weight: bold;">استان: <span></span></td>
+                                    <td class="text-left" style="border: none; font-weight: bold;">استان: <span>{{ $request->customer ? $request->customer->province : '' }}</span></td>
                                     <td style="border: none;"></td>
-                                    <td style="border: none; font-weight: bold;">شهر:</td>
+                                    <td style="border: none; font-weight: bold;">شهر: <span>{{ $request->customer ? $request->customer->city : '' }}</span></td>
                                     <td style="border: none;"></td>
                                     <td style="border: none;"></td>
                                     <td style="border: none;"></td>
@@ -353,30 +345,20 @@
                                         <th scope="col">تعداد</th>
                                     </tr>
                                 </thead>
-                                <tbody >
-                                    <tr >
-                                        <td scope="row">1</td>
-                                        <td>زیگما</td>
-                                        <td style="text-align: center;">موتور چهار لیتری پلاستیکی SAE : 20w50</td>
-                                        <td>کارتن</td>
-                                        <td>400</td>
-                                    </tr>
+                                <tbody>
+                                    @php($i = 1)
+                                    @foreach($request->commodities as $commodity)
+                                        <tr>
+                                            <td scope="row">{{ $i }}</td>
+                                            <td>{{ $commodity->brand ?? 'زیگما' }}</td>
+                                            <td style="text-align: center;">{{ $commodity->title }}</td>
+                                            <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name : 'نامشخص') : 'نامشخص' }}</td>
+                                            <td>{{ $commodity->pivot->amount }}</td>
+                                        </tr>
+                                        @php($i++)
+                                    @endforeach
                                     <tr>
-                                        <td scope="row">1</td>
-                                        <td>زیگما</td>
-                                        <td style="text-align: center;">موتور یک لیتری پلاستیکی SAE : 50</td>
-                                        <td>کارتن</td>
-                                        <td>50</td>
-                                    </tr>
-                                    <tr>
-                                        <td scope="row">1</td>
-                                        <td>زیگما</td>
-                                        <td style="text-align: center;">گریس</td>
-                                        <td>کارتن</td>
-                                        <td>400</td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="5" class="text-right">مجموع وزن / مقدار: 850 </td>
+                                        <td colspan="5" class="text-right">مجموع وزن / مقدار: {{ $request->commodities->sum('pivot.amount') }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -400,7 +382,6 @@
             
 
 
-
 <div id="invoice-documentation" class="invoice col-xl-12 box-margin height-card showprint d-none">
     <div class="card card-body">
         <div class="row">
@@ -421,9 +402,9 @@
                     <table style="border: none;">
                         <tr style="border: none;">
                             <td style="border: none;"></td>
-                            <td class="text-left" style="border: none; font-weight: bold;">استان: <span></span></td>
+                            <td class="text-left" style="border: none; font-weight: bold;">استان: <span>{{ $request->customer ? $request->customer->province : '' }}</span></td>
                             <td style="border: none;"></td>
-                            <td style="border: none; font-weight: bold;">شهر:</td>
+                            <td style="border: none; font-weight: bold;">شهر: <span>{{ $request->customer ? $request->customer->city : '' }}</span></td>
                             <td style="border: none;"></td>
                             <td style="border: none;"></td>
                             <td style="border: none;"></td>
@@ -453,36 +434,23 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr >
-                                        <td scope="row">1</td>
-                                        <td>زیگما</td>
-                                        <td style="text-align: center;">موتور چهار لیتری پلاستیکی SAE : 20w50</td>
-                                        <td>کارتن</td>
-                                        <td>400</td>
-                                        <td>450000</td>
-                                        <td>180000000</td>
-                                    </tr>
-                                    <tr>
-                                        <td scope="row">1</td>
-                                        <td>زیگما</td>
-                                        <td style="text-align: center;">موتور یک لیتری پلاستیکی SAE : 50</td>
-                                        <td>کارتن</td>
-                                        <td>50</td>
-                                        <td>400000</td>
-                                        <td>2000000</td>
-                                    </tr>
-                                    <tr>
-                                        <td scope="row">1</td>
-                                        <td>زیگما</td>
-                                        <td style="text-align: center;">گریس</td>
-                                        <td>کارتن</td>
-                                        <td>400</td>
-                                        <td>630000</td>
-                                        <td>252000000</td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="5" class="text-right">مجموع وزن / مقدار: 850 </td>
-                                    </tr>
+                            @php($i = 1)
+                            @foreach($request->commodities as $commodity)
+                                <tr>
+                                    <td scope="row">{{ $i }}</td>
+                                    <td>{{ $commodity->brand ?? 'زیگما' }}</td>
+                                    <td style="text-align: center;">{{ $commodity->title }}</td>
+                                    <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name : 'نامشخص') : 'نامشخص' }}</td>
+                                    <td>{{ $commodity->pivot->amount }}</td>
+                                    <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
+                                    <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price) : '-' }}</td>
+                                </tr>
+                                @php($i++)
+                            @endforeach
+                            <tr>
+                                <td colspan="5" class="text-right">مجموع وزن / مقدار: {{ $request->commodities->sum('pivot.amount') }}</td>
+                                <td colspan="2" class="text-right">مجموع: {{ isset($request->total_price) && isset($request->total_price['number']) ? number_format($request->total_price['number']) : '0' }}</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -523,9 +491,9 @@
                     <table style="border: none;">
                         <tr style="border: none;">
                             <td style="border: none;"></td>
-                            <td class="text-left" style="border: none; font-weight: bold;">استان: <span></span></td>
+                            <td class="text-left" style="border: none; font-weight: bold;">استان: <span>{{ $request->customer ? $request->customer->province : '' }}</span></td>
                             <td style="border: none;"></td>
-                            <td style="border: none; font-weight: bold;">شهر:</td>
+                            <td style="border: none; font-weight: bold;">شهر: <span>{{ $request->customer ? $request->customer->city : '' }}</span></td>
                             <td style="border: none;"></td>
                             <td style="border: none;"></td>
                             <td style="border: none;"></td>
@@ -551,31 +519,20 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr >
-                                        <td scope="row">1</td>
-                                        <td>زیگما</td>
-                                        <td style="text-align: center;">موتور چهار لیتری پلاستیکی SAE : 20w50</td>
-                                        <td>کارتن</td>
-                                        <td>400</td>
-                                    </tr>
-                                    <tr>
-                                        <td scope="row">1</td>
-                                        <td>زیگما</td>
-                                        <td style="text-align: center;">موتور یک لیتری پلاستیکی SAE : 50</td>
-                                        <td>کارتن</td>
-                                        <td>50</td>
-                                    </tr>
-                                    <tr>
-                                        <td scope="row">1</td>
-                                        <td>زیگما</td>
-                                        <td style="text-align: center;">گریس</td>
-                                        <td>کارتن</td>
-                                        <td>400</td>
-
-                                    </tr>
-                                    <tr>
-                                        <td colspan="5" class="text-right">مجموع وزن / مقدار: 850 </td>
-                                    </tr>
+                            @php($i = 1)
+                            @foreach($request->commodities as $commodity)
+                                <tr>
+                                    <td scope="row">{{ $i }}</td>
+                                    <td>{{ $commodity->brand ?? 'زیگما' }}</td>
+                                    <td style="text-align: center;">{{ $commodity->title }}</td>
+                                    <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name : 'نامشخص') : 'نامشخص' }}</td>
+                                    <td>{{ $commodity->pivot->amount }}</td>
+                                </tr>
+                                @php($i++)
+                            @endforeach
+                            <tr>
+                                <td colspan="5" class="text-right">مجموع وزن / مقدار: {{ $request->commodities->sum('pivot.amount') }}</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -659,12 +616,12 @@
                                 <td></td>
                             </tr>
                             <tr>
-                                <td class="text-left">استان: <span> </span></td>
-                                <td>شهرستان:</td>
+                                <td class="text-left">استان: <span>{{ $request->customer->province ?? '' }}</span></td>
+                                <td>شهرستان: {{ $request->customer->city ?? '' }}</td>
                                 <td></td>
                                 <td> کدپستی:{{$request->customer->zip_code}}</td>
                                 <td></td>
-                                <td>شهر:</td>
+                                <td>شهر: {{ $request->customer->city ?? '' }}</td>
                                 <td></td>
                             </tr>
                             <tr>
@@ -728,24 +685,19 @@
                              </tr>
                             <tr>
                                 <td colspan="3" class="text-left">جمع کل : 
-                                    497,200,000
-
-                                <!-- @if(isset($request->total_price) && isset($request->total_price['number']))
-                                     {{ number_format($request->total_price['number']) }}
-                                @else
-                                    
-                                @endif -->
-
-                                    </td>
+                                    @if(isset($request->total_price) && isset($request->total_price['number']))
+                                         {{ number_format($request->total_price['number']) }}
+                                    @else
+                                        0
+                                    @endif
+                                </td>
                             </tr>
                             <tr>
-                                <!-- @if(isset($request->total_price) && isset($request->total_price['world']))
+                                @if(isset($request->total_price) && isset($request->total_price['world']))
                                     <td colspan="2" class="text-left">جمع کل به حروف : {{ $request->total_price['world'] }} ریال </td>
                                 @else
                                     <td colspan="2" class="text-left">جمع کل به حروف: صفر ریال </td>
-                                @endif -->
-
-                                <td colspan="2" class="text-left">جمع کل به حروف : چهارصد و نود و هفت میلیون و دویست هزار ریال</td>
+                                @endif
                             </tr>
                             <tr>
                                 <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
@@ -820,12 +772,12 @@
                         <td></td>
                     </tr>
                     <tr>
-                        <td class="text-left">استان: <span> </span></td>
-                        <td>شهرستان:</td>
+                        <td class="text-left">استان: <span>{{ $request->customer->province ?? '' }}</span></td>
+                        <td>شهرستان: {{ $request->customer->city ?? '' }}</td>
                         <td></td>
                         <td> کدپستی:{{$request->customer->zip_code}}</td>
                         <td></td>
-                        <td>شهر:</td>
+                        <td>شهر: {{ $request->customer->city ?? '' }}</td>
                         <td></td>
                     </tr>
                     <tr>
@@ -854,39 +806,21 @@
                     </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td scope="row">1</td>
-                            <td>8728028</td>
-                            <td>موتور چهارلیتری پلاستیکی SAE:20w50</td>
-                            <td>400</td>
-                            <td>کارتن</td>
-                            <td>40</td>
-                            <td>10</td>
-                            <td>450,000</td>
-                            <td>180,000,000</td>
-                        </tr>
-                        <tr>
-                            <td scope="row">2</td>
-                            <td>8728029</td>
-                            <td>موتور یک لیتری پلاستیکی SAE:50</td>
-                            <td>50</td>
-                            <td>کارتن</td>
-                            <td>5</td>
-                            <td>10</td>
-                            <td>400,000</td>
-                            <td>20,000,000</td>
-                        </tr>
-                        <tr>
-                            <td scope="row">3</td>
-                            <td>8728030</td>
-                            <td>گریس</td>
-                            <td>400</td>
-                            <td>کارتن</td>
-                            <td>40</td>
-                            <td>10</td>
-                            <td>630,000</td>
-                            <td>252,000,000</td>
-                        </tr>
+                        @php($i = 1)
+                        @foreach($request->commodities as $commodity)
+                            <tr>
+                                <td scope="row">{{ $i }}</td>
+                                <td>{{ $commodity->number }}</td>
+                                <td>{{ $commodity->title }}</td>
+                                <td>{{ $commodity->pivot->amount }}</td>
+                                <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name : 'نامشخص') : 'نامشخص' }}</td>
+                                <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? ceil($commodity->pivot->amount / 10) : '-') : '-' }}</td>
+                                <td>10</td>
+                                <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
+                                <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price) : '-' }}</td>
+                            </tr>
+                            @php($i++)
+                        @endforeach
                         <tr>
                             <td colspan="5" rowspan="4" class="text-left" style="vertical-align: top">
                                 <div class="d-flex justify-content-between">
@@ -901,10 +835,16 @@
                             <td colspan="4" class="text-left"> مالیات بر ارزش افزوده : %10 </td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="text-left">جمع کل : 497,200,000</td>
+                            <td colspan="4" class="text-left">جمع کل : {{ isset($request->total_price) && isset($request->total_price['number']) ? number_format($request->total_price['number']) : '0' }}</td>
                         </tr>
                         <tr>
-                            <td colspan="6" class="text-left">جمع کل به حروف: چهارصد و نود و هفت میلیون و دویست هزار ریال </td>
+                            <td colspan="6" class="text-left">جمع کل به حروف: 
+                                @if(isset($request->total_price) && isset($request->total_price['world']))
+                                    {{ $request->total_price['world'] }} ریال
+                                @else
+                                    صفر ریال
+                                @endif
+                            </td>
                         </tr>
                         <tr>
                             <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
@@ -979,12 +919,12 @@
                         <td></td>
                     </tr>
                     <tr>
-                        <td class="text-left">استان: <span> </span></td>
-                        <td>شهرستان:</td>
+                        <td class="text-left">استان: <span>{{ $request->customer->province ?? '' }}</span></td>
+                        <td>شهرستان: {{ $request->customer->city ?? '' }}</td>
                         <td></td>
                         <td> کدپستی:{{$request->customer->zip_code}}</td>
                         <td></td>
-                        <td>شهر:</td>
+                        <td>شهر: {{ $request->customer->city ?? '' }}</td>
                         <td></td>
                     </tr>
                     <tr>
@@ -1013,39 +953,21 @@
                     </tr>
                     </thead>
                     <tbody>
-                        </tr><tr>
-                            <td scope="row">1</td>
-                            <td>104</td>
-                            <td>2923649785421</td>
-                            <td>روغن موتور یک لیتری پلاستیکی</td>
-                            <td>1,000</td>
-                            <td>لیتر</td>
-                            <td colspan="1.5">810,000</td>
-                            <td colspan="1.5">10%</td>
-                            <td colspan="1.5">891,000,000</td>
-                        </tr>
+                        @php($i = 1)
+                        @foreach($request->commodities as $commodity)
                             <tr>
-                                <td scope="row">2</td>
-                                <td>101</td>
-                                <td>2929565785421</td>
-                                <td>روغن موتور چهار لیتری پلاستیکی</td>
-                                <td>1,200</td>
-                                <td>لیتر</td>
-                                <td colspan="1.5">750,000</td>
+                                <td scope="row">{{ $i }}</td>
+                                <td>{{ $commodity->number }}</td>
+                                <td>{{ $commodity->barcode ?? '2923649785421' }}</td>
+                                <td>{{ $commodity->title }}</td>
+                                <td>{{ number_format($commodity->pivot->amount) }}</td>
+                                <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name : 'نامشخص') : 'نامشخص' }}</td>
+                                <td colspan="1.5">{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
                                 <td colspan="1.5">10%</td>
-                                <td colspan="1.5">990,000,000</td>
+                                <td colspan="1.5">{{ isset($commodity->pivot->price) ? number_format(round($commodity->pivot->amount * $commodity->pivot->price * 1.1)) : '-' }}</td>
                             </tr>
-                            <tr>
-                                <td scope="row">3</td>
-                                <td>204</td>
-                                <td>2698749785421</td>
-                                <td>روغن موتور بیست لیتری پلاستیکی</td>
-                                <td>10,000</td>
-                                <td>لیتر</td>
-                                <td colspan="1.5">675,000</td>
-                                <td colspan="1.5">10%</td>
-                                <td colspan="1.5">7,425,000,000</td>
-                            </tr>
+                            @php($i++)
+                        @endforeach
                         <tr>
                         <td colspan="5" rowspan="3" class="text-left" style="vertical-align: top">
                             <div class="d-flex justify-content-between">
@@ -1060,17 +982,20 @@
                     </tr>
                     <tr>
                         <td colspan="4" class="text-left">جمع کل : 
-                            9,306,000,000
+                            @if(isset($request->total_price) && isset($request->total_price['number']))
+                                {{ number_format(round($request->total_price['number'] * 1.1)) }}
+                            @else
+                                0
+                            @endif
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="4" class="text-left">جمع کل به حروف :
-                            <!-- @if(isset($request->total_price) && isset($request->total_price['world']))
+                        <td colspan="4" class="text-left">جمع کل به حروف:
+                            @if(isset($request->total_price) && isset($request->total_price['world']))
                                 {{ $request->total_price['world'] }} ریال
                             @else
                                 صفر ریال
-                            @endif -->
-                            نه میلیارد و سیصدوشش میلیون ریال
+                            @endif
                         </td>
                     </tr>
                     <tr>

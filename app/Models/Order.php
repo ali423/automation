@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Services\BaseService;
-use App\Traits\ActivityTrait;
 use App\Traits\CommentTrait;
 use App\Traits\FileTrait;
 use Carbon\Carbon;
@@ -13,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
 {
-    use HasFactory, ActivityTrait, CommentTrait, FileTrait, SoftDeletes;
+    use HasFactory, CommentTrait, FileTrait, SoftDeletes;
 
     protected $fillable = [
         'customer_id',
@@ -109,25 +108,25 @@ class Order extends Model
     {
         $commodityUnitService = app(\App\Services\CommodityUnitService::class);
         $mainUnitAmounts = [];
-        
+
         foreach ($this->orderItems as $item) {
             $commodity = $item->commodity;
             if (!$commodity) {
                 continue;
             }
-            
+
             // Get the unit from the relationship
             $unit = $item->unit;
             if (!$unit) {
                 continue;
             }
-            
+
             $amountInMainUnit = $commodityUnitService->convertToMainUnit(
                 $commodity,
                 $item->commodity_amount,
                 $unit->id
             );
-            
+
             $mainUnitAmounts[$item->id] = [
                 'commodity_title' => $commodity->title,
                 'original_amount' => $item->commodity_amount,
@@ -137,7 +136,7 @@ class Order extends Model
                 'main_unit_symbol' => $commodity->unit ? $commodity->unit->symbol : '',
             ];
         }
-        
+
         return $mainUnitAmounts;
     }
 

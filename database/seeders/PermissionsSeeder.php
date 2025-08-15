@@ -85,7 +85,15 @@ class PermissionsSeeder extends Seeder
             ['title'=>'read_production', 'name'=>'دیدن درخواست تولید'],
             ['title'=>'edit_production', 'name'=>'ویرایش درخواست تولید'],
             ['title'=>'delete_production', 'name'=>'حذف درخواست تولید'],
-            ['title'=>'status_production', 'name'=>'تغییر وضعیت درخواست تولید']
+            ['title'=>'status_production', 'name'=>'تغییر وضعیت درخواست تولید'],
+
+                //inventory permissions
+            ['title'=>'create_inventory', 'name'=>'اضافه کردن موجودی'],
+            ['title'=>'read_inventory', 'name'=>'دیدن موجودی'],
+            ['title'=>'edit_inventory', 'name'=>'ویرایش موجودی'],
+            ['title'=>'delete_inventory', 'name'=>'حذف موجودی'],
+            ['title'=>'manage_inventory', 'name'=>'مدیریت موجودی'],
+
         ];
 
         foreach ($permissions as $permission) {

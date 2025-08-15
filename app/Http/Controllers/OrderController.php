@@ -37,7 +37,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::query()->with(['customer', 'orderItems.commodity', 'orderItems.unit', 'activities'])
+        $orders = Order::query()->with(['customer', 'orderItems.commodity', 'orderItems.unit'])
             ->whereHas('customer')
             ->whereHas('orderItems.commodity')
             ->orderByRaw("FIELD(status, \"pending\", \"done\")")
@@ -55,7 +55,7 @@ class OrderController extends Controller
      */
     public function chart()
     {
-        $orders = Order::query()->with(['customer', 'orderItems.commodity', 'orderItems.unit', 'activities'])
+        $orders = Order::query()->with(['customer', 'orderItems.commodity', 'orderItems.unit'])
             ->whereHas('customer')
             ->whereHas('orderItems.commodity')
             ->orderByRaw("FIELD(status, 'pending', 'done')")
@@ -131,7 +131,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         // Load the order with all necessary relationships
-        $order->load(['customer', 'orderItems.commodity', 'orderItems.unit', 'activities', 'comments.user', 'files.user']);
+        $order->load(['customer', 'orderItems.commodity', 'orderItems.unit', 'comments.user', 'files.user']);
         
         $inventoryInfo = $this->service->getInventoryInfo($order);
         
@@ -253,7 +253,11 @@ class OrderController extends Controller
      * @return \Illuminate\Http\RedirectResponse
      */
     public function confirmStore(CreateWithdrawalRequest $request, Order $order){
-        $data = $request->only('commodity_id', 'unit', 'amount', 'comment','price','customer_id');
+        $data = $request->only('commodity_id', 'unit_id', 'amount', 'comment','price','customer_id');
+        
+        // Debug: Log the extracted data
+        \Log::info('OrderController::confirmStore - Extracted data:', $data);
+        
         $inventory_check = $this->withdrawal_service->checkWithdrawalData($data);
         if ($inventory_check['success'] == true) {
             $file = null;

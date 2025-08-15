@@ -36,9 +36,7 @@
                             <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
                                 <input type="text" name="name"
-                                       @if (isset($order->creator_user)) value="{{ $order->creator_user->full_name }}"
-                                       @else
-                                       value="سیستم" @endif
+                                       value="سیستم"
                                        class="form-control" id="exampleInputEmail111"
                                        placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
                             </div>
@@ -105,11 +103,6 @@
                             </div>
                             <div class="col-md-6 text-md-right">
                                 <a href="{{ route('order.confirm', $order) }}" class="btn btn-success">تحویل سفارش</a>
-                                <a href="{{ route('activity.index', [
-                                    'object_id' => $order->id,
-                                    'object_type' => class_basename($order),
-                                ]) }}"
-                                   class="btn btn-dfprimary px-2 px-md-4 m-md-0">تاریخچه تغییرات</a>
                             </div>
                         </div>
 
