@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\ActivityTrait;
 use App\Traits\CommentTrait;
 use App\Traits\FileTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,7 +11,7 @@ use NumberToWords\NumberToWords;
 
 class WithdrawalRequest extends Model
 {
-    use HasFactory, SoftDeletes, ActivityTrait, FileTrait, CommentTrait;
+    use HasFactory, SoftDeletes, FileTrait, CommentTrait;
     
     protected $fillable = [
         'customer_id',

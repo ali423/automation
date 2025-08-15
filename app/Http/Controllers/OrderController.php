@@ -37,7 +37,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::query()->with(['customer', 'orderItems.commodity', 'orderItems.unit', 'activities'])
+        $orders = Order::query()->with(['customer', 'orderItems.commodity', 'orderItems.unit'])
             ->whereHas('customer')
             ->whereHas('orderItems.commodity')
             ->orderByRaw("FIELD(status, \"pending\", \"done\")")
@@ -55,7 +55,7 @@ class OrderController extends Controller
      */
     public function chart()
     {
-        $orders = Order::query()->with(['customer', 'orderItems.commodity', 'orderItems.unit', 'activities'])
+        $orders = Order::query()->with(['customer', 'orderItems.commodity', 'orderItems.unit'])
             ->whereHas('customer')
             ->whereHas('orderItems.commodity')
             ->orderByRaw("FIELD(status, 'pending', 'done')")
@@ -131,7 +131,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         // Load the order with all necessary relationships
-        $order->load(['customer', 'orderItems.commodity', 'orderItems.unit', 'activities', 'comments.user', 'files.user']);
+        $order->load(['customer', 'orderItems.commodity', 'orderItems.unit', 'comments.user', 'files.user']);
         
         $inventoryInfo = $this->service->getInventoryInfo($order);
         

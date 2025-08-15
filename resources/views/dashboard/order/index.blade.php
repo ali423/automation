@@ -39,11 +39,7 @@
                                     <td>{{ $order->orderItems->count() }} کالا</td>
                                     <td>{{ $order->deadline }}</td>
                                    <td>{{  __('fields.order.status')[$order->status] }}</td>
-                                    @if(isset($order->creator_user))
-                                    <td>{{ $order->creator_user->full_name }}</td>
-                                    @else
-                                        <td>سیستم</td>
-                                    @endif
+                                    <td>سیستم</td>
                                     <td><a href="{{ route('order.show', $order) }}" class=""><i class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>

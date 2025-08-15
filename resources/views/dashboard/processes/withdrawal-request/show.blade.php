@@ -45,11 +45,7 @@
                             <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
                                 <input type="text" name="name"
-                                       @if (isset($request->creator_user) && $request->creator_user)
-                                           value="{{ $request->creator_user->full_name }}"
-                                       @else
-                                           value="سیستم"
-                                       @endif
+                                       value="سیستم"
                                        class="form-control" id="exampleInputEmail111"
                                        placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
                             </div>
@@ -208,11 +204,6 @@
                                     <a href="{{ route('reject.withdrawal', $request) }}" class="btn btn-danger px-1">رد
                                         درخواست</a>
                                 @endif
-                                <a href="{{ route('activity.index', [
-                                    'object_id' => $request->id,
-                                    'object_type' => class_basename($request),
-                                ]) }}"
-                                   class="btn btn-dfprimary px-1 px-md-4 m-md-0">تاریخچه تغییرات</a>
                             </div>
                         </div>
                     </div>
