@@ -24,7 +24,7 @@
                         <div class="form-row">
                             <div class="form-group col-md-4">
                                 <label for="unit"> {{ __('fields.status') }}</label>
-                                <input type="text" class="form-control" value="{{ __('fields.order.status')[$order->status] }}" disabled>
+                                <input type="text" class="form-control" value="{{ __('fields.order.status.' . $order->status) }}" disabled>
                             </div>
                             <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.created_at') }}</label>

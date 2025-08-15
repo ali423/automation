@@ -462,4 +462,138 @@ class OrderController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Display factory status page.
+     *
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     */
+    public function factoryStatus()
+    {
+        // Get real pending orders with customer and commodity information
+        $pendingOrders = Order::where('status', 'pending')
+            ->with(['customer', 'orderItems.commodity', 'orderItems.unit'])
+            ->get()
+            ->map(function ($order) {
+                // Get total order amount and value
+                $totalAmount = $order->orderItems->sum('commodity_amount');
+                $totalValue = $order->orderItems->sum(function ($item) {
+                    return $item->price ? ($item->price * $item->commodity_amount) : 0;
+                });
+                
+                // Get inventory for this commodity
+                $inventory = 0;
+                if ($order->orderItems->isNotEmpty()) {
+                    $firstItem = $order->orderItems->first();
+                    $inventory = Inventory::where('commodity_id', $firstItem->commodity_id)
+                        ->where('unit_id', $firstItem->unit_id)
+                        ->where('active', true)
+                        ->sum('amount');
+                }
+                
+                return (object)[
+                    'id' => $order->id,
+                    'customer' => $order->customer,
+                    'orderItems' => $order->orderItems,
+                    'deadline' => $order->deadline,
+                    'total_amount' => $totalAmount,
+                    'total_value' => $totalValue,
+                    'inventory_available' => $inventory,
+                    'can_deliver' => $inventory >= $totalAmount
+                ];
+            });
+
+        // Get real warehouse chart data
+        $warehouseChartData = $this->getWarehouseChartData();
+
+        return view('dashboard.order.factory-status', [
+            'pendingOrders' => $pendingOrders,
+            'warehouseChartData' => $warehouseChartData,
+        ]);
+    }
+
+    /**
+     * Get individual orders chart data with real data.
+     *
+     * @return array
+     */
+    private function getWarehouseChartData()
+    {
+        // Get real pending orders with inventory data
+        $orders = Order::where('status', 'pending')
+            ->with(['orderItems.commodity', 'orderItems.unit'])
+            ->get();
+
+        $chartData = [];
+        
+        foreach ($orders as $order) {
+            foreach ($order->orderItems as $item) {
+                // Get inventory for this commodity
+                $inventory = Inventory::where('commodity_id', $item->commodity_id)
+                    ->where('unit_id', $item->unit_id)
+                    ->where('active', true)
+                    ->sum('amount');
+                
+                $chartData[] = [
+                    'orderId' => $order->id,
+                    'customerName' => $order->customer->name ?? 'نامشخص',
+                    'productName' => $item->commodity->title ?? 'نامشخص',
+                    'orderedAmount' => $item->commodity_amount,
+                    'inventory' => $inventory,
+                    'unit' => $item->unit->name ?? 'نامشخص',
+                    'unitSymbol' => $item->unit->symbol ?? ''
+                ];
+            }
+        }
+
+        return [
+            'orders' => $chartData
+        ];
+    }
+
+    /**
+     * Display customer details page with all orders for a specific customer.
+     *
+     * @param int $id
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     */
+    public function customerDetails($id)
+    {
+        // Get real customer data
+        $customer = Customer::findOrFail($id);
+        
+        // Get real orders for this customer with related data
+        $customerOrders = Order::where('customer_id', $id)
+            ->with(['orderItems.commodity', 'orderItems.unit'])
+            ->get()
+            ->flatMap(function ($order) {
+                return $order->orderItems->map(function ($item) use ($order) {
+                    // Get inventory for this commodity
+                    $inventory = Inventory::where('commodity_id', $item->commodity_id)
+                        ->where('unit_id', $item->unit_id)
+                        ->where('active', true)
+                        ->sum('amount');
+                    
+                    return (object)[
+                        'id' => $item->id,
+                        'order_number' => $order->id,
+                        'commodity_title' => $item->commodity->title ?? 'نامشخص',
+                        'amount' => $item->commodity_amount,
+                        'unit' => $item->unit->name ?? 'نامشخص',
+                        'unit_symbol' => $item->unit->symbol ?? '',
+                        'deadline' => $order->deadline,
+                        'status' => $order->status,
+                        'total_value' => $item->price ? ($item->price * $item->commodity_amount) : 0,
+                        'inventory' => $inventory,
+                        'can_deliver' => $inventory >= $item->commodity_amount,
+                        'created_at' => $order->created_at
+                    ];
+                });
+            });
+
+        return view('dashboard.order.customer-details', [
+            'customer' => $customer,
+            'orders' => $customerOrders
+        ]);
+    }
 }
