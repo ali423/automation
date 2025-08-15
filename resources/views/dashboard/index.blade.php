@@ -263,6 +263,27 @@
                 </div>
             </div>
         @endif
+
+    @if(Gate::check('read_order') || Gate::check('create_order'))
+        <!-- Single Widget -->
+            <div class="col-12 col-md box-margin height-card">
+                <div class="card">
+                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="factory-status">
+                        <div class="text-center">
+                            <div>
+                                <i class="ti-bar-chart font-24"></i>
+                            </div>
+                            <h6>وضعیت کارخونه</h6>
+                        </div>
+                        <div class="d-md-none">
+                            <ul class="list-unstyled d-flex">
+                                <li><a href="#" class="btn btn-white m-1">مشاهده وضعیت</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 
 
@@ -726,6 +747,29 @@
                     @endcan
                 </div>
                 {{-- end order --}}
+
+                {{-- start factory-status --}}
+                <div id="factory-status" class="d-none card-body row">
+                @can('read_order',App\Models\Order::class)
+                    <!-- Single Widget -->
+                        <div class="col height-card">
+                            <div class="card">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    </br></br>
+                                    <a href="{{ route('order.factory-status') }}" class="bg-green">
+                                        <div>
+                                            <div>
+                                                <i class="ti-factory font-24"></i>
+                                            </div>
+                                            <h6>مشاهده وضعیت کارخونه</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                @endcan
+                </div>
+                {{-- end factory-status --}}
             </div>
         </div>
     </div>
