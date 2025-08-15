@@ -51,7 +51,8 @@
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-2">نمودار موجودی سفارشات</h4>
+                                         <h4 class="card-title mb-2">نمودار مواد اولیه مورد نیاز (سفارشات در حال پردازش) و موجودی</h4>
+                     <p class="text-muted small mb-3">نمودار بر اساس فیلترهای انتخاب شده در لیست سفارشات به‌روزرسانی می‌شود. فقط سفارشات با وضعیت "در حال پردازش" در محاسبات نمودار لحاظ می‌شوند.</p>
                     <div id="order-inventory-charts"></div>
                 </div>
             </div>
@@ -65,7 +66,9 @@
                         <input type="text" id="date_from" class="form-control usage" placeholder="از تاریخ" autocomplete="off" style="min-width: 110px;">
                         <input type="text" id="date_to" class="form-control usage" placeholder="تا تاریخ" autocomplete="off" style="min-width: 110px;">
                         <button id="calculate-orders" class="btn btn-success ml-2" type="button">محاسبه</button>
+                        <button id="clear-filters" class="btn btn-outline-secondary ml-2" type="button">پاک کردن فیلترها</button>
                     </div>
+                    <div id="filter-status" class="text-info small mb-2" style="display: none;"></div>
                     <table id="datatable-buttons-customer" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                             <tr>
@@ -75,9 +78,7 @@
                                 </th>
                                 <th>ردیف</th>
                                 <th>{{ __('fields.customer') }}</th>
-                                <th>{{ __('fields.commodity.name') }}</th>
-                                <th>{{ __('fields.commodity.amount') }}</th>
-                                <th>{{ __('fields.unit') }}</th>
+                                <th>مجموع مقدار</th>
                                 <th>{{ __('fields.deadline') }}</th>
                                 <th>{{ __('fields.status') }}</th>
                                 <th>{{ __('fields.creator') }}</th>
@@ -91,22 +92,16 @@
                                     <td><input type="checkbox" class="order-checkbox"></td>
                                     <td>{{ $i }}</td>
                                     <td>{{ $order->customer ? $order->customer->name : 'مشتری حذف شده' }}</td>
-                                    <td>{{ $order->commodity ? $order->commodity->title : 'کالا حذف شده' }}</td>
-                                    <td>{{ number_format($order->commodity_amount) }}</td>
-                                    <td>{{ __('fields.commodity.units')[$order->unit] }}</td>
+                                    <td>{{ number_format($order->orderItems->sum('commodity_amount')) }}</td>
                                     <td>{{ date('Y/m/d', strtotime($order->deadline)) }}</td>
                                     <td>{{ __('fields.order.status')[$order->status] }}</td>
-                                    @if(isset($order->creator_user))
-                                        <td>{{ $order->creator_user->full_name }}</td>
-                                    @else
-                                        <td>سیستم</td>
-                                    @endif
+                                    <td>سیستم</td>
                                     <td><a href="{{ route('order.show', $order) }}" class=""><i class="ti-more-alt font-24"></i></a></td>
                                 </tr>
                                 @php($i++)
-                                @endforeach
-                            </tbody>
-                        </table>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -149,12 +144,12 @@
 
             $('#datatable-buttons-customer').DataTable({
                 dom: 'Bfrtip',
-                buttons: [{
+                buttons: [                    {
                         extend: 'copy',
                         text: "کپی",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
+                            columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
@@ -166,7 +161,7 @@
                         text: 'pdf',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
+                            columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
@@ -183,7 +178,7 @@
                         extend: 'excel',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
+                            columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             }
@@ -193,7 +188,7 @@
                         extend: 'csv',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
+                            columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             }
@@ -204,7 +199,7 @@
                         text: "پرینت",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5],
+                            columns: [0, 1, 2, 3, 4, 5, 6, 7],
                             modifier: {
                                 page: 'current'
                             },
@@ -261,14 +256,10 @@
                     var d = parts[2].length === 1 ? '0' + parts[2] : parts[2];
                     return parseInt(y + m + d);
                 }
+                
                 var data = {
-                    orderIds: [],
-                    names: [],
-                    amounts: [],
-                    units: []
+                    orderIds: []
                 };
-                var commodityMap = {};
-                var unitMap = {};
 
                 // --- Date range filter ---
                 var dateFrom = $('#date_from').val();
@@ -280,72 +271,48 @@
                 // If both date fields are empty, ignore date filtering (show all rows)
                 var filterByDate = !!(fromNum || toNumVal);
 
-                // Filter checked rows by date range if needed
-                var checkedRows = $('#datatable-buttons-customer tbody tr').filter(function() {
+                // Get checked rows that are currently visible (filtered by date)
+                var checkedRows = $('#datatable-buttons-customer tbody tr:visible').filter(function() {
                     var checkbox = $(this).find('.order-checkbox');
-                    var dateStr = $(this).find('td').eq(6).text().trim();
-                    var dateNum = toNum(dateStr); // faToEn applied to table value too
-                    if (!filterByDate) return checkbox.length && checkbox.is(':checked');
-                    // Only keep rows within the selected date range
-                    var inRange = true;
-                    if (fromNum && dateNum < fromNum) inRange = false;
-                    if (toNumVal && dateNum > toNumVal) inRange = false;
-                    return checkbox.length && checkbox.is(':checked') && inRange;
+                    return checkbox.length && checkbox.is(':checked');
                 });
-                // If no row is checked but 'select all' is checked, include all rows in range
+                
+                // If no row is checked but 'select all' is checked, include all visible rows
                 if (checkedRows.length === 0 && $('#select-all-orders').is(':checked')) {
-                    checkedRows = $('#datatable-buttons-customer tbody tr').filter(function() {
-                        var dateStr = $(this).find('td').eq(6).text().trim();
-                        var dateNum = toNum(dateStr);
-                        if (!filterByDate) return true;
-                        var inRange = true;
-                        if (fromNum && dateNum < fromNum) inRange = false;
-                        if (toNumVal && dateNum > toNumVal) inRange = false;
-                        return inRange;
-                    });
+                    checkedRows = $('#datatable-buttons-customer tbody tr:visible');
                 }
+                
+                // Collect all filtered order_ids for backend use
                 checkedRows.each(function() {
                     var $row = $(this);
-                    var tds = $row.find('td');
-                    var commodityName = tds.eq(3).text().trim();
-                    var commodityAmount = parseFloat(tds.eq(4).text().replace(/,/g, '')) || 0;
-                    var unit = tds.eq(5).text().trim();
                     var orderId = $row.data('order-id');
-                    if (commodityName) {
-                        // Aggregate order amounts for each product
-                        if (!commodityMap[commodityName]) {
-                            commodityMap[commodityName] = 0;
-                            unitMap[commodityName] = unit;
-                        }
-                        commodityMap[commodityName] += commodityAmount;
-                        // Collect all filtered order_ids for backend use
-                        data.orderIds.push(orderId);
-                    }
+                    data.orderIds.push(orderId);
                 });
-                // Final output: only one entry per product
-                data.names = Object.keys(commodityMap);
-                data.amounts = data.names.map(function(name) { return commodityMap[name]; });
-                data.units = data.names.map(function(name) { return unitMap[name]; });
+                
                 return data;
             }
 
             function renderCharts(data) {
                 $('#order-inventory-charts').empty();
                 if (data.names.length === 0) {
-                    $('#order-inventory-charts').append('<div class="alert alert-info text-center">هیچ سفارشی انتخاب نشده است.</div>');
+                    $('#order-inventory-charts').append('<div class="alert alert-info text-center">هیچ سفارش در حال پردازشی انتخاب نشده است یا محصولات انتخاب شده فرمول مواد اولیه ندارند.</div>');
                     return;
                 }
                 data.names.forEach(function(name, idx) {
                     var chartId = 'order-inventory-chart-' + idx;
                     $('#order-inventory-charts').append('<div id="'+chartId+'" class="mini-order-chart"></div>');
+                    
+                    // Use real inventory data if available, otherwise use 0
+                    var inventoryAmount = data.inventory && data.inventory[idx] !== undefined ? data.inventory[idx] : 0;
+                    
                     var orderData = {
                         chart: { height: 220, type: "bar" },
                         plotOptions: { bar: { horizontal: false, columnWidth: "55%", endingShape: "rounded" } },
                         dataLabels: { enabled: false },
                         stroke: { show: true, width: 2, colors: ["transparent"] },
                         series: [
-                            { name: "سفارش", data: [data.amounts[idx]] },
-                            { name: "موجودی مواد اولیه", data: [Math.floor(Math.random() * 120)] }
+                            { name: "مواد اولیه مورد نیاز", data: [data.amounts[idx]] },
+                            { name: "موجودی مواد اولیه", data: [inventoryAmount] }
                         ],
                         colors: [ "#1976d2","#e53935"],
                         xaxis: { categories: [name] },
@@ -365,61 +332,153 @@
             }
 
             // Initial chart rendering with all orders (since 'select all' is checked and no date filter)
-            var initialData = getSelectedOrderData();
-            renderCharts({
-                names: initialData.names,
-                amounts: initialData.amounts,
-                units: initialData.units
-            });
+            updateChart();
 
-            // Calculate button click handler (Flexible: Table, Mock, Ready for AJAX)
-            $('#calculate-orders').on('click', function() {
+            // Function to update chart based on current filters
+            function updateChart() {
                 var selectedData = getSelectedOrderData();
 
-                if (mockMode) {
-                    // Mock mode: generate fake data
-                    var names = selectedData.orderIds.map(function(id) { return 'Mock Product ' + id; });
-                    var amounts = selectedData.orderIds.map(function() { return Math.floor(Math.random() * 100) + 1; });
-                    var units = selectedData.orderIds.map(function() { return 'kg'; });
-                    renderCharts({ names, amounts, units });
-                } else {
-                    // Real mode: use aggregated data from the table
-                    renderCharts({
-                        names: selectedData.names,
-                        amounts: selectedData.amounts,
-                        units: selectedData.units
-                    });
+                // Use real data from the backend
+                $.ajax({
+                    url: '{{ route("order.chart.data") }}',
+                    method: 'POST',
+                    data: {
+                        order_ids: selectedData.orderIds,
+                        date_from: $('#date_from').val(),
+                        date_to: $('#date_to').val(),
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        renderCharts({
+                            names: response.names,
+                            amounts: response.amounts,
+                            units: response.units,
+                            inventory: response.inventory
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching chart data:', xhr);
+                        console.error('Status:', status);
+                        console.error('Error:', error);
+                        console.error('Response Text:', xhr.responseText);
+                        // Show error message if AJAX fails
+                        $('#order-inventory-charts').empty().append('<div class="alert alert-danger text-center">خطا در دریافت اطلاعات نمودار<br><small>Status: ' + status + '<br>Error: ' + error + '</small></div>');
+                    }
+                });
+            }
 
-                    // Later, we can enable AJAX here:
-                    /*
-                    $.ajax({
-                        url: '/orders/chart-data',
-                        method: 'POST',
-                        data: {
-                            order_ids: selectedData.orderIds,
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function(response) {
-                            renderCharts(response);
-                        },
-                        error: function(xhr) {
-                            $('#order-inventory-charts').empty().append('<div class="alert alert-danger">Error fetching data from server</div>');
-                        }
-                    });
-                    */
-                }
+            // Calculate button click handler
+            $('#calculate-orders').on('click', function() {
+                filterTableByDate();
+                updateChart();
+            });
+            
+            // Clear filters button click handler
+            $('#clear-filters').on('click', function() {
+                $('#date_from').val('');
+                $('#date_to').val('');
+                filterTableByDate();
+                updateChart();
             });
 
             // Select all functionality for order checkboxes
             $('#select-all-orders').on('change', function() {
                 var checked = $(this).is(':checked');
-                $('.order-checkbox').prop('checked', checked);
+                // Only check visible rows (filtered by date)
+                $('.order-checkbox:visible').prop('checked', checked);
+                // Update chart automatically when select all changes
+                updateChart();
             });
             
             $(document).on('change', '.order-checkbox', function() {
-                var total = $('.order-checkbox').length;
-                var checked = $('.order-checkbox:checked').length;
-                $('#select-all-orders').prop('checked', total === checked);
+                var visibleCheckboxes = $('.order-checkbox:visible');
+                var checkedVisibleCheckboxes = visibleCheckboxes.filter(':checked');
+                $('#select-all-orders').prop('checked', visibleCheckboxes.length > 0 && checkedVisibleCheckboxes.length === visibleCheckboxes.length);
+                // Update chart automatically when individual checkboxes change
+                updateChart();
+            });
+
+            // Function to filter table rows based on date range
+            function filterTableByDate() {
+                // Convert Persian digits to English digits
+                function faToEn(str) {
+                    if (!str) return '';
+                    return str.replace(/[۰-۹]/g, function (d) {
+                        return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d);
+                    });
+                }
+                // Convert date string to number for comparison (YYYY/MM/DD -> YYYYMMDD)
+                function toNum(str) {
+                    if (!str) return null;
+                    str = faToEn(str);
+                    var parts = str.split('/');
+                    if (parts.length !== 3) return null;
+                    var y = parts[0];
+                    var m = parts[1].length === 1 ? '0' + parts[1] : parts[1];
+                    var d = parts[2].length === 1 ? '0' + parts[2] : parts[2];
+                    return parseInt(y + m + d);
+                }
+                
+                var dateFrom = $('#date_from').val();
+                var dateTo = $('#date_to').val();
+                
+                var fromNum = toNum(dateFrom);
+                var toNumVal = toNum(dateTo);
+                
+                // If both date fields are empty, show all rows
+                var filterByDate = !!(fromNum || toNumVal);
+                
+                // Update filter status indicator
+                if (filterByDate) {
+                    var filterText = '';
+                    if (dateFrom && dateTo) {
+                        filterText = 'فیلتر: از ' + dateFrom + ' تا ' + dateTo;
+                    } else if (dateFrom) {
+                        filterText = 'فیلتر: از ' + dateFrom;
+                    } else if (dateTo) {
+                        filterText = 'فیلتر: تا ' + dateTo;
+                    }
+                    $('#filter-status').text(filterText).show();
+                } else {
+                    $('#filter-status').hide();
+                }
+                
+                $('#datatable-buttons-customer tbody tr').each(function() {
+                    var $row = $(this);
+                    var dateStr = $row.find('td').eq(4).text().trim(); // Deadline column
+                    var dateNum = toNum(dateStr);
+                    
+                    if (!filterByDate) {
+                        $row.show();
+                        return;
+                    }
+                    
+                    // Check if date is within range
+                    var inRange = true;
+                    if (fromNum && dateNum < fromNum) inRange = false;
+                    if (toNumVal && dateNum > toNumVal) inRange = false;
+                    
+                    if (inRange) {
+                        $row.show();
+                    } else {
+                        $row.hide();
+                    }
+                });
+                
+                // Update select all checkbox state
+                var visibleRows = $('#datatable-buttons-customer tbody tr:visible');
+                var checkedVisibleRows = visibleRows.find('.order-checkbox:checked');
+                $('#select-all-orders').prop('checked', visibleRows.length > 0 && checkedVisibleRows.length === visibleRows.length);
+            }
+            
+            // Update chart when date filters change (with debounce to prevent too many calls)
+            var dateUpdateTimeout;
+            $('#date_from, #date_to').on('change', function() {
+                clearTimeout(dateUpdateTimeout);
+                dateUpdateTimeout = setTimeout(function() {
+                    filterTableByDate();
+                    updateChart();
+                }, 500); // 500ms delay
             });
         });
     </script>

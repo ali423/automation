@@ -21,9 +21,8 @@
                             <tr>
                                 <th>ردیف</th>
                                 <th> {{ __('fields.customer') }}</th>
-                                <th> {{ __('fields.commodity.name') }}</th>
                                 <th> {{ __('fields.commodity.amount') }}</th>
-                                <th> {{ __('fields.unit') }}</th>
+                                <th>تعداد کالا</th>
                                 <th>{{ __('fields.deadline') }}</th>
                                 <th>{{ __('fields.status') }}</th>
                                 <th>{{ __('fields.creator') }}</th>
@@ -32,26 +31,18 @@
                         </thead>
 
                         <tbody class="text-center">
-                            @php($i = 1)
                             @foreach ($orders as $order)
                                 <tr>
-                                    <td>{{ $i }}</td>
+                                    <td></td>
                                     <td>{{ $order->customer ? $order->customer->name : 'مشتری حذف شده' }}</td>
-                                    <td>{{ $order->commodity ? $order->commodity->title : 'کالا حذف شده' }}</td>
-                                    <td>{{ number_format($order->commodity_amount) }}</td>
-                                    <td>{{ __('fields.commodity.units')[$order->unit] }}</td>
-                                    <td>{{ date('Y/m/d', strtotime($order->deadline))}}
-                                    </td>
+                                    <td>{{ $order->formatted_total_amount }}</td>
+                                    <td>{{ $order->orderItems->count() }} کالا</td>
+                                    <td>{{ $order->deadline }}</td>
                                    <td>{{  __('fields.order.status')[$order->status] }}</td>
-                                    @if(isset($order->creator_user))
-                                    <td>{{ $order->creator_user->full_name }}</td>
-                                    @else
-                                        <td>سیستم</td>
-                                    @endif
+                                    <td>سیستم</td>
                                     <td><a href="{{ route('order.show', $order) }}" class=""><i class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>
-                                @php($i++)
                             @endforeach
                         </tbody>
                     </table>
@@ -157,21 +148,32 @@
                         }
                     }
                 ],
-                columnDefs: [{
-                    targets: '_all',
-                    render: function(data, type, row) {
-                        if (type === 'rtlexport') {
-                            return data.split(' ').reverse().join(' ');
+                columnDefs: [
+                    {
+                        searchable: false,
+                        orderable: false,
+                        targets: 0,
+                        render: function (data, type, row, meta) {
+                            return meta.row + 1;
                         }
-                        return data;
+                    },
+                    {
+                        targets: '_all',
+                        render: function(data, type, row) {
+                            if (type === 'rtlexport') {
+                                return data.split(' ').reverse().join(' ');
+                            }
+                            return data;
+                        }
                     }
-                }],
-        "language": {
-            "paginate": {
-                "previous": "قبلی",
-                "next": "بعدی"
-            }
-        }
+                ],
+                order: [[1, 'asc']],
+                "language": {
+                    "paginate": {
+                        "previous": "قبلی",
+                        "next": "بعدی"
+                    }
+                }
             });
         });
     </script>

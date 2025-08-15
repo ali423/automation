@@ -12,43 +12,19 @@
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-row">
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-6">
                                 <label for="customer_id">{{ __('fields.customer')}}</label>
-                                <input type="text"  class="form-control" value="{{ $order->customer ? $order->customer->name : 'مشتری حذف شده' }}" disabled>
-                                <div class="invalid-feedback">
-                                    {{ __('fields.customer')}} را انتخاب کنید
-                                </div>
+                                <input type="text" class="form-control" value="{{ $order->customer ? $order->customer->name : 'مشتری حذف شده' }}" disabled>
                             </div>
-                            <div class="form-group col-md-4">
-                                <label for="commodity_id">{{ __('fields.commodity.name')}}</label>
-                                <input type="text"  class="form-control" value="{{ $order->commodity ? $order->commodity->title : 'کالا حذف شده' }}" disabled>
-                                <div class="invalid-feedback">
-                                    {{ __('fields.commodity.name')}} را انتخاب کنید
-                                </div>
-                            </div>
-                            <div class="form-group col-md-4">
-                                <label for="amount"> {{  __('fields.sell-price_per_unit') }}</label>
-                                <input type="text"  class="form-control" value="{{ number_format($order->price) }}" disabled>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-6">
                                 <label>{{ __('fields.deadline') }}</label>
-                              <input type="text"  class="form-control" value="{{ date('Y/m/d', strtotime($order->deadline)) }}" disabled>
-                            </div>
-                            <div class="form-group col-md-4">
-                                <label for="amount"> {{  __('fields.commodity.amount') }}</label>
-                                <input type="text"   class="form-control" value="{{ number_format($order->commodity_amount) }}" disabled>
-                            </div>
-                            <div class="form-group col-md-4">
-                                <label for="unit"> {{ __('fields.unit') }}</label>
-                                <input type="text"   class="form-control" value="{{ __('fields.commodity.units')[$order->unit] }}" disabled>
+                                <input type="text" class="form-control" value="{{ $order->deadline }}" disabled>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group col-md-4">
                                 <label for="unit"> {{ __('fields.status') }}</label>
-                                <input type="text"   class="form-control" value="{{ __('fields.order.status')[$order->status] }}" disabled>
+                                <input type="text" class="form-control" value="{{ __('fields.order.status')[$order->status] }}" disabled>
                             </div>
                             <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.created_at') }}</label>
@@ -60,13 +36,52 @@
                             <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
                                 <input type="text" name="name"
-                                       @if (isset($order->creator_user)) value="{{ $order->creator_user->full_name }}"
-                                       @else
-                                       value="سیستم" @endif
+                                       value="سیستم"
                                        class="form-control" id="exampleInputEmail111"
                                        placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
                             </div>
                         </div>
+
+                        <!-- Order Items -->
+                        @if($order->orderItems->count() > 0)
+                            <div class="form-row mt-4">
+                                <div class="col-12">
+                                    <h5>جزئیات سفارش</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>ردیف</th>
+                                                    <th>کالا</th>
+                                                    <th>مقدار</th>
+                                                    <th>واحد</th>
+                                                    <th>قیمت واحد</th>
+                                                    <th>قیمت کل</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($order->orderItems as $index => $item)
+                                                    <tr>
+                                                        <td>{{ $index + 1 }}</td>
+                                                        <td>{{ $item->commodity ? $item->commodity->title : 'کالا حذف شده' }}</td>
+                                                        <td>{{ number_format($item->commodity_amount) }}</td>
+                                                        <td>{{ $item->unit_symbol }}</td>
+                                                        <td>{{ number_format($item->price) }} تومان</td>
+                                                        <td>{{ number_format($item->total_price) }} تومان</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th colspan="5" class="text-left">مجموع کل:</th>
+                                                    <th>{{ number_format($order->total_price) }} تومان</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                         @if($order->status =='done')
                             <div class="form-row">
                                 <div class="form-group col-md-4">
@@ -88,11 +103,6 @@
                             </div>
                             <div class="col-md-6 text-md-right">
                                 <a href="{{ route('order.confirm', $order) }}" class="btn btn-success">تحویل سفارش</a>
-                                <a href="{{ route('activity.index', [
-                                    'object_id' => $order->id,
-                                    'object_type' => class_basename($order),
-                                ]) }}"
-                                   class="btn btn-dfprimary px-2 px-md-4 m-md-0">تاریخچه تغییرات</a>
                             </div>
                         </div>
 
@@ -187,44 +197,17 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                    <!--
+                                    @foreach($order->orderItems as $index => $item)
                                     <tr>
-                                        <td>1</td>
-                                        <td>{{ $order->commodity ? $order->commodity->number : '' }}</td>
-                                        <td>{{ $order->commodity ? $order->commodity->title : '' }}</td>
-                                        <td>{{ number_format($order->commodity_amount) }}</td>
-                                        <td>{{ __('fields.commodity.units')[$order->unit] }}</td>
-                                        <td>{{ number_format($order->price) }}</td>
-                                        <td colspan="2">{{ number_format($order->price * $order->commodity_amount) }}</td>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $item->commodity ? $item->commodity->number : '' }}</td>
+                                        <td>{{ $item->commodity ? $item->commodity->title : '' }}</td>
+                                        <td>{{ number_format($item->commodity_amount) }}</td>
+                                        <td>{{ $item->unit_symbol }}</td>
+                                        <td>{{ number_format($item->price) }}</td>
+                                        <td colspan="2">{{ number_format($item->total_price) }}</td>
                                     </tr>
-                                    -->
-                                    <tr>
-                                        <td>1</td>
-                                        <td>8728028</td>
-                                        <td>موتور چهارلیتری پلاستیکی SAE:20w50</td>
-                                        <td>400</td>
-                                        <td>کارتن</td>
-                                        <td>450,000</td>
-                                        <td colspan="2">198,000,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>8728029</td>
-                                        <td>موتور یک لیتری پلاستیکی SAE:50</td>
-                                        <td>50</td>
-                                        <td>کارتن</td>
-                                        <td>400,000</td>
-                                        <td colspan="2">22,000,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>3</td>
-                                        <td>8728030</td>
-                                        <td>گریس</td>
-                                        <td>400</td>
-                                        <td>کارتن</td>
-                                        <td>630,000</td>
-                                        <td colspan="2">277,200,000</td>
-                                    </tr>
+                                    @endforeach
                                     <tr>
                                         <td colspan="5" rowspan="3" class="text-left" style="vertical-align: top">
                                             <div class="d-flex justify-content-between">
@@ -236,10 +219,10 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="2" class="text-left">جمع کل : 497,200,000</td>
+                                        <td colspan="2" class="text-left">جمع کل : {{ number_format($order->total_price) }}</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3" class="text-left">جمع کل به حروف: چهارصد و نود و هفت میلیون و دویست هزار ریال </td>
+                                        <td colspan="3" class="text-left">جمع کل به حروف: {{ $order->total_price }}</td>
                                     </tr>
                                     <tr>
                                         <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
@@ -318,52 +301,19 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                    <!--
+                                    @foreach($order->orderItems as $index => $item)
                                     <tr>
-                                        <td>1</td>
-                                        <td>{{ $order->commodity ? $order->commodity->number : '' }}</td>
-                                        <td>{{ $order->commodity ? $order->commodity->title : '' }}</td>
-                                        <td>{{ number_format($order->commodity_amount) }}</td>
-                                        <td>{{ __('fields.commodity.units')[$order->unit] }}</td>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $item->commodity ? $item->commodity->number : '' }}</td>
+                                        <td>{{ $item->commodity ? $item->commodity->title : '' }}</td>
+                                        <td>{{ number_format($item->commodity_amount) }}</td>
+                                        <td>{{ $item->unit_symbol }}</td>
                                         <td></td>
                                         <td></td>
-                                        <td>{{ number_format($order->price) }}</td>
-                                        <td>{{ number_format($order->price * $order->commodity_amount) }}</td>
+                                        <td>{{ number_format($item->price) }}</td>
+                                        <td>{{ number_format($item->total_price) }}</td>
                                     </tr>
-                                    -->
-                                    <tr>
-                                        <td>1</td>
-                                        <td>8728028</td>
-                                        <td>موتور چهارلیتری پلاستیکی SAE:20w50</td>
-                                        <td>400</td>
-                                        <td>کارتن</td>
-                                        <td>40</td>
-                                        <td>10</td>
-                                        <td>450,000</td>
-                                        <td>198,000,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>8728029</td>
-                                        <td>موتور یک لیتری پلاستیکی SAE:50</td>
-                                        <td>50</td>
-                                        <td>کارتن</td>
-                                        <td>5</td>
-                                        <td>10</td>
-                                        <td>400,000</td>
-                                        <td>22,000,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>3</td>
-                                        <td>8728030</td>
-                                        <td>گریس</td>
-                                        <td>400</td>
-                                        <td>کارتن</td>
-                                        <td>40</td>
-                                        <td>10</td>
-                                        <td>630,000</td>
-                                        <td>277,200,000</td>
-                                    </tr>
+                                    @endforeach
                                     <tr>
                                         <td colspan="5" rowspan="3" class="text-left" style="vertical-align: top">
                                             <div class="d-flex justify-content-between">
@@ -375,10 +325,10 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="4" class="text-left">جمع کل : 497,200,000</td>
+                                        <td colspan="4" class="text-left">جمع کل : {{ number_format($order->total_price) }}</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="4" class="text-left">جمع کل به حروف: چهارصد و نود و هفت میلیون و دویست هزار ریال </td>
+                                        <td colspan="4" class="text-left">جمع کل به حروف: {{ $order->total_price }}</td>
                                     </tr>
                                     <tr>
                                         <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>

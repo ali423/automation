@@ -134,4 +134,41 @@ class InventoryController extends Controller
         });
         return redirect()->route('inventory.index')->with('successful', 'قیمت با موفقیت تنظیم شد.');
     }
+
+    /**
+     * AJAX endpoint to get commodity inventory data
+     *
+     * @param int $commodityId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getCommodityInventory($commodityId)
+    {
+        try {
+            $commodity = Commodity::findOrFail($commodityId);
+            
+            // Get the latest inventory price for this commodity
+            $inventory = Inventory::where('commodity_id', $commodityId)
+                ->where('active', true)
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            $price = $inventory ? $inventory->sale_price : 0;
+            
+            return response()->json([
+                'success' => true,
+                'price' => $price,
+                'commodity' => [
+                    'id' => $commodity->id,
+                    'title' => $commodity->title,
+                    'type' => $commodity->type
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در دریافت اطلاعات کالا',
+                'price' => 0
+            ], 500);
+        }
+    }
 } 

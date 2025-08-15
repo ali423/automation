@@ -31,19 +31,18 @@ class DashboardController extends Controller
                 ];
             }
         }
-        $orders=Order::query()->with('commodity.warehouses')->where('status','pending')->get();
+        $orders=Order::query()->with('orderItems.commodity.warehouses', 'orderItems.unit')->where('status','pending')->get();
 
         foreach ($orders as $order){
-            // Skip if order doesn't have an associated commodity
-            if (!$order->commodity) {
-                continue;
+            // Get the first order item for display purposes
+            $firstItem = $order->orderItems->first();
+            if ($firstItem && $firstItem->commodity) {
+                $orders_res[]=[
+                    'title'=> $firstItem->commodity->title.'('.$order->deadline_diff.'روز)',
+                    'amount'=>$order->kg_amount,
+                    'exists_amount'=>$firstItem->commodity->total_amount,
+                ];
             }
-            
-            $orders_res[]=[
-                'title'=> $order->commodity->title.'('.$order->deadline_diff.'روز)',
-                'amount'=>$order->kg_amount,
-                'exists_amount'=>$order->commodity->total_amount,
-            ];
         }
         return view('dashboard.index',[
             'warehouses'=>$warehouses_res?? array(),
