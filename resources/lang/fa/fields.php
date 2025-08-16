@@ -156,7 +156,6 @@ return [
         'deadline' => 'مهلت',
         'amount' => 'مقدار',
         'date' => 'تاریخ',
-        'status' => 'وضعیت',
     ],
     'from_unit' => 'از واحد',
     'to_unit' => 'به واحد',

@@ -38,7 +38,7 @@
                                     <td>{{ $order->formatted_total_amount }}</td>
                                     <td>{{ $order->orderItems->count() }} کالا</td>
                                     <td>{{ $order->deadline }}</td>
-                                   <td>{{  __('fields.order.status.' . $order->status) }}</td>
+                                    <td>{{ __('fields.order.status.' . $order->status) }}</td>
                                     <td>سیستم</td>
                                     <td><a href="{{ route('order.show', $order) }}" class=""><i class="ti-more-alt font-24"></i></a>
                                     </td>
