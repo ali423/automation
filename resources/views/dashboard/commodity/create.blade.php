@@ -37,13 +37,11 @@
                                     <label for="unit"> {{ __('fields.unit') }}</label>
                                     <select id="unit" class="form-control" name="unit_id" required>
                                         <option value="">انتخاب کنید...</option>
-                                        @foreach($units as $unit)
-                                            @if($unit->symbol === 'kg' || old('type') !== 'product')
-                                                <option value="{{ $unit->id }}" {{ old('unit_id') == $unit->id ? 'selected' : '' }}>
-                                                    {{ $unit->name }} ({{ $unit->symbol }})
-                                                </option>
-                                            @endif
-                                        @endforeach
+                                                                                 @foreach($units as $unit)
+                                             <option value="{{ $unit->id }}" {{ old('unit_id') == $unit->id ? 'selected' : '' }}>
+                                                 {{ $unit->name }} ({{ $unit->symbol }})
+                                             </option>
+                                         @endforeach
                                     </select>
                                     <div class="invalid-feedback">واحد را انتخاب کنید</div>
                                 </div>
@@ -77,10 +75,10 @@
 
                             <div id="product_formul" class="col-lg-12">
                                 <p>فرمول ساخت محصول (مقادیر بر اساس واحد)</p>
-                                <div class="alert alert-info">
-                                    <i class="ti-info-alt"></i>
-                                    <strong>راهنما:</strong> فرمول ساخت برای هر ۱۸۵ کیلوگرم محصول نهایی تعریف می‌شود.
-                                </div>
+                                                                 <div class="alert alert-info">
+                                     <i class="ti-info-alt"></i>
+                                     <strong>راهنما:</strong> فرمول ساخت برای هر واحد از محصول نهایی تعریف می‌شود.
+                                 </div>
                                 <div id="inputFormRow" class="form-row shadow p-4 mb-3">
                                     <div class="form-group col-md-5">
                                         <label for="materials"> {{ __('fields.commodity.material_type') }}</label>
@@ -180,15 +178,8 @@
             unitSelect.val('');
             
             if (selectedType === 'product') {
-                // For products, only show kg unit
-                unitSelect.find('option').hide();
-                unitSelect.find('option:first').show(); // Show "انتخاب کنید..."
-                unitSelect.find('option').each(function() {
-                    var optionText = $(this).text();
-                    if (optionText.includes('kg') || optionText.includes('کیلوگرم')) {
-                        $(this).show();
-                    }
-                });
+                // For products, show all units
+                unitSelect.find('option').show();
                 
                 // Show product formula section and make fields required
                 productFormula.show();
@@ -242,16 +233,7 @@
             if (selectedType === 'product') {
                 if (!selectedUnit) {
                     e.preventDefault();
-                    alert('لطفاً واحد کیلوگرم را برای محصول انتخاب کنید.');
-                    $('#unit').focus();
-                    return false;
-                }
-                
-                // Check if the selected unit is kg
-                var unitText = $('#unit option:selected').text();
-                if (!unitText.includes('kg') && !unitText.includes('کیلوگرم')) {
-                    e.preventDefault();
-                    alert('محصولات باید از واحد کیلوگرم استفاده کنند.');
+                    alert('لطفاً واحد را برای محصول انتخاب کنید.');
                     $('#unit').focus();
                     return false;
                 }
