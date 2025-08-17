@@ -43,13 +43,11 @@
                                     <label for="unit"> {{ __('fields.unit') }}</label>
                                     <select id="unit" class="form-control" name="unit_id" required>
                                         <option value="">انتخاب کنید...</option>
-                                        @foreach($units as $unit)
-                                            @if($unit->symbol === 'kg' || $commodity->type !== 'product')
-                                                <option value="{{ $unit->id }}" {{ $commodity->unit_id == $unit->id ? 'selected' : '' }}>
-                                                    {{ $unit->name }} ({{ $unit->symbol }})
-                                                </option>
-                                            @endif
-                                        @endforeach
+                                                                                 @foreach($units as $unit)
+                                             <option value="{{ $unit->id }}" {{ $commodity->unit_id == $unit->id ? 'selected' : '' }}>
+                                                 {{ $unit->name }} ({{ $unit->symbol }})
+                                             </option>
+                                         @endforeach
                                     </select>
                                     <div class="invalid-feedback">واحد را انتخاب کنید</div>
                                 </div>
@@ -94,10 +92,10 @@
                             @if ($commodity->type == 'product')
                                 <div id="product_formul" class="col-lg-12">
                                     <p>فرمول ساخت محصول (مقادیر بر اساس واحد)</p>
-                                    <div class="alert alert-info">
-                                        <i class="ti-info-alt"></i>
-                                        <strong>راهنما:</strong> فرمول ساخت برای هر ۱۸۵ کیلوگرم محصول نهایی تعریف می‌شود.
-                                    </div>
+                                                                         <div class="alert alert-info">
+                                         <i class="ti-info-alt"></i>
+                                         <strong>راهنما:</strong> فرمول ساخت برای هر واحد از محصول نهایی تعریف می‌شود.
+                                     </div>
                                     @foreach($used_materials as $used_material)
                                         <div id="inputFormRow" class="form-row shadow p-4 mb-3">
                                             <div class="form-group col-md-5"><label
@@ -245,10 +243,9 @@
             });
         });
 
-        var preunit = "kg";
-        var warning_limit = 0;
-        var purchase_price = 0;
-        var sales_price = 0;
+                 var warning_limit = 0;
+         var purchase_price = 0;
+         var sales_price = 0;
 
         setTimeout(() => {
 
@@ -264,110 +261,57 @@
             sales_price = $('input[name="sales_price"]').val();
         }
 
-        $('#unit').on('change', function() {
-            const selectedUnit = $(this).find('option:selected');
-            const unitSymbol = selectedUnit.text().match(/\((.*?)\)/)[1];
+                 $('#unit').on('change', function() {
+             const selectedUnit = $(this).find('option:selected');
+             const unitSymbol = selectedUnit.text().match(/\((.*?)\)/)[1];
+             $('.unit_label').text(`(${unitSymbol})`);
+             $('.unit_label2').text(unitSymbol);
+             
+             // Update labels for all units dynamically
+             $('.unit_label').text(`(${unitSymbol})`);
+             $('.unit_label2').text(unitSymbol);
+             
+             // For now, we'll use a simplified approach
+             // In the future, this could be enhanced to use database conversion rates
+             updateUnitLabels(unitSymbol);
+         });
+
+        function updateUnitLabels(unitSymbol) {
+            // Update all unit labels to show the selected unit
             $('.unit_label').text(`(${unitSymbol})`);
             $('.unit_label2').text(unitSymbol);
-            
-            switch (this.value) {
-                case 'kg':
-                    $('.unit_label').text('(کیلوگرم)'); 
-                    modifyinputs(preunit,'kg');
-                    break;
-                case 'barrel':
-                    $('.unit_label').text('(بشکه)'); 
-                    modifyinputs(preunit,'barrel');
-                    break;
-                case 'galon':
-                    $('.unit_label').text('(گالن 20 لیتری)'); 
-                    modifyinputs(preunit,'galon');
-                    break;
-
-                default:
-                    break;
-            }
-        });
-
-        function modifyinputs(oldunit,newunit){
-
-            switch (newunit) {
-                case 'kg':
-                $('input[name="fake_warning_limit"]').val(Math.floor(warning_limit));
-                $('input[name="fake_purchase_price"]').val(Math.floor(purchase_price));
-                $('input[name="fake_sales_price"]').val(Math.floor(sales_price));
-                    break;
-                case 'barrel':
-                $('input[name="fake_warning_limit"]').val(Math.floor(warning_limit/185));
-                $('input[name="fake_purchase_price"]').val(Math.floor(purchase_price*185));
-                $('input[name="fake_sales_price"]').val(Math.floor(sales_price*185));
-                    break;
-                case 'galon':
-                $('input[name="fake_warning_limit"]').val(Math.floor(warning_limit/17.8));
-                $('input[name="fake_purchase_price"]').val(Math.floor(purchase_price*17.8));
-                $('input[name="fake_sales_price"]').val(Math.floor(sales_price*17.8));
-                    break;
-            
-                default:
-                    break;
+        }
+        
+        // Simplified conversion function - in the future this could use database conversion rates
+        function convertValue(value, fromUnit, toUnit) {
+            // For now, we'll use a simple approach
+            // In production, this should use the database conversion rates
+            if (fromUnit === toUnit) {
+                return value;
             }
             
-            preunit = newunit;
+            // This is a placeholder - the actual conversion should come from the database
+            // For now, we'll just return the original value and let the user adjust manually
+            return value;
         }
 
 
         $('input[name="fake_warning_limit"]').on('change keyup paste', function(){
-
-            switch ($('#unit option:selected').val()) {
-                case 'kg':
-                    $('input[name="warning_limit"]').val(Math.floor(this.value));
-                    break;
-                case 'barrel':
-                    $('input[name="warning_limit"]').val(Math.floor(this.value*185));
-                    break;
-                case 'galon':
-                    $('input[name="warning_limit"]').val(Math.floor(this.value*17.8));
-                    break;
-
-                default:
-                    break;
-            }
+            // For now, store the value as-is since we're not doing automatic conversions
+            // In the future, this could use database conversion rates
+            $('input[name="warning_limit"]').val(Math.floor(this.value));
             updatevals();
         })
         $('input[name="fake_sales_price"]').on('change keyup paste', function(){
-
-            switch ($('#unit option:selected').val()) {
-                case 'kg':
-                    $('input[name="sales_price"]').val(Math.floor(this.value));
-                    break;
-                case 'barrel':
-                    $('input[name="sales_price"]').val(Math.floor(this.value/185));
-                    break;
-                case 'galon':
-                    $('input[name="sales_price"]').val(Math.floor(this.value/17.8));
-                    break;
-
-                default:
-                    break;
-            }
+            // For now, store the value as-is since we're not doing automatic conversions
+            // In the future, this could use database conversion rates
+            $('input[name="sales_price"]').val(Math.floor(this.value));
             updatevals();
         })
         $('input[name="fake_purchase_price"]').on('change keyup paste', function(){
-
-            switch ($('#unit option:selected').val()) {
-                case 'kg':
-                    $('input[name="purchase_price"]').val(Math.floor(this.value));
-                    break;
-                case 'barrel':
-                    $('input[name="purchase_price"]').val(Math.floor(this.value/185));
-                    break;
-                case 'galon':
-                    $('input[name="purchase_price"]').val(Math.floor(this.value/17.8));
-                    break;
-
-                default:
-                    break;
-            }
+            // For now, store the value as-is since we're not doing automatic conversions
+            // In the future, this could use database conversion rates
+            $('input[name="purchase_price"]').val(Math.floor(this.value));
             updatevals();
         })
 
@@ -386,16 +330,7 @@
             if (selectedType === 'product') {
                 if (!selectedUnit) {
                     e.preventDefault();
-                    alert('لطفاً واحد کیلوگرم را برای محصول انتخاب کنید.');
-                    $('#unit').focus();
-                    return false;
-                }
-                
-                // Check if the selected unit is kg
-                var unitText = $('#unit option:selected').text();
-                if (!unitText.includes('kg') && !unitText.includes('کیلوگرم')) {
-                    e.preventDefault();
-                    alert('محصولات باید از واحد کیلوگرم استفاده کنند.');
+                    alert('لطفاً واحد را برای محصول انتخاب کنید.');
                     $('#unit').focus();
                     return false;
                 }

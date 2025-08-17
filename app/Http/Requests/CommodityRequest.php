@@ -31,9 +31,9 @@ class CommodityRequest extends FormRequest
             'unit_id' =>['required', 'exists:units,id']
         ];
         
-        // For products, ensure unit is kg only
+        // For products, allow any unit
         if ($this->get('type') == 'product') {
-            $rules['unit_id'] = ['required', Rule::exists('units', 'id')->where('symbol', 'kg')];
+            $rules['unit_id'] = ['required', 'exists:units,id'];
             
             $rules['materials']=['required','array','min:1'];
             $rules['materials.*']=['required',Rule::exists('commodities', 'id')->where('type','material'),'distinct'];
