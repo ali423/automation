@@ -22,7 +22,7 @@ class WithdrawalRequest extends Model
     public function commodities()
     {
         return $this->belongsToMany(Commodity::class, 'withdrawal_commodities', 'withdrawal_id', 'commodity_id')
-            ->withPivot('amount', 'unit_id', 'price')
+            ->withPivot('amount', 'unit_id', 'price', 'pieces_per_box')
             ->with('unit');
     }
     
@@ -93,5 +93,65 @@ class WithdrawalRequest extends Model
                 'world' => NumberToWords::transformNumber('fa', $res),
             ];
         }
+    }
+
+    /**
+     * Get box quantities for each commodity based on user input
+     */
+    public function getBoxQuantitiesAttribute()
+    {
+        $boxQuantities = [];
+        
+        foreach ($this->commodities as $commodity) {
+            $selectedUnitId = $commodity->pivot->unit_id;
+            $amount = $commodity->pivot->amount;
+            $piecesPerBox = $commodity->pivot->pieces_per_box ?? 1;
+            
+            // Convert to pieces first if needed
+            $amountInPieces = $this->convertToPieces($commodity, $amount, $selectedUnitId);
+            
+            if ($amountInPieces !== null) {
+                $boxes = floor($amountInPieces / $piecesPerBox);
+                $remainingPieces = $amountInPieces % $piecesPerBox;
+                
+                $boxQuantities[$commodity->id] = [
+                    'commodity_title' => $commodity->title,
+                    'original_amount' => $amount,
+                    'original_unit' => $commodity->pivot->unit,
+                    'pieces_amount' => $amountInPieces,
+                    'pieces_per_box' => $piecesPerBox,
+                    'total_pieces' => $amountInPieces, // Total pieces for invoice
+                    'boxes' => $boxes,
+                    'remaining_pieces' => $remainingPieces,
+                    'can_calculate' => true
+                ];
+            }
+        }
+        
+        return $boxQuantities;
+    }
+
+    /**
+     * Convert amount to pieces
+     */
+    private function convertToPieces($commodity, $amount, $unitId)
+    {
+        // If the selected unit is the main unit, we can use the amount directly
+        // as the "pieces" equivalent for box calculations
+        if ($unitId === $commodity->unit_id) {
+            return $amount;
+        }
+        
+        // Convert through main unit if possible
+        $commodityUnitService = app(\App\Services\CommodityUnitService::class);
+        $amountInMainUnit = $commodityUnitService->convertToMainUnit($commodity, $amount, $unitId);
+        
+        if ($amountInMainUnit === null) {
+            return null;
+        }
+        
+        // For box calculations, we'll use the main unit amount as the "pieces" equivalent
+        // This allows users to define their own pieces-per-box ratio regardless of the actual unit
+        return $amountInMainUnit;
     }
 }

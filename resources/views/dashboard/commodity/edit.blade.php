@@ -37,6 +37,7 @@
                                             <option value="material">ماده اولیه</option>
                                         @endif
                                     </select>
+                                    <input type="hidden" name="type" value="{{ $commodity->type }}">
                                     <div class="invalid-feedback">نوع کالا را انتخاب کنید</div>
                                 </div>
                                 <div class="form-group col-md-3">
@@ -340,7 +341,7 @@
 
         // Form validation before submission
         $('form').on('submit', function(e) {
-            var selectedType = $('#type').val();
+            var selectedType = $('input[name="type"]').val() || $('#type').val();
             var selectedUnit = $('#unit').val();
             
             if (selectedType === 'product') {

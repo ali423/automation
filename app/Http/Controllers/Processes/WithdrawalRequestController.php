@@ -78,7 +78,7 @@ class WithdrawalRequestController extends Controller
      */
     public function store(CreateWithdrawalRequest $request)
     {
-        $data = $request->only('commodity_id', 'unit_id', 'amount', 'comment', 'price', 'customer_id');
+        $data = $request->only('commodity_id', 'unit_id', 'amount', 'comment', 'price', 'customer_id', 'pieces_per_box');
         
         // Debug: Log the extracted data
         \Log::info('WithdrawalRequestController::store - Extracted data:', $data);
@@ -114,6 +114,13 @@ class WithdrawalRequestController extends Controller
         $withdrawalRequest->load(['commodities' => function ($query) {
             $query->with('unit');
         }]);
+        
+        // Also load the unit for each commodity's pivot data
+        foreach ($withdrawalRequest->commodities as $commodity) {
+            if ($commodity->pivot->unit_id) {
+                $commodity->pivot->unit = \App\Models\Unit::find($commodity->pivot->unit_id);
+            }
+        }
         
         return view('dashboard.processes.withdrawal-request.show', [
             'request' => $withdrawalRequest,
@@ -175,7 +182,7 @@ class WithdrawalRequestController extends Controller
             return redirect()->back()->withErrors($check_expired['error']);
         }
         
-        $data = $request->only('commodity_id', 'unit_id', 'amount', 'comment', 'price', 'customer_id');
+        $data = $request->only('commodity_id', 'unit_id', 'amount', 'comment', 'price', 'customer_id', 'pieces_per_box');
         $this->service->validationSecondLayer($data);
         
         $check_inventory = $this->service->checkWithdrawalData($data);
