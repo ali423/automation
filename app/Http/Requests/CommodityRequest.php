@@ -30,15 +30,15 @@ class CommodityRequest extends FormRequest
             'warning_limit'=>['required','numeric'],
             'unit_id' =>['required', 'exists:units,id']
         ];
-        
+
         // For products, allow any unit
         if ($this->get('type') == 'product') {
             $rules['unit_id'] = ['required', 'exists:units,id'];
-            
+
             $rules['materials']=['required','array','min:1'];
             $rules['materials.*']=['required',Rule::exists('commodities', 'id')->where('type','material'),'distinct'];
             $rules['material_amount']=['required','array','min:1'];
-            $rules['material_amount.*']=['required','numeric','min:0.01'];
+            $rules['material_amount.*']=['required','numeric','min:0.00001'];
             $rules['material_units']=['required','array','min:1'];
             $rules['material_units.*']=['required','exists:units,id']; // Allow any unit for materials
             $rules['sales_price']=['required','integer'];
