@@ -17,5 +17,6 @@ class UnitSeeder extends Seeder
         Unit::create(['name' => 'کیلوگرم', 'symbol' => 'kg']);
         Unit::create(['name' => 'لیتر', 'symbol' => 'L']);
         Unit::create(['name' => 'عدد', 'symbol' => 'pcs']);
+        Unit::create(['name' => 'کارتن', 'symbol' => 'box']);
     }
 }

@@ -7,9 +7,6 @@
 @endsection
 
 @section('content')
-    @php
-        $receiptType = request('receipt_type', 'customer');
-    @endphp
     <div class="row">
         <div class="col-xl-12 box-margin height-card">
             <div class="card card-body">
@@ -18,42 +15,42 @@
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-row col-md-12">
                             <div class="form-group col-md-6">
-                                <label for="exampleInputEmail111"> {{ __('fields.status') }}</label>
+                                <label for="status">{{ __('fields.status') }}</label>
                                 <input type="text" name="status"
                                        value="{{ $request->status ? __('fields.withdrawal-request.status')[$request->status] : '-' }}"
-                                       class="form-control" id="exampleInputEmail111"
+                                       class="form-control" id="status"
                                        placeholder="{{ __('fields.status') }}"
                                        autocomplete="off" disabled>
                             </div>
                             <div class="form-group col-md-6">
-                                <label for="exampleInputEmail111"> {{ __('fields.customer') }}</label>
-                                <input type="text" name="status"
+                                <label for="customer">{{ __('fields.customer') }}</label>
+                                <input type="text" name="customer"
                                        value="{{ $request->customer ? $request->customer->name : 'نامشخص' }}"
-                                       class="form-control" id="exampleInputEmail111"
+                                       class="form-control" id="customer"
                                        placeholder="{{ __('fields.customer') }}"
                                        autocomplete="off" disabled>
                             </div>
                         </div>
                         <div class="form-row col-md-12">
                             <div class="form-group col-md-4">
-                                <label for="exampleInputEmail111"> {{ __('fields.created_at') }}</label>
-                                <input type="text" name="name"
+                                <label for="created_at">{{ __('fields.created_at') }}</label>
+                                <input type="text" name="created_at"
                                        value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}"
-                                       class="form-control" id="exampleInputEmail111"
+                                       class="form-control" id="created_at"
                                        placeholder="{{ __('fields.created_at') }}" autocomplete="off" disabled>
                             </div>
                             <div class="form-group col-md-4">
-                                <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
-                                <input type="text" name="name"
+                                <label for="creator">{{ __('fields.creator') }}</label>
+                                <input type="text" name="creator"
                                        value="سیستم"
-                                       class="form-control" id="exampleInputEmail111"
+                                       class="form-control" id="creator"
                                        placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
                             </div>
                             <div class="form-group col-md-4">
-                                <label for="exampleInputEmail111"> {{ __('fields.importing_request.number') }}</label>
-                                <input type="text" name="status"
+                                <label for="request_number">{{ __('fields.importing_request.number') }}</label>
+                                <input type="text" name="request_number"
                                        value="{{ $request->number}}"
-                                       class="form-control" id="exampleInputEmail111"
+                                       class="form-control" id="request_number"
                                        placeholder="{{ __('fields.importing_request.number') }}"
                                        autocomplete="off" disabled>
                             </div>
@@ -83,36 +80,32 @@
                                 </div>
                                 <div class="form-group col-md-6">
                                     <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
-                                    <select id="commodity_id" class="form-control" name="commodity_id[0]" disabled>
-                                        <option value="{{ $commodity->id }}">{{ $commodity->title }}</option>
-                                    </select>
-                                    <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
+                                    <input type="text" value="{{ $commodity->title }}" class="form-control" disabled>
                                 </div>
                                 <div class="form-group col-md-6">
                                     <label for="unit"> {{ __('fields.unit') }}</label>
                                     <input type="text"
                                         value="{{ $commodity->pivot->unit_id ? (\App\Models\Unit::find($commodity->pivot->unit_id)->name . ' (' . \App\Models\Unit::find($commodity->pivot->unit_id)->symbol . ')') : '-' }}"
-                                        id="unit" name="unit" class="form-control" disabled>
-                                    <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
+                                        class="form-control" disabled>
                                 </div>
 
-                                <div class="form-group col-md-3">
+                                <div class="form-group col-md-4">
                                     <label for="amount"> {{ __('fields.commodity.amount') }}</label>
-                                    <input type="number" value="{{ $commodity->pivot->amount }}" id="amount"
-                                        min="1" name="amount[0]" class="form-control" autocomplete="off"
-                                        placeholder="{{ __('fields.commodity.amount') }}" pattern="[0-9 .]" disabled>
-                                    <div class="invalid-feedback">
-                                        لطفاً {{ __('fields.commodity.amount') }} را وارد کنید.
-                                    </div>
+                                    <input type="text" value="{{ $commodity->pivot->amount }}" class="form-control" disabled>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="pieces_per_box">تعداد در کارتن</label>
+                                    <input type="text" value="{{ $commodity->pivot->pieces_per_box ?? 1 }}" class="form-control" disabled>
                                 </div>
                                 @if(isset($commodity->pivot->price))
-                                    <div class="form-group col-md-3">
+                                    <div class="form-group col-md-4">
                                         <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
-                                        <input type="text" id="price" placeholder="{{ number_format($commodity->pivot->price) }}" class="form-control" disabled>
+                                        <input type="text" value="{{ number_format($commodity->pivot->price) }}" class="form-control" disabled>
                                     </div>
                                 @endif
                             </div>
                         @endforeach
+                        
                         @foreach ($request->comments as $comment)
                             <div class="form-group mb-20">
                                 <label for="comment"> {{ $comment->user ? $comment->user->full_name : 'کاربر نامشخص' }} در تاریخ :
@@ -182,8 +175,7 @@
                                             </div>
                                         </div>
                                         <div class="d-md-flex justify-content-center">
-                                            <a href="#" class="factor factorbtn btn btn-secondary m-1"><i
-                                                    class="ti-printer font-18"></i> چاپ فاکتور</a>
+                                            
                                             <a href="#" class="factor factorbtn2 btn btn-secondary m-1"><i
                                                      class="ti-printer font-18"></i> چاپ فاکتور</a>
                                             <a href="#" class="factor tejaratbtn btn btn-secondary m-1"><i class="ti-printer font-18"></i> چاپ نسخه سامانه تجارت</a>
@@ -211,809 +203,49 @@
             </div>
         </div>
     </div>
-        <!-- <div id="invoice" class="col-xl-12 box-margin height-card showprint">
-            <div class="card card-body">
-                {{-- <h4 class="card-title"></h4> --}}
-                <div class="row">
-                    <div class="col-sm-12 col-xs-12">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <img src="{{ asset('img/logo/darklogo.png') }}" class="logo" />
-                            <div class="text-center">
-                                <h4>
-                                    خروج کالا از انبار
-                                </h4>
-                                <div class="d-none factor customer">( نسخه مشتری )</div>
-                                <div class="d-none factor documentation">( نسخه حسابداری )</div>
-                                <div class="d-none factor warehouse">( نسخه بارگیری )</div>
-                            </div>
-                            <div>تاریخ: <span>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}</span></div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>خریدار/ نماینده خریدار: <span>{{ $request->customer->name }}</span></div>
-                            <div>شماره درخواست: <span>{{$request->number}}</span></div>
-                        </div>
-                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-
-                            <table style="border: none;">
-                            <tr style="border: none;">
-                                <td style="border: none;"></td>
-                                    <td class="text-left" style="border: none; font-weight: bold;">استان: <span> </span></td>
-                                    <td style="border: none;"></td>
-                                    <td style="border: none; font-weight: bold;">شهر:</td>
-                                    <td style="border: none;"></td>
-                                    <td style="border: none;"></td>
-                                    <td style="border: none;"></td>
-                            </tr>    
-                            </table>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                        
-                            <table class="table-borderless" style="border: 0.5px solid #e0e0e0;">
-                                <colgroup>
-                                    <col span="1" style="width: 5%;">
-                                    <col span="1" style="width: 8%;">
-                                    <col span="1" style="width: 40%;">
-                                    <col span="1" style="width: 10%;">
-                                    <col span="1" style="width: 10%;">
-                                    @if($receiptType == 'documentation')
-                                        <col span="1" style="width: 13%;">
-                                        <col span="1" style="width: 14%;">
-                                    @endif
-                                </colgroup>
-                                <tr class="table-header">
-                                    <th scope="col">ردیف</th>
-                                    <th scope="col">کالای ورودی</th>
-                                    <th scope="col">انبار</th>
-                                    <th scope="col">تعداد / مقدار</th>
-                                    <th scope="col">توضیحات</th>
-                                </tr>
-                                @php($i=1)
-                                @foreach($request->commodities as $commodity)
-                                <tr>
-                                    <th scope="row">{{$i}}</th>
-                                    <td>{{$commodity->title}}</td>
-    <td>-</td>
-                                        <td>{{ $commodity->pivot->amount }} {{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name . ' (' . $unit->symbol . ')' : '-') : '-' }}</td>
-                                    <td></td>
-                                </tr>
-                                        @php($i++)
-                                @endforeach
-                            </table>
-                        </div>
-                        <div class="mb-5">
-                            اینجانب <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000">&nbsp;</span>
-                            راننده خودرو به شماره پلاک 
-                            <div class="pelak">&nbsp;&nbsp;</div>
-                            <div class="pelak" style="width: 100px">&nbsp;</div>
-                            شماره تماس <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000">&nbsp;</span>
-                            محموله فوق را تحویل گرفتم.
-                        </div>
-                        <div class="d-flex justify-content-around align-items-center mb-3">
-                            <h6>امضاء تحویل گیرنده کالا</h6>
-                            <h6>امضاء متصدی شرکت</h6>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> -->
-
-        <!-- <div id="invoice-customer" class="invoice col-xl-12 box-margin height-card showprint"> -->
-        <div id="invoice-customer" class="invoice col-xl-12 box-margin height-card showprint d-none" >
-            <div class="card card-body">
-                <div class="row">
-                    <div class="col-sm-12 col-xs-12">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <img src="{{ asset('img/logo/darklogo.png') }}" class="logo" />
-                            <div class="text-center">
-                                <h4>خروج کالا از انبار</h4>
-                                <div class="factor customer">( نسخه مشتری )</div>
-                            </div>
-                            <div>تاریخ: <span>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}</span></div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>خریدار/ نماینده خریدار: <span>{{ $request->customer ? $request->customer->name : 'نامشخص' }}</span></div>
-                            <div>شماره درخواست: <span>{{ $request->number }}</span></div>
-                        </div>
-                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-                            <table style="border: none;">
-                                <tr style="border: none;">
-                                    <td style="border: none;"></td>
-                                    <td class="text-left" style="border: none; font-weight: bold;">استان: <span>{{ $request->customer ? $request->customer->province : '' }}</span></td>
-                                    <td style="border: none;"></td>
-                                    <td style="border: none; font-weight: bold;">شهر: <span>{{ $request->customer ? $request->customer->city : '' }}</span></td>
-                                    <td style="border: none;"></td>
-                                    <td style="border: none;"></td>
-                                    <td style="border: none;"></td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <table class="table-borderless" style="border: 0.5px solid #e0e0e0;">
-                                <colgroup>
-                                    <col span="1" style="width: 5%;">
-                                    <col span="1" style="width: 8%;">
-                                    <col span="1" style="width: 40%;">
-                                    <col span="1" style="width: 10%;">
-                                    <col span="1" style="width: 10%;">
-                                </colgroup>
-                                <thead>
-                                    <tr class="table-header">
-                                        <th scope="col">ردیف</th>
-                                        <th scope="col">برند</th>
-                                        <th scope="col">مدل</th>
-                                        <th scope="col">واحد</th>
-                                        <th scope="col">تعداد</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php($i = 1)
-                                    @foreach($request->commodities as $commodity)
-                                        <tr>
-                                            <td scope="row">{{ $i }}</td>
-                                            <td>{{ $commodity->brand ?? 'زیگما' }}</td>
-                                            <td style="text-align: center;">{{ $commodity->title }}</td>
-                                            <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name : 'نامشخص') : 'نامشخص' }}</td>
-                                            <td>{{ $commodity->pivot->amount }}</td>
-                                        </tr>
-                                        @php($i++)
-                                    @endforeach
-                                    <tr>
-                                        <td colspan="5" class="text-right">مجموع وزن / مقدار: {{ $request->commodities->sum('pivot.amount') }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="mb-5">
-                            اینجانب <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000"> </span>
-                            راننده خودرو به شماره پلاک 
-                            <div class="pelak"> </div>
-                            <div class="pelak" style="width: 100px"> </div>
-                            شماره تماس <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000"> </span>
-                            محموله فوق را تحویل گرفتم.
-                        </div>
-                        <div class="d-flex justify-content-around align-items-center mb-3">
-                            <h6>امضاء تحویل گیرنده کالا</h6>
-                            <h6>امضاء متصدی شرکت</h6>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-            
-
-
-<div id="invoice-documentation" class="invoice col-xl-12 box-margin height-card showprint d-none">
-    <div class="card card-body">
-        <div class="row">
-            <div class="col-sm-12 col-xs-12">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <img src="{{ asset('img/logo/darklogo.png') }}" class="logo" />
-                    <div class="text-center">
-                        <h4>خروج کالا از انبار</h4>
-                        <div class="factor documentation">( نسخه حسابداری )</div>
-                    </div>
-                    <div>تاریخ: <span>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}</span></div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>خریدار/ نماینده خریدار: <span>{{ $request->customer ? $request->customer->name : 'نامشخص' }}</span></div>
-                    <div>شماره درخواست: <span>{{ $request->number }}</span></div>
-                </div>
-                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-                    <table style="border: none;">
-                        <tr style="border: none;">
-                            <td style="border: none;"></td>
-                            <td class="text-left" style="border: none; font-weight: bold;">استان: <span>{{ $request->customer ? $request->customer->province : '' }}</span></td>
-                            <td style="border: none;"></td>
-                            <td style="border: none; font-weight: bold;">شهر: <span>{{ $request->customer ? $request->customer->city : '' }}</span></td>
-                            <td style="border: none;"></td>
-                            <td style="border: none;"></td>
-                            <td style="border: none;"></td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <table class="table-borderless" style="border: 0.5px solid #e0e0e0;">
-                        <colgroup>
-                            <col span="1" style="width: 5%;">
-                            <col span="1" style="width: 8%;">
-                            <col span="1" style="width: 40%;">
-                            <col span="1" style="width: 10%;">
-                            <col span="1" style="width: 10%;">
-                            <col span="1" style="width: 13%;">
-                            <col span="1" style="width: 14%;">
-                        </colgroup>
-                        <thead>
-                            <tr class="table-header">
-                                <th scope="col">ردیف</th>
-                                <th scope="col">برند</th>
-                                <th scope="col">مدل</th>
-                                <th scope="col">واحد</th>
-                                <th scope="col">تعداد</th>
-                                <th scope="col">فی(ریال)</th>
-                                <th scope="col">جمع(ریال)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php($i = 1)
-                            @foreach($request->commodities as $commodity)
-                                <tr>
-                                    <td scope="row">{{ $i }}</td>
-                                    <td>{{ $commodity->brand ?? 'زیگما' }}</td>
-                                    <td style="text-align: center;">{{ $commodity->title }}</td>
-                                    <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name : 'نامشخص') : 'نامشخص' }}</td>
-                                    <td>{{ $commodity->pivot->amount }}</td>
-                                    <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
-                                    <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price) : '-' }}</td>
-                                </tr>
-                                @php($i++)
-                            @endforeach
-                            <tr>
-                                <td colspan="5" class="text-right">مجموع وزن / مقدار: {{ $request->commodities->sum('pivot.amount') }}</td>
-                                <td colspan="2" class="text-right">مجموع: {{ isset($request->total_price) && isset($request->total_price['number']) ? number_format($request->total_price['number']) : '0' }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="mb-5">
-                    اینجانب <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000"> </span>
-                    راننده خودرو به شماره پلاک 
-                    <div class="pelak"> </div>
-                    <div class="pelak" style="width: 100px"> </div>
-                    شماره تماس <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000"> </span>
-                    محموله فوق را تحویل گرفتم.
-                </div>
-                <div class="d-flex justify-content-around align-items-center mb-3">
-                    <h6>امضاء تحویل گیرنده کالا</h6>
-                    <h6>امضاء متصدی شرکت</h6>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="invoice-warehouse" class=" invoice col-xl-12 box-margin height-card showprint d-none">
-    <div class="card card-body">
-        <div class="row">
-            <div class="col-sm-12 col-xs-12">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <img src="{{ asset('img/logo/darklogo.png') }}" class="logo" />
-                    <div class="text-center">
-                        <h4>خروج کالا از انبار</h4>
-                        <div class="factor warehouse">( نسخه بارگیری )</div>
-                    </div>
-                    <div>تاریخ: <span>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}</span></div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>خریدار/ نماینده خریدار: <span>{{ $request->customer ? $request->customer->name : 'نامشخص' }}</span></div>
-                    <div>شماره درخواست: <span>{{ $request->number }}</span></div>
-                </div>
-                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-                    <table style="border: none;">
-                        <tr style="border: none;">
-                            <td style="border: none;"></td>
-                            <td class="text-left" style="border: none; font-weight: bold;">استان: <span>{{ $request->customer ? $request->customer->province : '' }}</span></td>
-                            <td style="border: none;"></td>
-                            <td style="border: none; font-weight: bold;">شهر: <span>{{ $request->customer ? $request->customer->city : '' }}</span></td>
-                            <td style="border: none;"></td>
-                            <td style="border: none;"></td>
-                            <td style="border: none;"></td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <table class="table-borderless" style="border: 0.5px solid #e0e0e0;">
-                        <colgroup>
-                            <col span="1" style="width: 5%;">
-                            <col span="1" style="width: 8%;">
-                            <col span="1" style="width: 40%;">
-                            <col span="1" style="width: 10%;">
-                            <col span="1" style="width: 10%;">
-                        </colgroup>
-                        <thead>
-                            <tr class="table-header">
-                                <th scope="col">ردیف</th>
-                                <th scope="col">برند</th>
-                                <th scope="col">مدل</th>
-                                <th scope="col">واحد</th>
-                                <th scope="col">تعداد</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php($i = 1)
-                            @foreach($request->commodities as $commodity)
-                                <tr>
-                                    <td scope="row">{{ $i }}</td>
-                                    <td>{{ $commodity->brand ?? 'زیگما' }}</td>
-                                    <td style="text-align: center;">{{ $commodity->title }}</td>
-                                    <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name : 'نامشخص') : 'نامشخص' }}</td>
-                                    <td>{{ $commodity->pivot->amount }}</td>
-                                </tr>
-                                @php($i++)
-                            @endforeach
-                            <tr>
-                                <td colspan="5" class="text-right">مجموع وزن / مقدار: {{ $request->commodities->sum('pivot.amount') }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="mb-5">
-                    اینجانب <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000"> </span>
-                    راننده خودرو به شماره پلاک 
-                    <div class="pelak"> </div>
-                    <div class="pelak" style="width: 100px"> </div>
-                    شماره تماس <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000"> </span>
-                    محموله فوق را تحویل گرفتم.
-                </div>
-                <div class="d-flex justify-content-around align-items-center mb-3">
-                    <h6>امضاء تحویل گیرنده کالا</h6>
-                    <h6>امضاء متصدی شرکت</h6>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-        <div id="finvoice" class="col-xl-12 box-margin height-card hideprint">
-            <div class="card card-body">
-                {{-- <h4 class="card-title"></h4> --}}
-                <div class="row">
-                    <div class="col-sm-12 col-xs-12">
-                        <div class="d-flex justify-content-between">
-                            <div class="logo"><img src="{{ asset('img/logo/darklogo.png') }}"/></div>
-                            <div><h4>صورتحساب فروش کالا</h4></div>
-                            <div>
-                                <p>شماره فاکتور: <span>{{$request->number}}</span></p>
-                                <p>تاریخ: <span>{{\Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at))}}</span></p>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-center border">
-                            <div class="text-dark p-1">مشخصات فروشنده</div>
-                        </div>
-                        <table class="table sellerspecs">
-                            <tbody>
-                            <tr>
-                                <td class="text-left">نام شخص حقیقی / حقوقی : شرکت روغن موتور قم<span> </span></td>
-                                <td></td>
-                                <td></td>
-                                <td>شماره اقتصادی : 411134945318</td>
-                                <td></td>
-                                <td>شماره ثبت :</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td class="text-left">استان: <span>قم</span></td>
-                                <td>شهرستان : سلفچگان</td>
-                                <td></td>
-                                <td>کد پستی ده رقمی : 3746139845</td>
-                                <td></td>
-                                <td>شناسه ملی : 10860961755</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td class="text-left">نشانی : <span>شهرک صنعتی سلفچگان - خ سینا - خیابان فتح</span></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td>تلفن / فکس : 02533673907</td>
-                                <td></td>
-                            </tr>
-                            </tbody>
-                        </table> 
-                        <div class="d-flex justify-content-center border">
-                            <div class="text-dark p-1">مشخصات خریدار</div>
-                        </div>
-                        <table class="table customerspecs">
-                            <tbody>
-                            <tr>
-                                <td class="text-left">
-                                     نام خریدار: <span>{{ $request->customer->name.'-'. $request->customer->comp_name}} </span></td>
-                                <td></td>
-                                <td></td>
-                                <td>شماره اقتصادی: {{$request->customer->economic_code}}</td>
-                                <td></td>
-                                <td> شماره ملی:{{ $request->customer->national_code}}</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td class="text-left">استان: <span>{{ $request->customer->province ?? '' }}</span></td>
-                                <td>شهرستان: {{ $request->customer->city ?? '' }}</td>
-                                <td></td>
-                                <td> کدپستی:{{$request->customer->zip_code}}</td>
-                                <td></td>
-                                <td>شهر: {{ $request->customer->city ?? '' }}</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td class="text-left">آدرس: <span>{{$request->customer->address}} </span></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td>تلفن: {{$request->customer->mobile}}</td>
-                                <td></td>
-                            </tr>
-                            </tbody>
-                        </table>
-
-                        <table class="factortable table table-bordered text-center">
-                            <thead>
-                            <tr class="table-secondary">
-                                <th scope="col">ردیف</th>
-                                <th scope="col">کد کالا</th>
-                                <th scope="col">نام کالا</th>
-                                <th scope="col">تعداد / مقدار</th>
-                                <th scope="col">واحد</th>
-                                <th scope="col" colspan="1.5">فی</th>
-                                <th scope="col" colspan="1.5">جمع کل</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            @php($i=1)
-                            @foreach ($request->commodities as $commodity)
-                                <tr>
-                                    <th scope="row">{{$i}}</th>
-                                    <td>{{$commodity->number}}</td>
-                                    <td>{{$commodity->title}}</td>
-                                    <td>{{$commodity->pivot->amount}}</td>
-                                    <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name . ' (' . $unit->symbol . ')' : '-') : '-' }}</td>
-                                    @if(isset($commodity->pivot->price))
-                                    <td>{{number_format($price=$commodity->pivot->price)}}</td>
-                                    <td>{{ number_format($total_price[]=round($commodity->pivot->amount*$price)) }}</td>
-                                    @else
-                                        <td></td>
-                                        <td></td>
-                                    @endif
-                                </tr>
-                                @php($i++)
-                            @endforeach
-                            <tr>
-                                <td colspan="5" rowspan="3" class="text-left" style="vertical-align: top">
-                                    <div class="d-flex justify-content-between">
-                                        <span>شرایط و نحوه تسویه: </span>
-                                        <span>نقدی <span class="border"
-                                                         style="display:inline-block;width:15px;height:15px"></span></span>
-                                        <span>غیرنقدی <span class="border"
-                                                            style="display:inline-block;width:15px;height:15px"></span></span>
-                                    </div>
-                                    <p>توضیحات:</p>
-                                </td>
-                            </tr>
-                            <tr>
-                            <td colspan="3" class="text-left">مالیات بر ارزش افزوده : %10</td>
-                                
-                             </tr>
-                            <tr>
-                                <td colspan="3" class="text-left">جمع کل : 
-                                    @if(isset($request->total_price) && isset($request->total_price['number']))
-                                         {{ number_format($request->total_price['number']) }}
-                                    @else
-                                        0
-                                    @endif
-                                </td>
-                            </tr>
-                            <tr>
-                                @if(isset($request->total_price) && isset($request->total_price['world']))
-                                    <td colspan="2" class="text-left">جمع کل به حروف : {{ $request->total_price['world'] }} ریال </td>
-                                @else
-                                    <td colspan="2" class="text-left">جمع کل به حروف: صفر ریال </td>
-                                @endif
-                            </tr>
-                            <tr>
-                                <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
-                                <td colspan="2" class="text-left">مهر و امضای خریدار:</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="finvoice2" class="col-xl-12 box-margin height-card hideprint d-none">
-    <div class="card card-body">
-        <div class="row">
-            <div class="col-sm-12 col-xs-12">
-                <div class="d-flex justify-content-between">
-                    <div class="logo"><img src="{{ asset('img/logo/darklogo.png') }}"/></div>
-                    <div><h4>صورتحساب فروش کالا </h4></div>
-                    <div>
-                        <p>شماره فاکتور: <span>{{$request->number}}</span></p>
-                        <p>تاریخ: <span>{{\Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at))}}</span></p>
-                        <p>کد فاکتور: {{ $request->number }}-B</p>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-center border">
-                    <div class="text-dark p-1">مشخصات فروشنده</div>
-                </div>
-                <table class="table sellerspecs">
-                    <tbody>
-                    <tr>
-                        <td class="text-left">نام شخص حقیقی / حقوقی : شرکت روغن موتور قم<span> </span></td>
-                        <td></td>
-                        <td></td>
-                        <td>شماره اقتصادی : 411134945318</td>
-                        <td></td>
-                        <td>شماره ثبت :</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td class="text-left">استان: <span>قم</span></td>
-                        <td>شهرستان : سلفچگان</td>
-                        <td></td>
-                        <td>کد پستی ده رقمی : 3746139845</td>
-                        <td></td>
-                        <td>شناسه ملی : 10860961755</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td class="text-left">نشانی : <span>شهرک صنعتی سلفچگان - خ سینا - خیابان فتح</span></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td>تلفن / فکس : 02533673907</td>
-                        <td></td>
-                    </tr>
-                    </tbody>
-                </table>
-                <div class="d-flex justify-content-center border">
-                    <div class="text-dark p-1">مشخصات خریدار</div>
-                </div>
-                <table class="table customerspecs">
-                    <tbody>
-                    <tr>
-                        <td class="text-left">
-                            نام خریدار: <span>{{ $request->customer->name.'-'. $request->customer->comp_name}} </span></td>
-                        <td></td>
-                        <td></td>
-                        <td>شماره اقتصادی: {{$request->customer->economic_code}}</td>
-                        <td></td>
-                        <td> شماره ملی:{{ $request->customer->national_code}}</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td class="text-left">استان: <span>{{ $request->customer->province ?? '' }}</span></td>
-                        <td>شهرستان: {{ $request->customer->city ?? '' }}</td>
-                        <td></td>
-                        <td> کدپستی:{{$request->customer->zip_code}}</td>
-                        <td></td>
-                        <td>شهر: {{ $request->customer->city ?? '' }}</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td class="text-left">آدرس: <span>{{$request->customer->address}} </span></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td>تلفن: {{$request->customer->mobile}}</td>
-                        <td></td>
-                    </tr>
-                    </tbody>
-                </table>
-                <table class="factortable table table-bordered text-center">
-                    <thead>
-                    <tr class="table-secondary">
-                        <th scope="col">ردیف</th>
-                        <th scope="col">کد کالا</th>
-                        <th scope="col">نام کالا</th>
-                        <th scope="col">تعداد / مقدار</th>
-                        <th scope="col">واحد</th>
-                        <th scope="col">تعداد کارتن</th>
-                        <th scope="col">تعداد در کارتن</th>
-                        <th scope="col">فی</th>
-                        <th scope="col">جمع کل</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        @php($i = 1)
-                        @foreach($request->commodities as $commodity)
-                            <tr>
-                                <td scope="row">{{ $i }}</td>
-                                <td>{{ $commodity->number }}</td>
-                                <td>{{ $commodity->title }}</td>
-                                <td>{{ $commodity->pivot->amount }}</td>
-                                <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name : 'نامشخص') : 'نامشخص' }}</td>
-                                <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? ceil($commodity->pivot->amount / 10) : '-') : '-' }}</td>
-                                <td>10</td>
-                                <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
-                                <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price) : '-' }}</td>
-                            </tr>
-                            @php($i++)
-                        @endforeach
-                        <tr>
-                            <td colspan="5" rowspan="4" class="text-left" style="vertical-align: top">
-                                <div class="d-flex justify-content-between">
-                                    <span>شرایط و نحوه تسویه: </span>
-                                    <span>نقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
-                                    <span>غیرنقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
-                                </div>
-                                <p>توضیحات:</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="4" class="text-left"> مالیات بر ارزش افزوده : %10 </td>
-                        </tr>
-                        <tr>
-                            <td colspan="4" class="text-left">جمع کل : {{ isset($request->total_price) && isset($request->total_price['number']) ? number_format($request->total_price['number']) : '0' }}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="6" class="text-left">جمع کل به حروف: 
-                                @if(isset($request->total_price) && isset($request->total_price['world']))
-                                    {{ $request->total_price['world'] }} ریال
-                                @else
-                                    صفر ریال
-                                @endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
-                            <td colspan="6" class="text-left">مهر و امضای خریدار:</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Add a new div for the tejarat invoice -->
-<div id="finvoice-tejarat" class="col-xl-12 box-margin height-card hideprint d-none">
-    <div class="card card-body">
-        <div class="row">
-            <div class="col-sm-12 col-xs-12">
-                <div class="d-flex justify-content-between">
-                    <div class="logo"><img src="{{ asset('img/logo/darklogo.png') }}"/></div>
-                    <div><h4>نسخه سامانه جامع تجارت</h4></div>
-                    <div>
-                        <p>شماره فاکتور: <span>{{$request->number}}</span></p>
-                        <p>تاریخ: <span>{{\Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at))}}</span></p>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-center border">
-                    <div class="text-dark p-1">مشخصات فروشنده</div>
-                </div>
-                <table class="table sellerspecs">
-                    <tbody>
-                    <tr>
-                        <td class="text-left">نام شخص حقیقی / حقوقی : شرکت روغن موتور قم<span> </span></td>
-                        <td></td>
-                        <td></td>
-                        <td>شماره اقتصادی : 411134945318</td>
-                        <td></td>
-                        <td>شماره ثبت :</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td class="text-left">استان: <span>قم</span></td>
-                        <td>شهرستان : سلفچگان</td>
-                        <td></td>
-                        <td>کد پستی ده رقمی : 3746139845</td>
-                        <td></td>
-                        <td>شناسه ملی : 10860961755</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td class="text-left">نشانی : <span>شهرک صنعتی سلفچگان - خ سینا - خیابان فتح</span></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td>تلفن / فکس : 02533673907</td>
-                        <td></td>
-                    </tr>
-                    </tbody>
-                </table>
-                <div class="d-flex justify-content-center border">
-                    <div class="text-dark p-1">مشخصات خریدار</div>
-                </div>
-                <table class="table customerspecs">
-                    <tbody>
-                    <tr>
-                        <td class="text-left">
-                             نام خریدار: <span>{{ $request->customer->name.'-'. $request->customer->comp_name}} </span></td>
-                        <td></td>
-                        <td></td>
-                        <td>شماره اقتصادی: {{$request->customer->economic_code}}</td>
-                        <td></td>
-                        <td> شماره ملی:{{ $request->customer->national_code}}</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td class="text-left">استان: <span>{{ $request->customer->province ?? '' }}</span></td>
-                        <td>شهرستان: {{ $request->customer->city ?? '' }}</td>
-                        <td></td>
-                        <td> کدپستی:{{$request->customer->zip_code}}</td>
-                        <td></td>
-                        <td>شهر: {{ $request->customer->city ?? '' }}</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td class="text-left">آدرس: <span>{{$request->customer->address}} </span></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td>تلفن: {{$request->customer->mobile}}</td>
-                        <td></td>
-                    </tr>
-                    </tbody>
-                </table>
-                <table class="factortable table table-bordered text-center">
-                    <thead>
-                    <tr class="table-secondary">
-                        <th scope="col">ردیف</th>
-                        <th scope="col">کد کالا</th>
-                        <th scope="col">شناسه کالا</th>
-                        <th scope="col">نام کالا</th>
-                        <th scope="col">تعداد / مقدار</th>
-                        <th scope="col">واحد</th>
-                        <th scope="col" colspan="1.5">فی</th>
-                        <th scope="col" colspan="1.5">مالیات بر ارزش افزوده</th>
-                        <th scope="col" colspan="1.5">جمع کل</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        @php($i = 1)
-                        @foreach($request->commodities as $commodity)
-                            <tr>
-                                <td scope="row">{{ $i }}</td>
-                                <td>{{ $commodity->number }}</td>
-                                <td>{{ $commodity->barcode ?? '2923649785421' }}</td>
-                                <td>{{ $commodity->title }}</td>
-                                <td>{{ number_format($commodity->pivot->amount) }}</td>
-                                <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name : 'نامشخص') : 'نامشخص' }}</td>
-                                <td colspan="1.5">{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
-                                <td colspan="1.5">10%</td>
-                                <td colspan="1.5">{{ isset($commodity->pivot->price) ? number_format(round($commodity->pivot->amount * $commodity->pivot->price * 1.1)) : '-' }}</td>
-                            </tr>
-                            @php($i++)
-                        @endforeach
-                        <tr>
-                        <td colspan="5" rowspan="3" class="text-left" style="vertical-align: top">
-                            <div class="d-flex justify-content-between">
-                                <span>شرایط و نحوه تسویه: </span>
-                                <span>نقدی <span class="border"
-                                                 style="display:inline-block;width:15px;height:15px"></span></span>
-                                <span>غیرنقدی <span class="border"
-                                                    style="display:inline-block;width:15px;height:15px"></span></span>
-                            </div>
-                            <p>توضیحات:</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="4" class="text-left">جمع کل : 
-                            @if(isset($request->total_price) && isset($request->total_price['number']))
-                                {{ number_format(round($request->total_price['number'] * 1.1)) }}
-                            @else
-                                0
-                            @endif
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="4" class="text-left">جمع کل به حروف:
-                            @if(isset($request->total_price) && isset($request->total_price['world']))
-                                {{ $request->total_price['world'] }} ریال
-                            @else
-                                صفر ریال
-                            @endif
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
-                        <td colspan="4" class="text-left">مهر و امضای خریدار:</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-    </div>
+    
+    <!-- Invoice Templates -->
+    @include('dashboard.processes.withdrawal-request.partials.invoice-template', ['invoiceType' => 'customer'])
+    @include('dashboard.processes.withdrawal-request.partials.invoice-template', ['invoiceType' => 'documentation'])
+    @include('dashboard.processes.withdrawal-request.partials.invoice-template', ['invoiceType' => 'warehouse'])
+    
+    <!-- Financial Invoice -->
+    @include('dashboard.processes.withdrawal-request.partials.financial-invoice')
+    
+    <!-- Tejarat Invoice -->
+    @include('dashboard.processes.withdrawal-request.partials.tejarat-invoice')
+    
+    <!-- Main Invoice Container -->
+    <div id="finvoice"><div class="factorbtn d-none"></div></div>
 @endsection
 
 @section('page_scripts')
     <!-- These plugins only need for the run this page -->
     <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
     <script src="{{ asset('js/entranceinvoice/entranceinvoice.js') }}"></script>
+    
+    <style>
+        /* Position invoices absolutely when shown to prevent them from affecting page layout */
+        .invoice.showprint, #finvoice2.showprint, #finvoice-tejarat.showprint {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: white !important;
+            z-index: 9999 !important;
+            overflow-y: auto !important;
+            padding: 20px !important;
+        }
+        
+        /* Ensure invoices are hidden by default */
+        .invoice, #finvoice2, #finvoice-tejarat {
+            display: none !important;
+        }
+        
+        /* Override the showprint display for proper positioning */
+        .invoice.showprint, #finvoice2.showprint, #finvoice-tejarat.showprint {
+            display: block !important;
+        }
+    </style>
 @endsection

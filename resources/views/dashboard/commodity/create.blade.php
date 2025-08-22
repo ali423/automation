@@ -74,7 +74,7 @@
                             </div>
 
                             <div id="product_formul" class="col-lg-12">
-                                <p>فرمول ساخت محصول (مقادیر بر اساس واحد)</p>
+                                <p>فرمول ساخت محصول (مقادیر بر اساس واحد: <span id="product_unit_display" class="text-white font-weight-bold"></span>)</p>
                                                                  <div class="alert alert-info">
                                      <i class="ti-info-alt"></i>
                                      <strong>راهنما:</strong> فرمول ساخت برای هر واحد از محصول نهایی تعریف می‌شود.
@@ -176,6 +176,7 @@
             
             // Clear current selection
             unitSelect.val('');
+            updateProductUnitDisplay(); // Clear unit display
             
             if (selectedType === 'product') {
                 // For products, show all units
@@ -209,6 +210,24 @@
                 $('select[name^="material_units"]').removeAttr('required');
             }
         });
+        
+        // Handle unit selection change to update product unit display
+        $('#unit').on('change', function() {
+            updateProductUnitDisplay();
+        });
+        
+        // Function to update product unit display
+        function updateProductUnitDisplay() {
+            var selectedUnit = $('#unit option:selected');
+            var productUnitDisplay = $('#product_unit_display');
+            
+            if (selectedUnit.val() && $('#type').val() === 'product') {
+                var unitName = selectedUnit.text();
+                productUnitDisplay.text(unitName);
+            } else {
+                productUnitDisplay.text('');
+            }
+        }
         
         // Trigger type change on page load if type is already selected
         $(document).ready(function() {

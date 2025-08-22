@@ -37,6 +37,7 @@
                                             <option value="material">ماده اولیه</option>
                                         @endif
                                     </select>
+                                    <input type="hidden" name="type" value="{{ $commodity->type }}">
                                     <div class="invalid-feedback">نوع کالا را انتخاب کنید</div>
                                 </div>
                                 <div class="form-group col-md-3">
@@ -91,7 +92,7 @@
 
                             @if ($commodity->type == 'product')
                                 <div id="product_formul" class="col-lg-12">
-                                    <p>فرمول ساخت محصول (مقادیر بر اساس واحد)</p>
+                                    <p>فرمول ساخت محصول (مقادیر بر اساس واحد: <span id="product_unit_display" class="text-white font-weight-bold">{{ $commodity->unit ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : '' }}</span>)</p>
                                                                          <div class="alert alert-info">
                                          <i class="ti-info-alt"></i>
                                          <strong>راهنما:</strong> فرمول ساخت برای هر واحد از محصول نهایی تعریف می‌شود.
@@ -271,6 +272,9 @@
              $('.unit_label').text(`(${unitSymbol})`);
              $('.unit_label2').text(unitSymbol);
              
+             // Update product unit display in formula section
+             updateProductUnitDisplay();
+             
              // For now, we'll use a simplified approach
              // In the future, this could be enhanced to use database conversion rates
              updateUnitLabels(unitSymbol);
@@ -280,6 +284,19 @@
             // Update all unit labels to show the selected unit
             $('.unit_label').text(`(${unitSymbol})`);
             $('.unit_label2').text(unitSymbol);
+        }
+        
+        // Function to update product unit display in formula section
+        function updateProductUnitDisplay() {
+            var selectedUnit = $('#unit option:selected');
+            var productUnitDisplay = $('#product_unit_display');
+            
+            if (selectedUnit.val()) {
+                var unitName = selectedUnit.text();
+                productUnitDisplay.text(unitName);
+            } else {
+                productUnitDisplay.text('');
+            }
         }
         
         // Simplified conversion function - in the future this could use database conversion rates
@@ -324,7 +341,7 @@
 
         // Form validation before submission
         $('form').on('submit', function(e) {
-            var selectedType = $('#type').val();
+            var selectedType = $('input[name="type"]').val() || $('#type').val();
             var selectedUnit = $('#unit').val();
             
             if (selectedType === 'product') {

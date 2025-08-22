@@ -59,7 +59,7 @@
 
                         @if($commodity->type == 'product')
                             <div id="product_formul" class="col-lg-12">
-                                <p>فرمول ساخت محصول (مقادیر بر اساس واحد)</p>
+                                <p>فرمول ساخت محصول (مقادیر بر اساس واحد: <span class="text-white font-weight-bold">{{ $commodity->unit ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : '' }}</span>)</p>
                                 <div id="inputFormRow" class="form-row shadow p-4 mb-3">
                                     @foreach ($materials as $material)
                                         <div class="form-group col-md-5">
