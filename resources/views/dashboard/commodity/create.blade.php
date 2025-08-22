@@ -95,10 +95,10 @@
                                     <div class="form-group col-md-3">
                                         <label
                                             for="material_amount">{{ __('fields.commodity.material_amount') }}</label>
-                                        <input type="number" step="0.01" name="material_amount[0]" class="form-control"
+                                        <input type="number" step="0.00001" name="material_amount[0]" class="form-control"
                                                id="material_amount"
                                                placeholder="{{ __('fields.commodity.material_amount') }}"
-                                               min="0.01">
+                                               min="0.00001">
                                         <div class="invalid-feedback">
                                             لطفاً {{ __('fields.commodity.material_amount') }} را وارد کنید
                                         </div>
@@ -289,7 +289,7 @@
         $("#addRow").click(function () {
             var selectedType = $('#type').val();
             var requiredAttr = selectedType === 'product' ? 'required' : '';
-            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"><div class="form-group col-md-5"><label for="materials"> {{ __("fields.commodity.material_type") }}</label><select id="materials" class="form-control material-select" name="materials[1]" onchange="loadMaterialUnits(this)" ' + requiredAttr + '><option value="">انتخاب کنید...</option>@foreach ($materials as $material)<option value="{{ $material->id }}">{{ $material->title }}</option>@endforeach</select><div class="invalid-feedback">{{ __("fields.commodity.material_type") }} را انتخاب کنید</div></div><div class="form-group col-md-3"><label for="material_amount">{{ __("fields.commodity.material_amount") }}</label><input type="number" step="0.01" name="material_amount[0]" class="form-control"id="material_amount"placeholder="{{ __("fields.commodity.material_amount") }}" min="0.01" ' + requiredAttr + '><div class="invalid-feedback">لطفاً {{ __("fields.commodity.material_amount") }} را وارد کنید</div></div><div class="form-group col-md-2"><label for="material_unit">{{ __("fields.unit") }}</label><select name="material_units[0]" class="form-control material-unit-select" ' + requiredAttr + '><option value="">انتخاب کنید...</option></select><div class="invalid-feedback">واحد را انتخاب کنید</div></div><div class="form-group col-sm-auto"><label for="" class="d-none d-md-block">&nbsp;</label><button id="removeRowbtn" type="button" class="btn btn-danger btn-block py-2">حذف</button></div></div>';
+            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"><div class="form-group col-md-5"><label for="materials"> {{ __("fields.commodity.material_type") }}</label><select id="materials" class="form-control material-select" name="materials[1]" onchange="loadMaterialUnits(this)" ' + requiredAttr + '><option value="">انتخاب کنید...</option>@foreach ($materials as $material)<option value="{{ $material->id }}">{{ $material->title }}</option>@endforeach</select><div class="invalid-feedback">{{ __("fields.commodity.material_type") }} را انتخاب کنید</div></div><div class="form-group col-md-3"><label for="material_amount">{{ __("fields.commodity.material_amount") }}</label><input type="number" step="0.00001" name="material_amount[0]" class="form-control"id="material_amount"placeholder="{{ __("fields.commodity.material_amount") }}" min="0.00001" ' + requiredAttr + '><div class="invalid-feedback">لطفاً {{ __("fields.commodity.material_amount") }} را وارد کنید</div></div><div class="form-group col-md-2"><label for="material_unit">{{ __("fields.unit") }}</label><select name="material_units[0]" class="form-control material-unit-select" ' + requiredAttr + '><option value="">انتخاب کنید...</option></select><div class="invalid-feedback">واحد را انتخاب کنید</div></div><div class="form-group col-sm-auto"><label for="" class="d-none d-md-block">&nbsp;</label><button id="removeRowbtn" type="button" class="btn btn-danger btn-block py-2">حذف</button></div></div>';
 
             $('#newRow').append(html);
 

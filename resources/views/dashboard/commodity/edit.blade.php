@@ -119,12 +119,12 @@
                                             <div class="form-group col-md-3">
                                                 <label
                                                     for="material_amount">{{ __("fields.commodity.material_amount") }}</label>
-                                                <input type="number" step="0.01" name="material_amount[]"
+                                                <input type="number" step="0.00001" name="material_amount[]"
                                                        class="form-control"
                                                        id="material_amount"
                                                        value="{{ $used_material->pivot->amount }}"
                                                        placeholder="{{ __("fields.commodity.material_amount") }}"
-                                                       min="0.01" required="">
+                                                       min="0.00001" required="">
                                                 <div class="invalid-feedback">
                                                     لطفاً {{ __("fields.commodity.material_amount") }}
                                                     را وارد کنید
@@ -174,14 +174,14 @@
         function loadMaterialUnits(materialSelect) {
             var materialId = materialSelect.value;
             var unitSelect = materialSelect.closest('#inputFormRow').querySelector('.material-unit-select');
-            
+
             // Clear unit options first
             unitSelect.innerHTML = '<option value="">انتخاب کنید...</option>';
-            
+
             if (!materialId) {
                 return;
             }
-            
+
             // Get selectable units from preloaded data
             var units = materialUnitsData[materialId];
             if (units) {
@@ -193,24 +193,24 @@
                 });
             }
         }
-        
+
         // Initialize existing material rows on page load
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.material-select').forEach(function(materialSelect) {
                 if (materialSelect.value) {
                     loadMaterialUnits(materialSelect);
-                    
+
                     // Set the selected unit for existing materials
                     var unitSelect = materialSelect.closest('#inputFormRow').querySelector('.material-unit-select');
                     var selectedUnitId = '{{ $commodity->unit_id }}'; // Default to product unit
-                    
+
                     // Try to get the unit from the pivot data if available
                     @foreach($used_materials as $used_material)
                         if (materialSelect.value == {{ $used_material->id }}) {
                             selectedUnitId = '{{ $used_material->pivot->unit_id ?? $commodity->unit_id }}';
                         }
                     @endforeach
-                    
+
                     // Set the selected option after units are loaded
                     setTimeout(function() {
                         if (unitSelect && selectedUnitId) {
@@ -220,10 +220,10 @@
                 }
             });
         });
-        
+
         // add row
         $("#addRow").click(function () {
-            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"><div class="form-group col-md-5"><label for="materials"> {{ __("fields.commodity.material_type") }}</label><select id="materials" class="form-control material-select" name="materials[1]" onchange="loadMaterialUnits(this)" required><option value="">انتخاب کنید...</option>@foreach ($materials as $material)<option value="{{ $material->id }}">{{ $material->title }}</option>@endforeach</select><div class="invalid-feedback">{{ __("fields.commodity.material_type") }} را انتخاب کنید</div></div><div class="form-group col-md-3"><label for="material_amount">{{ __("fields.commodity.material_amount") }}</label><input type="number" step="0.01" name="material_amount[0]" class="form-control"id="material_amount"placeholder="{{ __("fields.commodity.material_amount") }}" min="0.01" required=""><div class="invalid-feedback">لطفاً {{ __("fields.commodity.material_amount") }} را وارد کنید</div></div><div class="form-group col-md-2"><label for="material_unit">{{ __("fields.unit") }}</label><select name="material_units[0]" class="form-control material-unit-select" required><option value="">انتخاب کنید...</option></select><div class="invalid-feedback">واحد را انتخاب کنید</div></div><div class="form-group col-sm-auto"><label for="" class="d-none d-md-block">&nbsp;</label></div><i id="removeRow" type="submit" class="ti-close"></i></div>';
+            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"><div class="form-group col-md-5"><label for="materials"> {{ __("fields.commodity.material_type") }}</label><select id="materials" class="form-control material-select" name="materials[1]" onchange="loadMaterialUnits(this)" required><option value="">انتخاب کنید...</option>@foreach ($materials as $material)<option value="{{ $material->id }}">{{ $material->title }}</option>@endforeach</select><div class="invalid-feedback">{{ __("fields.commodity.material_type") }} را انتخاب کنید</div></div><div class="form-group col-md-3"><label for="material_amount">{{ __("fields.commodity.material_amount") }}</label><input type="number" step="0.00001" name="material_amount[0]" class="form-control"id="material_amount"placeholder="{{ __("fields.commodity.material_amount") }}" min="0.00001" required=""><div class="invalid-feedback">لطفاً {{ __("fields.commodity.material_amount") }} را وارد کنید</div></div><div class="form-group col-md-2"><label for="material_unit">{{ __("fields.unit") }}</label><select name="material_units[0]" class="form-control material-unit-select" required><option value="">انتخاب کنید...</option></select><div class="invalid-feedback">واحد را انتخاب کنید</div></div><div class="form-group col-sm-auto"><label for="" class="d-none d-md-block">&nbsp;</label></div><i id="removeRow" type="submit" class="ti-close"></i></div>';
 
             $('#newRow').append(html);
 
@@ -267,14 +267,14 @@
              const unitSymbol = selectedUnit.text().match(/\((.*?)\)/)[1];
              $('.unit_label').text(`(${unitSymbol})`);
              $('.unit_label2').text(unitSymbol);
-             
+
              // Update labels for all units dynamically
              $('.unit_label').text(`(${unitSymbol})`);
              $('.unit_label2').text(unitSymbol);
-             
+
              // Update product unit display in formula section
              updateProductUnitDisplay();
-             
+
              // For now, we'll use a simplified approach
              // In the future, this could be enhanced to use database conversion rates
              updateUnitLabels(unitSymbol);
@@ -285,12 +285,12 @@
             $('.unit_label').text(`(${unitSymbol})`);
             $('.unit_label2').text(unitSymbol);
         }
-        
+
         // Function to update product unit display in formula section
         function updateProductUnitDisplay() {
             var selectedUnit = $('#unit option:selected');
             var productUnitDisplay = $('#product_unit_display');
-            
+
             if (selectedUnit.val()) {
                 var unitName = selectedUnit.text();
                 productUnitDisplay.text(unitName);
@@ -298,7 +298,7 @@
                 productUnitDisplay.text('');
             }
         }
-        
+
         // Simplified conversion function - in the future this could use database conversion rates
         function convertValue(value, fromUnit, toUnit) {
             // For now, we'll use a simple approach
@@ -306,7 +306,7 @@
             if (fromUnit === toUnit) {
                 return value;
             }
-            
+
             // This is a placeholder - the actual conversion should come from the database
             // For now, we'll just return the original value and let the user adjust manually
             return value;
@@ -343,7 +343,7 @@
         $('form').on('submit', function(e) {
             var selectedType = $('input[name="type"]').val() || $('#type').val();
             var selectedUnit = $('#unit').val();
-            
+
             if (selectedType === 'product') {
                 if (!selectedUnit) {
                     e.preventDefault();
