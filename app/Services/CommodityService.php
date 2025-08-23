@@ -25,6 +25,7 @@ class CommodityService extends BaseService
                 'purchase_price' => $data['purchase_price'],
                 'warning_limit'=>$data['warning_limit'],
                 'unit_id' => $data['unit_id'],
+                'pieces_per_box' => $data['pieces_per_box'],
             ]);
         } else {
             // Create the product first
@@ -34,7 +35,8 @@ class CommodityService extends BaseService
                 'sales_price' => $data['sales_price'],
                 'type' => $data['type'],
                 'warning_limit'=>$data['warning_limit'],
-                'unit_id' => $data['unit_id']
+                'unit_id' => $data['unit_id'],
+                'pieces_per_box' => $data['pieces_per_box'],
             ]);
             
             // Prepare materials data for unit-based formula
@@ -60,8 +62,8 @@ class CommodityService extends BaseService
                 'title' => $data['title'],
                 'sales_price' => null,
                 'warning_limit'=>$data['warning_limit'],
-                'unit_id' => $data['unit_id']
-
+                'unit_id' => $data['unit_id'],
+                'pieces_per_box' => $data['pieces_per_box'],
             ]);
         } else {
             // Update the product first
@@ -69,7 +71,8 @@ class CommodityService extends BaseService
                 'title' => $data['title'],
                 'sales_price' => $data['sales_price'],
                 'warning_limit'=>$data['warning_limit'],
-                'unit_id' => $data['unit_id']
+                'unit_id' => $data['unit_id'],
+                'pieces_per_box' => $data['pieces_per_box'],
             ]);
             
             // Prepare materials data for unit-based formula

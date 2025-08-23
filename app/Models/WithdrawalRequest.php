@@ -22,7 +22,7 @@ class WithdrawalRequest extends Model
     public function commodities()
     {
         return $this->belongsToMany(Commodity::class, 'withdrawal_commodities', 'withdrawal_id', 'commodity_id')
-            ->withPivot('amount', 'unit_id', 'price', 'pieces_per_box')
+            ->withPivot('amount', 'unit_id', 'price')
             ->with('unit');
     }
     
@@ -105,7 +105,7 @@ class WithdrawalRequest extends Model
         foreach ($this->commodities as $commodity) {
             $selectedUnitId = $commodity->pivot->unit_id;
             $amount = $commodity->pivot->amount;
-            $piecesPerBox = $commodity->pivot->pieces_per_box ?? 1;
+            $piecesPerBox = $commodity->pieces_per_box ?? 1;
             
             // Convert to pieces first if needed
             $amountInPieces = $this->convertToPieces($commodity, $amount, $selectedUnitId);

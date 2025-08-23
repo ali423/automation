@@ -45,6 +45,12 @@
                                     </select>
                                     <div class="invalid-feedback">واحد را انتخاب کنید</div>
                                 </div>
+                                <div class="form-group col-md-3">
+                                    <label for="pieces_per_box">تعداد در کارتن</label>
+                                    <input type="number" name="pieces_per_box" value="{{ old('pieces_per_box', 1) }}" class="form-control"
+                                           id="pieces_per_box" min="1" placeholder="مثال: 24" required="">
+                                    <div class="invalid-feedback">لطفاً تعداد در کارتن را وارد کنید</div>
+                                </div>
                             </div>
                             <div class="form-row">
                                 <div class="form-group col-md-6">

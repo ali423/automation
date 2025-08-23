@@ -24,7 +24,6 @@
                             <th> {{ __('fields.commodity.number') }}</th>
                             <th> {{ __('fields.base_price') }}</th>
                             <th> {{ __('fields.type') }}</th>
-                            <th>{{ __('fields.avr_purchase_price') }}</th>
                             <th>{{ __('fields.unit') }}</th>
                             <th>{{ __('fields.details') }}</th>
                         </tr>
@@ -39,11 +38,6 @@
                                 <td>{{ $commodity->number }}</td>
                                 <td>{{ number_format($commodity->base_price) }}</td>
                                 <td>{{ __('fields.commodity.types')[$commodity->type] }}</td>
-                                @if(isset($commodity->avr_price))
-                                    <td>{{number_format($commodity->avr_price)}}</td>
-                                @else
-                                    <td>-</td>
-                                @endif
                                 <td>{{ $commodity->unit ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : '-' }}</td>
                                 <td><a href="{{ route('commodity.show', $commodity) }}" class=""><i
                                             class="ti-more-alt font-24"></i></a>
@@ -97,7 +91,7 @@
                     text: "کپی",
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [6, 5, 4, 3, 2, 1, 0],
+                        columns: [5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         },
@@ -105,56 +99,54 @@
                     }
                 },
                     {
-                        extend: 'pdf',
-                        text: 'pdf',
-                        className: 'btn btn-outline-primary',
-                        exportOptions: {
-                            columns: [6, 5, 4, 3, 2, 1, 0],
-                            modifier: {
-                                page: 'current'
-                            },
-                            orthogonal: "rtlexport"
+                                            extend: 'pdf',
+                    text: 'pdf',
+                    className: 'btn btn-outline-primary',
+                    exportOptions: {
+                        columns: [5, 4, 3, 2, 1, 0],
+                        modifier: {
+                            page: 'current'
                         },
+                        orthogonal: "rtlexport"
+                    },
                         customize: function (doc) {
                             doc.defaultStyle.font = "IRANSansWeb";
-                            doc.content[1].table.widths = ['20%', '20%', '20%', '20%', '20%', '20%',
-                                '20%'
-                            ];
+                            doc.content[1].table.widths = ['20%', '20%', '20%', '20%', '20%', '20%', '20%'];
                             doc.styles.tableBodyEven.alignment = 'center';
                             doc.styles.tableBodyOdd.alignment = 'center';
                         }
                     },
                     {
-                        extend: 'excel',
-                        className: 'btn btn-outline-primary',
-                        exportOptions: {
-                            columns: [6, 5, 4, 3, 2, 1, 0],
-                            modifier: {
-                                page: 'current'
-                            }
+                                            extend: 'excel',
+                    className: 'btn btn-outline-primary',
+                    exportOptions: {
+                        columns: [5, 4, 3, 2, 1, 0],
+                        modifier: {
+                            page: 'current'
                         }
+                    }
                     },
                     {
-                        extend: 'csv',
-                        className: 'btn btn-outline-primary',
-                        exportOptions: {
-                            columns: [6, 5, 4, 3, 2, 1, 0],
-                            modifier: {
-                                page: 'current'
-                            }
+                                            extend: 'csv',
+                    className: 'btn btn-outline-primary',
+                    exportOptions: {
+                        columns: [5, 4, 3, 2, 1, 0],
+                        modifier: {
+                            page: 'current'
                         }
+                    }
                     },
                     {
-                        extend: 'print',
-                        text: "پرینت",
-                        className: 'btn btn-outline-primary',
-                        exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5, 6],
-                            modifier: {
-                                page: 'current'
-                            },
-                            orthogonal: "rtlexport"
-                        }
+                                            extend: 'print',
+                    text: "پرینت",
+                    className: 'btn btn-outline-primary',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 4, 5],
+                        modifier: {
+                            page: 'current'
+                        },
+                        orthogonal: "rtlexport"
+                    }
                     }
                 ],
                 columnDefs: [{

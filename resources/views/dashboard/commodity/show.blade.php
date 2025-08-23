@@ -26,6 +26,10 @@
                                 <input type="text" value="{{ $commodity->unit ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : '-' }}" class="form-control" disabled>
                             </div>
                             <div class="form-group col-md-3">
+                                <label>تعداد در کارتن</label>
+                                <input type="text" value="{{ $commodity->pieces_per_box ?? 1 }}" class="form-control" disabled>
+                            </div>
+                            <div class="form-group col-md-3">
                                 @if(!empty($commodity->sales_price))
                                     <label>{{ __('fields.sales_price') }} هر {{ $commodity->unit ? $commodity->unit->symbol : '' }}</label>
                                     <input type="text" value="{{ number_format($commodity->sales_price) }}" class="form-control" disabled>

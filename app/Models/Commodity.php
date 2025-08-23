@@ -20,6 +20,7 @@ class Commodity extends Model
         'purchase_price',
         'warning_limit',
         'unit_id',
+        'pieces_per_box',
     ];
 
     public function unit(){
