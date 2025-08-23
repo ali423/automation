@@ -45,14 +45,14 @@
                                     </select>
                                     <div class="invalid-feedback">واحد را انتخاب کنید</div>
                                 </div>
+                            </div>
+                            <div class="form-row">
                                 <div class="form-group col-md-3">
                                     <label for="pieces_per_box">تعداد در کارتن</label>
                                     <input type="number" name="pieces_per_box" value="{{ old('pieces_per_box', 1) }}" class="form-control"
                                            id="pieces_per_box" min="1" placeholder="مثال: 24" required="">
                                     <div class="invalid-feedback">لطفاً تعداد در کارتن را وارد کنید</div>
                                 </div>
-                            </div>
-                            <div class="form-row">
                                 <div class="form-group col-md-6">
                                     <label for="fake_warning_limit"> {{ __('fields.warning_limit') }} <span class="unit_label">(کیلوگرم)</span></label>
                                     <input type="number" step="0.01" name="fake_warning_limit"
@@ -61,7 +61,7 @@
                                            <input type="number" name="warning_limit" class="d-none">
                                     <div class="invalid-feedback">{{ __('fields.warning_limit') }} را وارد کنید</div>
                                 </div>
-                                <div id="sales_price" class="form-group col-md-6">
+                                <div id="sales_price" class="form-group col-md-3">
                                     <label for="fake_sales_price"> {{ __('fields.sales_price') }} هر <span class="unit_label2">کیلوگرم</span> (ریال)</label>
                                     <input type="number" step="0.01" min="100" name="fake_sales_price"
                                            value="{{ old('sales_price') }}"
@@ -69,6 +69,8 @@
                                            <input type="number" name="sales_price" class="d-none">
                                     <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
                                 </div>
+                            </div>
+                            <div class="form-row">
                                 <div id="purchase_price" class="form-group col-md-6">
                                     <label for="fake_purchase_price"> {{ __('fields.purchase_price') }} هر <span class="unit_label2">کیلوگرم</span> (ریال)</label>
                                     <input type="number" step="0.01" min="100" name="fake_purchase_price"
