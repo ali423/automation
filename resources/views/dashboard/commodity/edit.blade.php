@@ -45,17 +45,18 @@
                                     <select id="unit" class="form-control" name="unit_id" required>
                                         <option value="">انتخاب کنید...</option>
                                                                                  @foreach($units as $unit)
-                                             <option value="{{ $unit->id }}" {{ $commodity->unit_id == $unit->id ? 'selected' : '' }}>
-                                                 {{ $unit->name }} ({{ $unit->symbol }})
-                                             </option>
-                                         @endforeach
+                                              <option value="{{ $unit->id }}" {{ $commodity->unit_id == $unit->id ? 'selected' : '' }}>
+                                                  {{ $unit->name }} ({{ $unit->symbol }}) }}
+                                              </option>
+                                          @endforeach
                                     </select>
                                     <div class="invalid-feedback">واحد را انتخاب کنید</div>
                                 </div>
-                                <div class="form-group col-md-3">
+                                <div class="form-group col-md-3" id="pieces_per_box_group" @if($commodity->type == 'material') style="display: none;" @endif>
                                     <label for="pieces_per_box">تعداد در کارتن</label>
                                     <input type="number" name="pieces_per_box" value="{{ $commodity->pieces_per_box ?? 1 }}" class="form-control"
-                                           id="pieces_per_box" min="1" placeholder="مثال: 24" required="">
+                                           id="pieces_per_box" min="1" placeholder="مثال: 24" 
+                                           @if($commodity->type == 'product') required @endif>
                                     <div class="invalid-feedback">لطفاً تعداد در کارتن را وارد کنید</div>
                                 </div>
                             </div>
@@ -242,7 +243,7 @@
         });
 
                  var warning_limit = 0;
-         var purchase_price = 0;
+          var purchase_price = 0;
 
         setTimeout(() => {
 

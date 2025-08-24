@@ -15,44 +15,67 @@
                         <!-- Basic Information -->
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label>{{ __('fields.title') }}</label>
-                                <input type="text" value="{{ $commodity->title }}" class="form-control" disabled>
-                            </div>
-                            <div class="form-group col-md-6">
                                 <label>{{ __('fields.commodity.number') }}</label>
                                 <input type="text" value="{{ $commodity->number }}" class="form-control" disabled>
                             </div>
+                            <div class="form-group col-md-6">
+                                <label>{{ __('fields.title') }}</label>
+                                <input type="text" value="{{ $commodity->title }}" class="form-control" disabled>
+                            </div>
                         </div>
                         
                         <div class="form-row">
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-6">
                                 <label>{{ __('fields.type') }}</label>
                                 <input type="text" value="{{ __('fields.commodity.types')[$commodity->type] }}" class="form-control" disabled>
                             </div>
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-6">
                                 <label>{{ __('fields.unit') }}</label>
                                 <input type="text" value="{{ $commodity->unit ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : '-' }}" class="form-control" disabled>
-                            </div>
-                            <div class="form-group col-md-4">
-                                <label>تعداد در کارتن</label>
-                                <input type="text" value="{{ $commodity->pieces_per_box ?? 1 }}" class="form-control" disabled>
                             </div>
                         </div>
                         
                         <div class="form-row">
-                            <div class="form-group col-md-4">
+                            @if($commodity->type == 'product')
+                            <div class="form-group col-md-6">
+                                <label>تعداد در کارتن</label>
+                                <input type="text" value="{{ $commodity->pieces_per_box ?? 1 }}" class="form-control" disabled>
+                            </div>
+                            <div class="form-group col-md-6">
                                 <label>{{ __('fields.warning_limit') }} ({{ $commodity->unit ? $commodity->unit->symbol : '' }})</label>
                                 <input type="text" value="{{ number_format($commodity->warning_limit) }}" class="form-control" disabled>
                             </div>
-                            <div class="form-group col-md-4">
+                            @else
+                            <div class="form-group col-md-6">
+                                <label>{{ __('fields.warning_limit') }} ({{ $commodity->unit ? $commodity->unit->symbol : '' }})</label>
+                                <input type="text" value="{{ number_format($commodity->warning_limit) }}" class="form-control" disabled>
+                            </div>
+                            <div class="form-group col-md-6">
                                 <label>{{ __('fields.created_at') }}</label>
                                 <input type="text" value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($commodity->created_at)) }}" class="form-control" disabled>
                             </div>
-                            <div class="form-group col-md-4">
+                            @endif
+                        </div>
+                        
+                        @if($commodity->type == 'product')
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>{{ __('fields.created_at') }}</label>
+                                <input type="text" value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($commodity->created_at)) }}" class="form-control" disabled>
+                            </div>
+                            <div class="form-group col-md-6">
                                 <label>{{ __('fields.creator') }}</label>
                                 <input type="text" value="{{ isset($commodity->creator_user) ? $commodity->creator_user->full_name : 'سیستم' }}" class="form-control" disabled>
                             </div>
                         </div>
+                        @else
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>{{ __('fields.creator') }}</label>
+                                <input type="text" value="{{ isset($commodity->creator_user) ? $commodity->creator_user->full_name : 'سیستم' }}" class="form-control" disabled>
+                            </div>
+                        </div>
+                        @endif
                         
                         <!-- Financial Information -->
                         <div class="form-row">

@@ -14,7 +14,7 @@ class AddPiecesPerBoxToCommoditiesTable extends Migration
     public function up()
     {
         Schema::table('commodities', function (Blueprint $table) {
-            $table->integer('pieces_per_box')->default(1)->after('unit_id');
+            $table->integer('pieces_per_box')->nullable()->after('unit_id');
         });
     }
 

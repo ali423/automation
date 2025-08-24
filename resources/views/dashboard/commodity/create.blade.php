@@ -47,7 +47,7 @@
                                 </div>
                             </div>
                             <div class="form-row">
-                                <div class="form-group col-md-3">
+                                <div class="form-group col-md-3" id="pieces_per_box_group" style="display: none;">
                                     <label for="pieces_per_box">تعداد در کارتن</label>
                                     <input type="number" name="pieces_per_box" value="{{ old('pieces_per_box', 1) }}" class="form-control"
                                            id="pieces_per_box" min="1" placeholder="مثال: 24" required="">
@@ -74,7 +74,7 @@
                                     <input type="number" step="0.01" min="100" name="purchase_price"
                                            value="{{ old('purchase_price') }}" class="form-control"
                                            placeholder="{{ __('fields.purchase_price') }}" required>
-                                   <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
+                                    <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
                                 </div>
                             </div>
 
@@ -180,12 +180,15 @@
             if (selectedType === 'product') {
                 $('input[name="purchase_price"]').removeAttr('required');
                 $('input[name="profit_margin"]').attr('required', 'required');
+                $('#pieces_per_box_group').show();
             } else if (selectedType === 'material') {
                 $('input[name="purchase_price"]').attr('required', 'required');
                 $('input[name="profit_margin"]').removeAttr('required');
+                $('#pieces_per_box_group').hide();
             } else {
                 $('input[name="purchase_price"]').removeAttr('required');
                 $('input[name="profit_margin"]').removeAttr('required');
+                $('#pieces_per_box_group').hide();
             }
         });
         
@@ -209,6 +212,9 @@
         
         // Trigger type change on page load if type is already selected
         $(document).ready(function() {
+            // Hide pieces_per_box field by default
+            $('#pieces_per_box_group').hide();
+            
             if ($('#type').val()) {
                 $('#type').trigger('change');
             }
