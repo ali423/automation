@@ -24,13 +24,13 @@ class ProductionRequestService extends BaseService
     {
         // Validate product exists and is of type 'product'
         $product = Commodity::where('type', 'product')->findOrFail($data['product_id']);
-        
+
         // Calculate required materials based on product formula
         $materials = $this->calculateRequiredMaterials($product, $data['amount']);
-        
+
         // Calculate total cost
         $totalCost = $materials->sum('total_cost');
-        
+
         // Create production request
         $productionRequest = ProductionRequest::create([
             'product_id' => $product->id,
@@ -76,13 +76,13 @@ class ProductionRequestService extends BaseService
         // Check if product or amount has changed
         $productChanged = isset($data['product_id']) && $data['product_id'] != $productionRequest->product_id;
         $amountChanged = isset($data['amount']) && $data['amount'] != $productionRequest->production_amount;
-        
+
         if ($productChanged || $amountChanged) {
             // Recalculate everything
             $product = Commodity::where('type', 'product')->findOrFail($data['product_id']);
             $materials = $this->calculateRequiredMaterials($product, $data['amount']);
             $totalCost = $materials->sum('total_cost');
-            
+
             // Update production request
             $productionRequest->update([
                 'product_id' => $product->id,
@@ -131,10 +131,10 @@ class ProductionRequestService extends BaseService
     public function delete($productionRequest)
     {
         // Materials are handled through pivot table, no need to clear JSON field
-        
+
         // Delete the production request
         $productionRequest->delete();
-        
+
         return true;
     }
 
@@ -144,33 +144,33 @@ class ProductionRequestService extends BaseService
     public function approve($productionRequest)
     {
         $unitConversionService = app(\App\Services\UnitConversionService::class);
-        
+
         // Step 1: Deduct the required raw materials from inventory with unit conversion support
         foreach ($productionRequest->materials as $material) {
             $requiredAmount = $material->pivot->required_amount;
             $requiredUnitId = $material->pivot->unit_id;
             $remainingRequired = $requiredAmount;
-            
+
             // Get all available inventory for this material
             $allInventory = $this->inventoryService->getAllInventoryForCommodity($material->id);
-            
+
             // Sort inventory by unit - prioritize exact matches first, then conversions
             $exactMatches = $allInventory->where('unit_id', $requiredUnitId)->where('amount', '>', 0);
             $otherUnits = $allInventory->where('unit_id', '!=', $requiredUnitId)->where('amount', '>', 0);
-            
+
             // First, try to consume from exact matches
             foreach ($exactMatches as $inventory) {
                 if ($remainingRequired <= 0) break;
-                
+
                 $amountToConsume = min($remainingRequired, $inventory->amount);
                 $this->inventoryService->removeStock($material->id, $inventory->unit_id, $amountToConsume);
                 $remainingRequired -= $amountToConsume;
             }
-            
+
             // If still need more, consume from other units with conversion
             foreach ($otherUnits as $inventory) {
                 if ($remainingRequired <= 0) break;
-                
+
                 // Convert the remaining required amount to the inventory unit
                 $requiredInInventoryUnit = $unitConversionService->convert(
                     $remainingRequired,
@@ -178,11 +178,11 @@ class ProductionRequestService extends BaseService
                     $inventory->unit_id,
                     $material->id
                 );
-                
+
                 if ($requiredInInventoryUnit !== null && $requiredInInventoryUnit > 0) {
                     $amountToConsume = min($requiredInInventoryUnit, $inventory->amount);
                     $this->inventoryService->removeStock($material->id, $inventory->unit_id, $amountToConsume);
-                    
+
                     // Convert back to required unit to update remaining amount
                     $consumedInRequiredUnit = $unitConversionService->convert(
                         $amountToConsume,
@@ -190,13 +190,13 @@ class ProductionRequestService extends BaseService
                         $requiredUnitId,
                         $material->id
                     );
-                    
+
                     if ($consumedInRequiredUnit !== null) {
                         $remainingRequired -= $consumedInRequiredUnit;
                     }
                 }
             }
-            
+
             // If we still have remaining required amount, throw an error
             if ($remainingRequired > 0) {
                 throw new \Exception("موجودی کافی برای ماده {$material->title} وجود ندارد. مورد نیاز: {$requiredAmount}، مصرف شده: " . ($requiredAmount - $remainingRequired));
@@ -213,7 +213,7 @@ class ProductionRequestService extends BaseService
         );
 
         // Step 3: Update production request status
-        $productionRequest->update(['status' => 'approvaled']);
+        $productionRequest->update(['status' => 'approved']);
 
         return $productionRequest;
     }
@@ -235,15 +235,15 @@ class ProductionRequestService extends BaseService
     protected function calculateRequiredMaterials($product, $productionAmount)
     {
         $materials = collect();
-        
+
         foreach ($product->materials as $material) {
             // Calculate required amount based on product formula
             $requiredAmount = $material->pivot->amount * $productionAmount;
-            
+
             // Get current inventory cost for this material
             $unitCost = $this->inventoryService->getAverageCost($material->id) ?? 0;
             $totalCost = $requiredAmount * $unitCost;
-            
+
             $materials->push([
                 'material_id' => $material->id,
                 'required_amount' => $requiredAmount,
@@ -252,7 +252,7 @@ class ProductionRequestService extends BaseService
                 'total_cost' => $totalCost,
             ]);
         }
-        
+
         return $materials;
     }
 
@@ -264,23 +264,23 @@ class ProductionRequestService extends BaseService
     public function checkProduction($productionRequest)
     {
         $unitConversionService = app(\App\Services\UnitConversionService::class);
-        
+
         foreach ($productionRequest->materials as $material) {
             $requiredAmount = $material->pivot->required_amount;
             $requiredUnitId = $material->pivot->unit_id;
-            
+
             // Get all available inventory for this material
             $allInventory = $this->inventoryService->getAllInventoryForCommodity($material->id);
-            
+
             // Calculate total available stock in the required unit
             $availableStock = 0;
             $availableUnits = [];
-            
+
             foreach ($allInventory as $inventory) {
                 if ($inventory->amount > 0) {
                     $unit = \App\Models\Unit::find($inventory->unit_id);
                     $availableUnits[] = "{$inventory->amount} {$unit->symbol}";
-                    
+
                     if ($inventory->unit_id == $requiredUnitId) {
                         // Direct match - no conversion needed
                         $availableStock += $inventory->amount;
@@ -292,18 +292,18 @@ class ProductionRequestService extends BaseService
                             $requiredUnitId,
                             $material->id
                         );
-                        
+
                         if ($convertedAmount !== null && $convertedAmount > 0) {
                             $availableStock += $convertedAmount;
                         }
                     }
                 }
             }
-            
+
             if ($availableStock < $requiredAmount) {
                 $requiredUnit = \App\Models\Unit::find($requiredUnitId);
                 $availableInfo = !empty($availableUnits) ? ' (موجود در: ' . implode(', ', $availableUnits) . ')' : '';
-                
+
                 return [
                     'success' => false,
                     'error' => "موجودی کافی برای ماده {$material->title} وجود ندارد. مورد نیاز: {$requiredAmount} {$requiredUnit->symbol}، موجود: {$availableStock} {$requiredUnit->symbol}{$availableInfo}"
@@ -364,4 +364,4 @@ class ProductionRequestService extends BaseService
 
         return ['success' => true];
     }
-} 
+}
