@@ -28,7 +28,6 @@ class InventoryUpdateRequest extends FormRequest
             'unit_id' => 'required|exists:units,id',
             'amount' => 'required|numeric|min:0',
             'purchase_price' => 'required|numeric|min:0.01',
-            'sale_price' => 'required|numeric|min:0.01',
         ];
     }
 
@@ -50,9 +49,6 @@ class InventoryUpdateRequest extends FormRequest
             'purchase_price.required' => 'قیمت خرید الزامی است.',
             'purchase_price.numeric' => 'قیمت خرید باید عددی باشد.',
             'purchase_price.min' => 'قیمت خرید باید بیشتر از صفر باشد.',
-            'sale_price.required' => 'قیمت فروش الزامی است.',
-            'sale_price.numeric' => 'قیمت فروش باید عددی باشد.',
-            'sale_price.min' => 'قیمت فروش باید بیشتر از صفر باشد.',
         ];
     }
 } 

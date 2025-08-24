@@ -153,7 +153,7 @@ class CommodityController extends Controller
            }
         $res = [
           'warehouses'=>$warehouse_res ?? null,
-          'price'=>$commodity->sales_price,
+          'price'=>$commodity->sales_price, // This now uses the calculated attribute
         ];
         return response()->json($res);
     }

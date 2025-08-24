@@ -164,7 +164,7 @@ class ProductionRequest extends Model
     
     public function getTotalOutputValueAttribute()
     {
-        return $this->production_amount * ($this->product->sales_price ?? 0);
+        return $this->production_amount * ($this->product->sales_price ?? 0); // This now uses the calculated attribute
     }
     
     public function getProfitAttribute()

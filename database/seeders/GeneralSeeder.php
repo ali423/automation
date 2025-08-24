@@ -28,7 +28,6 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 1001,
                 'title' => 'روغن پایه',
-                'sales_price' => 8.50,
                 'purchase_price' => 6.20,
                 'warning_limit' => 5000,
                 'type' => 'material',
@@ -37,7 +36,6 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 1002,
                 'title' => 'بسته افزودنی',
-                'sales_price' => 45.00,
                 'purchase_price' => 35.00,
                 'warning_limit' => 500,
                 'type' => 'material',
@@ -46,7 +44,6 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 1003,
                 'title' => 'تغلیظ کننده',
-                'sales_price' => 25.00,
                 'purchase_price' => 18.00,
                 'warning_limit' => 300,
                 'type' => 'material',
@@ -55,7 +52,6 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 1004,
                 'title' => 'افزودنی ضد سایش',
-                'sales_price' => 60.00,
                 'purchase_price' => 45.00,
                 'warning_limit' => 200,
                 'type' => 'material',
@@ -64,7 +60,6 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 1005,
                 'title' => 'افزودنی پاک کننده',
-                'sales_price' => 35.00,
                 'purchase_price' => 28.00,
                 'warning_limit' => 400,
                 'type' => 'material',
@@ -73,7 +68,6 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 1006,
                 'title' => 'افزودنی پراکنده کننده',
-                'sales_price' => 40.00,
                 'purchase_price' => 32.00,
                 'warning_limit' => 350,
                 'type' => 'material',
@@ -82,7 +76,6 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 1007,
                 'title' => 'کاهنده نقطه ریزش',
-                'sales_price' => 55.00,
                 'purchase_price' => 42.00,
                 'warning_limit' => 150,
                 'type' => 'material',
@@ -91,7 +84,6 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 1008,
                 'title' => 'افزودنی ضد اکسیداسیون',
-                'sales_price' => 50.00,
                 'purchase_price' => 38.00,
                 'warning_limit' => 250,
                 'type' => 'material',
@@ -100,7 +92,6 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 1009,
                 'title' => 'کاهنده اصطکاک',
-                'sales_price' => 70.00,
                 'purchase_price' => 55.00,
                 'warning_limit' => 100,
                 'type' => 'material',
@@ -109,7 +100,6 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 1010,
                 'title' => 'بازدارنده خوردگی',
-                'sales_price' => 65.00,
                 'purchase_price' => 50.00,
                 'warning_limit' => 120,
                 'type' => 'material',
@@ -128,7 +118,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2001,
                 'title' => 'روغن موتور 5W-30',
-                'sales_price' => 45.00,
+                'profit_margin' => 25.00, // 25% profit margin
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 500,
                 'type' => 'product',
@@ -137,7 +127,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2002,
                 'title' => 'روغن موتور 10W-40',
-                'sales_price' => 42.00,
+                'profit_margin' => 22.00, // 22% profit margin
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 400,
                 'type' => 'product',
@@ -146,7 +136,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2003,
                 'title' => 'روغن موتور 15W-50',
-                'sales_price' => 48.00,
+                'profit_margin' => 28.00, // 28% profit margin
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 300,
                 'type' => 'product',
@@ -155,7 +145,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2004,
                 'title' => 'روغن گیربکس',
-                'sales_price' => 55.00,
+                'profit_margin' => 30.00, // 30% profit margin
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 200,
                 'type' => 'product',
@@ -164,7 +154,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2005,
                 'title' => 'روغن هیدرولیک',
-                'sales_price' => 38.00,
+                'profit_margin' => 20.00, // 20% profit margin
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 350,
                 'type' => 'product',
@@ -173,7 +163,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2006,
                 'title' => 'روغن دنده',
-                'sales_price' => 52.00,
+                'profit_margin' => 28.00, // 28% profit margin
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 250,
                 'type' => 'product',
@@ -182,7 +172,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2007,
                 'title' => 'روغن ترمز',
-                'sales_price' => 28.00,
+                'profit_margin' => 18.00, // 18% profit margin
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 150,
                 'type' => 'product',
@@ -191,7 +181,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2008,
                 'title' => 'روغن فرمان',
-                'sales_price' => 32.00,
+                'profit_margin' => 22.00, // 22% profit margin
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 180,
                 'type' => 'product',

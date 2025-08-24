@@ -61,36 +61,27 @@
                             </div>
                             <div class="form-row">
                                 <div class="form-group col-md-6">
-                                    <label for="fake_warning_limit"> {{ __('fields.warning_limit') }} <span class="unit_label">({{ $commodity->unit ? $commodity->unit->symbol : '' }})</span></label>
-                                    <input type="number" step="0.01" name="fake_warning_limit"
+                                    <label for="warning_limit"> {{ __('fields.warning_limit') }} <span class="unit_label">({{ $commodity->unit ? $commodity->unit->symbol : '' }})</span></label>
+                                    <input type="number" step="0.01" name="warning_limit"
                                            value="{{ $commodity->warning_limit }}"
                                            class="form-control" placeholder="{{ __('fields.warning_limit') }}" required>
-                                    <input type="number" name="warning_limit"
-                                           value="{{ $commodity->warning_limit }}"
-                                           class="form-control d-none" placeholder="{{ __('fields.warning_limit') }}">
                                     <div class="invalid-feedback">{{ __('fields.warning_limit') }} را وارد کنید</div>
                                 </div>
-                            @if(!empty($commodity->sales_price))
-                                    <div id="sales_price" class="form-group col-md-6">
-                                        <label for="fake_sales_price"> {{ __('fields.sales_price') }} هر <span class="unit_label2">{{ $commodity->unit ? $commodity->unit->symbol : '' }}</span> (ریال)</label>
-                                        <input type="number" step="0.01" min="100" name="fake_sales_price"
-                                               value="{{ $commodity->sales_price }}"
-                                               class="form-control" placeholder="{{ __('fields.sales_price') }}"
+                            @if($commodity->type == 'product')
+                                    <div id="profit_margin" class="form-group col-md-6">
+                                        <label for="profit_margin">درصد سود (%)</label>
+                                        <input type="number" step="0.01" min="0" max="100" name="profit_margin"
+                                               value="{{ $commodity->profit_margin }}"
+                                               class="form-control" placeholder="درصد سود"
                                                required>
-                                        <input type="number" name="sales_price"
-                                               value="{{ $commodity->sales_price }}"
-                                               class="form-control d-none" placeholder="{{ __('fields.sales_price') }}">
-                                        <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
+                                        <div class="invalid-feedback">درصد سود را وارد کنید</div>
                                     </div>
                                 @elseif(!empty($commodity->purchase_price))
                                     <div id="purchase_price" class="form-group col-md-6">
-                                        <label for="fake_purchase_price"> {{ __('fields.purchase_price') }} هر <span class="unit_label2">{{ $commodity->unit ? $commodity->unit->symbol : '' }}</span> (ریال)</label>
-                                        <input type="number" step="0.01" min="100" name="fake_purchase_price"
+                                        <label for="purchase_price"> {{ __('fields.purchase_price') }} هر <span class="unit_label2">{{ $commodity->unit ? $commodity->unit->symbol : '' }}</span> (ریال)</label>
+                                        <input type="number" step="0.01" min="100" name="purchase_price"
                                                value="{{ $commodity->purchase_price }}" class="form-control"
                                                placeholder="{{ __('fields.purchase_price') }}" required>
-                                        <input type="number" name="purchase_price"
-                                               value="{{ $commodity->purchase_price }}" class="form-control d-none"
-                                               placeholder="{{ __('fields.purchase_price') }}">
                                         <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
                                     </div>
                                 @endif
@@ -252,20 +243,17 @@
 
                  var warning_limit = 0;
          var purchase_price = 0;
-         var sales_price = 0;
 
         setTimeout(() => {
 
             warning_limit = $('input[name="warning_limit"]').val();
             purchase_price = $('input[name="purchase_price"]').val();
-            sales_price = $('input[name="sales_price"]').val();
 
         }, 1000);
 
         function updatevals(){
             warning_limit = $('input[name="warning_limit"]').val();
             purchase_price = $('input[name="purchase_price"]').val();
-            sales_price = $('input[name="sales_price"]').val();
         }
 
                  $('#unit').on('change', function() {
@@ -319,24 +307,19 @@
         }
 
 
-        $('input[name="fake_warning_limit"]').on('change keyup paste', function(){
+        $('input[name="warning_limit"]').on('change keyup paste', function(){
             // For now, store the value as-is since we're not doing automatic conversions
             // In the future, this could use database conversion rates
             $('input[name="warning_limit"]').val(Math.floor(this.value));
             updatevals();
-        })
-        $('input[name="fake_sales_price"]').on('change keyup paste', function(){
-            // For now, store the value as-is since we're not doing automatic conversions
-            // In the future, this could use database conversion rates
-            $('input[name="sales_price"]').val(Math.floor(this.value));
-            updatevals();
-        })
-        $('input[name="fake_purchase_price"]').on('change keyup paste', function(){
+        });
+
+        $('input[name="purchase_price"]').on('change keyup paste', function(){
             // For now, store the value as-is since we're not doing automatic conversions
             // In the future, this could use database conversion rates
             $('input[name="purchase_price"]').val(Math.floor(this.value));
             updatevals();
-        })
+        });
 
         // Trigger type change on page load if type is already selected
         $(document).ready(function() {

@@ -126,8 +126,7 @@ class ImportingRequestService extends BaseService
                 $selected_commodity->id,
                 $selected_commodity->unit_id, // Use commodity's main unit
                 $amountInMainUnit,
-                $selected_commodity->pivot->purchase_price,
-                $selected_commodity->sales_price
+                $selected_commodity->pivot->purchase_price
             );
         }
         

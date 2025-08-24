@@ -37,7 +37,14 @@
                             </div>
                             <div class="form-group col-md-4">
                                 <label>قیمت فروش (تومان)</label>
-                                <input type="text" value="{{ number_format($inventory->sale_price ?? 0) }}" class="form-control" disabled>
+                                <input type="text" value="{{ $inventory->sale_price ? number_format($inventory->sale_price) : 'محاسبه نشده' }}" class="form-control" disabled>
+                                <small class="form-text text-muted">
+                                    @if($inventory->commodity->type == 'product')
+                                        قیمت بر اساس درصد سود کالا محاسبه می‌شود
+                                    @else
+                                        مواد اولیه قیمت فروش ندارند
+                                    @endif
+                                </small>
                             </div>
                         </div>
                         <div class="form-row col-md-12">
@@ -68,9 +75,15 @@
                                                     $profitPercentage = $purchasePrice > 0 ? ($profit / $purchasePrice) * 100 : 0;
                                                     $totalValue = $inventory->amount * $salePrice;
                                                 @endphp
-                                                <li>سود: {{ number_format($profit) }} تومان</li>
-                                                <li>درصد سود: {{ number_format($profitPercentage, 1) }}%</li>
-                                                <li>ارزش کل موجودی: {{ number_format($totalValue) }} تومان</li>
+                                                @if($inventory->commodity->type == 'product')
+                                                    <li>سود: {{ number_format($profit) }} تومان</li>
+                                                    <li>درصد سود: {{ number_format($profitPercentage, 1) }}%</li>
+                                                    <li>ارزش کل موجودی: {{ number_format($totalValue) }} تومان</li>
+                                                @else
+                                                    <li>قیمت خرید: {{ number_format($purchasePrice) }} تومان</li>
+                                                    <li>ارزش کل موجودی: {{ number_format($inventory->amount * $purchasePrice) }} تومان</li>
+                                                    <li class="text-muted">مواد اولیه قیمت فروش ندارند</li>
+                                                @endif
                                             </ul>
                                         </div>
                                     </div>
@@ -88,11 +101,11 @@
                                             </button>
                                         @endcan
                                         
-                                        @can('adjustPrice', $inventory)
-                                            <button type="button" class="btn btn-warning btn-block mb-2" data-toggle="modal" data-target="#priceAdjustmentModal">
-                                                <i class="fa fa-dollar-sign"></i> تنظیم قیمت
-                                            </button>
-                                        @endcan
+                                        @if($inventory->commodity->type == 'product')
+                                            <a href="{{ route('commodity.edit', $inventory->commodity) }}" class="btn btn-info btn-block">
+                                                <i class="ti-settings"></i> تنظیم درصد سود
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -157,38 +170,7 @@
     </div>
     @endcan
 
-    <!-- Price Adjustment Modal -->
-    @can('adjustPrice', $inventory)
-    <div class="modal fade" id="priceAdjustmentModal" tabindex="-1" role="dialog" aria-labelledby="priceAdjustmentModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="priceAdjustmentModalLabel">تنظیم قیمت فروش</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form action="{{ route('inventory.adjust-price', $inventory) }}" method="POST">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="new_price">قیمت جدید (تومان) <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" min="0.01" name="new_price" id="new_price" class="form-control" value="{{ $inventory->sale_price }}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="price_reason">دلیل</label>
-                            <textarea name="reason" id="price_reason" class="form-control" rows="3" placeholder="دلیل تغییر قیمت (اختیاری)"></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">انصراف</button>
-                        <button type="submit" class="btn btn-primary">تایید</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    @endcan
+
 @endsection
 
 @section('page_scripts')

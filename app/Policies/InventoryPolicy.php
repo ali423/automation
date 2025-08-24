@@ -54,12 +54,4 @@ class InventoryPolicy
     {
         return $user->role->havePermission('edit_inventory');
     }
-
-    /**
-     * Determine whether the user can adjust price.
-     */
-    public function adjustPrice(User $user, Inventory $inventory): bool
-    {
-        return $user->role->havePermission('edit_inventory');
-    }
 } 
