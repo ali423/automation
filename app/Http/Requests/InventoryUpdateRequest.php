@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Commodity;
+use App\Services\CommodityUnitService;
 
 class InventoryUpdateRequest extends FormRequest
 {
@@ -29,6 +31,43 @@ class InventoryUpdateRequest extends FormRequest
             'amount' => 'required|numeric|min:0',
             'purchase_price' => 'required|numeric|min:0.01',
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     *
+     * @param  \Illuminate\Validation\Validator  $validator
+     * @return void
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $commodityId = $this->input('commodity_id');
+            $unitId = $this->input('unit_id');
+            
+            if (!$commodityId || !$unitId) {
+                return;
+            }
+            
+            $commodity = Commodity::find($commodityId);
+            if (!$commodity) {
+                return;
+            }
+            
+            // Check if the unit is the main unit of the commodity
+            if ($commodity->unit_id == $unitId) {
+                return; // Main unit is always valid
+            }
+            
+            // Check if there's a valid unit conversion
+            $commodityUnitService = app(CommodityUnitService::class);
+            if (!$commodityUnitService->isUnitSelectable($commodity, $unitId)) {
+                $validator->errors()->add(
+                    'unit_id', 
+                    'واحد انتخاب شده برای این کالا معتبر نیست. فقط واحد اصلی یا واحدهای دارای تبدیل معتبر هستند.'
+                );
+            }
+        });
     }
 
     /**

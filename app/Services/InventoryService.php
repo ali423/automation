@@ -14,6 +14,9 @@ class InventoryService extends BaseService
      */
     public function addStock($commodityId, $unitId, $amount, $purchasePrice = null)
     {
+        // Validate that the unit is valid for this commodity
+        $this->validateCommodityUnit($commodityId, $unitId);
+
         $inventory = Inventory::where('commodity_id', $commodityId)
             ->where('unit_id', $unitId)
             ->where('active', true)
@@ -41,6 +44,32 @@ class InventoryService extends BaseService
         }
     }
 
+    /**
+     * Validate that a unit is valid for a commodity
+     * Only allows the main unit or units with valid conversions
+     *
+     * @param int $commodityId
+     * @param int $unitId
+     * @throws \Exception
+     */
+    private function validateCommodityUnit($commodityId, $unitId)
+    {
+        $commodity = Commodity::find($commodityId);
+        if (!$commodity) {
+            throw new \Exception('کالای مورد نظر یافت نشد');
+        }
+
+        // Check if the unit is the main unit of the commodity
+        if ($commodity->unit_id == $unitId) {
+            return; // Main unit is always valid
+        }
+
+        // Check if there's a valid unit conversion
+        $commodityUnitService = app(\App\Services\CommodityUnitService::class);
+        if (!$commodityUnitService->isUnitSelectable($commodity, $unitId)) {
+            throw new \Exception("واحد انتخاب شده برای کالای {$commodity->title} معتبر نیست. فقط واحد اصلی یا واحدهای دارای تبدیل معتبر هستند.");
+        }
+    }
 
 
     /**
@@ -260,6 +289,9 @@ class InventoryService extends BaseService
      */
     public function update($inventory, $data)
     {
+        // Validate that the unit is valid for this commodity
+        $this->validateCommodityUnit($data['commodity_id'], $data['unit_id']);
+
         $inventory->update([
             'commodity_id' => $data['commodity_id'],
             'unit_id' => $data['unit_id'],
