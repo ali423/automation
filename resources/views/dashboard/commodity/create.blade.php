@@ -47,37 +47,34 @@
                                 </div>
                             </div>
                             <div class="form-row">
-                                <div class="form-group col-md-3">
+                                <div class="form-group col-md-3" id="pieces_per_box_group" style="display: none;">
                                     <label for="pieces_per_box">تعداد در کارتن</label>
                                     <input type="number" name="pieces_per_box" value="{{ old('pieces_per_box', 1) }}" class="form-control"
                                            id="pieces_per_box" min="1" placeholder="مثال: 24" required="">
                                     <div class="invalid-feedback">لطفاً تعداد در کارتن را وارد کنید</div>
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label for="fake_warning_limit"> {{ __('fields.warning_limit') }} <span class="unit_label">(کیلوگرم)</span></label>
-                                    <input type="number" step="0.01" name="fake_warning_limit"
+                                    <label for="warning_limit"> {{ __('fields.warning_limit') }} <span class="unit_label">(کیلوگرم)</span></label>
+                                    <input type="number" step="0.01" name="warning_limit"
                                            value="{{ old('warning_limit') }}"
                                            class="form-control" placeholder="{{ __('fields.warning_limit') }}" required>
-                                           <input type="number" name="warning_limit" class="d-none">
                                     <div class="invalid-feedback">{{ __('fields.warning_limit') }} را وارد کنید</div>
                                 </div>
-                                <div id="sales_price" class="form-group col-md-3">
-                                    <label for="fake_sales_price"> {{ __('fields.sales_price') }} هر <span class="unit_label2">کیلوگرم</span> (ریال)</label>
-                                    <input type="number" step="0.01" min="100" name="fake_sales_price"
-                                           value="{{ old('sales_price') }}"
-                                           class="form-control" placeholder="{{ __('fields.sales_price') }}">
-                                           <input type="number" name="sales_price" class="d-none">
-                                    <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
+                                <div id="profit_margin" class="form-group col-md-3">
+                                    <label for="profit_margin">درصد سود (%)</label>
+                                    <input type="number" step="0.01" min="0" max="100" name="profit_margin"
+                                           value="{{ old('profit_margin') }}"
+                                           class="form-control" placeholder="درصد سود">
+                                    <div class="invalid-feedback">درصد سود را وارد کنید</div>
                                 </div>
                             </div>
                             <div class="form-row">
                                 <div id="purchase_price" class="form-group col-md-6">
-                                    <label for="fake_purchase_price"> {{ __('fields.purchase_price') }} هر <span class="unit_label2">کیلوگرم</span> (ریال)</label>
-                                    <input type="number" step="0.01" min="100" name="fake_purchase_price"
+                                    <label for="purchase_price"> {{ __('fields.purchase_price') }} هر <span class="unit_label2">کیلوگرم</span> (ریال)</label>
+                                    <input type="number" step="0.01" min="100" name="purchase_price"
                                            value="{{ old('purchase_price') }}" class="form-control"
                                            placeholder="{{ __('fields.purchase_price') }}" required>
-                                    <input type="number" name="purchase_price" class="d-none">
-                                   <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
+                                    <div class="invalid-feedback">حداقل قیمت 100 ریال می باشد</div>
                                 </div>
                             </div>
 
@@ -176,46 +173,22 @@
             }
         }
         
-        // Handle commodity type change
+        // Update required attributes based on type
         $('#type').on('change', function() {
             var selectedType = $(this).val();
-            var unitSelect = $('#unit');
-            var productFormula = $('#product_formul');
-            
-            // Clear current selection
-            unitSelect.val('');
-            updateProductUnitDisplay(); // Clear unit display
             
             if (selectedType === 'product') {
-                // For products, show all units
-                unitSelect.find('option').show();
-                
-                // Show product formula section and make fields required
-                productFormula.show();
-                $('input[name="fake_sales_price"]').attr('required', 'required');
-                $('select[name^="materials"]').attr('required', 'required');
-                $('input[name^="material_amount"]').attr('required', 'required');
-                $('select[name^="material_units"]').attr('required', 'required');
-                
+                $('input[name="purchase_price"]').removeAttr('required');
+                $('input[name="profit_margin"]').attr('required', 'required');
+                $('#pieces_per_box_group').show();
             } else if (selectedType === 'material') {
-                // For materials, show all units
-                unitSelect.find('option').show();
-                
-                // Hide product formula section and remove required attributes
-                productFormula.hide();
-                $('input[name="fake_sales_price"]').removeAttr('required');
-                $('select[name^="materials"]').removeAttr('required');
-                $('input[name^="material_amount"]').removeAttr('required');
-                $('select[name^="material_units"]').removeAttr('required');
-                
+                $('input[name="purchase_price"]').attr('required', 'required');
+                $('input[name="profit_margin"]').removeAttr('required');
+                $('#pieces_per_box_group').hide();
             } else {
-                // No type selected, show all units and hide formula
-                unitSelect.find('option').show();
-                productFormula.hide();
-                $('input[name="fake_sales_price"]').removeAttr('required');
-                $('select[name^="materials"]').removeAttr('required');
-                $('input[name^="material_amount"]').removeAttr('required');
-                $('select[name^="material_units"]').removeAttr('required');
+                $('input[name="purchase_price"]').removeAttr('required');
+                $('input[name="profit_margin"]').removeAttr('required');
+                $('#pieces_per_box_group').hide();
             }
         });
         
@@ -239,6 +212,9 @@
         
         // Trigger type change on page load if type is already selected
         $(document).ready(function() {
+            // Hide pieces_per_box field by default
+            $('#pieces_per_box_group').hide();
+            
             if ($('#type').val()) {
                 $('#type').trigger('change');
             }
@@ -248,11 +224,6 @@
         $('form').on('submit', function(e) {
             var selectedType = $('#type').val();
             var selectedUnit = $('#unit').val();
-            
-            // Synchronize hidden fields with visible fields before submission
-            $('input[name="warning_limit"]').val($('input[name="fake_warning_limit"]').val());
-            $('input[name="sales_price"]').val($('input[name="fake_sales_price"]').val());
-            $('input[name="purchase_price"]').val($('input[name="fake_purchase_price"]').val());
             
             // Temporarily remove validation classes to allow submission
             $('form').removeClass('needs-validation was-validated');
@@ -281,11 +252,11 @@
                 }
             } else if (selectedType === 'material') {
                 // Validate material fields
-                var purchasePrice = $('input[name="fake_purchase_price"]').val();
+                var purchasePrice = $('input[name="purchase_price"]').val();
                 if (!purchasePrice || purchasePrice <= 0) {
                     e.preventDefault();
                     alert('لطفاً قیمت خرید را برای ماده اولیه وارد کنید.');
-                    $('input[name="fake_purchase_price"]').focus();
+                    $('input[name="purchase_price"]').focus();
                     return false;
                 }
             }
@@ -322,26 +293,18 @@
             const selectedUnit = $(this).find('option:selected');
             const unitSymbol = selectedUnit.text().match(/\((.*?)\)/)[1];
             
-            $('input[name="fake_warning_limit"]').val('');
-            $('input[name="fake_sales_price"]').val('');
-            $('input[name="fake_purchase_price"]').val('');
             $('input[name="warning_limit"]').val('');
-            $('input[name="sales_price"]').val('');
             $('input[name="purchase_price"]').val('');
 
             $('.unit_label').text(`(${unitSymbol})`);
             $('.unit_label2').text(unitSymbol);
         });
 
-        $('input[name="fake_warning_limit"]').on('change keyup paste', function(){
+        $('input[name="warning_limit"]').on('change keyup paste', function(){
             $('input[name="warning_limit"]').val(Math.floor(this.value));
         });
 
-        $('input[name="fake_sales_price"]').on('change keyup paste', function(){
-            $('input[name="sales_price"]').val(Math.floor(this.value));
-        });
-
-        $('input[name="fake_purchase_price"]').on('change keyup paste', function(){
+        $('input[name="purchase_price"]').on('change keyup paste', function(){
             $('input[name="purchase_price"]').val(Math.floor(this.value));
         });
 

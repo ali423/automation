@@ -208,8 +208,7 @@ class ProductionRequestService extends BaseService
             $productionRequest->product_id,
             $productionRequest->unit_id, // Use production request unit
             $productionRequest->production_amount,
-            $productionRequest->total_cost / $productionRequest->production_amount, // unit cost
-            $productionRequest->product->sales_price
+            $productionRequest->total_cost / $productionRequest->production_amount // unit cost
         );
 
         // Step 3: Update production request status

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddPiecesPerBoxToCommoditiesTable extends Migration
+class AddProfitMarginToInventoriesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddPiecesPerBoxToCommoditiesTable extends Migration
      */
     public function up()
     {
-        Schema::table('commodities', function (Blueprint $table) {
-            $table->integer('pieces_per_box')->nullable()->after('unit_id');
+        Schema::table('inventories', function (Blueprint $table) {
+            //
         });
     }
 
@@ -25,8 +25,8 @@ class AddPiecesPerBoxToCommoditiesTable extends Migration
      */
     public function down()
     {
-        Schema::table('commodities', function (Blueprint $table) {
-            $table->dropColumn('pieces_per_box');
+        Schema::table('inventories', function (Blueprint $table) {
+            //
         });
     }
 }

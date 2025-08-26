@@ -15,15 +15,13 @@ class Inventory extends Model
         'unit_id',
         'amount',
         'purchase_price',
-        'sale_price',
         'active'
     ];
 
     protected $casts = [
         'active' => 'boolean',
         'amount' => 'decimal:2',
-        'purchase_price' => 'decimal:2',
-        'sale_price' => 'decimal:2'
+        'purchase_price' => 'decimal:2'
     ];
 
     public function commodity()
@@ -44,5 +42,33 @@ class Inventory extends Model
     public function scopeAvailable($query)
     {
         return $query->where('amount', '>', 0);
+    }
+
+    /**
+     * Get the calculated sale price based on commodity's profit margin
+     * For products: calculated from material costs + profit margin
+     * For materials: null (materials don't have sale prices)
+     *
+     * @return float|null
+     */
+    public function getSalePriceAttribute()
+    {
+        if ($this->commodity->type === 'product') {
+            // Use the commodity's calculated sales price
+            return $this->commodity->sales_price;
+        }
+        
+        // Materials don't have sale prices
+        return null;
+    }
+
+    /**
+     * Get the average purchase price for this inventory
+     *
+     * @return float|null
+     */
+    public function getAveragePurchasePriceAttribute()
+    {
+        return $this->purchase_price;
     }
 }

@@ -25,14 +25,14 @@ class CommodityService extends BaseService
                 'purchase_price' => $data['purchase_price'],
                 'warning_limit'=>$data['warning_limit'],
                 'unit_id' => $data['unit_id'],
-                'pieces_per_box' => $data['pieces_per_box'],
+                'pieces_per_box' => null, // Not needed for materials
             ]);
         } else {
             // Create the product first
             $product = Commodity::query()->create([
                 'number' => $number,
                 'title' => $data['title'],
-                'sales_price' => $data['sales_price'],
+                'profit_margin' => $data['profit_margin'],
                 'type' => $data['type'],
                 'warning_limit'=>$data['warning_limit'],
                 'unit_id' => $data['unit_id'],
@@ -60,16 +60,16 @@ class CommodityService extends BaseService
         if ($commodity->type == 'material') {
             return $commodity->update([
                 'title' => $data['title'],
-                'sales_price' => null,
+                'profit_margin' => null,
                 'warning_limit'=>$data['warning_limit'],
                 'unit_id' => $data['unit_id'],
-                'pieces_per_box' => $data['pieces_per_box'],
+                'pieces_per_box' => null, // Not needed for materials
             ]);
         } else {
             // Update the product first
             $commodity->update([
                 'title' => $data['title'],
-                'sales_price' => $data['sales_price'],
+                'profit_margin' => $data['profit_margin'],
                 'warning_limit'=>$data['warning_limit'],
                 'unit_id' => $data['unit_id'],
                 'pieces_per_box' => $data['pieces_per_box'],

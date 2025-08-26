@@ -116,26 +116,6 @@ class InventoryController extends Controller
     }
 
     /**
-     * Manual price adjustment
-     *
-     * @param Request $request
-     * @param Inventory $inventory
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function adjustPrice(Request $request, Inventory $inventory)
-    {
-        $request->validate([
-            'new_price' => 'required|numeric|min:0.01',
-            'reason' => 'nullable|string|max:255'
-        ]);
-
-        DB::transaction(function () use ($request, $inventory) {
-            $this->service->adjustPrice($inventory, $request->all());
-        });
-        return redirect()->route('inventory.index')->with('successful', 'قیمت با موفقیت تنظیم شد.');
-    }
-
-    /**
      * AJAX endpoint to get commodity inventory data
      *
      * @param int $commodityId
@@ -152,7 +132,8 @@ class InventoryController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->first();
 
-            $price = $inventory ? $inventory->sale_price : 0;
+            // Use the calculated sale price from commodity (not stored in inventory)
+            $price = $commodity->sales_price ?? 0;
             
             return response()->json([
                 'success' => true,

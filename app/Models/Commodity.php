@@ -15,7 +15,7 @@ class Commodity extends Model
     protected $fillable = [
         'number',
         'title',
-        'sales_price',
+        'profit_margin',
         'type',
         'purchase_price',
         'warning_limit',
@@ -101,5 +101,36 @@ class Commodity extends Model
     {
         $commodityUnitService = app(\App\Services\CommodityUnitService::class);
         return $commodityUnitService->getSelectableUnits($this);
+    }
+
+    /**
+     * Calculate the sales price dynamically based on material costs and profit margin
+     *
+     * @return float|null
+     */
+    public function getSalesPriceAttribute()
+    {
+        if ($this->type !== 'product') {
+            return null;
+        }
+
+        $basePrice = $this->base_price;
+        if ($basePrice === null || $this->profit_margin === null) {
+            return null;
+        }
+
+        // Calculate sales price: base price + profit margin percentage
+        $profitAmount = $basePrice * ($this->profit_margin / 100);
+        return round($basePrice + $profitAmount, 2);
+    }
+
+    /**
+     * Get the profit margin percentage
+     *
+     * @return float|null
+     */
+    public function getProfitMarginPercentageAttribute()
+    {
+        return $this->profit_margin;
     }
 }

@@ -99,7 +99,6 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('inventory', InventoryController::class)->except(['create', 'store']);
     Route::post('inventory/{inventory}/adjust-stock', [InventoryController::class, 'adjustStock'])->name('inventory.adjust-stock');
-    Route::post('inventory/{inventory}/adjust-price', [InventoryController::class, 'adjustPrice'])->name('inventory.adjust-price');
     Route::get('inventory-ajax/{commodityId}', [InventoryController::class, 'getCommodityInventory'])->name('inventory.ajax');
     Route::get('order/commodity-units/{commodityId}', [OrderController::class, 'getCommodityUnits'])->name('order.commodity.units');
 

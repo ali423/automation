@@ -105,7 +105,7 @@ class WithdrawalRequest extends Model
         foreach ($this->commodities as $commodity) {
             $selectedUnitId = $commodity->pivot->unit_id;
             $amount = $commodity->pivot->amount;
-            $piecesPerBox = $commodity->pieces_per_box ?? 1;
+            $piecesPerBox = $commodity->pieces_per_box ?? 1; // Use 1 as fallback for materials
             
             // Convert to pieces first if needed
             $amountInPieces = $this->convertToPieces($commodity, $amount, $selectedUnitId);

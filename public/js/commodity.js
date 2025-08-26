@@ -1,18 +1,18 @@
 if (document.getElementById("type").value == 'product') {
 
-    document.querySelector("#sales_price").classList.remove('d-none');
+    document.querySelector("#profit_margin").classList.remove('d-none');
     document.querySelector("#product_formul").classList.remove('d-none');
     document.querySelector("#purchase_price").classList.add('d-none');
 
 } else if (document.getElementById("type").value == 'material') {
 
     document.querySelector("#purchase_price").classList.remove('d-none');
-    document.querySelector("#sales_price").classList.add('d-none');
+    document.querySelector("#profit_margin").classList.add('d-none');
     document.querySelector("#product_formul").classList.add('d-none');
 
 } else {
 
-    document.querySelector("#sales_price").classList.add('d-none');
+    document.querySelector("#profit_margin").classList.add('d-none');
     document.querySelector("#purchase_price").classList.add('d-none');
     document.querySelector("#product_formul").classList.add('d-none');
 
@@ -23,23 +23,23 @@ document.getElementById("type").onchange = function () {
 
     if (value == 'product') {
 
-        document.querySelector("#sales_price").classList.remove('d-none');
+        document.querySelector("#profit_margin").classList.remove('d-none');
         document.querySelector("#product_formul").classList.remove('d-none');
         document.querySelector("#purchase_price").classList.add('d-none');
 
         document.querySelector("#purchase_price input").setAttribute('disabled', '');
-        document.querySelector("#sales_price input").removeAttribute('disabled');
+        document.querySelector("#profit_margin input").removeAttribute('disabled');
         document.querySelector("#product_formul input").removeAttribute('disabled');
         document.querySelector("#product_formul select").removeAttribute('disabled');
 
     } else if (value == 'material') {
 
         document.querySelector("#purchase_price").classList.remove('d-none');
-        document.querySelector("#sales_price").classList.add('d-none');
+        document.querySelector("#profit_margin").classList.add('d-none');
         document.querySelector("#product_formul").classList.add('d-none');
 
         document.querySelector("#purchase_price input").removeAttribute('disabled');
-        document.querySelector("#sales_price input").setAttribute('disabled', '');
+        document.querySelector("#profit_margin input").setAttribute('disabled', '');
         document.querySelector("#product_formul input").setAttribute('disabled', '');
         document.querySelector("#product_formul select").setAttribute('disabled', '');
 
@@ -47,12 +47,12 @@ document.getElementById("type").onchange = function () {
 
     } else {
 
+        document.querySelector("#profit_margin").classList.add('d-none');
         document.querySelector("#purchase_price").classList.add('d-none');
-        document.querySelector("#sales_price").classList.add('d-none');
         document.querySelector("#product_formul").classList.add('d-none');
 
         document.querySelector("#purchase_price input").setAttribute('disabled', '');
-        document.querySelector("#sales_price input").setAttribute('disabled', '');
+        document.querySelector("#profit_margin input").setAttribute('disabled', '');
         document.querySelector("#product_formul input").setAttribute('disabled', '');
         document.querySelector("#product_formul select").setAttribute('disabled', '');
 

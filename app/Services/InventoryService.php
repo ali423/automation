@@ -12,8 +12,11 @@ class InventoryService extends BaseService
     /**
      * Add stock to inventory (for purchases/imports)
      */
-    public function addStock($commodityId, $unitId, $amount, $purchasePrice = null, $salePrice = null)
+    public function addStock($commodityId, $unitId, $amount, $purchasePrice = null)
     {
+        // Validate that the unit is valid for this commodity
+        $this->validateCommodityUnit($commodityId, $unitId);
+
         $inventory = Inventory::where('commodity_id', $commodityId)
             ->where('unit_id', $unitId)
             ->where('active', true)
@@ -26,7 +29,6 @@ class InventoryService extends BaseService
             $inventory->update([
                 'amount' => $newAmount,
                 'purchase_price' => $purchasePrice ?? $inventory->purchase_price,
-                'sale_price' => $salePrice ?? $inventory->sale_price,
             ]);
             
             return $inventory;
@@ -37,12 +39,37 @@ class InventoryService extends BaseService
                 'unit_id' => $unitId,
                 'amount' => $amount,
                 'purchase_price' => $purchasePrice,
-                'sale_price' => $salePrice,
                 'active' => true,
             ]);
         }
     }
 
+    /**
+     * Validate that a unit is valid for a commodity
+     * Only allows the main unit or units with valid conversions
+     *
+     * @param int $commodityId
+     * @param int $unitId
+     * @throws \Exception
+     */
+    private function validateCommodityUnit($commodityId, $unitId)
+    {
+        $commodity = Commodity::find($commodityId);
+        if (!$commodity) {
+            throw new \Exception('کالای مورد نظر یافت نشد');
+        }
+
+        // Check if the unit is the main unit of the commodity
+        if ($commodity->unit_id == $unitId) {
+            return; // Main unit is always valid
+        }
+
+        // Check if there's a valid unit conversion
+        $commodityUnitService = app(\App\Services\CommodityUnitService::class);
+        if (!$commodityUnitService->isUnitSelectable($commodity, $unitId)) {
+            throw new \Exception("واحد انتخاب شده برای کالای {$commodity->title} معتبر نیست. فقط واحد اصلی یا واحدهای دارای تبدیل معتبر هستند.");
+        }
+    }
 
 
     /**
@@ -251,26 +278,25 @@ class InventoryService extends BaseService
                 commodity_id,
                 unit_id,
                 SUM(amount) as total_amount,
-                AVG(purchase_price) as avg_purchase_price,
-                AVG(sale_price) as avg_sale_price
+                AVG(purchase_price) as avg_purchase_price
             ')
             ->groupBy('commodity_id', 'unit_id')
             ->get();
     }
-
-
 
     /**
      * Update inventory record
      */
     public function update($inventory, $data)
     {
+        // Validate that the unit is valid for this commodity
+        $this->validateCommodityUnit($data['commodity_id'], $data['unit_id']);
+
         $inventory->update([
             'commodity_id' => $data['commodity_id'],
             'unit_id' => $data['unit_id'],
             'amount' => $data['amount'],
             'purchase_price' => $data['purchase_price'],
-            'sale_price' => $data['sale_price'],
         ]);
         
         return $inventory;
@@ -315,24 +341,6 @@ class InventoryService extends BaseService
     }
 
     /**
-     * Manual price adjustment
-     */
-    public function adjustPrice($inventory, $data)
-    {
-        $newPrice = $data['new_price'];
-        $reason = $data['reason'];
-
-        $inventory->update([
-            'sale_price' => $newPrice
-        ]);
-
-        // Log the price adjustment
-        $this->logPriceAdjustment($inventory, $newPrice, $reason);
-
-        return $inventory;
-    }
-
-    /**
      * Log stock adjustment for audit trail
      */
     private function logStockAdjustment($inventory, $adjustmentType, $quantity, $reason)
@@ -350,26 +358,6 @@ class InventoryService extends BaseService
                 'old_amount' => $inventory->getOriginal('amount'),
                 'new_amount' => $inventory->amount,
                 'description' => "Stock adjustment: {$adjustmentType} {$quantity} units. Reason: {$reason}"
-            ]),
-        ]);
-    }
-
-    /**
-     * Log price adjustment for audit trail
-     */
-    private function logPriceAdjustment($inventory, $newPrice, $reason)
-    {
-        // Use the existing ActivityTrait system with 'update' action
-        $reason = $reason ?: 'بدون دلیل';
-        $inventory->activities()->create([
-            'user_id' => auth()->user()->id,
-            'action' => 'update',
-            'data' => json_encode([
-                'adjustment_type' => 'price_adjustment',
-                'old_price' => $inventory->getOriginal('sale_price'),
-                'new_price' => $newPrice,
-                'reason' => $reason,
-                'description' => "Price adjustment: New price {$newPrice}. Reason: {$reason}"
             ]),
         ]);
     }

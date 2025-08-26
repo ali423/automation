@@ -64,12 +64,15 @@
                                     </div>
                                 </div>
                                 <div class="form-group col-md-4">
-                                    <label for="sale_price">قیمت فروش (تومان)</label>
-                                    <input type="number" step="0.01" min="0.01" name="sale_price" value="{{ old('sale_price', $inventory->sale_price) }}" class="form-control @error('sale_price') is-invalid @enderror"
-                                           id="sale_price" placeholder="قیمت فروش" required="">
-                                    <div class="invalid-feedback">
-                                        لطفاً قیمت فروش را وارد کنید.
-                                    </div>
+                                    <label>قیمت فروش (تومان)</label>
+                                    <input type="text" value="{{ $inventory->sale_price ? number_format($inventory->sale_price) : 'محاسبه نشده' }}" class="form-control" disabled>
+                                    <small class="form-text text-muted">
+                                        @if($inventory->commodity->type == 'product')
+                                            قیمت بر اساس درصد سود کالا محاسبه می‌شود
+                                        @else
+                                            مواد اولیه قیمت فروش ندارند
+                                        @endif
+                                    </small>
                                 </div>
                             </div>
                             <div class="form-row">
