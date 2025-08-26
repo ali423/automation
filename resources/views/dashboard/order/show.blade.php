@@ -149,39 +149,27 @@
                             <div class="d-flex justify-content-center border mt-3 mb-2">
                                 <div class="text-dark p-1">مشخصات خریدار</div>
                             </div>
-                            <table class="table customerspecs">
+                            <table class="table customerspecs" style="font-size: 11px; margin-bottom: 5px;">
                                 <tbody>
                                 <tr>
                                     <td class="text-left">
                                          نام خریدار: <span>{{ $order->customer ? $order->customer->name.'-'.($order->customer->comp_name ?? '') : ''}} </span></td>
-                                    <td></td>
-                                    <td></td>
                                     <td>شماره اقتصادی: {{$order->customer->economic_code ?? ''}}</td>
-                                    <td></td>
-                                    <td> شماره ملی:{{ $order->customer->national_code ?? ''}}</td>
-                                    <td></td>
+                                    <td>شماره ملی: {{$order->customer->national_code ?? ''}}</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-left">استان: <span> </span></td>
-                                    <td>شهرستان:</td>
-                                    <td></td>
-                                    <td> کدپستی:{{$order->customer->zip_code ?? ''}}</td>
-                                    <td></td>
-                                    <td>شهر:</td>
-                                    <td></td>
+                                    <td class="text-left">استان: <span>{{ $order->customer->province ?? '' }}</span></td>
+                                    <td>شهرستان: {{ $order->customer->city ?? '' }}</td>
+                                    <td>کدپستی: {{$order->customer->zip_code ?? ''}}</td>
                                 </tr>
                                 <tr>
                                     <td class="text-left">آدرس: <span>{{$order->customer->address ?? ''}} </span></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
+                                    <td>شهر: {{ $order->customer->city ?? '' }}</td>
                                     <td>تلفن: {{$order->customer->mobile ?? ''}}</td>
-                                    <td></td>
                                 </tr>
                                 </tbody>
                             </table>
-                            <table class="factortable table table-bordered text-center mt-3">
+                            <table class="factortable table table-bordered text-center mt-3" style="font-size: 11px; margin-bottom: 5px;">
                                 <thead>
                                 <tr class="table-secondary">
                                     <th scope="col">ردیف</th>
@@ -191,6 +179,7 @@
                                     <th scope="col">واحد</th>
                                     <th scope="col">تعداد کارتن</th>
                                     <th scope="col">تعداد در کارتن</th>
+                                    <th scope="col">مقدار اضافی</th>
                                     <th scope="col">فی</th>
                                     <th scope="col">جمع کل + مالیات</th>
                                 </tr>
@@ -203,14 +192,33 @@
                                         <td>{{ $item->commodity ? $item->commodity->title : '' }}</td>
                                         <td>{{ number_format($item->commodity_amount) }}</td>
                                         <td>{{ $item->unit_symbol }}</td>
-                                        <td></td>
-                                        <td></td>
+                                        <td>
+                                            @if(isset($order->box_quantities[$item->commodity_id]) && $order->box_quantities[$item->commodity_id]['can_calculate'])
+                                                {{ $order->box_quantities[$item->commodity_id]['boxes'] }}
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if(isset($order->box_quantities[$item->commodity_id]) && $order->box_quantities[$item->commodity_id]['can_calculate'])
+                                                {{ $order->box_quantities[$item->commodity_id]['pieces_per_box'] }}
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if(isset($order->box_quantities[$item->commodity_id]) && $order->box_quantities[$item->commodity_id]['can_calculate'])
+                                                {{ $order->box_quantities[$item->commodity_id]['remaining_pieces'] }}
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
                                         <td>{{ number_format($item->price) }}</td>
                                         <td>{{ number_format($item->total_price) }}</td>
                                     </tr>
                                     @endforeach
                                     <tr>
-                                        <td colspan="5" rowspan="3" class="text-left" style="vertical-align: top">
+                                        <td colspan="10" class="text-left" style="vertical-align: top">
                                             <div class="d-flex justify-content-between">
                                                 <span>شرایط و نحوه تسویه: </span>
                                                 <span>نقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
@@ -220,14 +228,16 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="4" class="text-left">جمع کل : {{ number_format($order->total_price) }}</td>
+                                        <td colspan="10" class="text-left">جمع کل : {{ number_format($order->total_price) }}</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="4" class="text-left">جمع کل به حروف: {{ $order->total_price }}</td>
+                                        <td colspan="10" class="text-left">جمع کل به حروف: {{ $order->total_price }}</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
-                                        <td colspan="4" class="text-left">مهر و امضای خریدار:</td>
+                                        <td colspan="10" class="text-left" style="height: 80px">مهر و امضای فروشنده:</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="10" class="text-left" style="height: 80px">مهر و امضای خریدار:</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -287,7 +297,13 @@
                     printDocument.write('.factortable th, .factortable td { padding: 8px; }');
                     printDocument.write('.card { border: none !important; box-shadow: none !important; }');
                     printDocument.write('.card-body { padding: 0 !important; }');
-                    printDocument.write('@media print { .btn { display: none !important; } .card { border: none !important; } }');
+                                         printDocument.write('@media print { .btn { display: none !important; } .card { border: none !important; } }');
+                     printDocument.write('.factortable { page-break-inside: avoid; }');
+                     printDocument.write('.customerspecs { page-break-inside: avoid; }');
+                     printDocument.write('tr { page-break-inside: avoid; }');
+                     printDocument.write('.table th, .table td { padding: 4px !important; font-size: 11px !important; }');
+                     printDocument.write('.customerspecs td { padding: 3px !important; font-size: 11px !important; }');
+                     printDocument.write('body { margin: 10px !important; padding: 10px !important; }');
                     printDocument.write('</style>');
                     printDocument.write('</head>');
                     printDocument.write('<body>');
@@ -324,7 +340,7 @@
                 
                 // Add print styles
                 var style = document.createElement('style');
-                style.textContent = 'body { font-family: "Tahoma", "Arial", sans-serif; direction: rtl; text-align: right; margin: 20px; background: white; } .table { width: 100%; border-collapse: collapse; margin-bottom: 20px; } .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: center; } .table th { background-color: #f8f9fa !important; font-weight: bold; } .text-left { text-align: right !important; } .text-center { text-align: center !important; } .border { border: 1px solid #000; } .logo img { max-width: 120px; height: auto; } .customerspecs td { padding: 5px; } .factortable th, .factortable td { padding: 8px; } .card { border: none !important; box-shadow: none !important; } .card-body { padding: 0 !important; } @media print { .btn { display: none !important; } }';
+                                 style.textContent = 'body { font-family: "Tahoma", "Arial", sans-serif; direction: rtl; text-align: right; margin: 10px; padding: 10px; background: white; } .table { width: 100%; border-collapse: collapse; margin-bottom: 10px; } .table th, .table td { border: 1px solid #ddd; padding: 4px; text-align: center; font-size: 11px; } .table th { background-color: #f8f9fa !important; font-weight: bold; } .text-left { text-align: right !important; } .text-center { text-align: center !important; } .border { border: 1px solid #000; } .logo img { max-width: 120px; height: auto; } .customerspecs td { padding: 3px; font-size: 11px; } .factortable th, .factortable td { padding: 4px; font-size: 11px; } .card { border: none !important; box-shadow: none !important; } .card-body { padding: 0 !important; } .factortable { page-break-inside: avoid; } .customerspecs { page-break-inside: avoid; } tr { page-break-inside: avoid; } @media print { .btn { display: none !important; } }';
                 document.head.appendChild(style);
                 
                 // Print

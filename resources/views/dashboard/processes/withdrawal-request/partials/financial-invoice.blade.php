@@ -138,7 +138,7 @@
                             @php($i++)
                         @endforeach
                         <tr>
-                            <td colspan="6" rowspan="4" class="text-left" style="vertical-align: top">
+                            <td colspan="10" rowspan="4" class="text-left" style="vertical-align: top">
                                 <div class="d-flex justify-content-between">
                                     <span>شرایط و نحوه تسویه: </span>
                                     <span>نقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
@@ -148,13 +148,13 @@
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="5" class="text-left"> مالیات بر ارزش افزوده : %10 </td>
+                            <td colspan="9" class="text-left"> مالیات بر ارزش افزوده : %10 </td>
                         </tr>
                         <tr>
-                            <td colspan="5" class="text-left">جمع کل : {{ isset($request->total_price) && isset($request->total_price['number']) ? number_format($request->total_price['number']) : '0' }}</td>
+                            <td colspan="9" class="text-left">جمع کل : {{ isset($request->total_price) && isset($request->total_price['number']) ? number_format($request->total_price['number']) : '0' }}</td>
                         </tr>
                         <tr>
-                            <td colspan="7" class="text-left">جمع کل به حروف: 
+                            <td colspan="9" class="text-left">جمع کل به حروف: 
                                 @if(isset($request->total_price) && isset($request->total_price['world']))
                                     {{ $request->total_price['world'] }} ریال
                                 @else
@@ -163,8 +163,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="6" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
-                            <td colspan="7" class="text-left">مهر و امضای خریدار:</td>
+                            <td colspan="10" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
+                            <td colspan="9" class="text-left">مهر و امضای خریدار:</td>
                         </tr>
                     </tbody>
                 </table>
