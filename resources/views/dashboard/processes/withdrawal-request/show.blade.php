@@ -95,12 +95,12 @@
                                 </div>
                                 <div class="form-group col-md-4">
                                     <label for="pieces_per_box">تعداد در کارتن</label>
-                                    <input type="text" value="{{ $commodity->pivot->pieces_per_box ?? 1 }}" class="form-control" disabled>
+                                    <input type="text" value="{{ $commodity->pieces_per_box ?? 1 }}" class="form-control" disabled>
                                 </div>
                                 @if(isset($commodity->pivot->price))
                                     <div class="form-group col-md-4">
                                         <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
-                                        <input type="text" value="{{ number_format($commodity->pivot->price) }}" class="form-control" disabled>
+                                        <input type="text" value="{{ $commodity->pivot->price ?? '-' }}" class="form-control" disabled>
                                     </div>
                                 @endif
                             </div>

@@ -3,6 +3,7 @@
 
 @section('page_styles')
     <link rel="stylesheet" href="{{ asset('css/imexport-print.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/imfactor-print.css') }}">
 @endsection
 
 @section('content')
@@ -188,10 +189,144 @@
 
         <div id="finvoice"><div class="factorbtn d-none"></div></div>
     </div>
+    
+    <!-- Invoice Templates -->
+    @include('dashboard.processes.importing-request.partials.invoice-template', ['invoiceType' => 'customer'])
+    @include('dashboard.processes.importing-request.partials.invoice-template', ['invoiceType' => 'documentation'])
+    @include('dashboard.processes.importing-request.partials.invoice-template', ['invoiceType' => 'warehouse'])
 @endsection
 
 @section('page_scripts')
     <!-- These plugins only need for the run this page -->
     <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
     <script src="{{ asset('js/entranceinvoice/entranceinvoice.js') }}"></script>
+    
+    <style>
+        /* Position invoices absolutely when shown to prevent them from affecting page layout */
+        .invoice.showprint, #finvoice2.showprint, #finvoice-tejarat.showprint {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: white !important;
+            z-index: 9999 !important;
+            overflow-y: auto !important;
+            padding: 20px !important;
+        }
+        
+        /* Ensure invoices are hidden by default */
+        .invoice, #finvoice2, #finvoice-tejarat {
+            display: none !important;
+        }
+        
+        /* Override the showprint display for proper positioning */
+        .invoice.showprint, #finvoice2.showprint, #finvoice-tejarat.showprint {
+            display: block !important;
+        }
+    </style>
+    
+    <script>
+        // Debug script to check if invoices are working
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Import request page loaded');
+            
+            // Check if invoice elements exist
+            const customerInvoice = document.querySelector("#invoice-customer");
+            const documentationInvoice = document.querySelector("#invoice-documentation");
+            const warehouseInvoice = document.querySelector("#invoice-warehouse");
+            
+            console.log('Customer invoice element:', customerInvoice);
+            console.log('Documentation invoice element:', documentationInvoice);
+            console.log('Warehouse invoice element:', warehouseInvoice);
+            
+            // Check if buttons exist
+            const customerBtn = document.querySelector(".customerbtn");
+            const documentationBtn = document.querySelector(".documentationbtn");
+            const warehouseBtn = document.querySelector(".warehousebtn");
+            
+            console.log('Customer button:', customerBtn);
+            console.log('Documentation button:', documentationBtn);
+            console.log('Warehouse button:', warehouseBtn);
+            
+            // Test invoice display
+            if (customerBtn && customerInvoice) {
+                customerBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Customer button clicked');
+                    
+                    // Hide all invoices first
+                    document.querySelectorAll('.invoice').forEach(inv => {
+                        inv.style.display = 'none';
+                    });
+                    
+                    // Show customer invoice
+                    customerInvoice.style.display = 'block';
+                    customerInvoice.style.position = 'fixed';
+                    customerInvoice.style.top = '0';
+                    customerInvoice.style.left = '0';
+                    customerInvoice.style.width = '100%';
+                    customerInvoice.style.height = '100%';
+                    customerInvoice.style.background = 'white';
+                    customerInvoice.style.zIndex = '9999';
+                    customerInvoice.style.overflowY = 'auto';
+                    customerInvoice.style.padding = '20px';
+                    
+                    console.log('Customer invoice should be visible now');
+                });
+            }
+            
+            if (documentationBtn && documentationInvoice) {
+                documentationBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Documentation button clicked');
+                    
+                    // Hide all invoices first
+                    document.querySelectorAll('.invoice').forEach(inv => {
+                        inv.style.display = 'none';
+                    });
+                    
+                    // Show documentation invoice
+                    documentationInvoice.style.display = 'block';
+                    documentationInvoice.style.position = 'fixed';
+                    documentationInvoice.style.top = '0';
+                    documentationInvoice.style.left = '0';
+                    documentationInvoice.style.width = '100%';
+                    documentationInvoice.style.height = '100%';
+                    documentationInvoice.style.background = 'white';
+                    documentationInvoice.style.zIndex = '9999';
+                    documentationInvoice.style.overflowY = 'auto';
+                    documentationInvoice.style.padding = '20px';
+                    
+                    console.log('Documentation invoice should be visible now');
+                });
+            }
+            
+            if (warehouseBtn && warehouseInvoice) {
+                warehouseBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Warehouse button clicked');
+                    
+                    // Hide all invoices first
+                    document.querySelectorAll('.invoice').forEach(inv => {
+                        inv.style.display = 'none';
+                    });
+                    
+                    // Show warehouse invoice
+                    warehouseInvoice.style.display = 'block';
+                    warehouseInvoice.style.position = 'fixed';
+                    warehouseInvoice.style.top = '0';
+                    warehouseInvoice.style.left = '0';
+                    warehouseInvoice.style.width = '100%';
+                    warehouseInvoice.style.height = '100%';
+                    warehouseInvoice.style.background = 'white';
+                    warehouseInvoice.style.zIndex = '9999';
+                    warehouseInvoice.style.overflowY = 'auto';
+                    warehouseInvoice.style.padding = '20px';
+                    
+                    console.log('Warehouse invoice should be visible now');
+                });
+            }
+        });
+    </script>
 @endsection

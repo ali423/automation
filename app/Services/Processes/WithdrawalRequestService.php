@@ -35,7 +35,6 @@ class WithdrawalRequestService extends BaseService
                 'amount' => $data['amount'][$key],
                 'unit_id' => $data['unit_id'][$key],
                 'price' => $data['price'][$key] ?? null,
-                'pieces_per_box' => $data['pieces_per_box'][$key] ?? 1,
             ];
         }
         
@@ -80,7 +79,6 @@ class WithdrawalRequestService extends BaseService
                 'amount' => $data['amount'][$key],
                 'unit_id' => $data['unit_id'][$key],
                 'price' => $data['price'][$key] ?? null,
-                'pieces_per_box' => $data['pieces_per_box'][$key] ?? 1,
             ];
         }
         

@@ -31,12 +31,10 @@ class CreateWithdrawalRequest extends FormRequest
             'commodity_id' => ['required', 'array', 'min:1'],
             'unit_id' => ['required', 'array', 'min:1'],
             'amount' => ['required', 'array', 'min:1'],
-            'pieces_per_box' => ['required', 'array', 'min:1'],
             'price' => ['nullable', 'array'],
             'commodity_id.*' => ['required', 'exists:commodities,id', 'distinct'],
             'unit_id.*' => ['required', 'exists:units,id'],
             'amount.*' => ['required', 'numeric', 'min:0.01'],
-            'pieces_per_box.*' => ['required', 'numeric', 'min:1'],
             'price.*' => ['nullable', 'numeric'],
             'file' => ['nullable', 'mimes:jpg,svg,png,jpeg,pdf,txt,zip,rar', 'max:5120'],
             'comment' => ['nullable', 'string'],
@@ -54,22 +52,20 @@ class CreateWithdrawalRequest extends FormRequest
         $validator->after(function ($validator) {
             $commodityIds = $this->input('commodity_id', []);
             $unitIds = $this->input('unit_id', []);
-            $piecesPerBox = $this->input('pieces_per_box', []);
             
-            if (count($commodityIds) !== count($unitIds) || count($commodityIds) !== count($piecesPerBox)) {
+            if (count($commodityIds) !== count($unitIds)) {
                 return;
             }
             
             $commodityUnitService = app(CommodityUnitService::class);
             
             foreach ($commodityIds as $index => $commodityId) {
-                if (!isset($unitIds[$index]) || !isset($piecesPerBox[$index])) {
+                if (!isset($unitIds[$index])) {
                     continue;
                 }
                 
                 $commodity = Commodity::find($commodityId);
                 $unitId = $unitIds[$index];
-                $piecesPerBoxValue = $piecesPerBox[$index];
                 
                 if (!$commodity) {
                     continue;
@@ -83,12 +79,7 @@ class CreateWithdrawalRequest extends FormRequest
                 }
                 
                 // Validate pieces per box value
-                if ($piecesPerBoxValue < 1) {
-                    $validator->errors()->add(
-                        "pieces_per_box.{$index}", 
-                        'تعداد در کارتن باید حداقل 1 باشد.'
-                    );
-                }
+                // This validation is no longer needed as pieces_per_box is removed
             }
         });
     }
@@ -120,12 +111,6 @@ class CreateWithdrawalRequest extends FormRequest
             'amount.*.required' => 'مقدار کالا الزامی است.',
             'amount.*.numeric' => 'مقدار کالا باید عدد باشد.',
             'amount.*.min' => 'مقدار کالا باید بیشتر از صفر باشد.',
-            'pieces_per_box.required' => 'تعداد در کارتن الزامی است.',
-            'pieces_per_box.array' => 'فرمت تعداد در کارتن صحیح نیست.',
-            'pieces_per_box.min' => 'حداقل یک تعداد در کارتن باید وارد شود.',
-            'pieces_per_box.*.required' => 'تعداد در کارتن الزامی است.',
-            'pieces_per_box.*.numeric' => 'تعداد در کارتن باید عدد باشد.',
-            'pieces_per_box.*.min' => 'تعداد در کارتن باید حداقل 1 باشد.',
             'price.*.numeric' => 'قیمت باید عدد باشد.',
             'file.mimes' => 'فرمت فایل مجاز نیست.',
             'file.max' => 'حجم فایل نباید بیشتر از 5 مگابایت باشد.',

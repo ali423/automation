@@ -28,7 +28,8 @@ class CommodityRequest extends FormRequest
             'title'=>['required','unique:commodities,title'],
             'type'=>['required','in:material,product'],
             'warning_limit'=>['required','numeric'],
-            'unit_id' =>['required', 'exists:units,id']
+            'unit_id' =>['required', 'exists:units,id'],
+            'pieces_per_box' =>['required','integer','min:1'],
         ];
 
         // For products, allow any unit
