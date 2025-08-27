@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title','ویرایش درخواست فروش کالا')
+@section('title','ویرایش درخواست فروش محصول')
 
 @section('page_styles')
 
@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-xl-12 box-margin height-card">
             <div class="card card-body">
-                <h4 class="card-title">ویرایش درخواست فروش کالا</h4>
+                <h4 class="card-title">ویرایش درخواست فروش محصول</h4>
 
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
@@ -32,7 +32,7 @@
                                 </div>
                             </div>
                             <div id="product_formul" class="col-lg-12">
-                                <p>اطلاعات فروش کالا</p>
+                                <p>اطلاعات فروش محصول</p>
                                 @foreach ($request->commodities as $index => $commodity)
                                 <div id="inputFormRow" class="form-row shadow p-4 mb-3">
                                     <div class="form-group col-md-6">
@@ -43,7 +43,7 @@
                                                 <option value="{{ $commodityOption->id }}" {{ $commodity->id == $commodityOption->id ? 'selected' : '' }}>{{ $commodityOption->title }}</option>
                                             @endforeach
                                         </select>
-                                        <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
+                                        <div class="invalid-feedback">محصول را انتخاب کنید.</div>
                                     </div>
                                     <div class="form-group col-md-6">
                                         <label for="unit"> {{ __('fields.unit') }}</label>
@@ -80,7 +80,7 @@
                                 @endforeach
 
                                 <div id="newRow"></div>
-                                <button id="addRow" type="button" class="btn btn-dfprimary mb-3">+ افزودن کالا</button>
+                                <button id="addRow" type="button" class="btn btn-dfprimary mb-3">+ افزودن محصول</button>
                             </div>
 
                             <div class="form-group">
