@@ -93,16 +93,22 @@
 
                         <div class="row">
                             <div class="col-md-6">
-                                <a href="{{ route('order.edit', $order) }}" class="btn btn-primary">ویرایش</a>
-                                <form method="post" action="{{ route('order.destroy', $order) }}" class="d-inline w-50">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger"
-                                            onclick="return confirm('آیا از حذف این سفارش مطمئن هستید؟');">حذف سفارش</button>
-                                </form>
+                                @if($order->status !== 'done')
+                                    <a href="{{ route('order.edit', $order) }}" class="btn btn-primary">ویرایش</a>
+                                    <form method="post" action="{{ route('order.destroy', $order) }}" class="d-inline w-50">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger"
+                                                onclick="return confirm('آیا از حذف این سفارش مطمئن هستید؟');">حذف سفارش</button>
+                                    </form>
+                                @else
+                                    <span class="text-muted">سفارش تحویل شده - امکان ویرایش و حذف وجود ندارد</span>
+                                @endif
                             </div>
                             <div class="col-md-6 text-md-right">
-                                <a href="{{ route('order.confirm', $order) }}" class="btn btn-success">تحویل سفارش</a>
+                                @if($order->status !== 'done')
+                                    <a href="{{ route('order.confirm', $order) }}" class="btn btn-success">تحویل سفارش</a>
+                                @endif
                             </div>
                         </div>
 
