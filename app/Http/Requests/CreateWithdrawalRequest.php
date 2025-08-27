@@ -71,6 +71,15 @@ class CreateWithdrawalRequest extends FormRequest
                     continue;
                 }
                 
+                // Ensure only products can be selected for withdrawal requests
+                if ($commodity->type !== 'product') {
+                    $validator->errors()->add(
+                        "commodity_id.{$index}", 
+                        'فقط محصولات قابل انتخاب برای درخواست فروش هستند.'
+                    );
+                    continue;
+                }
+                
                 if (!$commodityUnitService->isUnitSelectable($commodity, $unitId)) {
                     $validator->errors()->add(
                         "unit_id.{$index}", 
@@ -94,12 +103,12 @@ class CreateWithdrawalRequest extends FormRequest
         return [
             'customer_id.required' => 'انتخاب مشتری الزامی است.',
             'customer_id.exists' => 'مشتری انتخاب شده معتبر نیست.',
-            'commodity_id.required' => 'انتخاب حداقل یک کالا الزامی است.',
-            'commodity_id.array' => 'فرمت کالاها صحیح نیست.',
-            'commodity_id.min' => 'حداقل یک کالا باید انتخاب شود.',
-            'commodity_id.*.required' => 'انتخاب کالا الزامی است.',
-            'commodity_id.*.exists' => 'کالای انتخاب شده معتبر نیست.',
-            'commodity_id.*.distinct' => 'کالای تکراری انتخاب شده است.',
+            'commodity_id.required' => 'انتخاب حداقل یک محصول الزامی است.',
+            'commodity_id.array' => 'فرمت محصولات صحیح نیست.',
+            'commodity_id.min' => 'حداقل یک محصول باید انتخاب شود.',
+            'commodity_id.*.required' => 'انتخاب محصول الزامی است.',
+            'commodity_id.*.exists' => 'محصول انتخاب شده معتبر نیست.',
+            'commodity_id.*.distinct' => 'محصول تکراری انتخاب شده است.',
             'unit_id.required' => 'انتخاب واحد الزامی است.',
             'unit_id.array' => 'فرمت واحدها صحیح نیست.',
             'unit_id.min' => 'حداقل یک واحد باید انتخاب شود.',

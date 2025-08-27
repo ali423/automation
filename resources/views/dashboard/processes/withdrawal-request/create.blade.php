@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title','ثبت درخواست فروش کالا')
+@section('title','ثبت درخواست فروش محصول')
 
 @section('page_styles')
 
@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-xl-12 box-margin height-card">
             <div class="card card-body">
-                <h4 class="card-title">ثبت درخواست فروش کالا</h4>
+                <h4 class="card-title">ثبت درخواست فروش محصول</h4>
 
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
@@ -31,7 +31,7 @@
                                 </div>
                             </div>
                             <div id="product_formul" class="col-lg-12">
-                                <p>اطلاعات فروش کالا</p>
+                                <p>اطلاعات فروش محصول</p>
                                 <div id="inputFormRow" class="form-row shadow p-4 mb-3">
                                     <div class="form-group col-md-6">
                                         <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
@@ -42,7 +42,7 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                        <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div>
+                                        <div class="invalid-feedback">محصول را انتخاب کنید.</div>
                                     </div>
                                     <div class="form-group col-md-6">
                                         <label for="unit"> {{ __('fields.unit') }}</label>
@@ -69,7 +69,7 @@
                                 </div>
 
                                 <div id="newRow"></div>
-                                <button id="addRow" type="button" class="btn btn-dfprimary mb-3">+ افزودن کالا</button>
+                                <button id="addRow" type="button" class="btn btn-dfprimary mb-3">+ افزودن محصول</button>
                             </div>
 
                             <div class="form-group">
@@ -128,7 +128,7 @@
 
         // add row
         $("#addRow").click(function() {
-            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-6"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]"  onchange="pricefunc(this)" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div> <div class="form-group col-md-6"> <label for="unit"> {{ __('fields.unit') }}</label> <select id="unit" class="form-control" name="unit_id[]" required> <option value="">انتخاب کنید...</option></select> <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div> </div> <div class="form-group col-md-4"> <label for="amount"> {{  __('fields.commodity.amount') }}</label> <input type="number" min="1" name="amount[]" class="form-control"id="amount" autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]"  required=""> <div class="invalid-feedback">لطفاً {{  __('fields.commodity.amount') }} را وارد کنید. </div></div><div id="priceholder" class="form-group col-md-4"><label for="price"> {{  __('fields.sell-price_per_unit') }}</label><input type="number" id="price" min="1" name="price[]" class="form-control" autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}" pattern="[0-9 .]" ><div class="invalid-feedback">{{ __('fields.sell-price_per_unit') }} را وارد کنید.</div></div> <i id="removeRow" type="submit" class="ti-close"></i></div></div>';
+            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-6"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]"  onchange="pricefunc(this)" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select> <div class="invalid-feedback">محصول را انتخاب کنید.</div> </div> <div class="form-group col-md-6"> <label for="unit"> {{ __('fields.unit') }}</label> <select id="unit" class="form-control" name="unit_id[]" required> <option value="">انتخاب کنید...</option></select> <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div> </div> <div class="form-group col-md-4"> <label for="amount"> {{  __('fields.commodity.amount') }}</label> <input type="number" min="1" name="amount[]" class="form-control"id="amount" autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]"  required=""> <div class="invalid-feedback">لطفاً {{  __('fields.commodity.amount') }} را وارد کنید. </div></div><div id="priceholder" class="form-group col-md-4"><label for="price"> {{  __('fields.sell-price_per_unit') }}</label><input type="number" id="price" min="1" name="price[]" class="form-control" autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}" pattern="[0-9 .]" ><div class="invalid-feedback">{{ __('fields.sell-price_per_unit') }} را وارد کنید.</div></div> <i id="removeRow" type="submit" class="ti-close"></i></div></div>';
             $('#newRow').append(html);
             document.querySelectorAll('#inputFormRow').forEach((element,index) => {
                 element.querySelector('#commodity_id').setAttribute('name', 'commodity_id['+index+']');
@@ -162,10 +162,7 @@
 
             // Get commodity type from preloaded data
             var type = commodityTypesData[id];
-            if (type === "material") {
-                // For withdrawal requests, we might want to show price field for all commodities
-                // or handle it differently based on business logic
-            }
+            // Note: Only products are available for selection in withdrawal requests
 
             // Get selectable units from preloaded data
             var units = commodityUnitsData[id];

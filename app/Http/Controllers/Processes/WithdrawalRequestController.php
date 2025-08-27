@@ -47,11 +47,11 @@ class WithdrawalRequestController extends Controller
      */
     public function create()
     {
-        $commodities = Commodity::query()->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get();
+        $commodities = Commodity::query()->where('type', 'product')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get();
         $customers = Customer::query()->get();
         
         if (count($commodities) < 1) {
-            return redirect(route('commodity.create'))->withErrors('ابتدا حداقل یک کالا ثبت کنید .');
+            return redirect(route('commodity.create'))->withErrors('ابتدا حداقل یک محصول ثبت کنید .');
         }
         if (count($customers) < 1) {
             return redirect(route('customer.create'))->withErrors('ابتدا حداقل یک مشتری ثبت کنید .');
@@ -158,7 +158,7 @@ class WithdrawalRequestController extends Controller
         
         return view('dashboard.processes.withdrawal-request.edit', [
             'request' => $withdrawalRequest,
-            'commodities' => Commodity::query()->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get(),
+            'commodities' => Commodity::query()->where('type', 'product')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get(),
             'customers' => Customer::query()->get(),
         ]);
     }
