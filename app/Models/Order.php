@@ -101,6 +101,15 @@ class Order extends Model
     }
 
     /**
+     * Get box quantities for each commodity based on pieces per box
+     */
+    public function getBoxQuantitiesAttribute()
+    {
+        $boxCalculationService = app(\App\Services\BoxCalculationService::class);
+        return $boxCalculationService->getOrderBoxQuantities($this->orderItems);
+    }
+
+    /**
      * Get the main unit amount for each order item
      * This is a computed attribute that calculates the equivalent amount in the main unit
      */

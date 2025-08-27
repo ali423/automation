@@ -21,7 +21,6 @@
                             <tr>
                                 <th>ردیف</th>
                                 <th> {{ __('fields.customer') }}</th>
-                                <th> {{ __('fields.commodity.amount') }}</th>
                                 <th>تعداد کالا</th>
                                 <th>{{ __('fields.deadline') }}</th>
                                 <th>{{ __('fields.status') }}</th>
@@ -35,7 +34,6 @@
                                 <tr>
                                     <td></td>
                                     <td>{{ $order->customer ? $order->customer->name : 'مشتری حذف شده' }}</td>
-                                    <td>{{ $order->formatted_total_amount }}</td>
                                     <td>{{ $order->orderItems->count() }} کالا</td>
                                     <td>{{ $order->deadline }}</td>
                                     <td>{{ __('fields.order.status.' . $order->status) }}</td>
@@ -85,12 +83,12 @@
 
             $('#datatable-buttons-customer').DataTable({
                 dom: 'Bfrtip',
-                buttons: [{
+                buttons: [                    {
                         extend: 'copy',
                         text: "کپی",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
+                            columns: [4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
@@ -102,7 +100,7 @@
                         text: 'pdf',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
+                            columns: [4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
@@ -110,7 +108,7 @@
                         },
                         customize: function(doc) {
                             doc.defaultStyle.font = "IRANSansWeb";
-                            doc.content[1].table.widths = ['20%','20%', '20%', '20%', '20%', '20%'];
+                            doc.content[1].table.widths = ['20%','20%', '20%', '20%', '20%'];
                             doc.styles.tableBodyEven.alignment = 'center';
                             doc.styles.tableBodyOdd.alignment = 'center';
                         }
@@ -119,7 +117,7 @@
                         extend: 'excel',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
+                            columns: [4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             }
@@ -129,7 +127,7 @@
                         extend: 'csv',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
+                            columns: [4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             }
@@ -140,7 +138,7 @@
                         text: "پرینت",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5],
+                            columns: [0, 1, 2, 3, 4],
                             modifier: {
                                 page: 'current'
                             },

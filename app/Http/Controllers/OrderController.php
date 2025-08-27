@@ -151,7 +151,7 @@ class OrderController extends Controller
     public function edit(Order $order)
     {
         // Prevent editing of done orders
-        if (!in_array($order->status, ['pending'])) {
+        if ($order->status === 'done') {
             return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد. سفارش‌های تحویل شده قابل ویرایش نیستند.');
         }
         
@@ -190,7 +190,7 @@ class OrderController extends Controller
     public function update(OrderRequest $request, Order $order)
     {
         // Prevent editing of done orders
-        if (!in_array($order->status, ['pending'])) {
+        if ($order->status === 'done') {
             return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد. سفارش‌های تحویل شده قابل ویرایش نیستند.');
         }
         
@@ -221,7 +221,7 @@ class OrderController extends Controller
     public function destroy(Order $order)
     {
         // Prevent deletion of done orders
-        if (!in_array($order->status, ['pending'])) {
+        if ($order->status === 'done') {
             return redirect()->back()->withErrors('در این مرحله امکان حذف وجود ندارد. سفارش‌های تحویل شده قابل حذف نیستند.');
         }
         
