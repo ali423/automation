@@ -106,7 +106,7 @@
                             <tr>
                                 <td scope="row">{{ $i }}</td>
                                 <td>{{ $commodity->number }}</td>
-                                <td>{{ $commodity->barcode ?? '2923649785421' }}</td>
+                                <td>{{ $commodity->product_identifier ?? '2923649785421' }}</td>
                                 <td>{{ $commodity->title }}</td>
                                 <td>{{ number_format($commodity->pivot->amount) }}</td>
                                 <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name : 'نامشخص') : 'نامشخص' }}</td>

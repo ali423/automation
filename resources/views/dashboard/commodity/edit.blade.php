@@ -59,6 +59,13 @@
                                            @if($commodity->type == 'product') required @endif>
                                     <div class="invalid-feedback">لطفاً تعداد در کارتن را وارد کنید</div>
                                 </div>
+                                <div class="form-group col-md-6" id="product_identifier_group" @if($commodity->type == 'material') style="display: none;" @endif>
+                                    <label for="product_identifier">شناسه کالا</label>
+                                    <input type="text" name="product_identifier" value="{{ $commodity->product_identifier }}" class="form-control"
+                                           id="product_identifier" placeholder="شناسه کالا" 
+                                           @if($commodity->type == 'product') required @endif>
+                                    <div class="invalid-feedback">لطفاً شناسه کالا را وارد کنید</div>
+                                </div>
                             </div>
                             <div class="form-row">
                                 <div class="form-group col-md-6">

@@ -53,6 +53,12 @@
                                            id="pieces_per_box" min="1" placeholder="مثال: 24" required="">
                                     <div class="invalid-feedback">لطفاً تعداد در کارتن را وارد کنید</div>
                                 </div>
+                                <div class="form-group col-md-6" id="product_identifier_group" style="display: none;">
+                                    <label for="product_identifier">شناسه کالا </label>
+                                    <input type="text" name="product_identifier" value="{{ old('product_identifier') }}" class="form-control"
+                                           id="product_identifier" placeholder="شناسه کالا " required="">
+                                    <div class="invalid-feedback">لطفاً شناسه کالا را وارد کنید</div>
+                                </div>
                                 <div class="form-group col-md-6">
                                     <label for="warning_limit"> {{ __('fields.warning_limit') }} <span class="unit_label">(کیلوگرم)</span></label>
                                     <input type="number" step="0.01" name="warning_limit"
@@ -180,15 +186,21 @@
             if (selectedType === 'product') {
                 $('input[name="purchase_price"]').removeAttr('required');
                 $('input[name="profit_margin"]').attr('required', 'required');
+                $('input[name="product_identifier"]').attr('required', 'required');
                 $('#pieces_per_box_group').show();
+                $('#product_identifier_group').show();
             } else if (selectedType === 'material') {
                 $('input[name="purchase_price"]').attr('required', 'required');
                 $('input[name="profit_margin"]').removeAttr('required');
+                $('input[name="product_identifier"]').removeAttr('required');
                 $('#pieces_per_box_group').hide();
+                $('#product_identifier_group').hide();
             } else {
                 $('input[name="purchase_price"]').removeAttr('required');
                 $('input[name="profit_margin"]').removeAttr('required');
+                $('input[name="product_identifier"]').removeAttr('required');
                 $('#pieces_per_box_group').hide();
+                $('#product_identifier_group').hide();
             }
         });
         
@@ -212,8 +224,9 @@
         
         // Trigger type change on page load if type is already selected
         $(document).ready(function() {
-            // Hide pieces_per_box field by default
+            // Hide pieces_per_box and product_identifier fields by default
             $('#pieces_per_box_group').hide();
+            $('#product_identifier_group').hide();
             
             if ($('#type').val()) {
                 $('#type').trigger('change');
@@ -233,6 +246,15 @@
                     e.preventDefault();
                     alert('لطفاً واحد را برای محصول انتخاب کنید.');
                     $('#unit').focus();
+                    return false;
+                }
+                
+                // Validate product identifier
+                var productIdentifier = $('input[name="product_identifier"]').val();
+                if (!productIdentifier || productIdentifier.trim() === '') {
+                    e.preventDefault();
+                    alert('لطفاً شناسه کالا را برای محصول وارد کنید.');
+                    $('input[name="product_identifier"]').focus();
                     return false;
                 }
                 

@@ -14,6 +14,7 @@ class Commodity extends Model
 
     protected $fillable = [
         'number',
+        'product_identifier',
         'title',
         'profit_margin',
         'type',

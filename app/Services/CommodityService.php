@@ -31,6 +31,7 @@ class CommodityService extends BaseService
             // Create the product first
             $product = Commodity::query()->create([
                 'number' => $number,
+                'product_identifier' => $data['product_identifier'],
                 'title' => $data['title'],
                 'profit_margin' => $data['profit_margin'],
                 'type' => $data['type'],
@@ -69,6 +70,7 @@ class CommodityService extends BaseService
             // Update the product first
             $commodity->update([
                 'title' => $data['title'],
+                'product_identifier' => $data['product_identifier'],
                 'profit_margin' => $data['profit_margin'],
                 'warning_limit'=>$data['warning_limit'],
                 'unit_id' => $data['unit_id'],
