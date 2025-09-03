@@ -192,4 +192,31 @@ class Order extends Model
 
         return $this->orderItems->firstWhere('unit_id', $mostCommonUnitId)->unit;
     }
+
+    /**
+     * Get the total weight in kg for all items in this order
+     */
+    public function getTotalWeightKgAttribute()
+    {
+        return calculate_order_total_weight($this);
+    }
+
+    /**
+     * Get weight breakdown for each item in the order
+     */
+    public function getWeightBreakdownAttribute()
+    {
+        $breakdown = [];
+        foreach ($this->orderItems as $item) {
+            $weight = calculate_weight($item->commodity, $item->commodity_amount, $item->unit_id);
+            $breakdown[] = [
+                'commodity_title' => $item->commodity ? $item->commodity->title : 'نامشخص',
+                'amount' => $item->commodity_amount,
+                'unit' => $item->unit ? $item->unit->symbol : 'نامشخص',
+                'weight_kg' => $weight,
+                'weight_per_unit_kg' => $item->commodity ? $item->commodity->weight_per_unit : null,
+            ];
+        }
+        return $breakdown;
+    }
 }

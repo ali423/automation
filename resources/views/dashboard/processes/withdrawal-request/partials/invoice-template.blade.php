@@ -41,12 +41,13 @@
                         <colgroup>
                             <col span="1" style="width: 5%;">
                             <col span="1" style="width: 8%;">
-                            <col span="1" style="width: 40%;">
+                            <col span="1" style="width: 35%;">
+                            <col span="1" style="width: 10%;">
                             <col span="1" style="width: 10%;">
                             <col span="1" style="width: 10%;">
                             @if($invoiceType === 'documentation')
-                                <col span="1" style="width: 13%;">
-                                <col span="1" style="width: 14%;">
+                                <col span="1" style="width: 12%;">
+                                <col span="1" style="width: 10%;">
                             @endif
                         </colgroup>
                         <thead>
@@ -56,6 +57,7 @@
                                 <th scope="col">مدل</th>
                                 <th scope="col">واحد</th>
                                 <th scope="col">تعداد</th>
+                                <th scope="col">وزن(کیلوگرم)</th>
                                 @if($invoiceType === 'documentation')
                                     <th scope="col">فی(ریال)</th>
                                     <th scope="col">جمع(ریال)</th>
@@ -63,7 +65,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @php($i = 1)
+                            @php
+                                $i = 1;
+                            @endphp
                             @foreach($request->commodities as $commodity)
                                 <tr>
                                     <td scope="row">{{ $i }}</td>
@@ -71,16 +75,25 @@
                                     <td style="text-align: center;">{{ $commodity->title }}</td>
                                     <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name : 'نامشخص') : 'نامشخص' }}</td>
                                     <td>{{ $commodity->pivot->amount }}</td>
+                                    <td>
+                                        @php
+                                            $weight = calculate_weight($commodity, $commodity->pivot->amount, $commodity->pivot->unit_id);
+                                        @endphp
+                                        {{ $weight !== null ? number_format($weight, 3) : '-' }}
+                                    </td>
                                     @if($invoiceType === 'documentation')
                                         <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
                                         <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price) : '-' }}</td>
                                     @endif
                                 </tr>
-                                @php($i++)
+                                @php
+                                    $i++;
+                                @endphp
                             @endforeach
                             <tr>
-                                <td colspan="{{ $invoiceType === 'documentation' ? '7' : '5' }}" class="text-right">
+                                <td colspan="{{ $invoiceType === 'documentation' ? '8' : '6' }}" class="text-right">
                                     مجموع وزن / مقدار: {{ $request->commodities->sum('pivot.amount') }}
+                                    <br>وزن کل: {{ $request->total_weight_kg !== null ? number_format($request->total_weight_kg, 3) . ' کیلوگرم' : 'نامشخص' }}
                                     @if($invoiceType === 'documentation')
                                         <br>مجموع: {{ isset($request->total_price) && isset($request->total_price['number']) ? number_format($request->total_price['number']) : '0' }}
                                     @endif

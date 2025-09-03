@@ -104,5 +104,30 @@ class WithdrawalRequest extends Model
         return $boxCalculationService->getWithdrawalBoxQuantities($this->commodities);
     }
 
+    /**
+     * Get the total weight in kg for all commodities in this withdrawal request
+     */
+    public function getTotalWeightKgAttribute()
+    {
+        return calculate_withdrawal_request_total_weight($this);
+    }
 
+    /**
+     * Get weight breakdown for each commodity in the withdrawal request
+     */
+    public function getWeightBreakdownAttribute()
+    {
+        $breakdown = [];
+        foreach ($this->commodities as $commodity) {
+            $weight = calculate_weight($commodity, $commodity->pivot->amount, $commodity->pivot->unit_id);
+            $breakdown[] = [
+                'commodity_title' => $commodity->title,
+                'amount' => $commodity->pivot->amount,
+                'unit' => $commodity->unit ? $commodity->unit->symbol : 'نامشخص',
+                'weight_kg' => $weight,
+                'weight_per_unit_kg' => $commodity->weight_per_unit,
+            ];
+        }
+        return $breakdown;
+    }
 }
