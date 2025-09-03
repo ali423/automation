@@ -26,6 +26,17 @@ class WithdrawalRequest extends Model
             ->with('unit');
     }
     
+    /**
+     * Get commodities with their pivot units properly loaded
+     * This relationship ensures pivot units are eager loaded to avoid N+1 queries
+     */
+    public function commoditiesWithPivotUnits()
+    {
+        return $this->belongsToMany(Commodity::class, 'withdrawal_commodities', 'withdrawal_id', 'commodity_id')
+            ->withPivot('amount', 'unit_id', 'price')
+            ->with('unit');
+    }
+    
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id');

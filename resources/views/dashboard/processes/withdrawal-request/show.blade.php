@@ -85,7 +85,7 @@
                                 <div class="form-group col-md-6">
                                     <label for="unit"> {{ __('fields.unit') }}</label>
                                     <input type="text"
-                                        value="{{ $commodity->pivot->unit_id ? (\App\Models\Unit::find($commodity->pivot->unit_id)->name . ' (' . \App\Models\Unit::find($commodity->pivot->unit_id)->symbol . ')') : '-' }}"
+                                        value="{{ $commodity->pivot->unit ? ($commodity->pivot->unit->name . ' (' . $commodity->pivot->unit->symbol . ')') : '-' }}"
                                         class="form-control" disabled>
                                 </div>
 

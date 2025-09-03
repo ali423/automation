@@ -73,7 +73,7 @@
                                     <td scope="row">{{ $i }}</td>
                                     <td>{{ $commodity->brand ?? 'زیگما' }}</td>
                                     <td style="text-align: center;">{{ $commodity->title }}</td>
-                                    <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name : 'نامشخص') : 'نامشخص' }}</td>
+                                    <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
                                     <td>{{ $commodity->pivot->amount }}</td>
                                     <td>
                                         @php

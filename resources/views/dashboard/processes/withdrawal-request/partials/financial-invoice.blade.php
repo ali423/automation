@@ -103,14 +103,16 @@
                     </tr>
                     </thead>
                     <tbody>
-                        @php($i = 1)
+                        @php
+                            $i = 1;
+                        @endphp
                         @foreach($request->commodities as $commodity)
                             <tr>
                                 <td scope="row">{{ $i }}</td>
                                 <td>{{ $commodity->number }}</td>
                                 <td>{{ $commodity->title }}</td>
                                 <td>{{ $commodity->pivot->amount }}</td>
-                                <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name : 'نامشخص') : 'نامشخص' }}</td>
+                                <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
                                 <td>
                                     @if(isset($request->box_quantities[$commodity->id]) && $request->box_quantities[$commodity->id]['can_calculate'])
                                         {{ $request->box_quantities[$commodity->id]['boxes'] }}
@@ -135,7 +137,9 @@
                                 <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
                                 <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price) : '-' }}</td>
                             </tr>
-                            @php($i++)
+                            @php
+                                $i++;
+                            @endphp
                         @endforeach
                         <tr>
                             <td colspan="10" rowspan="4" class="text-left" style="vertical-align: top">
