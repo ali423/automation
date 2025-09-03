@@ -14,7 +14,7 @@ class AddProductIdentifierToCommoditiesTable extends Migration
     public function up()
     {
         Schema::table('commodities', function (Blueprint $table) {
-            $table->string('product_identifier')->nullable()->after('number')->comment('شناسه کالا برای سامانه جامع تجارت');
+            $table->string('product_identifier')->nullable()->unique()->after('number')->comment('شناسه کالا برای سامانه جامع تجارت');
         });
     }
 

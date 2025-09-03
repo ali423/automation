@@ -36,7 +36,7 @@ class CommodityRequest extends FormRequest
         if ($this->get('type') == 'product') {
             $rules['pieces_per_box'] = ['required','integer','min:1'];
             $rules['unit_id'] = ['required', 'exists:units,id'];
-            $rules['product_identifier'] = ['required','string','max:255'];
+            $rules['product_identifier'] = ['required','string','max:255','unique:commodities,product_identifier'];
 
             $rules['materials']=['required','array','min:1'];
             $rules['materials.*']=['required',Rule::exists('commodities', 'id')->where('type','material'),'distinct'];
