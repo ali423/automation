@@ -46,11 +46,17 @@
                                         <option value="">انتخاب کنید...</option>
                                                                                  @foreach($units as $unit)
                                               <option value="{{ $unit->id }}" {{ $commodity->unit_id == $unit->id ? 'selected' : '' }}>
-                                                  {{ $unit->name }} ({{ $unit->symbol }}) }}
+                                                  {{ $unit->name }} ({{ $unit->symbol }})
                                               </option>
                                           @endforeach
                                     </select>
                                     <div class="invalid-feedback">واحد را انتخاب کنید</div>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="weight_per_unit">وزن هر واحد (کیلوگرم)</label>
+                                    <input type="number" step="0.001" name="weight_per_unit" value="{{ $commodity->weight_per_unit }}" class="form-control"
+                                           id="weight_per_unit" placeholder="مثال: 0.5" min="0.001">
+                                    <div class="invalid-feedback">لطفاً وزن هر واحد را وارد کنید</div>
                                 </div>
                                 <div class="form-group col-md-3" id="pieces_per_box_group" @if($commodity->type == 'material') style="display: none;" @endif>
                                     <label for="pieces_per_box">تعداد در کارتن</label>

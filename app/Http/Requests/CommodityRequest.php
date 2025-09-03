@@ -30,6 +30,7 @@ class CommodityRequest extends FormRequest
             'type'=>['required','in:material,product'],
             'warning_limit'=>['required','numeric'],
             'unit_id' =>['required', 'exists:units,id'],
+            'weight_per_unit'=>['nullable','numeric','min:0.001'],
         ];
 
         // For products, pieces_per_box is required
