@@ -105,6 +105,8 @@
                     <tbody>
                         @php
                             $i = 1;
+                            // Pre-calculate total price once to avoid multiple attribute calls
+                            $totalPrice = $request->total_price ?? null;
                         @endphp
                         @foreach($request->commodities as $commodity)
                             <tr>
@@ -155,12 +157,12 @@
                             <td colspan="9" class="text-left"> مالیات بر ارزش افزوده : %10 </td>
                         </tr>
                         <tr>
-                            <td colspan="9" class="text-left">جمع کل : {{ isset($request->total_price) && isset($request->total_price['number']) ? number_format($request->total_price['number']) : '0' }}</td>
+                            <td colspan="9" class="text-left">جمع کل : {{ isset($totalPrice) && isset($totalPrice['number']) ? number_format($totalPrice['number']) : '0' }}</td>
                         </tr>
                         <tr>
                             <td colspan="9" class="text-left">جمع کل به حروف: 
-                                @if(isset($request->total_price) && isset($request->total_price['world']))
-                                    {{ $request->total_price['world'] }} ریال
+                                @if(isset($totalPrice) && isset($totalPrice['world']))
+                                    {{ $totalPrice['world'] }} ریال
                                 @else
                                     صفر ریال
                                 @endif

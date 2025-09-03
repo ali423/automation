@@ -103,6 +103,8 @@
                     <tbody>
                         @php
                             $i = 1;
+                            // Pre-calculate total price once to avoid multiple attribute calls
+                            $totalPrice = $request->total_price ?? null;
                         @endphp
                         @foreach($request->commodities as $commodity)
                             <tr>
@@ -134,8 +136,8 @@
                     </tr>
                     <tr>
                         <td colspan="4" class="text-left">جمع کل : 
-                            @if(isset($request->total_price) && isset($request->total_price['number']))
-                                {{ number_format(round($request->total_price['number'] * 1.1)) }}
+                            @if(isset($totalPrice) && isset($totalPrice['number']))
+                                {{ number_format(round($totalPrice['number'] * 1.1)) }}
                             @else
                                 0
                             @endif
@@ -143,8 +145,8 @@
                     </tr>
                     <tr>
                         <td colspan="4" class="text-left">جمع کل به حروف:
-                            @if(isset($request->total_price) && isset($request->total_price['world']))
-                                {{ $request->total_price['world'] }} ریال
+                            @if(isset($totalPrice) && isset($totalPrice['world']))
+                                {{ $totalPrice['world'] }} ریال
                             @else
                                 صفر ریال
                             @endif

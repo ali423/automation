@@ -67,6 +67,9 @@
                         <tbody>
                             @php
                                 $i = 1;
+                                // Pre-calculate total price once to avoid multiple attribute calls
+                                $totalPrice = $request->total_price ?? null;
+                                $totalWeight = $request->total_weight_kg ?? null;
                             @endphp
                             @foreach($request->commodities as $commodity)
                                 <tr>
@@ -93,9 +96,9 @@
                             <tr>
                                 <td colspan="{{ $invoiceType === 'documentation' ? '8' : '6' }}" class="text-right">
                                     مجموع وزن / مقدار: {{ $request->commodities->sum('pivot.amount') }}
-                                    <br>وزن کل: {{ $request->total_weight_kg !== null ? number_format($request->total_weight_kg, 3) . ' کیلوگرم' : 'نامشخص' }}
+                                    <br>وزن کل: {{ $totalWeight !== null ? number_format($totalWeight, 3) . ' کیلوگرم' : 'نامشخص' }}
                                     @if($invoiceType === 'documentation')
-                                        <br>مجموع: {{ isset($request->total_price) && isset($request->total_price['number']) ? number_format($request->total_price['number']) : '0' }}
+                                        <br>مجموع: {{ isset($totalPrice) && isset($totalPrice['number']) ? number_format($totalPrice['number']) : '0' }}
                                     @endif
                                 </td>
                             </tr>

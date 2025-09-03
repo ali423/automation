@@ -58,6 +58,8 @@
                         @php
                             $i = 1;
                             $total_amount = 0;
+                            // Pre-calculate main unit data once for all commodities
+                            $mainUnitData = $request->getMainUnitAmountAttribute();
                         @endphp
                         @foreach ($request->commodities as $commodity)
                             <div id="inputFormRow" class="form-row shadow p-4 m-3">
@@ -66,7 +68,6 @@
                                     <div>
                                         <span>Main Unit Amount</span>
                                         @php
-                                            $mainUnitData = $request->getMainUnitAmountAttribute();
                                             $commodityMainUnit = $mainUnitData[$commodity->id] ?? null;
                                         @endphp
                                         <span>
@@ -95,7 +96,10 @@
                                 </div>
                                 <div class="form-group col-md-4">
                                     <label for="weight">وزن (کیلوگرم)</label>
-                                    <input type="text" value="{{ calculate_weight($commodity, $commodity->pivot->amount, $commodity->pivot->unit_id) !== null ? number_format(calculate_weight($commodity, $commodity->pivot->amount, $commodity->pivot->unit_id), 3) : 'نامشخص' }}" class="form-control" disabled>
+                                    @php
+                                        $weight = calculate_weight($commodity, $commodity->pivot->amount, $commodity->pivot->unit_id);
+                                    @endphp
+                                    <input type="text" value="{{ $weight !== null ? number_format($weight, 3) : 'نامشخص' }}" class="form-control" disabled>
                                 </div>
                                 <div class="form-group col-md-4">
                                     <label for="pieces_per_box">تعداد در کارتن</label>
