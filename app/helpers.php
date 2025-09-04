@@ -5,3 +5,75 @@ function getSystemModelsSymbol(){
         return  substr($item, 11);
     },array_keys(config('enums.models')));
 }
+
+if (!function_exists('calculate_weight')) {
+    /**
+     * Calculate the total weight in kg for a given amount of a commodity
+     *
+     * @param \App\Models\Commodity $commodity The commodity
+     * @param float $amount The amount of the commodity
+     * @param int|null $unitId The unit ID (if null, uses main unit)
+     * @return float|null The total weight in kg
+     */
+    function calculate_weight($commodity, $amount, $unitId = null)
+    {
+        if (!$commodity || !$commodity->weight_per_unit) {
+            return null;
+        }
+
+        // If no unit specified or unit is the main unit, return direct calculation
+        if (!$unitId || $unitId == $commodity->unit_id) {
+            return $amount * $commodity->weight_per_unit;
+        }
+
+        // Convert to main unit first, then calculate weight
+        $commodityUnitService = app(\App\Services\CommodityUnitService::class);
+        $amountInMainUnit = $commodityUnitService->convertToMainUnit($commodity, $amount, $unitId);
+        
+        if ($amountInMainUnit === null) {
+            return null;
+        }
+
+        return $amountInMainUnit * $commodity->weight_per_unit;
+    }
+}
+
+if (!function_exists('calculate_order_total_weight')) {
+    /**
+     * Calculate the total weight in kg for all items in an order
+     *
+     * @param \App\Models\Order $order The order
+     * @return float The total weight in kg
+     */
+    function calculate_order_total_weight($order)
+    {
+        $totalWeight = 0;
+        foreach ($order->orderItems as $item) {
+            $weight = calculate_weight($item->commodity, $item->commodity_amount, $item->unit_id);
+            if ($weight !== null) {
+                $totalWeight += $weight;
+            }
+        }
+        return $totalWeight;
+    }
+}
+
+if (!function_exists('calculate_withdrawal_request_total_weight')) {
+    /**
+     * Calculate the total weight in kg for all commodities in a withdrawal request
+     *
+     * @param \App\Models\WithdrawalRequest $withdrawalRequest The withdrawal request
+     * @return float The total weight in kg
+     */
+    function calculate_withdrawal_request_total_weight($withdrawalRequest)
+    {
+        $totalWeight = 0;
+        foreach ($withdrawalRequest->commodities as $commodity) {
+            $weight = calculate_weight($commodity, $commodity->pivot->amount, $commodity->pivot->unit_id);
+            if ($weight !== null) {
+                $totalWeight += $weight;
+            }
+        }
+        return $totalWeight;
+    }
+}

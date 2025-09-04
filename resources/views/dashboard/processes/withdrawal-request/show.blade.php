@@ -94,6 +94,10 @@
                                     <input type="text" value="{{ $commodity->pivot->amount }}" class="form-control" disabled>
                                 </div>
                                 <div class="form-group col-md-4">
+                                    <label for="weight">وزن (کیلوگرم)</label>
+                                    <input type="text" value="{{ calculate_weight($commodity, $commodity->pivot->amount, $commodity->pivot->unit_id) !== null ? number_format(calculate_weight($commodity, $commodity->pivot->amount, $commodity->pivot->unit_id), 3) : 'نامشخص' }}" class="form-control" disabled>
+                                </div>
+                                <div class="form-group col-md-4">
                                     <label for="pieces_per_box">تعداد در کارتن</label>
                                     <input type="text" value="{{ $commodity->pieces_per_box ?? 1 }}" class="form-control" disabled>
                                 </div>
@@ -105,6 +109,7 @@
                                 @endif
                             </div>
                         @endforeach
+
                         
                         @foreach ($request->comments as $comment)
                             <div class="form-group mb-20">

@@ -26,17 +26,20 @@ class CommodityService extends BaseService
                 'warning_limit'=>$data['warning_limit'],
                 'unit_id' => $data['unit_id'],
                 'pieces_per_box' => null, // Not needed for materials
+                'weight_per_unit' => $data['weight_per_unit'] ?? null,
             ]);
         } else {
             // Create the product first
             $product = Commodity::query()->create([
                 'number' => $number,
+                'product_identifier' => $data['product_identifier'],
                 'title' => $data['title'],
                 'profit_margin' => $data['profit_margin'],
                 'type' => $data['type'],
                 'warning_limit'=>$data['warning_limit'],
                 'unit_id' => $data['unit_id'],
                 'pieces_per_box' => $data['pieces_per_box'],
+                'weight_per_unit' => $data['weight_per_unit'] ?? null,
             ]);
             
             // Prepare materials data for unit-based formula
@@ -64,15 +67,18 @@ class CommodityService extends BaseService
                 'warning_limit'=>$data['warning_limit'],
                 'unit_id' => $data['unit_id'],
                 'pieces_per_box' => null, // Not needed for materials
+                'weight_per_unit' => $data['weight_per_unit'] ?? null,
             ]);
         } else {
             // Update the product first
             $commodity->update([
                 'title' => $data['title'],
+                'product_identifier' => $data['product_identifier'],
                 'profit_margin' => $data['profit_margin'],
                 'warning_limit'=>$data['warning_limit'],
                 'unit_id' => $data['unit_id'],
                 'pieces_per_box' => $data['pieces_per_box'],
+                'weight_per_unit' => $data['weight_per_unit'] ?? null,
             ]);
             
             // Prepare materials data for unit-based formula

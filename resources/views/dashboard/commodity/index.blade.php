@@ -22,6 +22,7 @@
                             <th>ردیف</th>
                             <th> {{ __('fields.title') }}</th>
                             <th> {{ __('fields.commodity.number') }}</th>
+                            <th>شناسه کالا</th>
                             <th> {{ __('fields.base_price') }}</th>
                             <th> {{ __('fields.type') }}</th>
                             <th>{{ __('fields.unit') }}</th>
@@ -36,6 +37,7 @@
                                 <td>{{ $i }}</td>
                                 <td>{{ $commodity->title }}</td>
                                 <td>{{ $commodity->number }}</td>
+                                <td>{{ $commodity->type == 'product' ? ($commodity->product_identifier ?? '-') : '-' }}</td>
                                 <td>{{ number_format($commodity->base_price) }}</td>
                                 <td>{{ __('fields.commodity.types')[$commodity->type] }}</td>
                                 <td>{{ $commodity->unit ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : '-' }}</td>
@@ -91,7 +93,7 @@
                     text: "کپی",
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [5, 4, 3, 2, 1, 0],
+                        columns: [6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         },
@@ -103,7 +105,7 @@
                     text: 'pdf',
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [5, 4, 3, 2, 1, 0],
+                        columns: [6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         },
@@ -111,7 +113,7 @@
                     },
                         customize: function (doc) {
                             doc.defaultStyle.font = "IRANSansWeb";
-                            doc.content[1].table.widths = ['20%', '20%', '20%', '20%', '20%', '20%', '20%'];
+                            doc.content[1].table.widths = ['10%', '20%', '15%', '15%', '15%', '10%', '10%', '5%'];
                             doc.styles.tableBodyEven.alignment = 'center';
                             doc.styles.tableBodyOdd.alignment = 'center';
                         }
@@ -120,7 +122,7 @@
                                             extend: 'excel',
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [5, 4, 3, 2, 1, 0],
+                        columns: [6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         }
@@ -130,7 +132,7 @@
                                             extend: 'csv',
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [5, 4, 3, 2, 1, 0],
+                        columns: [6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         }
@@ -141,7 +143,7 @@
                     text: "پرینت",
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5],
+                        columns: [0, 1, 2, 3, 4, 5, 6],
                         modifier: {
                             page: 'current'
                         },

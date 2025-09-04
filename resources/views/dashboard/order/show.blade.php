@@ -183,6 +183,7 @@
                                     <th scope="col">نام کالا</th>
                                     <th scope="col">تعداد / مقدار</th>
                                     <th scope="col">واحد</th>
+                                    <th scope="col">وزن (کیلوگرم)</th>
                                     <th scope="col">تعداد کارتن</th>
                                     <th scope="col">تعداد در کارتن</th>
                                     <th scope="col">مقدار اضافی</th>
@@ -198,6 +199,13 @@
                                         <td>{{ $item->commodity ? $item->commodity->title : '' }}</td>
                                         <td>{{ number_format($item->commodity_amount) }}</td>
                                         <td>{{ $item->unit_symbol }}</td>
+                                        <td>
+                                            @if($item->weight_kg !== null)
+                                                {{ number_format($item->weight_kg, 3) }}
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
                                         <td>
                                             @if(isset($order->box_quantities[$item->commodity_id]) && $order->box_quantities[$item->commodity_id]['can_calculate'])
                                                 {{ $order->box_quantities[$item->commodity_id]['boxes'] }}
@@ -224,7 +232,7 @@
                                     </tr>
                                     @endforeach
                                     <tr>
-                                        <td colspan="10" class="text-left" style="vertical-align: top">
+                                        <td colspan="11" class="text-left" style="vertical-align: top">
                                             <div class="d-flex justify-content-between">
                                                 <span>شرایط و نحوه تسویه: </span>
                                                 <span>نقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
@@ -234,16 +242,21 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="10" class="text-left">جمع کل : {{ number_format($order->total_price) }}</td>
+                                        <td colspan="11" class="text-left">
+                                            <div class="d-flex justify-content-between">
+                                                <span>جمع کل : {{ number_format($order->total_price) }}</span>
+                                                <span>وزن کل : {{ $order->total_weight_kg !== null ? number_format($order->total_weight_kg, 3) . ' کیلوگرم' : 'نامشخص' }}</span>
+                                            </div>
+                                        </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="10" class="text-left">جمع کل به حروف: {{ $order->total_price }}</td>
+                                        <td colspan="11" class="text-left">جمع کل به حروف: {{ $order->total_price }}</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="10" class="text-left" style="height: 80px">مهر و امضای فروشنده:</td>
+                                        <td colspan="11" class="text-left" style="height: 80px">مهر و امضای فروشنده:</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="10" class="text-left" style="height: 80px">مهر و امضای خریدار:</td>
+                                        <td colspan="11" class="text-left" style="height: 80px">مهر و امضای خریدار:</td>
                                     </tr>
                                 </tbody>
                             </table>

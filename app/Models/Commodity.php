@@ -14,6 +14,7 @@ class Commodity extends Model
 
     protected $fillable = [
         'number',
+        'product_identifier',
         'title',
         'profit_margin',
         'type',
@@ -21,6 +22,7 @@ class Commodity extends Model
         'warning_limit',
         'unit_id',
         'pieces_per_box',
+        'weight_per_unit',
     ];
 
     public function unit(){
@@ -132,5 +134,27 @@ class Commodity extends Model
     public function getProfitMarginPercentageAttribute()
     {
         return $this->profit_margin;
+    }
+
+    /**
+     * Calculate the total weight in kg for a given amount of this commodity
+     *
+     * @param float $amount The amount of the commodity
+     * @param int|null $unitId The unit ID (if null, uses main unit)
+     * @return float|null The total weight in kg
+     */
+    public function calculateWeight($amount, $unitId = null)
+    {
+        return calculate_weight($this, $amount, $unitId);
+    }
+
+    /**
+     * Get the weight per unit in kg
+     *
+     * @return float|null
+     */
+    public function getWeightPerUnitKgAttribute()
+    {
+        return $this->weight_per_unit;
     }
 }

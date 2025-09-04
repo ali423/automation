@@ -36,46 +36,39 @@
                         </div>
                         
                         <div class="form-row">
-                            @if($commodity->type == 'product')
+                            <div class="form-group col-md-6">
+                                <label>وزن هر واحد (کیلوگرم)</label>
+                                <input type="text" value="{{ $commodity->weight_per_unit ? number_format($commodity->weight_per_unit, 3) . ' کیلوگرم' : 'تعریف نشده' }}" class="form-control" disabled>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>{{ __('fields.creator') }}</label>
+                                <input type="text" value="{{ isset($commodity->creator_user) ? $commodity->creator_user->full_name : 'سیستم' }}" class="form-control" disabled>
+                            </div>
+                        </div>
+                        
+                        @if($commodity->type == 'product' && $commodity->product_identifier)
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>شناسه کالا</label>
+                                <input type="text" value="{{ $commodity->product_identifier }}" class="form-control" disabled>
+                            </div>
                             <div class="form-group col-md-6">
                                 <label>تعداد در کارتن</label>
                                 <input type="text" value="{{ $commodity->pieces_per_box ?? 1 }}" class="form-control" disabled>
                             </div>
-                            <div class="form-group col-md-6">
-                                <label>{{ __('fields.warning_limit') }} ({{ $commodity->unit ? $commodity->unit->symbol : '' }})</label>
-                                <input type="text" value="{{ number_format($commodity->warning_limit) }}" class="form-control" disabled>
-                            </div>
-                            @else
-                            <div class="form-group col-md-6">
-                                <label>{{ __('fields.warning_limit') }} ({{ $commodity->unit ? $commodity->unit->symbol : '' }})</label>
-                                <input type="text" value="{{ number_format($commodity->warning_limit) }}" class="form-control" disabled>
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label>{{ __('fields.created_at') }}</label>
-                                <input type="text" value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($commodity->created_at)) }}" class="form-control" disabled>
-                            </div>
-                            @endif
-                        </div>
-                        
-                        @if($commodity->type == 'product')
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label>{{ __('fields.created_at') }}</label>
-                                <input type="text" value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($commodity->created_at)) }}" class="form-control" disabled>
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label>{{ __('fields.creator') }}</label>
-                                <input type="text" value="{{ isset($commodity->creator_user) ? $commodity->creator_user->full_name : 'سیستم' }}" class="form-control" disabled>
-                            </div>
-                        </div>
-                        @else
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label>{{ __('fields.creator') }}</label>
-                                <input type="text" value="{{ isset($commodity->creator_user) ? $commodity->creator_user->full_name : 'سیستم' }}" class="form-control" disabled>
-                            </div>
                         </div>
                         @endif
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>{{ __('fields.warning_limit') }} ({{ $commodity->unit ? $commodity->unit->symbol : '' }})</label>
+                                <input type="text" value="{{ number_format($commodity->warning_limit) }}" class="form-control" disabled>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>{{ __('fields.created_at') }}</label>
+                                <input type="text" value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($commodity->created_at)) }}" class="form-control" disabled>
+                            </div>
+                        </div>
                         
                         <!-- Financial Information -->
                         <div class="form-row">
@@ -87,6 +80,11 @@
                             <div class="form-group col-md-6">
                                 <label>درصد سود</label>
                                 <input type="text" value="{{ $commodity->profit_margin ? $commodity->profit_margin . '%' : 'تعریف نشده' }}" class="form-control" disabled>
+                            </div>
+                            @else
+                            <div class="form-group col-md-6">
+                                <label>{{ __('fields.purchase_price') }} (ریال)</label>
+                                <input type="text" value="{{ $commodity->purchase_price ? number_format($commodity->purchase_price) : 'تعریف نشده' }}" class="form-control" disabled>
                             </div>
                             @endif
                         </div>
