@@ -31,26 +31,36 @@
                         </thead>
 
                         <tbody class="text-center">
-                        @php($i = 1)
-                        @foreach ($commodities as $commodity)
+                        @foreach ($commodities as $index => $commodity)
                             <tr>
-                                <td>{{ $i }}</td>
+                                <td>{{ $commodities->firstItem() + $index }}</td>
                                 <td>{{ $commodity->title }}</td>
                                 <td>{{ $commodity->number }}</td>
                                 <td>{{ $commodity->type == 'product' ? ($commodity->product_identifier ?? '-') : '-' }}</td>
-                                <td>{{ number_format($commodity->base_price) }}</td>
+                                <td>{{ number_format($commodity->base_price ?? 0) }}</td>
                                 <td>{{ __('fields.commodity.types')[$commodity->type] }}</td>
                                 <td>{{ $commodity->unit ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : '-' }}</td>
                                 <td><a href="{{ route('commodity.show', $commodity) }}" class=""><i
                                             class="ti-more-alt font-24"></i></a>
                                 </td>
                             </tr>
-                            @php($i++)
                         @endforeach
                         </tbody>
                     </table>
 
                 </div> <!-- end card body-->
+                
+                <!-- Pagination -->
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted">
+                            نمایش {{ $commodities->firstItem() }} تا {{ $commodities->lastItem() }} از {{ $commodities->total() }} کالا
+                        </div>
+                        <div>
+                            {{ $commodities->links() }}
+                        </div>
+                    </div>
+                </div>
             </div> <!-- end card -->
         </div><!-- end col-->
     </div>
