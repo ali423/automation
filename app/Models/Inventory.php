@@ -53,12 +53,12 @@ class Inventory extends Model
      */
     public function getSalePriceAttribute()
     {
-        if ($this->commodity->type === 'product') {
+        if ($this->commodity && $this->commodity->type === 'product') {
             // Use the commodity's calculated sales price
             return $this->commodity->sales_price;
         }
         
-        // Materials don't have sale prices
+        // Materials don't have sale prices or commodity is null
         return null;
     }
 

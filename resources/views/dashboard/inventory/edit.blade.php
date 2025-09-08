@@ -21,7 +21,7 @@
                                     <label for="commodity_id">کالا</label>
                                     <select id="commodity_id" class="form-control @error('commodity_id') is-invalid @enderror" name="commodity_id" required>
                                         <option value="">انتخاب کنید...</option>
-                                        @foreach($commodities as $commodity)
+                                        @foreach($formData['commodities'] as $commodity)
                                             <option value="{{ $commodity->id }}" {{ (old('commodity_id', $inventory->commodity_id) == $commodity->id) ? 'selected' : '' }}>
                                                 {{ $commodity->title }}
                                             </option>
@@ -35,7 +35,7 @@
                                     <label for="unit_id">واحد</label>
                                     <select id="unit_id" class="form-control @error('unit_id') is-invalid @enderror" name="unit_id" required>
                                         <option value="">انتخاب کنید...</option>
-                                        @foreach($units as $unit)
+                                        @foreach($formData['units'] as $unit)
                                             <option value="{{ $unit->id }}" {{ (old('unit_id', $inventory->unit_id) == $unit->id) ? 'selected' : '' }}>
                                                 {{ $unit->name }}
                                             </option>

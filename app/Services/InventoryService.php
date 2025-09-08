@@ -233,6 +233,24 @@ class InventoryService extends BaseService
     }
 
     /**
+     * Get active inventory with pre-calculated financial data for better performance
+     */
+    public function getActiveInventoryWithCalculations()
+    {
+        $inventories = Inventory::with(['commodity', 'unit'])
+            ->where('active', true)
+            ->where('amount', '>', 0)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Pre-calculate financial data to avoid N+1 queries in views
+        return $inventories->map(function ($inventory) {
+            $inventory->financial_data = $this->calculateFinancialData($inventory);
+            return $inventory;
+        });
+    }
+
+    /**
      * Get all inventory items (including inactive)
      */
     public function getAllInventory()
@@ -360,5 +378,91 @@ class InventoryService extends BaseService
                 'description' => "Stock adjustment: {$adjustmentType} {$quantity} units. Reason: {$reason}"
             ]),
         ]);
+    }
+
+    /**
+     * Calculate financial data for an inventory item
+     * This method pre-calculates all financial metrics to avoid calculations in views
+     */
+    public function calculateFinancialData($inventory)
+    {
+        $purchasePrice = $inventory->purchase_price ?? 0;
+        $isProduct = $inventory->commodity && $inventory->commodity->type === 'product';
+        $salePrice = $isProduct ? ($inventory->commodity->sales_price ?? 0) : 0;
+        
+        $data = [
+            'purchase_price' => $purchasePrice,
+            'sale_price' => $salePrice,
+            'amount' => $inventory->amount,
+            'is_product' => $isProduct,
+        ];
+
+        if ($isProduct) {
+            $profit = $salePrice - $purchasePrice;
+            $profitPercentage = $purchasePrice > 0 ? ($profit / $purchasePrice) * 100 : 0;
+            $totalValue = $inventory->amount * $salePrice;
+            
+            $data = array_merge($data, [
+                'profit' => $profit,
+                'profit_percentage' => $profitPercentage,
+                'total_value' => $totalValue,
+                'has_sale_price' => true,
+            ]);
+        } else {
+            $totalValue = $inventory->amount * $purchasePrice;
+            
+            $data = array_merge($data, [
+                'profit' => 0,
+                'profit_percentage' => 0,
+                'total_value' => $totalValue,
+                'has_sale_price' => false,
+            ]);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Get form data for inventory edit/create forms
+     * This method optimizes data loading for forms
+     */
+    public function getFormData()
+    {
+        return [
+            'commodities' => Commodity::select('id', 'title', 'type')->orderBy('title')->get(),
+            'units' => Unit::select('id', 'name')->orderBy('name')->get(),
+        ];
+    }
+
+    /**
+     * Get commodity inventory data for AJAX requests
+     * This method provides optimized data for AJAX endpoints
+     */
+    public function getCommodityInventoryData($commodityId)
+    {
+        $commodity = Commodity::findOrFail($commodityId);
+        
+        // Get the latest inventory price for this commodity
+        $inventory = Inventory::where('commodity_id', $commodityId)
+            ->where('active', true)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Use the calculated sale price from commodity
+        $price = $commodity->sales_price ?? 0;
+        
+        return [
+            'price' => $price,
+            'commodity' => [
+                'id' => $commodity->id,
+                'title' => $commodity->title,
+                'type' => $commodity->type
+            ],
+            'inventory' => $inventory ? [
+                'amount' => $inventory->amount,
+                'purchase_price' => $inventory->purchase_price,
+                'unit' => $inventory->unit->name ?? 'نامشخص'
+            ] : null
+        ];
     }
 }

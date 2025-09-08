@@ -37,9 +37,9 @@
                             </div>
                             <div class="form-group col-md-4">
                                 <label>قیمت فروش (تومان)</label>
-                                <input type="text" value="{{ $inventory->sale_price ? number_format($inventory->sale_price) : 'محاسبه نشده' }}" class="form-control" disabled>
+                                <input type="text" value="{{ isset($financialData) && $financialData['has_sale_price'] ? number_format($financialData['sale_price']) : 'محاسبه نشده' }}" class="form-control" disabled>
                                 <small class="form-text text-muted">
-                                    @if($inventory->commodity->type == 'product')
+                                    @if(isset($financialData) && $financialData['is_product'])
                                         قیمت بر اساس درصد سود کالا محاسبه می‌شود
                                     @else
                                         مواد اولیه قیمت فروش ندارند
@@ -68,20 +68,13 @@
                                         <div class="alert alert-info">
                                             <h6>محاسبات:</h6>
                                             <ul class="mb-0">
-                                                @php
-                                                    $purchasePrice = $inventory->purchase_price ?? 0;
-                                                    $salePrice = $inventory->sale_price ?? 0;
-                                                    $profit = $salePrice - $purchasePrice;
-                                                    $profitPercentage = $purchasePrice > 0 ? ($profit / $purchasePrice) * 100 : 0;
-                                                    $totalValue = $inventory->amount * $salePrice;
-                                                @endphp
-                                                @if($inventory->commodity->type == 'product')
-                                                    <li>سود: {{ number_format($profit) }} تومان</li>
-                                                    <li>درصد سود: {{ number_format($profitPercentage, 1) }}%</li>
-                                                    <li>ارزش کل موجودی: {{ number_format($totalValue) }} تومان</li>
+                                                @if(isset($financialData) && $financialData['is_product'])
+                                                    <li>سود: {{ number_format($financialData['profit']) }} تومان</li>
+                                                    <li>درصد سود: {{ number_format($financialData['profit_percentage'], 1) }}%</li>
+                                                    <li>ارزش کل موجودی: {{ number_format($financialData['total_value']) }} تومان</li>
                                                 @else
-                                                    <li>قیمت خرید: {{ number_format($purchasePrice) }} تومان</li>
-                                                    <li>ارزش کل موجودی: {{ number_format($inventory->amount * $purchasePrice) }} تومان</li>
+                                                    <li>قیمت خرید: {{ number_format($financialData['purchase_price'] ?? 0) }} تومان</li>
+                                                    <li>ارزش کل موجودی: {{ number_format($financialData['total_value'] ?? 0) }} تومان</li>
                                                     <li class="text-muted">مواد اولیه قیمت فروش ندارند</li>
                                                 @endif
                                             </ul>
@@ -101,7 +94,7 @@
                                             </button>
                                         @endcan
                                         
-                                        @if($inventory->commodity->type == 'product')
+                                        @if(isset($financialData) && $financialData['is_product'])
                                             <a href="{{ route('commodity.edit', $inventory->commodity) }}" class="btn btn-info btn-block">
                                                 <i class="ti-settings"></i> تنظیم درصد سود
                                             </a>
