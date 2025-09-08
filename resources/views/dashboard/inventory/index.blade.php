@@ -41,7 +41,7 @@
                                     <td>{{ number_format($inventory->amount, 2) }}</td>
                                     <td>{{ number_format($inventory->purchase_price ?? 0) }} تومان</td>
                                     <td>
-                                        @if($inventory->commodity->type == 'product')
+                                        @if($inventory->commodity && $inventory->commodity->type == 'product')
                                             {{ number_format($inventory->sale_price ?? 0) }} تومان
                                             <small class="d-block text-muted">محاسبه شده</small>
                                         @else
