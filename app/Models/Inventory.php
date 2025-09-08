@@ -14,12 +14,10 @@ class Inventory extends Model
         'commodity_id',
         'unit_id',
         'amount',
-        'purchase_price',
-        'active'
+        'purchase_price'
     ];
 
     protected $casts = [
-        'active' => 'boolean',
         'amount' => 'decimal:2',
         'purchase_price' => 'decimal:2'
     ];
@@ -36,7 +34,7 @@ class Inventory extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('active', true);
+        return $query->where('amount', '>', 0);
     }
 
     public function scopeAvailable($query)

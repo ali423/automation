@@ -19,7 +19,7 @@ class InventoryService extends BaseService
 
         $inventory = Inventory::where('commodity_id', $commodityId)
             ->where('unit_id', $unitId)
-            ->where('active', true)
+            ->where('amount', '>', 0)
             ->first();
 
         if ($inventory) {
@@ -39,7 +39,6 @@ class InventoryService extends BaseService
                 'unit_id' => $unitId,
                 'amount' => $amount,
                 'purchase_price' => $purchasePrice,
-                'active' => true,
             ]);
         }
     }
@@ -84,10 +83,9 @@ class InventoryService extends BaseService
             throw new \Exception('موجودی کافی برای کالای مورد نظر وجود ندارد');
         }
 
-        // Get all active inventory records for this commodity and unit, ordered by creation date (FIFO)
+        // Get all inventory records for this commodity and unit, ordered by creation date (FIFO)
         $inventories = Inventory::where('commodity_id', $commodityId)
             ->where('unit_id', $unitId)
-            ->where('active', true)
             ->where('amount', '>', 0)
             ->orderBy('created_at', 'asc')
             ->get();
@@ -106,10 +104,12 @@ class InventoryService extends BaseService
             $remainingAmount -= $amountToRemove;
         
         if ($newAmount == 0) {
-            $inventory->update(['active' => false]);
+            // When amount becomes 0, we can delete the record or keep it with 0 amount
+            // For now, we'll keep it with 0 amount for audit purposes
+            $inventory->update(['amount' => $newAmount]);
         } else {
             $inventory->update(['amount' => $newAmount]);
-            }
+        }
         }
 
         return true;
@@ -126,7 +126,6 @@ class InventoryService extends BaseService
     public function getAverageCost($commodityId)
     {
         $inventory = Inventory::where('commodity_id', $commodityId)
-            ->where('active', true)
             ->where('amount', '>', 0)
             ->whereNotNull('purchase_price')
             ->get();
@@ -154,7 +153,7 @@ class InventoryService extends BaseService
     {
         return Inventory::where('commodity_id', $commodityId)
             ->where('unit_id', $unitId)
-            ->where('active', true)
+            ->where('amount', '>', 0)
             ->sum('amount');
     }
 
@@ -167,7 +166,7 @@ class InventoryService extends BaseService
             return [];
         }
 
-        $results = Inventory::where('active', true)
+        $results = Inventory::where('amount', '>', 0)
             ->where(function ($query) use ($commodityUnitPairs) {
                 foreach ($commodityUnitPairs as $pair) {
                     $query->orWhere(function ($q) use ($pair) {
@@ -201,7 +200,6 @@ class InventoryService extends BaseService
     {
         return Inventory::where('commodity_id', $commodityId)
             ->where('unit_id', $unitId)
-            ->where('active', true)
             ->where('amount', '>', 0)
             ->orderBy('created_at', 'asc')
             ->get();
@@ -221,12 +219,11 @@ class InventoryService extends BaseService
     // }
 
     /**
-     * Get all active inventory items
+     * Get all active inventory items (amount > 0)
      */
     public function getActiveInventory()
     {
         return Inventory::with(['commodity', 'unit'])
-            ->where('active', true)
             ->where('amount', '>', 0)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -238,7 +235,6 @@ class InventoryService extends BaseService
     public function getActiveInventoryWithCalculations()
     {
         $inventories = Inventory::with(['commodity', 'unit'])
-            ->where('active', true)
             ->where('amount', '>', 0)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -267,7 +263,6 @@ class InventoryService extends BaseService
     {
         return Inventory::with(['commodity', 'unit'])
             ->where('commodity_id', $commodityId)
-            ->where('active', true)
             ->where('amount', '>', 0)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -290,7 +285,6 @@ class InventoryService extends BaseService
     public function getInventorySummary()
     {
         return Inventory::with(['commodity', 'unit'])
-            ->where('active', true)
             ->where('amount', '>', 0)
             ->selectRaw('
                 commodity_id,
@@ -321,11 +315,11 @@ class InventoryService extends BaseService
     }
 
     /**
-     * Delete inventory record
+     * Delete inventory record (set amount to 0 for audit purposes)
      */
     public function delete($inventory)
     {
-        $inventory->update(['active' => false]);
+        $inventory->update(['amount' => 0]);
         return $inventory;
     }
 
@@ -348,8 +342,7 @@ class InventoryService extends BaseService
         }
 
         $inventory->update([
-            'amount' => $newAmount,
-            'active' => $newAmount > 0
+            'amount' => $newAmount
         ]);
 
         // Log the adjustment
@@ -444,7 +437,7 @@ class InventoryService extends BaseService
         
         // Get the latest inventory price for this commodity
         $inventory = Inventory::where('commodity_id', $commodityId)
-            ->where('active', true)
+            ->where('amount', '>', 0)
             ->orderBy('created_at', 'desc')
             ->first();
 

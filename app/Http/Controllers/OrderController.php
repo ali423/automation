@@ -487,7 +487,7 @@ class OrderController extends Controller
                     $firstItem = $order->orderItems->first();
                     $inventory = Inventory::where('commodity_id', $firstItem->commodity_id)
                         ->where('unit_id', $firstItem->unit_id)
-                        ->where('active', true)
+                        ->where('amount', '>', 0)
                         ->sum('amount');
                 }
                 
@@ -531,7 +531,7 @@ class OrderController extends Controller
                 // Get inventory for this commodity
                 $inventory = Inventory::where('commodity_id', $item->commodity_id)
                     ->where('unit_id', $item->unit_id)
-                    ->where('active', true)
+                    ->where('amount', '>', 0)
                     ->sum('amount');
                 
                 $chartData[] = [
@@ -571,7 +571,7 @@ class OrderController extends Controller
                     // Get inventory for this commodity
                     $inventory = Inventory::where('commodity_id', $item->commodity_id)
                         ->where('unit_id', $item->unit_id)
-                        ->where('active', true)
+                        ->where('amount', '>', 0)
                         ->sum('amount');
                     
                     return (object)[

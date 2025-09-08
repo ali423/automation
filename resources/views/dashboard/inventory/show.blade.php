@@ -13,29 +13,25 @@
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-row col-md-12">
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <label>کالا</label>
                                 <input type="text" value="{{ $inventory->commodity->title ?? 'نامشخص' }}" class="form-control" disabled>
                             </div>
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <label>واحد</label>
                                 <input type="text" value="{{ $inventory->unit->name ?? 'نامشخص' }}" class="form-control" disabled>
                             </div>
-                            <div class="form-group col-md-4">
-                                <label>وضعیت</label>
-                                <input type="text" value="{{ $inventory->active ? 'فعال' : 'غیرفعال' }}" class="form-control" disabled>
-                            </div>
-                        </div>
-                        <div class="form-row col-md-12">
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <label>مقدار موجودی</label>
                                 <input type="text" value="{{ number_format($inventory->amount, 2) }}" class="form-control" disabled>
                             </div>
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <label>قیمت خرید (تومان)</label>
                                 <input type="text" value="{{ number_format($inventory->purchase_price ?? 0) }}" class="form-control" disabled>
                             </div>
-                            <div class="form-group col-md-4">
+                        </div>
+                        <div class="form-row col-md-12">
+                            <div class="form-group col-md-6">
                                 <label>قیمت فروش (تومان)</label>
                                 <input type="text" value="{{ isset($financialData) && $financialData['has_sale_price'] ? number_format($financialData['sale_price']) : 'محاسبه نشده' }}" class="form-control" disabled>
                                 <small class="form-text text-muted">
@@ -43,6 +39,17 @@
                                         قیمت بر اساس درصد سود کالا محاسبه می‌شود
                                     @else
                                         مواد اولیه قیمت فروش ندارند
+                                    @endif
+                                </small>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>ارزش کل موجودی (تومان)</label>
+                                <input type="text" value="{{ isset($financialData) ? number_format($financialData['total_value']) : 'محاسبه نشده' }}" class="form-control" disabled>
+                                <small class="form-text text-muted">
+                                    @if(isset($financialData) && $financialData['is_product'])
+                                        بر اساس قیمت فروش محاسبه شده
+                                    @else
+                                        بر اساس قیمت خرید محاسبه شده
                                     @endif
                                 </small>
                             </div>

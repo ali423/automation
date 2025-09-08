@@ -25,7 +25,6 @@
                             <th>مقدار موجودی</th>
                             <th>قیمت خرید</th>
                             <th>قیمت فروش</th>
-                            <th>وضعیت</th>
                             <th>{{ __('fields.details') }}</th>
                         </tr>
                         </thead>
@@ -48,13 +47,6 @@
                                             <span class="text-muted">-</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        @if($inventory->active)
-                                            <span class="badge badge-success">فعال</span>
-                                        @else
-                                            <span class="badge badge-danger">غیرفعال</span>
-                                        @endif
-                                    </td>
                                     <td><a href="{{ route('inventory.show', $inventory) }}" class=""><i
                                                 class="ti-more-alt font-24"></i></a>
                                     </td>
@@ -63,7 +55,7 @@
                             @endforeach
                         @else
                             <tr>
-                                <td colspan="8" class="text-center">
+                                <td colspan="7" class="text-center">
                                     <div class="alert alert-info">
                                         <i class="ti-info-alt"></i>
                                         {{ $message ?? 'هیچ موجودی یافت نشد.' }}
@@ -129,7 +121,7 @@
                         text: 'pdf',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [6, 5, 4, 3, 2, 1, 0],
+                            columns: [5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
@@ -137,9 +129,7 @@
                         },
                         customize: function (doc) {
                             doc.defaultStyle.font = "IRANSansWeb";
-                            doc.content[1].table.widths = ['20%', '20%', '20%', '20%', '20%', '20%',
-                                '20%'
-                            ];
+                            doc.content[1].table.widths = ['16.66%', '16.66%', '16.66%', '16.66%', '16.66%', '16.66%'];
                             doc.styles.tableBodyEven.alignment = 'center';
                             doc.styles.tableBodyOdd.alignment = 'center';
                         }
@@ -148,7 +138,7 @@
                         extend: 'excel',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [6, 5, 4, 3, 2, 1, 0],
+                            columns: [5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             }
@@ -158,7 +148,7 @@
                         extend: 'csv',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [6, 5, 4, 3, 2, 1, 0],
+                            columns: [5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             }
@@ -169,7 +159,7 @@
                         text: "پرینت",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5, 6],
+                            columns: [0, 1, 2, 3, 4, 5],
                             modifier: {
                                 page: 'current'
                             },

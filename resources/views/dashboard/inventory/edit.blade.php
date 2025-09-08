@@ -47,7 +47,7 @@
                                 </div>
                             </div>
                             <div class="form-row">
-                                <div class="form-group col-md-4">
+                                <div class="form-group col-md-3">
                                     <label for="amount">مقدار موجودی</label>
                                     <input type="number" step="0.01" min="0.01" name="amount" value="{{ old('amount', $inventory->amount) }}" class="form-control @error('amount') is-invalid @enderror"
                                            id="amount" placeholder="مقدار موجودی" required="">
@@ -55,7 +55,7 @@
                                         لطفاً مقدار موجودی را وارد کنید.
                                     </div>
                                 </div>
-                                <div class="form-group col-md-4">
+                                <div class="form-group col-md-3">
                                     <label for="purchase_price">قیمت خرید (تومان)</label>
                                     <input type="number" step="0.01" min="0.01" name="purchase_price" value="{{ old('purchase_price', $inventory->purchase_price) }}" class="form-control @error('purchase_price') is-invalid @enderror"
                                            id="purchase_price" placeholder="قیمت خرید" required="">
@@ -63,7 +63,7 @@
                                         لطفاً قیمت خرید را وارد کنید.
                                     </div>
                                 </div>
-                                <div class="form-group col-md-4">
+                                <div class="form-group col-md-3">
                                     <label>قیمت فروش (تومان)</label>
                                     <input type="text" value="{{ $inventory->sale_price ? number_format($inventory->sale_price) : 'محاسبه نشده' }}" class="form-control" disabled>
                                     <small class="form-text text-muted">
@@ -74,17 +74,16 @@
                                         @endif
                                     </small>
                                 </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group col-md-6">
-                                    <label for="active">وضعیت</label>
-                                    <select name="active" id="active" class="form-control @error('active') is-invalid @enderror">
-                                        <option value="1" {{ (old('active', $inventory->active) == 1) ? 'selected' : '' }}>فعال</option>
-                                        <option value="0" {{ (old('active', $inventory->active) == 0) ? 'selected' : '' }}>غیرفعال</option>
-                                    </select>
-                                    <div class="invalid-feedback">
-                                        لطفاً وضعیت را انتخاب کنید.
-                                    </div>
+                                <div class="form-group col-md-3">
+                                    <label>ارزش کل موجودی (تومان)</label>
+                                    <input type="text" value="{{ $inventory->sale_price ? number_format($inventory->amount * $inventory->sale_price) : number_format($inventory->amount * $inventory->purchase_price) }}" class="form-control" disabled>
+                                    <small class="form-text text-muted">
+                                        @if($inventory->commodity->type == 'product')
+                                            بر اساس قیمت فروش
+                                        @else
+                                            بر اساس قیمت خرید
+                                        @endif
+                                    </small>
                                 </div>
                             </div>
 
@@ -107,4 +106,34 @@
 @section('page_scripts')
     <!-- These plugins only need for the run this page -->
     <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
+    <script>
+        // Dynamic calculation of total inventory value
+        function calculateTotalValue() {
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const purchasePrice = parseFloat(document.getElementById('purchase_price').value) || 0;
+            const salePriceField = document.querySelector('input[value*="تومان"]:not([name])');
+            
+            let totalValue = 0;
+            if (salePriceField && salePriceField.value !== 'محاسبه نشده') {
+                const salePrice = parseFloat(salePriceField.value.replace(/,/g, '')) || 0;
+                totalValue = amount * salePrice;
+            } else {
+                totalValue = amount * purchasePrice;
+            }
+            
+            const totalValueField = document.querySelector('input[value*="ارزش کل موجودی"]').parentElement.querySelector('input');
+            if (totalValueField) {
+                totalValueField.value = totalValue.toLocaleString('fa-IR');
+            }
+        }
+        
+        // Add event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const amountField = document.getElementById('amount');
+            const priceField = document.getElementById('purchase_price');
+            
+            if (amountField) amountField.addEventListener('input', calculateTotalValue);
+            if (priceField) priceField.addEventListener('input', calculateTotalValue);
+        });
+    </script>
 @endsection 
