@@ -57,6 +57,7 @@ return [
     ],
     'commodity' => [
         'number' => 'شماره کالا',
+
         'name' => 'نام کالا',
         'amount' => 'مقدار کالا',
         'warehouse_amount' => 'مقدار موجود در این انبار',
