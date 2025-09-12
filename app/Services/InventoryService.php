@@ -205,18 +205,7 @@ class InventoryService extends BaseService
             ->get();
     }
 
-    /**
-     * Get all inventory records for a commodity across all units (for debugging)
-     */
-    // public function getAllInventoryForCommodity($commodityId)
-    // {
-    //     return Inventory::where('commodity_id', $commodityId)
-    //         ->where('active', true)
-    //         ->with(['unit'])
-    //         ->orderBy('unit_id', 'asc')
-    //         ->orderBy('created_at', 'asc')
-    //         ->get();
-    // }
+    
 
     /**
      * Get all active inventory items (amount > 0)
@@ -441,7 +430,7 @@ class InventoryService extends BaseService
             ->orderBy('created_at', 'desc')
             ->first();
 
-        // Use the calculated sale price from commodity
+        // Use the calculated sale price from commodityF
         $price = $commodity->sales_price ?? 0;
         
         return [

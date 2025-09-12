@@ -12,6 +12,7 @@
                 <h4 class="card-title">مشخصات موجودی</h4>
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
+                        {{-- Basic Information Display --}}
                         <div class="form-row col-md-12">
                             <div class="form-group col-md-3">
                                 <label>کالا</label>
@@ -38,7 +39,7 @@
                                     @if(isset($financialData) && $financialData['is_product'])
                                         قیمت بر اساس درصد سود کالا محاسبه می‌شود
                                     @else
-                                        مواد اولیه قیمت فروش ندارند
+                                        <span class="text-warning"><i class="ti-info-circle"></i> مواد اولیه قیمت فروش ندارند</span>
                                     @endif
                                 </small>
                             </div>
@@ -65,6 +66,7 @@
                             </div>
                         </div>
 
+                        {{-- Financial Information and Quick Actions --}}
                         <div class="row mt-4">
                             <div class="col-md-6">
                                 <div class="card">
@@ -82,7 +84,7 @@
                                                 @else
                                                     <li>قیمت خرید: {{ number_format($financialData['purchase_price'] ?? 0) }} تومان</li>
                                                     <li>ارزش کل موجودی: {{ number_format($financialData['total_value'] ?? 0) }} تومان</li>
-                                                    <li class="text-muted">مواد اولیه قیمت فروش ندارند</li>
+                                                    <li class="text-warning"><i class="ti-info-circle"></i> مواد اولیه قیمت فروش ندارند</li>
                                                 @endif
                                             </ul>
                                         </div>
@@ -129,7 +131,7 @@
         </div>
     </div>
 
-    <!-- Stock Adjustment Modal -->
+    {{-- Stock Adjustment Modal --}}
     @can('adjustStock', $inventory)
     <div class="modal fade" id="stockAdjustmentModal" tabindex="-1" role="dialog" aria-labelledby="stockAdjustmentModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -174,6 +176,5 @@
 @endsection
 
 @section('page_scripts')
-    <!-- These plugins only need for the run this page -->
-    <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
+    @include('dashboard.inventory.partials.form-scripts')
 @endsection 
