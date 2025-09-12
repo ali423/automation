@@ -37,7 +37,7 @@
 
 {{-- Row 2: Physical Properties and Pricing --}}
 <div class="form-row">
-    <div class="form-group col-md-3">
+    <div id="weight_per_unit_group" class="form-group col-md-3" style="display: {{ (old('type', $commodity->type ?? '') == 'product') ? 'block' : 'none' }};">
         <label for="weight_per_unit">وزن هر واحد (کیلوگرم)</label>
         <input type="number" step="0.001" name="weight_per_unit" value="{{ old('weight_per_unit', $commodity->weight_per_unit ?? '') }}" class="form-control"
                id="weight_per_unit" placeholder="مثال: 0.5" min="0.001">
