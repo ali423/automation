@@ -130,67 +130,16 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @foreach ($request->materials as $material)
+                                                        @foreach ($materialsWithInventory as $materialData)
                                                             @php
-                                                                $inventoryService = app(\App\Services\InventoryService::class);
-                                                                $unitConversionService = app(\App\Services\UnitConversionService::class);
+                                                                $material = $materialData['material'];
+                                                                $availableStock = $materialData['availableStock'];
+                                                                $conversionInfo = $materialData['conversionInfo'];
+                                                                $allAvailableInfo = $materialData['allAvailableInfo'];
+                                                                $stockStatus = $materialData['stockStatus'];
+                                                                $stockIcon = $materialData['stockIcon'];
+                                                                $statusText = $materialData['stockText'];
                                                                 
-                                                                // First, get all available inventory for this material
-                                                                $allInventory = $inventoryService->getAllInventoryForCommodity($material->id);
-                                                                
-                                                                // Calculate total available stock in the formula unit
-                                                                $availableStock = 0;
-                                                                $conversionInfo = '';
-                                                                $availableUnits = [];
-                                                                
-                                                                foreach ($allInventory as $inventory) {
-                                                                    if ($inventory->amount > 0) {
-                                                                        $unit = \App\Models\Unit::find($inventory->unit_id);
-                                                                        $availableUnits[] = "{$inventory->amount} {$unit->symbol}";
-                                                                        
-                                                                        if ($inventory->unit_id == $material->pivot->unit_id) {
-                                                                            // Direct match - no conversion needed
-                                                                            $availableStock += $inventory->amount;
-                                                                        } else {
-                                                                            // Convert from available unit to formula unit
-                                                                            $convertedAmount = $unitConversionService->convert(
-                                                                                $inventory->amount,
-                                                                                $inventory->unit_id,
-                                                                                $material->pivot->unit_id,
-                                                                                $material->id
-                                                                            );
-                                                                            
-                                                                            if ($convertedAmount !== null && $convertedAmount > 0) {
-                                                                                $availableStock += $convertedAmount;
-                                                                                $conversionInfo .= " (تبدیل شده از {$inventory->amount} {$unit->symbol})";
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                                
-                                                                // If no stock found, show available inventory information
-                                                                $allAvailableInfo = '';
-                                                                if ($availableStock == 0 && !empty($availableUnits)) {
-                                                                    $allAvailableInfo = ' (موجود در: ' . implode(', ', $availableUnits) . ')';
-                                                                }
-                                                                
-                                                                // Determine stock status for styling
-                                                                $stockStatus = 'success';
-                                                                $stockIcon = 'fa-check-circle';
-                                                                $statusText = 'کافی';
-                                                                if ($availableStock < $material->pivot->required_amount) {
-                                                                    $stockStatus = 'danger';
-                                                                    $stockIcon = 'fa-exclamation-triangle';
-                                                                    $statusText = 'ناکافی';
-                                                                } elseif ($availableStock == $material->pivot->required_amount) {
-                                                                    $stockStatus = 'warning';
-                                                                    $stockIcon = 'fa-info-circle';
-                                                                    $statusText = 'دقیق';
-                                                                }
-                                                                
-                                                                // Get main unit data
-                                                                $mainUnitData = $request->getMainUnitAmountAttribute();
-                                                                $materialMainUnit = $mainUnitData[$material->id] ?? null;
                                                             @endphp
                                                         
                                                         <tr>
