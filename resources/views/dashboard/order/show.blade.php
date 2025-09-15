@@ -330,7 +330,7 @@
                     printDocument.write('<head>');
                     printDocument.write('<meta charset="UTF-8">');
                     printDocument.write('<meta name="viewport" content="width=device-width, initial-scale=1.0">');
-                    printDocument.write('<title>پیش فاکتور - سفارش {{ $order->id }}</title>');
+                    printDocument.write('<title>پیش فاکتور - {{ $order->customer ? ($order->customer->name . (isset($order->customer->comp_name) && $order->customer->comp_name ? ' - ' . $order->customer->comp_name : '')) : 'بدون‌نام' }} - {{ \Morilog\Jalali\CalendarUtils::strftime('Y-m-d', strtotime($order->created_at)) }} - سفارش {{ $order->id }}</title>');
                     printDocument.write('<style>');
                     printDocument.write('@media print { body { margin: 0; padding: 20px; } .no-print { display: none !important; } }');
                     printDocument.write('body { font-family: "Tahoma", "Arial", sans-serif; direction: rtl; text-align: right; margin: 0; padding: 20px; background: white; }');
@@ -384,7 +384,7 @@
             try {
                 // Replace body content with invoice
                 document.body.innerHTML = invoiceElement.innerHTML;
-                document.title = 'پیش فاکتور - سفارش {{ $order->id }}';
+                document.title = "پیش فاکتور - {{ $order->customer ? ($order->customer->name . (isset($order->customer->comp_name) && $order->customer->comp_name ? ' - ' . $order->customer->comp_name : '')) : 'بدون‌نام' }} - {{ \Morilog\Jalali\CalendarUtils::strftime('Y-m-d', strtotime($order->created_at)) }} - سفارش {{ $order->id }}";
                 
                 // Add print styles
                 var style = document.createElement('style');
