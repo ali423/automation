@@ -31,7 +31,9 @@
                         </thead>
 
                         <tbody class="text-center">
-                            @php($i = 1)
+                            @php
+                                $i = 1;
+                            @endphp
                             @foreach ($requests as $request)
                                 <tr>
                                     <td>{{ $i }}</td>
@@ -45,7 +47,9 @@
                                     <td><a href="{{ route('withdrawal-request.show', $request) }}" class=""><i class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>
-                                @php($i++)
+                                @php
+                                    $i++;
+                                @endphp
                             @endforeach
                         </tbody>
                     </table>

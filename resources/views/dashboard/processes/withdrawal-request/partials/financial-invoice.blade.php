@@ -103,14 +103,18 @@
                     </tr>
                     </thead>
                     <tbody>
-                        @php($i = 1)
+                        @php
+                            $i = 1;
+                            // Pre-calculate total price once to avoid multiple attribute calls
+                            $totalPrice = $request->total_price ?? null;
+                        @endphp
                         @foreach($request->commodities as $commodity)
                             <tr>
                                 <td scope="row">{{ $i }}</td>
                                 <td>{{ $commodity->number }}</td>
                                 <td>{{ $commodity->title }}</td>
                                 <td>{{ $commodity->pivot->amount }}</td>
-                                <td>{{ $commodity->pivot->unit_id ? (($unit = \App\Models\Unit::find($commodity->pivot->unit_id)) ? $unit->name : 'نامشخص') : 'نامشخص' }}</td>
+                                <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
                                 <td>
                                     @if(isset($request->box_quantities[$commodity->id]) && $request->box_quantities[$commodity->id]['can_calculate'])
                                         {{ $request->box_quantities[$commodity->id]['boxes'] }}
@@ -135,7 +139,9 @@
                                 <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
                                 <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price) : '-' }}</td>
                             </tr>
-                            @php($i++)
+                            @php
+                                $i++;
+                            @endphp
                         @endforeach
                         <tr>
                             <td colspan="10" rowspan="4" class="text-left" style="vertical-align: top">
@@ -151,12 +157,12 @@
                             <td colspan="9" class="text-left"> مالیات بر ارزش افزوده : %10 </td>
                         </tr>
                         <tr>
-                            <td colspan="9" class="text-left">جمع کل : {{ isset($request->total_price) && isset($request->total_price['number']) ? number_format($request->total_price['number']) : '0' }}</td>
+                            <td colspan="9" class="text-left">جمع کل : {{ isset($totalPrice) && isset($totalPrice['number']) ? number_format($totalPrice['number']) : '0' }}</td>
                         </tr>
                         <tr>
                             <td colspan="9" class="text-left">جمع کل به حروف: 
-                                @if(isset($request->total_price) && isset($request->total_price['world']))
-                                    {{ $request->total_price['world'] }} ریال
+                                @if(isset($totalPrice) && isset($totalPrice['world']))
+                                    {{ $totalPrice['world'] }} ریال
                                 @else
                                     صفر ریال
                                 @endif

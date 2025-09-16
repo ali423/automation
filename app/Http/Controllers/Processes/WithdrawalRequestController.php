@@ -115,10 +115,14 @@ class WithdrawalRequestController extends Controller
             $query->with('unit');
         }]);
         
-        // Also load the unit for each commodity's pivot data
+        // Eager load all pivot units in a single query to avoid N+1 problem
+        $pivotUnitIds = $withdrawalRequest->commodities->pluck('pivot.unit_id')->filter()->unique();
+        $pivotUnits = \App\Models\Unit::whereIn('id', $pivotUnitIds)->get()->keyBy('id');
+        
+        // Attach pivot units to commodities
         foreach ($withdrawalRequest->commodities as $commodity) {
-            if ($commodity->pivot->unit_id) {
-                $commodity->pivot->unit = \App\Models\Unit::find($commodity->pivot->unit_id);
+            if ($commodity->pivot->unit_id && isset($pivotUnits[$commodity->pivot->unit_id])) {
+                $commodity->pivot->unit = $pivotUnits[$commodity->pivot->unit_id];
             }
         }
         
@@ -150,8 +154,16 @@ class WithdrawalRequestController extends Controller
             $query->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit']);
         }]);
         
-        // Add selectable units to each commodity
+        // Eager load all pivot units in a single query to avoid N+1 problem
+        $pivotUnitIds = $withdrawalRequest->commodities->pluck('pivot.unit_id')->filter()->unique();
+        $pivotUnits = \App\Models\Unit::whereIn('id', $pivotUnitIds)->get()->keyBy('id');
+        
+        // Attach pivot units to commodities and add selectable units
         foreach ($withdrawalRequest->commodities as $commodity) {
+            if ($commodity->pivot->unit_id && isset($pivotUnits[$commodity->pivot->unit_id])) {
+                $commodity->pivot->unit = $pivotUnits[$commodity->pivot->unit_id];
+            }
+            
             $selectableUnits = $this->commodityUnitService->getSelectableUnits($commodity);
             $commodity->selectable_units = $selectableUnits;
         }

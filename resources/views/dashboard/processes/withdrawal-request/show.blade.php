@@ -58,100 +58,19 @@
                         @php
                             $i = 1;
                             $total_amount = 0;
+                            // Pre-calculate main unit data once for all commodities
+                            $mainUnitData = $request->getMainUnitAmountAttribute();
                         @endphp
                         @foreach ($request->commodities as $commodity)
-                            <div id="inputFormRow" class="form-row shadow p-4 m-3">
-                                <div class="showbarrel">
-                                    <i class="fa fa-database"></i>
-                                    <div>
-                                        <span>Main Unit Amount</span>
-                                        @php
-                                            $mainUnitData = $request->getMainUnitAmountAttribute();
-                                            $commodityMainUnit = $mainUnitData[$commodity->id] ?? null;
-                                        @endphp
-                                        <span>
-                                            @if($commodityMainUnit && isset($commodityMainUnit['main_unit_amount']))
-                                                {{ number_format($commodityMainUnit['main_unit_amount'], 2) }} {{ $commodityMainUnit['main_unit_name'] . ' (' . $commodityMainUnit['main_unit_symbol'] . ')' }}
-                                            @else
-                                                -
-                                            @endif
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
-                                    <input type="text" value="{{ $commodity->title }}" class="form-control" disabled>
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label for="unit"> {{ __('fields.unit') }}</label>
-                                    <input type="text"
-                                        value="{{ $commodity->pivot->unit_id ? (\App\Models\Unit::find($commodity->pivot->unit_id)->name . ' (' . \App\Models\Unit::find($commodity->pivot->unit_id)->symbol . ')') : '-' }}"
-                                        class="form-control" disabled>
-                                </div>
-
-                                <div class="form-group col-md-4">
-                                    <label for="amount"> {{ __('fields.commodity.amount') }}</label>
-                                    <input type="text" value="{{ $commodity->pivot->amount }}" class="form-control" disabled>
-                                </div>
-                                <div class="form-group col-md-4">
-                                    <label for="weight">وزن (کیلوگرم)</label>
-                                    <input type="text" value="{{ calculate_weight($commodity, $commodity->pivot->amount, $commodity->pivot->unit_id) !== null ? number_format(calculate_weight($commodity, $commodity->pivot->amount, $commodity->pivot->unit_id), 3) : 'نامشخص' }}" class="form-control" disabled>
-                                </div>
-                                <div class="form-group col-md-4">
-                                    <label for="pieces_per_box">تعداد در کارتن</label>
-                                    <input type="text" value="{{ $commodity->pieces_per_box ?? 1 }}" class="form-control" disabled>
-                                </div>
-                                @if(isset($commodity->pivot->price))
-                                    <div class="form-group col-md-4">
-                                        <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
-                                        <input type="text" value="{{ $commodity->pivot->price ?? '-' }}" class="form-control" disabled>
-                                    </div>
-                                @endif
-                            </div>
+                            @include('dashboard.processes.withdrawal-request.partials.commodity-display', [
+                                'commodity' => $commodity,
+                                'mainUnitData' => $mainUnitData
+                            ])
                         @endforeach
 
                         
-                        @foreach ($request->comments as $comment)
-                            <div class="form-group mb-20">
-                                <label for="comment"> {{ $comment->user ? $comment->user->full_name : 'کاربر نامشخص' }} در تاریخ :
-                                    {{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d H:i:s', strtotime($comment->created_at)) }}</label>
-                                <textarea class="form-control rounded-0 form-control-md" name="comment" id="comment"
-                                          rows="6" disabled>{{ $comment->body }}</textarea>
-                            </div>
-                        @endforeach
-                        <div class="col-xl-12 height-card box-margin">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="bg-transparent d-flex align-items-center justify-content-between">
-                                        <div class="widgets-card-title">
-                                            <h5 class="card-title">فایل ضمیمه شده</h5>
-                                        </div>
-                                    </div>
-                                @foreach ($request->files as $file)
-                                    <!-- Single Download File -->
-                                        <div
-                                            class="widget-download-file d-flex align-items-center justify-content-between mb-4">
-                                            <div class="d-flex align-items-center mr-3">
-                                                <div class="download-file-icon mr-3">
-                                                    <img src="{{ asset('img/filemanager-img/1.png') }}" alt="">
-                                                </div>
-                                                <div class="user-text-table">
-                                                    <h6 class="d-inline-block font-15 mb-0">{{ $file->name }}</h6>
-                                                    <p class="mb-0"> {{ $file->user ? $file->user->full_name : 'کاربر نامشخص' }} در تاریخ :
-                                                        {{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d H:i:s', strtotime($file->created_at)) }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <a href="{{ asset(str_replace('public', 'storage', $file->source)) }}"
-                                               download="proposed_file_name"
-                                               class="download-link badge badge-primary badge-pill p-2 font-16"><i
-                                                    class="ti-download"></i></a>
-                                        </div>
-                                    @endforeach
-
-                                </div>
-                            </div>
-                        </div>
+                        @include('dashboard.processes.withdrawal-request.partials.comments', ['comments' => $request->comments])
+                        @include('dashboard.processes.withdrawal-request.partials.file-attachments', ['files' => $request->files])
                         @if (($request->status == 'approvaled'))
                             <div class="col-xl-12 height-card box-margin">
                                 <div class="card">
@@ -189,20 +108,7 @@
                                 </div>
                             </div>
                         @endif
-                        <div class="row">
-                            <div class="col-md-6 mb-1 mb-md-0">
-                                @if ($request->status == 'awaiting_approval')
-                                    <a href="{{ route('approval.withdrawal', $request) }}"
-                                       class="btn btn-primary px-1">تایید درخواست</a>
-                                @endif
-                            </div>
-                            <div class="col-md-6 text-md-right">
-                                @if ($request->status == 'awaiting_approval')
-                                    <a href="{{ route('reject.withdrawal', $request) }}" class="btn btn-danger px-1">رد
-                                        درخواست</a>
-                                @endif
-                            </div>
-                        </div>
+                        @include('dashboard.processes.withdrawal-request.partials.action-buttons', ['request' => $request])
                     </div>
                 </div>
             </div>
