@@ -100,6 +100,7 @@ Route::middleware('auth')->group(function () {
     Route::get('inventory-ajax/{commodityId}', [InventoryController::class, 'getCommodityInventory'])->name('inventory.ajax');
     Route::get('order/commodity-units/{commodityId}', [OrderController::class, 'getCommodityUnits'])->name('order.commodity.units');
     Route::get('order/calculate-weight/{commodityId}/{amount}/{unitId}', [OrderController::class, 'calculateWeight'])->name('order.calculate.weight');
+    Route::get('order/partial/item-row', [OrderController::class, 'getItemRowPartial'])->name('order.partial.item-row');
 
 });
 

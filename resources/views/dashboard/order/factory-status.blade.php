@@ -91,51 +91,7 @@
                     <h4 class="card-title mb-2">ارزیابی تحویل سفارشات بر اساس موجودی انبار</h4>
                     
                     <!-- Orders Summary -->
-                    @if($summaryStats['totalOrders'] > 0)
-                        <div class="row mb-3">
-                            <div class="col-md-2">
-                                <div class="card bg-primary text-white text-center summary-card">
-                                    <div class="card-body">
-                                        <h6>کل سفارشات</h6>
-                                        <h4>{{ $summaryStats['totalOrders'] }}</h4>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="card bg-success text-white text-center summary-card">
-                                    <div class="card-body">
-                                        <h6>قابل تحویل</h6>
-                                        <h4>{{ $summaryStats['canDeliverCount'] }}</h4>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="card bg-danger text-white text-center summary-card">
-                                    <div class="card-body">
-                                        <h6>غیرقابل تحویل</h6>
-                                        <h4>{{ $summaryStats['cannotDeliverCount'] }}</h4>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="card bg-info text-white text-center summary-card">
-                                    <div class="card-body">
-                                        <h6>ارزش کل</h6>
-                                        <h6>{{ number_format($summaryStats['totalValue']) }} ریال</h6>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="card bg-warning text-white text-center summary-card">
-                                    <div class="card-body">
-                                        <h6>مقدار سفارش</h6>
-                                        <h6>{{ number_format($summaryStats['totalAmount']) }}</h6>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    @endif
+                    @include('dashboard.order.partials.order-summary-stats', ['summaryStats' => $summaryStats])
                     
                     <!-- Date fields and calculate button in a flex row -->
                     <div id="factory-filter-group" class=" justify-content-start gap-2 mb-2" style="width: auto;">
