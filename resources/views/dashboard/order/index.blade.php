@@ -34,7 +34,7 @@
                                 <tr>
                                     <td></td>
                                     <td>{{ $order->customer ? $order->customer->name : 'مشتری حذف شده' }}</td>
-                                    <td>{{ $order->orderItems->count() }} کالا</td>
+                                    <td>{{ $order->items_count }} کالا</td>
                                     <td>{{ $order->deadline }}</td>
                                     <td>{{ __('fields.order.status.' . $order->status) }}</td>
                                     <td>سیستم</td>

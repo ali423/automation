@@ -42,9 +42,16 @@ class OrderController extends Controller
             ->whereHas('orderItems.commodity')
             ->orderByRaw("FIELD(status, \"pending\", \"done\")")
             ->orderBy('deadline', 'ASC')->get();
+            
+        // Add calculated properties
+        $ordersWithCounts = $orders->map(function ($order) {
+            $order->items_count = $order->orderItems->count();
+            return $order;
+        });
+            
         return view('dashboard.order.index',
             [
-                'orders' => $orders,
+                'orders' => $ordersWithCounts,
             ]);
     }
 
@@ -60,8 +67,15 @@ class OrderController extends Controller
             ->whereHas('orderItems.commodity')
             ->orderByRaw("FIELD(status, 'pending', 'done')")
             ->orderBy('deadline', 'ASC')->get();
+            
+        // Calculate total amounts for each order
+        $ordersWithTotals = $orders->map(function ($order) {
+            $order->total_amount = $order->orderItems->sum('commodity_amount');
+            return $order;
+        });
+            
         return view('dashboard.order.chart', [
-            'orders' => $orders,
+            'orders' => $ordersWithTotals,
         ]);
     }
 
@@ -132,6 +146,9 @@ class OrderController extends Controller
     {
         // Load the order with all necessary relationships
         $order->load(['customer', 'orderItems.commodity', 'orderItems.unit', 'comments.user', 'files.user']);
+        
+        // Add calculated properties
+        $order->items_count = $order->orderItems->count();
         
         return view('dashboard.order.show',
             [
@@ -236,6 +253,12 @@ class OrderController extends Controller
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
     public function confirm(Order $order){
+        // Load the order with all necessary relationships
+        $order->load(['customer', 'orderItems.commodity', 'orderItems.unit']);
+        
+        // Add calculated properties
+        $order->items_count = $order->orderItems->count();
+        
         return view('dashboard.order.confirm',
             [
                 'order' => $order,
@@ -542,9 +565,20 @@ class OrderController extends Controller
         // Get real warehouse chart data
         $warehouseChartData = $this->getWarehouseChartData();
 
+        // Calculate summary statistics
+        $summaryStats = [
+            'totalOrders' => $pendingOrders->count(),
+            'totalValue' => $pendingOrders->sum('total_value'),
+            'canDeliverCount' => $pendingOrders->where('can_deliver', true)->count(),
+            'cannotDeliverCount' => $pendingOrders->where('can_deliver', false)->count(),
+            'totalAmount' => $pendingOrders->sum('total_amount'),
+            'totalInventory' => $pendingOrders->sum('inventory_available'),
+        ];
+
         return view('dashboard.order.factory-status', [
             'pendingOrders' => $pendingOrders,
             'warehouseChartData' => $warehouseChartData,
+            'summaryStats' => $summaryStats,
         ]);
     }
 
@@ -627,9 +661,18 @@ class OrderController extends Controller
                 });
             });
 
+        // Calculate summary statistics
+        $summaryStats = [
+            'totalOrders' => $customerOrders->count(),
+            'totalValue' => $customerOrders->sum('total_value'),
+            'canDeliverCount' => $customerOrders->where('can_deliver', true)->count(),
+            'cannotDeliverCount' => $customerOrders->where('can_deliver', false)->count(),
+        ];
+
         return view('dashboard.order.customer-details', [
             'customer' => $customer,
-            'orders' => $customerOrders
+            'orders' => $customerOrders,
+            'summaryStats' => $summaryStats,
         ]);
     }
 }

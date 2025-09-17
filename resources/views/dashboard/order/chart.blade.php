@@ -92,7 +92,7 @@
                                     <td><input type="checkbox" class="order-checkbox"></td>
                                     <td>{{ $i }}</td>
                                     <td>{{ $order->customer ? $order->customer->name : 'مشتری حذف شده' }}</td>
-                                    <td>{{ number_format($order->orderItems->sum('commodity_amount')) }}</td>
+                                    <td>{{ number_format($order->total_amount) }}</td>
                                     <td>{{ date('Y/m/d', strtotime($order->deadline)) }}</td>
                                                                             <td>{{ __('fields.order.status.' . $order->status) }}</td>
                                     <td>سیستم</td>

@@ -120,19 +120,13 @@
                     <h4 class="card-title mb-2">لیست سفارشات {{ $customer->name }}</h4>
                     
                     <!-- Orders Summary -->
-                    @if($orders->count() > 0)
-                        @php
-                            $totalOrders = $orders->count();
-                            $totalValue = $orders->sum('total_value');
-                            $canDeliverCount = $orders->where('can_deliver', true)->count();
-                            $cannotDeliverCount = $orders->where('can_deliver', false)->count();
-                        @endphp
+                    @if($summaryStats['totalOrders'] > 0)
                         <div class="row mb-3">
                             <div class="col-md-3">
                                 <div class="card bg-primary text-white summary-card">
                                     <div class="card-body text-center">
                                         <h5>کل سفارشات</h5>
-                                        <h3>{{ $totalOrders }}</h3>
+                                        <h3>{{ $summaryStats['totalOrders'] }}</h3>
                                     </div>
                                 </div>
                             </div>
@@ -140,7 +134,7 @@
                                 <div class="card bg-success text-white summary-card">
                                     <div class="card-body text-center">
                                         <h5>قابل تحویل</h5>
-                                        <h3>{{ $canDeliverCount }}</h3>
+                                        <h3>{{ $summaryStats['canDeliverCount'] }}</h3>
                                     </div>
                                 </div>
                             </div>
@@ -148,7 +142,7 @@
                                 <div class="card bg-danger text-white summary-card">
                                     <div class="card-body text-center">
                                         <h5>غیرقابل تحویل</h5>
-                                        <h3>{{ $cannotDeliverCount }}</h3>
+                                        <h3>{{ $summaryStats['cannotDeliverCount'] }}</h3>
                                     </div>
                                 </div>
                             </div>
@@ -156,7 +150,7 @@
                                 <div class="card bg-info text-white summary-card">
                                     <div class="card-body text-center">
                                         <h5>ارزش کل</h5>
-                                        <h3>{{ number_format($totalValue) }} ریال</h3>
+                                        <h3>{{ number_format($summaryStats['totalValue']) }} ریال</h3>
                                     </div>
                                 </div>
                             </div>

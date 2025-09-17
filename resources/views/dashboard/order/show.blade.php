@@ -43,7 +43,7 @@
                         </div>
 
                         <!-- Order Items -->
-                        @if($order->orderItems->count() > 0)
+                        @if($order->items_count > 0)
                             <div class="form-row mt-4">
                                 <div class="col-12">
                                     <h5>جزئیات سفارش</h5>
