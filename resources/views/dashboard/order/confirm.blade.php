@@ -27,7 +27,7 @@
                     </div>
                     <div class="form-group col-md-3">
                         <label>تعداد کالاها</label>
-                        <input type="text" class="form-control" value="{{ $order->orderItems->count() }} کالا" disabled>
+                        <input type="text" class="form-control" value="{{ $order->items_count }} کالا" disabled>
                     </div>
                 </div>
 
@@ -50,7 +50,7 @@
                             
                             <div id="product_formul" class="col-lg-12">
                                 <p>اطلاعات کالا</p>
-                                @if($order->orderItems->count() > 0)
+                                @if($order->items_count > 0)
                                     @foreach($order->orderItems as $item)
                                         @if($item->commodity)
                                             <div id="inputFormRow_{{ $loop->index }}" class="form-row shadow p-4 mb-3">
