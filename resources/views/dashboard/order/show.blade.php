@@ -133,11 +133,17 @@
                     <button type="button" class="factor factorbtn btn btn-secondary m-1" onclick="printProformaInvoice('proforma-invoice-2')">
                         <i class="ti-printer font-18"></i> چاپ پیش فاکتور
                     </button>
+                    <button type="button" class="btn btn-secondary m-1" onclick="showProformaInvoice('proforma-invoice-2')">
+                        <i class="ti-eye font-18"></i> نمایش پیش فاکتور
+                    </button>
                 </div>
             </div>
         </div>
     </div>
     <!-- Hidden Proforma Invoice Section -->
+    <div id="proforma-invoice-close" style="display:none; position: fixed; top: 10px; left: 10px; z-index: 10001;">
+        <button type="button" class="btn btn-danger btn-sm" onclick="hideProformaInvoice('proforma-invoice-2')">بستن</button>
+    </div>
     <div id="proforma-invoice-2" style="display:none;">
         <div class="row mt-4">
             <div class="col-xl-12 box-margin height-card">
@@ -272,6 +278,29 @@
     <!-- These plugins only need for the run this page -->
     <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
     <script>
+        function showProformaInvoice(invoiceId) {
+            var el = document.getElementById(invoiceId);
+            if (!el) return;
+            el.style.display = 'block';
+            el.style.position = 'fixed';
+            el.style.top = '0';
+            el.style.left = '0';
+            el.style.width = '100%';
+            el.style.height = '100%';
+            el.style.background = 'white';
+            el.style.zIndex = '10000';
+            el.style.overflowY = 'auto';
+            el.style.padding = '20px';
+            var closer = document.getElementById('proforma-invoice-close');
+            if (closer) closer.style.display = 'block';
+        }
+        function hideProformaInvoice(invoiceId) {
+            var el = document.getElementById(invoiceId);
+            if (!el) return;
+            el.style.display = 'none';
+            var closer = document.getElementById('proforma-invoice-close');
+            if (closer) closer.style.display = 'none';
+        }
         // Print proforma invoice function
         function printProformaInvoice(invoiceId) {
             // Get the invoice content
@@ -386,5 +415,7 @@
         // Make functions globally available
         window.printProformaInvoice = printProformaInvoice;
         window.fallbackPrint = fallbackPrint;
+        window.showProformaInvoice = showProformaInvoice;
+        window.hideProformaInvoice = hideProformaInvoice;
     </script>
 @endsection
