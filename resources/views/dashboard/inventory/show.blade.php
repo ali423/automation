@@ -12,37 +12,45 @@
                 <h4 class="card-title">مشخصات موجودی</h4>
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
+                        {{-- Basic Information Display --}}
                         <div class="form-row col-md-12">
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <label>کالا</label>
                                 <input type="text" value="{{ $inventory->commodity->title ?? 'نامشخص' }}" class="form-control" disabled>
                             </div>
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <label>واحد</label>
                                 <input type="text" value="{{ $inventory->unit->name ?? 'نامشخص' }}" class="form-control" disabled>
                             </div>
-                            <div class="form-group col-md-4">
-                                <label>وضعیت</label>
-                                <input type="text" value="{{ $inventory->active ? 'فعال' : 'غیرفعال' }}" class="form-control" disabled>
-                            </div>
-                        </div>
-                        <div class="form-row col-md-12">
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <label>مقدار موجودی</label>
                                 <input type="text" value="{{ number_format($inventory->amount, 2) }}" class="form-control" disabled>
                             </div>
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <label>قیمت خرید (تومان)</label>
                                 <input type="text" value="{{ number_format($inventory->purchase_price ?? 0) }}" class="form-control" disabled>
                             </div>
-                            <div class="form-group col-md-4">
+                        </div>
+                        <div class="form-row col-md-12">
+                            <div class="form-group col-md-6">
                                 <label>قیمت فروش (تومان)</label>
-                                <input type="text" value="{{ $inventory->sale_price ? number_format($inventory->sale_price) : 'محاسبه نشده' }}" class="form-control" disabled>
+                                <input type="text" value="{{ isset($financialData) && $financialData['has_sale_price'] ? number_format($financialData['sale_price']) : 'محاسبه نشده' }}" class="form-control" disabled>
                                 <small class="form-text text-muted">
-                                    @if($inventory->commodity->type == 'product')
+                                    @if(isset($financialData) && $financialData['is_product'])
                                         قیمت بر اساس درصد سود کالا محاسبه می‌شود
                                     @else
-                                        مواد اولیه قیمت فروش ندارند
+                                        <span class="text-warning"><i class="ti-info-circle"></i> مواد اولیه قیمت فروش ندارند</span>
+                                    @endif
+                                </small>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>ارزش کل موجودی (تومان)</label>
+                                <input type="text" value="{{ isset($financialData) ? number_format($financialData['total_value']) : 'محاسبه نشده' }}" class="form-control" disabled>
+                                <small class="form-text text-muted">
+                                    @if(isset($financialData) && $financialData['is_product'])
+                                        بر اساس قیمت فروش محاسبه شده
+                                    @else
+                                        بر اساس قیمت خرید محاسبه شده
                                     @endif
                                 </small>
                             </div>
@@ -58,6 +66,7 @@
                             </div>
                         </div>
 
+                        {{-- Financial Information and Quick Actions --}}
                         <div class="row mt-4">
                             <div class="col-md-6">
                                 <div class="card">
@@ -68,21 +77,14 @@
                                         <div class="alert alert-info">
                                             <h6>محاسبات:</h6>
                                             <ul class="mb-0">
-                                                @php
-                                                    $purchasePrice = $inventory->purchase_price ?? 0;
-                                                    $salePrice = $inventory->sale_price ?? 0;
-                                                    $profit = $salePrice - $purchasePrice;
-                                                    $profitPercentage = $purchasePrice > 0 ? ($profit / $purchasePrice) * 100 : 0;
-                                                    $totalValue = $inventory->amount * $salePrice;
-                                                @endphp
-                                                @if($inventory->commodity->type == 'product')
-                                                    <li>سود: {{ number_format($profit) }} تومان</li>
-                                                    <li>درصد سود: {{ number_format($profitPercentage, 1) }}%</li>
-                                                    <li>ارزش کل موجودی: {{ number_format($totalValue) }} تومان</li>
+                                                @if(isset($financialData) && $financialData['is_product'])
+                                                    <li>سود: {{ number_format($financialData['profit']) }} تومان</li>
+                                                    <li>درصد سود: {{ number_format($financialData['profit_percentage'], 1) }}%</li>
+                                                    <li>ارزش کل موجودی: {{ number_format($financialData['total_value']) }} تومان</li>
                                                 @else
-                                                    <li>قیمت خرید: {{ number_format($purchasePrice) }} تومان</li>
-                                                    <li>ارزش کل موجودی: {{ number_format($inventory->amount * $purchasePrice) }} تومان</li>
-                                                    <li class="text-muted">مواد اولیه قیمت فروش ندارند</li>
+                                                    <li>قیمت خرید: {{ number_format($financialData['purchase_price'] ?? 0) }} تومان</li>
+                                                    <li>ارزش کل موجودی: {{ number_format($financialData['total_value'] ?? 0) }} تومان</li>
+                                                    <li class="text-warning"><i class="ti-info-circle"></i> مواد اولیه قیمت فروش ندارند</li>
                                                 @endif
                                             </ul>
                                         </div>
@@ -101,7 +103,7 @@
                                             </button>
                                         @endcan
                                         
-                                        @if($inventory->commodity->type == 'product')
+                                        @if(isset($financialData) && $financialData['is_product'])
                                             <a href="{{ route('commodity.edit', $inventory->commodity) }}" class="btn btn-info btn-block">
                                                 <i class="ti-settings"></i> تنظیم درصد سود
                                             </a>
@@ -129,7 +131,7 @@
         </div>
     </div>
 
-    <!-- Stock Adjustment Modal -->
+    {{-- Stock Adjustment Modal --}}
     @can('adjustStock', $inventory)
     <div class="modal fade" id="stockAdjustmentModal" tabindex="-1" role="dialog" aria-labelledby="stockAdjustmentModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -174,6 +176,5 @@
 @endsection
 
 @section('page_scripts')
-    <!-- These plugins only need for the run this page -->
-    <script src="{{ asset('js/default-assets/basic-form.js') }}"></script>
+    @include('dashboard.inventory.partials.form-scripts')
 @endsection 

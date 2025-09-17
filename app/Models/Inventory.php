@@ -14,12 +14,10 @@ class Inventory extends Model
         'commodity_id',
         'unit_id',
         'amount',
-        'purchase_price',
-        'active'
+        'purchase_price'
     ];
 
     protected $casts = [
-        'active' => 'boolean',
         'amount' => 'decimal:2',
         'purchase_price' => 'decimal:2'
     ];
@@ -36,7 +34,7 @@ class Inventory extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('active', true);
+        return $query->where('amount', '>', 0);
     }
 
     public function scopeAvailable($query)
@@ -53,12 +51,12 @@ class Inventory extends Model
      */
     public function getSalePriceAttribute()
     {
-        if ($this->commodity->type === 'product') {
+        if ($this->commodity && $this->commodity->type === 'product') {
             // Use the commodity's calculated sales price
             return $this->commodity->sales_price;
         }
         
-        // Materials don't have sale prices
+        // Materials don't have sale prices or commodity is null
         return null;
     }
 
