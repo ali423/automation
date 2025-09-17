@@ -32,7 +32,7 @@
                         </thead>
 
                         <tbody class="text-center">
-                            @php($i = 1)
+                            @php($i = ($requests->currentPage() - 1) * $requests->perPage() + 1)
                             @foreach ($requests as $request)
                                 <tr>
                                     <td>{{ $i }}</td>
@@ -60,6 +60,11 @@
                             @endforeach
                         </tbody>
                     </table>
+
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-center mt-3">
+                        {{ $requests->links() }}
+                    </div>
 
                 </div> <!-- end card body-->
             </div> <!-- end card -->
