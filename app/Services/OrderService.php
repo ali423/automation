@@ -149,43 +149,6 @@ class OrderService extends BaseService
         ]);
     }
 
-    /**
-     * Get inventory information for order items
-     */
-    public function getInventoryInfo(Order $order)
-    {
-        $inventoryInfo = [];
-
-        foreach ($order->orderItems as $item) {
-            $commodity = $item->commodity;
-            if (!$commodity) {
-                $inventoryInfo[$item->id] = [
-                    'available' => 0,
-                    'needed' => $item->commodity_amount,
-                    'unit' => $item->unit ? $item->unit->symbol : 'نامشخص',
-                    'status' => 'commodity_not_found'
-                ];
-                continue;
-            }
-
-            $requiredAmount = $item->commodity_amount;
-            $availableAmount = 0;
-
-            // Calculate available inventory
-            foreach ($commodity->warehouses as $warehouse) {
-                $availableAmount += $warehouse->pivot->commodity_amount;
-            }
-
-            $inventoryInfo[$item->id] = [
-                'available' => $availableAmount,
-                'needed' => $requiredAmount,
-                'unit' => $item->unit ? $item->unit->symbol : 'نامشخص',
-                'status' => $availableAmount >= $requiredAmount ? 'sufficient' : 'insufficient'
-            ];
-        }
-
-        return $inventoryInfo;
-    }
 
     /**
      * Validate second layer data

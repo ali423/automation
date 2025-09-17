@@ -133,12 +133,9 @@ class OrderController extends Controller
         // Load the order with all necessary relationships
         $order->load(['customer', 'orderItems.commodity', 'orderItems.unit', 'comments.user', 'files.user']);
         
-        $inventoryInfo = $this->service->getInventoryInfo($order);
-        
         return view('dashboard.order.show',
             [
                 'order' => $order,
-                'inventoryInfo' => $inventoryInfo,
             ]);
     }
 

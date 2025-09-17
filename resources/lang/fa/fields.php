@@ -60,7 +60,6 @@ return [
 
         'name' => 'نام کالا',
         'amount' => 'مقدار کالا',
-        'warehouse_amount' => 'مقدار موجود در این انبار',
         'units' => [
             'kg' => 'کیلوگرم',
             'keg' => 'بشکه',
@@ -71,17 +70,6 @@ return [
         'types' => [
             'material' => 'ماده اولیه',
             'product' => 'فرآورده',
-        ],
-    ],
-    'warehouse' => [
-        'name' => 'نام انبار جهت ذخیره کالا',
-        'types' => [
-            'tank' => 'مخزن تانکر',
-            'hall' => 'سالن',
-        ],
-        'status' => [
-            'active' => 'فعال',
-            'inactive' => 'غیر فعال',
         ],
     ],
     'importing_request' => [
@@ -134,7 +122,6 @@ return [
         ],
         'factory_status' => 'وضعیت کارخانه',
         'production_stats' => 'آمار درخواست های تولید',
-        'warehouse_status' => 'وضعیت انبارها',
         'pending_orders' => 'سفارشات',
         'recent_production_requests' => 'آخرین درخواست های تولید',
         'total_requests' => 'کل درخواست ها',
@@ -142,8 +129,6 @@ return [
         'approved' => 'تایید شده',
         'rejected' => 'رد شده',
         'completed' => 'تکمیل شده',
-        'warehouse_name' => 'نام انبار',
-        'warehouse_type' => 'نوع',
         'total_capacity' => 'ظرفیت کل',
         'used_space' => 'فضای استفاده شده',
         'empty_space' => 'فضای خالی',

@@ -13,7 +13,6 @@ use App\Http\Controllers\Processes\WithdrawalRequestController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UnitConversionController;
 use App\Http\Controllers\InventoryController;
@@ -48,7 +47,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('activity',ActivityController::class)->only('show','index');
 
     Route::resource('commodity',CommodityController::class);
-    Route::resource('warehouse',WarehouseController::class);
     Route::resource('customer',CustomerController::class);
     Route::resource('seller',SellerController::class);
 

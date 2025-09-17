@@ -28,7 +28,7 @@ class CommodityController extends Controller
     public function index()
     {
         // Fix N+1 query problem by eager loading relationships
-        $commodities = Commodity::with(['unit', 'materials.unit', 'warehouses'])
+        $commodities = Commodity::with(['unit', 'materials.unit'])
             ->orderBy('id', 'DESC')
             ->paginate(20); // Add pagination for better performance
         
@@ -123,7 +123,7 @@ class CommodityController extends Controller
     public function show(Commodity $commodity)
     {
         // Optimize: Load commodity with all necessary relationships
-        $commodity->load(['unit', 'materials.unit', 'warehouses']);
+        $commodity->load(['unit', 'materials.unit']);
         
         // Pre-calculate base price to avoid N+1 queries
         $commodity->base_price = $this->calculateBasePrice($commodity);
@@ -145,7 +145,7 @@ class CommodityController extends Controller
     public function edit(Commodity $commodity)
     {
         // Optimize: Load commodity with all necessary relationships
-        $commodity->load(['unit', 'materials.unit', 'warehouses']);
+        $commodity->load(['unit', 'materials.unit']);
         
         // Pre-calculate base price to avoid N+1 queries
         $commodity->base_price = $this->calculateBasePrice($commodity);
@@ -200,34 +200,6 @@ class CommodityController extends Controller
         return redirect(route('commodity.index'))->with('successful', 'اطلاعات حذف شدند.');
     }
 
-    public function inventory($id)
-    {
-        // Optimize: Load commodity with warehouses in one query
-        $commodity = Commodity::with(['warehouses'])
-            ->findOrFail($id);
-            
-        // Pre-calculate sales price to avoid N+1 queries
-        $commodity->sales_price = $this->calculateSalesPrice($commodity);
-        
-        $warehouses = $commodity->warehouses()
-            ->where('commodity_amount', '>', 0)
-            ->get();
-            
-        $warehouse_res = $warehouses->map(function ($warehouse) {
-            return [
-                'id' => $warehouse->id,
-                'title' => $warehouse->title,
-                'amount' => $warehouse->pivot->commodity_amount,
-            ];
-        })->toArray();
-        
-        $res = [
-            'warehouses' => $warehouse_res,
-            'price' => $commodity->sales_price,
-        ];
-        
-        return response()->json($res);
-    }
     
     /**
      * Calculate sales price for a commodity
