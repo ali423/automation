@@ -42,7 +42,7 @@
                             <div id="order_formul" class="col-lg-12">
                                 <p>اطلاعات سفارش</p>
                                 <div id="inputFormRow" class="form-row shadow p-4 mb-3">
-                                    <div class="form-group col-md-4">
+                                    <div class="form-group col-md-3">
                                         <label for="commodity_id">{{ __('fields.commodity.name')}}</label>
                                         <select id="commodity_id" class="form-control" name="commodity_id[0]" required>
                                             <option value="">انتخاب کنید</option>
@@ -61,7 +61,7 @@
                                         </select>
                                         <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
                                     </div>
-                                    <div class="form-group col-md-3">
+                                    <div class="form-group col-md-2">
                                         <label for="amount"> {{  __('fields.commodity.amount') }}</label>
                                         <input type="number" id="amount" min="1" name="commodity_amount[0]" class="form-control"
                                                autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}"
@@ -75,10 +75,26 @@
                                         <input type="text" id="price" name="price[0]" value="" class="form-control"
                                                autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}">
                                     </div>
+                                    <div class="form-group col-md-2">
+                                        <label for="weight">وزن (کیلوگرم)</label>
+                                        <input type="text" id="weight" class="form-control" readonly
+                                               placeholder="وزن محاسبه می‌شود...">
+                                    </div>
                                 </div>
                                 <div id="newRow"></div>
                                 <button id="addRow" type="button" class="btn btn-dfprimary mb-3">+ افزودن</button>
                             </div>
+                            
+                            <!-- Total Weight Display -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="alert alert-info">
+                                        <strong>مجموع وزن سفارش:</strong> 
+                                        <span id="totalWeight">0 کیلوگرم</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <button type="submit" class="btn btn-primary mr-2">ثبت سفارش</button>
                             <a href="{{ route('order.index') }}" class="btn btn-danger">انصراف</a>
                         </form>
@@ -125,6 +141,9 @@
                         priceInput.val(price);
                     }
                 });
+                
+                // Calculate weight when commodity changes
+                calculateWeightForRow($(this).closest('.form-row'));
             });
             $(document).on('change', '#unit_id', function () {
                 var new_price = $(this).closest('.form-row').find('#price').val();
@@ -134,12 +153,66 @@
                     // Price will be handled by the backend based on unit conversions
                     priceInput.val(price);
                 }
+                // Calculate weight when unit changes
+                calculateWeightForRow($(this).closest('.form-row'));
             });
+            
+            // Calculate weight when amount changes
+            $(document).on('input', '#amount', function () {
+                calculateWeightForRow($(this).closest('.form-row'));
+            });
+            
+            // Function to calculate weight for a specific row
+            function calculateWeightForRow($row) {
+                var commodityId = $row.find('#commodity_id').val();
+                var unitId = $row.find('#unit_id').val();
+                var amount = $row.find('#amount').val();
+                var weightInput = $row.find('#weight');
+                
+                if (commodityId && unitId && amount && amount > 0) {
+                    $.ajax({
+                        url: '/order/calculate-weight/' + commodityId + '/' + amount + '/' + unitId,
+                        type: 'get',
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response.success) {
+                                weightInput.val(response.weight_formatted);
+                                weightInput.data('weight-value', response.weight); // Store numeric value for total calculation
+                            } else {
+                                weightInput.val('خطا در محاسبه');
+                                weightInput.data('weight-value', 0);
+                            }
+                            updateTotalWeight();
+                        },
+                        error: function () {
+                            weightInput.val('خطا در محاسبه');
+                            weightInput.data('weight-value', 0);
+                            updateTotalWeight();
+                        }
+                    });
+                } else {
+                    weightInput.val('');
+                    weightInput.data('weight-value', 0);
+                    updateTotalWeight();
+                }
+            }
+            
+            // Function to update total weight display
+            function updateTotalWeight() {
+                var totalWeight = 0;
+                $('.form-row').each(function() {
+                    var weightValue = $(this).find('#weight').data('weight-value');
+                    if (weightValue && !isNaN(weightValue)) {
+                        totalWeight += parseFloat(weightValue);
+                    }
+                });
+                $('#totalWeight').text(totalWeight.toFixed(3) + ' کیلوگرم');
+            }
             // Add row
             $('#addRow').click(function () {
                 var index = $('#order_formul .form-row').length;
                 var html = `<div id="inputFormRow" class="form-row shadow p-4 mb-3">
-                    <div class="form-group col-md-4">
+                    <div class="form-group col-md-3">
                         <label for="commodity_id">{{ __('fields.commodity.name')}}</label>
                         <select id="commodity_id" class="form-control" name="commodity_id[${index}]" required>
                             <option value="">انتخاب کنید</option>
@@ -158,7 +231,7 @@
                         </select>
                         <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
                     </div>
-                    <div class="form-group col-md-3">
+                    <div class="form-group col-md-2">
                         <label for="amount"> {{  __('fields.commodity.amount') }}</label>
                         <input type="number" id="amount" min="1" name="commodity_amount[${index}]" class="form-control"
                                autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}"
@@ -171,6 +244,11 @@
                         <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
                         <input type="text" id="price" name="price[${index}]" value="" class="form-control"
                                autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="weight">وزن (کیلوگرم)</label>
+                        <input type="text" id="weight" class="form-control" readonly
+                               placeholder="وزن محاسبه می‌شود...">
                     </div>
                     <i id="removeRow" type="button" class="ti-close" style="cursor:pointer; font-size:1.5rem; color:#dc3545; margin-top:2rem;"></i>
                 </div>`;
@@ -186,6 +264,7 @@
             // Remove row
             $(document).on('click', '#removeRow', function () {
                 $(this).closest('.form-row').remove();
+                updateTotalWeight(); // Update total weight when row is removed
             });
         });
     </script>

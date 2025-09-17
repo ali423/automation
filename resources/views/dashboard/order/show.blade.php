@@ -76,6 +76,12 @@
                                                     <th colspan="5" class="text-left">مجموع کل:</th>
                                                     <th>{{ number_format($order->total_price) }} تومان</th>
                                                 </tr>
+                                                <tr>
+                                                    <th colspan="5" class="text-left">مجموع وزن (کیلوگرم):</th>
+                                                    <th>
+                                                        {{ $order->total_weight_kg !== null ? number_format($order->total_weight_kg, 3) : 'نامشخص' }}
+                                                    </th>
+                                                </tr>
                                             </tfoot>
                                         </table>
                                     </div>

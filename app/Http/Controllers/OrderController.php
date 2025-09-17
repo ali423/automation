@@ -461,6 +461,45 @@ class OrderController extends Controller
     }
 
     /**
+     * Calculate weight for a commodity with given amount and unit
+     *
+     * @param int $commodityId
+     * @param float $amount
+     * @param int $unitId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function calculateWeight($commodityId, $amount, $unitId)
+    {
+        try {
+            $commodity = Commodity::findOrFail($commodityId);
+            $weight = calculate_weight($commodity, $amount, $unitId);
+            
+            // Provide more specific feedback for why weight is unknown
+            $weightFormatted = 'نامشخص';
+            if ($weight === null) {
+                if (!$commodity->weight_per_unit) {
+                    $weightFormatted = 'وزن تعریف نشده';
+                } else {
+                    $weightFormatted = 'خطا در محاسبه';
+                }
+            } else {
+                $weightFormatted = number_format($weight, 3) . ' کیلوگرم';
+            }
+            
+            return response()->json([
+                'success' => true,
+                'weight' => $weight,
+                'weight_formatted' => $weightFormatted
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در محاسبه وزن: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
      * Display factory status page.
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View

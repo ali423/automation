@@ -99,6 +99,7 @@ Route::middleware('auth')->group(function () {
     Route::post('inventory/{inventory}/adjust-stock', [InventoryController::class, 'adjustStock'])->name('inventory.adjust-stock');
     Route::get('inventory-ajax/{commodityId}', [InventoryController::class, 'getCommodityInventory'])->name('inventory.ajax');
     Route::get('order/commodity-units/{commodityId}', [OrderController::class, 'getCommodityUnits'])->name('order.commodity.units');
+    Route::get('order/calculate-weight/{commodityId}/{amount}/{unitId}', [OrderController::class, 'calculateWeight'])->name('order.calculate.weight');
 
 });
 
