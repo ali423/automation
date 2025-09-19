@@ -61,6 +61,25 @@ class OrderItem extends Model
     }
 
     /**
+     * Calculate the VAT amount for this item (10% for domestic products)
+     */
+    public function getVatAmountAttribute()
+    {
+        if ($this->commodity && $this->commodity->type === 'product') {
+            return $this->total_price * 0.1; // 10% VAT
+        }
+        return 0;
+    }
+
+    /**
+     * Calculate the total price including VAT for this item
+     */
+    public function getTotalPriceWithVatAttribute()
+    {
+        return $this->total_price + $this->vat_amount;
+    }
+
+    /**
      * Get the amount in kilograms
      */
     // public function getKgAmountAttribute()
