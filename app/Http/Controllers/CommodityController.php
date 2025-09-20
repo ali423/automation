@@ -39,7 +39,7 @@ class CommodityController extends Controller
         $commodities = $this->getPaginatedResults($query, $request, 10, [
             'searchable_fields' => ['title', 'number', 'product_identifier'],
             'filterable_fields' => ['type', 'unit_id'],
-            'sortable_fields' => ['id', 'title', 'number', 'type', 'purchase_price', 'warning_limit', 'profit_margin', 'pieces_per_box', 'weight_per_unit', 'created_at', 'updated_at'],
+            'sortable_fields' => [], // Disable server-side sorting, use DataTables sorting instead
             'default_sort_field' => 'id',
             'default_sort_direction' => 'desc',
             'max_per_page' => 50
@@ -51,7 +51,9 @@ class CommodityController extends Controller
         // Prepare options for the pagination components
         $paginationOptions = [
             'searchable_fields' => ['title', 'number', 'product_identifier'],
-            'filterable_fields' => ['type', 'unit_id']
+            'filterable_fields' => ['type', 'unit_id'],
+            'per_page_options' => [5, 10, 25, 50, 100],
+            'search_placeholder' => 'جستجو در عنوان، شماره یا شناسه کالا...'
         ];
         
         return view('dashboard.commodity.index', [

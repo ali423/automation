@@ -50,7 +50,7 @@
                 </span>
                 <input type="text" id="search-input" 
                        class="form-control" 
-                       placeholder="جستجو در عنوان، شماره یا شناسه کالا..."
+                       placeholder="{{ $options['search_placeholder'] ?? 'جستجو...' }}"
                        value="{{ request('search') }}">
                 @if(request('search'))
                     <button class="btn btn-outline-secondary" type="button" id="clear-search">
@@ -60,6 +60,24 @@
             </div>
             @endif
         </div>
+        <div class="col-md-6">
+            {{-- Per Page Selection --}}
+            @if(isset($options['per_page_options']) && !empty($options['per_page_options']))
+            <div class="d-flex gap-2 align-items-center">
+                <label for="per-page" class="form-label mb-0">تعداد رکورد در صفحه:</label>
+                <select class="form-select form-select-sm" id="per-page" style="width: auto; min-width: 80px;">
+                    @foreach($options['per_page_options'] as $option)
+                        <option value="{{ $option }}" {{ request('per_page', 10) == $option ? 'selected' : '' }}>
+                            {{ $option }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
+        </div>
+    </div>
+    
+    <div class="row">
         <div class="col-md-6">
             {{-- Filter Controls --}}
             @if(isset($options['filterable_fields']) && !empty($options['filterable_fields']))

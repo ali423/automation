@@ -15,6 +15,20 @@
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title mb-2">لیست واحدها</h4>
+                    
+                    {{-- Pagination Controls --}}
+                    <x-pagination-controls :paginator="$units" :options="[
+                        'searchable_fields' => ['name', 'symbol'],
+                        'per_page_options' => [5, 10, 25, 50, 100],
+                        'search_placeholder' => 'جستجو در نام و نماد واحد...'
+                    ]" />
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="ti-info-circle"></i> 
+                            مرتب‌سازی فقط برای رکوردهای صفحه فعلی اعمال می‌شود
+                        </small>
+                    </div>
                     <table id="datatable-buttons-unit" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                         <tr>
@@ -26,10 +40,9 @@
                         </tr>
                         </thead>
                         <tbody class="text-center">
-                        @php($i = 1)
                         @foreach ($units as $unit)
                             <tr>
-                                <td>{{ $i }}</td>
+                                <td>{{ $units->firstItem() + $loop->index }}</td>
                                 <td>{{ $unit->name }}</td>
                                 <td>{{ $unit->symbol }}</td>
                                 <td>{{ jdate($unit->created_at)->format('Y/m/d') }}</td>
@@ -37,10 +50,19 @@
                                     <a href="{{ route('unit.show', $unit) }}" class=""><i class="ti-more-alt font-24"></i></a>
                                 </td>
                             </tr>
-                            @php($i++)
                         @endforeach
                         </tbody>
                     </table>
+                    
+                    {{-- Pagination Links --}}
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="text-muted">
+                            نمایش {{ $units->firstItem() }} تا {{ $units->lastItem() }} از {{ $units->total() }} رکورد
+                        </div>
+                        <div>
+                            {{ $units->links() }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -76,6 +98,11 @@
             };
             $('#datatable-buttons-unit').DataTable({
                 dom: 'Bfrtip',
+                paging: false,
+                searching: false,
+                info: false,
+                ordering: true, // Enable DataTables sorting for current page
+                lengthChange: false,
                 buttons: [
                     {
                         extend: 'copy',
