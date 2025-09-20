@@ -8,6 +8,7 @@ use App\Http\Requests\Processes\CreateImportingRequest;
 use App\Models\Commodity;
 use App\Models\ImportingRequest;
 use App\Models\Seller;
+use Illuminate\Http\Request;
 use App\Services\CommodityUnitService;
 use App\Services\Processes\ImportingRequestService;
 use Illuminate\Support\Facades\DB;
@@ -288,8 +289,63 @@ class ImportingRequestController extends Controller
         if (isset($requests['error'])) {
             return redirect(route('importing.report.create'))->withErrors($requests['error']);
         }
+        
+        // Get available units and conversions for the commodity
+        $commodity = \App\Models\Commodity::find($data['commodity_id']);
+        $availableUnits = $commodity->unitConversions()
+            ->with(['fromUnit', 'toUnit'])
+            ->get()
+            ->groupBy('to_unit_id')
+            ->map(function ($conversions) {
+                return $conversions->first()->toUnit;
+            });
+        
+        // Add the main unit if not already included
+        if ($commodity->unit && !$availableUnits->has($commodity->unit->id)) {
+            $availableUnits->put($commodity->unit->id, $commodity->unit);
+        }
+        
         return view('dashboard.processes.importing-request.report-show', [
             'requests' => $requests,
+            'availableUnits' => $availableUnits,
+            'commodity' => $commodity,
+        ]);
+    }
+
+    /**
+     * Convert price to different unit via AJAX
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function convertPrice(Request $request)
+    {
+        $request->validate([
+            'commodity_id' => 'required|exists:commodities,id',
+            'from_unit_id' => 'required|exists:units,id',
+            'to_unit_id' => 'required|exists:units,id',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $unitConversionService = app(\App\Services\UnitConversionService::class);
+        $convertedPrice = $unitConversionService->convert(
+            $request->price,
+            $request->from_unit_id,
+            $request->to_unit_id,
+            $request->commodity_id
+        );
+
+        if ($convertedPrice === null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'تبدیل واحد برای این کالا تعریف نشده است.'
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'converted_price' => round($convertedPrice, 2),
+            'formatted_price' => number_format(round($convertedPrice, 2))
         ]);
     }
 }
