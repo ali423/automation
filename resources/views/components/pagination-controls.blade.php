@@ -89,6 +89,14 @@
                         <span class="badge bg-info text-white ms-1">نقش: {{ $role->name }}</span>
                     @endif
                 @endif
+                @if(isset($currentFilters['customer_id']))
+                    @php
+                        $customer = \App\Models\Customer::find($currentFilters['customer_id']);
+                    @endphp
+                    @if($customer)
+                        <span class="badge bg-info text-white ms-1">مشتری: {{ $customer->name }} {{ $customer->comp_name ? '(' . $customer->comp_name . ')' : '' }}</span>
+                    @endif
+                @endif
             </small>
         </div>
     @endif
@@ -231,6 +239,17 @@
                             <option value="{{ $role->id }}" 
                                 {{ ($currentFilters['role_id'] ?? '') == $role->id ? 'selected' : '' }}>
                                 {{ $role->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                @elseif($field === 'customer_id')
+                    <select class="form-select form-select-sm" style="width: auto; min-width: 160px;" 
+                            data-filter="customer_id">
+                        <option value="">{{ __('pagination.all_customers') }}</option>
+                        @foreach(\App\Models\Customer::orderBy('name')->get() as $customer)
+                            <option value="{{ $customer->id }}" 
+                                {{ ($currentFilters['customer_id'] ?? '') == $customer->id ? 'selected' : '' }}>
+                                {{ $customer->name }} {{ $customer->comp_name ? '(' . $customer->comp_name . ')' : '' }}
                             </option>
                         @endforeach
                     </select>
