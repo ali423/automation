@@ -26,6 +26,7 @@ return [
     'all_statuses' => 'همه وضعیت‌ها',
     'all_types' => 'همه انواع',
     'all_customers' => 'همه مشتریان',
+    'all_products' => 'همه محصولات',
     'all_units' => 'همه واحدها',
     'all_roles' => 'همه نقش‌ها',
     'all_commodities' => 'همه کالاها',

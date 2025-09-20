@@ -97,6 +97,14 @@
                         <span class="badge bg-info text-white ms-1">مشتری: {{ $customer->name }} {{ $customer->comp_name ? '(' . $customer->comp_name . ')' : '' }}</span>
                     @endif
                 @endif
+                @if(isset($currentFilters['product_id']))
+                    @php
+                        $product = \App\Models\Commodity::find($currentFilters['product_id']);
+                    @endphp
+                    @if($product)
+                        <span class="badge bg-info text-white ms-1">محصول: {{ $product->title }}</span>
+                    @endif
+                @endif
             </small>
         </div>
     @endif
@@ -250,6 +258,17 @@
                             <option value="{{ $customer->id }}" 
                                 {{ ($currentFilters['customer_id'] ?? '') == $customer->id ? 'selected' : '' }}>
                                 {{ $customer->name }} {{ $customer->comp_name ? '(' . $customer->comp_name . ')' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                @elseif($field === 'product_id')
+                    <select class="form-select form-select-sm" style="width: auto; min-width: 160px;" 
+                            data-filter="product_id">
+                        <option value="">{{ __('pagination.all_products') }}</option>
+                        @foreach(\App\Models\Commodity::where('type', 'product')->orderBy('title')->get() as $product)
+                            <option value="{{ $product->id }}" 
+                                {{ ($currentFilters['product_id'] ?? '') == $product->id ? 'selected' : '' }}>
+                                {{ $product->title }}
                             </option>
                         @endforeach
                     </select>

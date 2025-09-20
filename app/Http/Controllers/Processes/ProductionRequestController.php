@@ -7,11 +7,15 @@ use App\Http\Requests\Processes\CreateProductionRequest;
 use App\Models\Commodity;
 use App\Models\ProductionRequest;
 use App\Services\Processes\ProductionRequestService;
+use App\Traits\PaginationTrait;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
 class ProductionRequestController extends Controller
 {
+    use PaginationTrait;
+    
     protected $service;
 
     public function __construct(ProductionRequestService $service)
@@ -24,22 +28,44 @@ class ProductionRequestController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $requests = ProductionRequest::query()
-            ->with([
-                'activities.user', // Load activities with user for creator_user attribute
-                'product.unit', // Load product with its unit
-                'unit', // Load production request unit
-                'materials.unit' // Load materials with their units
-            ])
-            ->orderBy('id', 'DESC')
-            ->paginate(20); // Add pagination for better performance
+        // Build query with eager loading to fix N+1 query problem
+        $query = ProductionRequest::with([
+            'activities.user', // Load activities with user for creator_user attribute
+            'product.unit', // Load product with its unit
+            'unit', // Load production request unit
+            'materials.unit' // Load materials with their units
+        ]);
+        
+        // Use advanced pagination with search and filter capabilities
+        $requests = $this->getPaginatedResults($query, $request, 10, [
+            'searchable_fields' => ['number', 'product.title', 'product.number'],
+            'filterable_fields' => ['status', 'product_id'],
+            'sortable_fields' => ['id', 'number', 'status', 'production_amount', 'total_cost', 'created_at', 'updated_at'],
+            'default_sort_field' => 'created_at',
+            'default_sort_direction' => 'desc',
+            'max_per_page' => 50
+        ]);
+        
+        // Prepare options for the pagination components
+        $paginationOptions = [
+            'searchable_fields' => ['number', 'product.title', 'product.number'],
+            'filterable_fields' => ['status', 'product_id'],
+            'per_page_options' => [5, 10, 25, 50, 100],
+            'search_placeholder' => 'جستجو در شماره درخواست، نام محصول یا شماره محصول...'
+        ];
+        
+        // Get products for filter dropdown
+        $products = Commodity::where('type', 'product')->orderBy('title')->get();
         
         return view('dashboard.processes.production-request.index', [
             'requests' => $requests,
+            'products' => $products,
+            'options' => $paginationOptions,
         ]);
     }
 
