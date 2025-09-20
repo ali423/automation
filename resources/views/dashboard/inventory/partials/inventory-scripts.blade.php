@@ -30,6 +30,11 @@
 
         $('#datatable-buttons-inventory').DataTable({
             dom: 'Bfrtip',
+            paging: false, // Disable DataTables pagination since we're using server-side pagination
+            searching: false, // Disable DataTables search since we're using server-side search
+            ordering: true, // Keep DataTables sorting for current page
+            order: [], // Start with no default ordering
+            info: false, // Hide DataTables info since we have custom pagination info
             buttons: [{
                 extend: 'copy',
                 text: "کپی",
