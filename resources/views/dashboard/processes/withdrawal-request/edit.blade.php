@@ -34,49 +34,15 @@
                             <div id="product_formul" class="col-lg-12">
                                 <p>اطلاعات فروش محصول</p>
                                 @foreach ($request->commodities as $index => $commodity)
-                                <div id="inputFormRow" class="form-row shadow p-4 mb-3">
-                                    <div class="form-group col-md-6">
-                                        <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
-                                        <select class="form-control" name="commodity_id[{{ $index }}]" onchange="pricefunc(this)" required>
-                                            <option value="">انتخاب کنید</option>
-                                            @foreach ($commodities as $commodityOption)
-                                                <option value="{{ $commodityOption->id }}" {{ $commodity->id == $commodityOption->id ? 'selected' : '' }}>{{ $commodityOption->title }}</option>
-                                            @endforeach
-                                        </select>
-                                        <div class="invalid-feedback">محصول را انتخاب کنید.</div>
-                                    </div>
-                                    <div class="form-group col-md-6">
-                                        <label for="unit"> {{ __('fields.unit') }}</label>
-                                        <select class="form-control" name="unit_id[{{ $index }}]" required>
-                                            <option value="">انتخاب کنید...</option>
-                                            @if($commodity->selectable_units)
-                                                @foreach ($commodity->selectable_units as $unit)
-                                                    <option value="{{ $unit->id }}" {{ $commodity->pivot->unit_id == $unit->id ? 'selected' : '' }}>
-                                                        {{ $unit->name }} ({{ $unit->symbol }})
-                                                    </option>
-                                                @endforeach
-                                            @endif
-                                        </select>
-                                        <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
-                                    </div>
-
-                                    <div class="form-group col-md-4">
-                                        <label for="amount"> {{  __('fields.commodity.amount') }}</label>
-                                        <input type="number" id="amount" min="1" name="amount[{{ $index }}]" class="form-control"
-                                               autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]" value="{{ $commodity->pivot->amount }}" required="">
-                                        <div class="invalid-feedback">
-                                            لطفاً {{  __('fields.commodity.amount') }} را وارد کنید.
-                                        </div>
-                                    </div>
-                                    <div id="priceholder" class="form-group col-md-4">
-                                        <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
-                                        <input type="number" id="price" min="1" name="price[{{ $index }}]" class="form-control"
-                                               autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}" pattern="[0-9 .]" value="{{ $commodity->pivot->price }}">
-                                    </div>
-                                    @if($index > 0)
-                                    <i id="removeRow" type="submit" class="ti-close"></i>
-                                    @endif
-                                </div>
+                                    @include('dashboard.processes.withdrawal-request.partials.commodity-form', [
+                                        'index' => $index,
+                                        'commodities' => $commodities,
+                                        'selectedCommodity' => $commodity,
+                                        'selectedUnit' => $commodity->pivot->unit,
+                                        'amount' => $commodity->pivot->amount,
+                                        'price' => $commodity->pivot->price,
+                                        'showRemoveButton' => $index > 0
+                                    ])
                                 @endforeach
 
                                 <div id="newRow"></div>
@@ -139,29 +105,25 @@
 
         // add row
         $("#addRow").click(function() {
-            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-6"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]"  onchange="pricefunc(this)" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div> <div class="form-group col-md-6"> <label for="unit"> {{ __('fields.unit') }}</label> <select id="unit" class="form-control" name="unit_id[]" required> <option value="">انتخاب کنید...</option></select> <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div> </div> <div class="form-group col-md-4"> <label for="amount"> {{  __('fields.commodity.amount') }}</label> <input type="number" min="1" name="amount[]" class="form-control"id="amount" autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]"  required=""> <div class="invalid-feedback">لطفاً {{  __('fields.commodity.amount') }} را وارد کنید. </div></div><div id="priceholder" class="form-group col-md-4"><label for="price"> {{  __('fields.sell-price_per_unit') }}</label><input type="number" id="price" min="1" name="price[]" class="form-control" autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}" pattern="[0-9 .]" ><div class="invalid-feedback">{{ __('fields.sell-price_per_unit') }} را وارد کنید.</div></div> <i id="removeRow" type="submit" class="ti-close"></i></div></div>';
+            var currentIndex = $('.inputFormRow').length;
+            var html = '<div class="inputFormRow form-row shadow p-4 mb-3" style="position: relative;"> <i class="removeRow ti-close" type="button" style="position: absolute; top: 10px; left: 10px; cursor: pointer; font-size: 1.5rem; color: #dc3545; z-index: 10;"></i> <div class="form-group col-md-6"> <label> {{ __('fields.commodity.name') }}</label> <select class="form-control commodity-select" name="commodity_id[' + currentIndex + ']" onchange="pricefunc(this)" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select> <div class="invalid-feedback">محصول را انتخاب کنید.</div> </div> <div class="form-group col-md-6"> <label> {{ __('fields.unit') }}</label> <select class="form-control unit-select" name="unit_id[' + currentIndex + ']" required> <option value="">انتخاب کنید...</option></select> <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div> </div> <div class="form-group col-md-4"> <label> {{  __('fields.commodity.amount') }}</label> <input type="number" class="form-control amount-input" min="1" name="amount[' + currentIndex + ']" autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]" required=""> <div class="invalid-feedback">لطفاً {{  __('fields.commodity.amount') }} را وارد کنید. </div></div><div class="priceholder form-group col-md-4"><label> {{  __('fields.sell-price_per_unit') }}</label><input type="number" class="form-control price-input" min="1" name="price[' + currentIndex + ']" autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}" pattern="[0-9 .]" ><div class="invalid-feedback">{{ __('fields.sell-price_per_unit') }} را وارد کنید.</div></div></div>';
             $('#newRow').append(html);
-            document.querySelectorAll('#inputFormRow').forEach((element,index) => {
-                element.querySelector('#commodity_id').setAttribute('name', 'commodity_id['+index+']');
-                element.querySelector('#unit').setAttribute('name', 'unit_id['+index+']');
-                element.querySelector('#amount').setAttribute('name', 'amount['+index+']');
-                element.querySelector('#price').setAttribute('name', 'price['+index+']');
-            });
         });
 
         // remove row
-        $(document).on('click', '#removeRow', function() {
-            $(this).closest('#inputFormRow').remove();
-            document.querySelectorAll('#inputFormRow').forEach((element,index) => {
-                element.querySelector('#commodity_id').setAttribute('name', 'commodity_id['+index+']');
-                element.querySelector('#unit').setAttribute('name', 'unit_id['+index+']');
-                element.querySelector('#amount').setAttribute('name', 'amount['+index+']');
-                element.querySelector('#price').setAttribute('name', 'price['+index+']');
+        $(document).on('click', '.removeRow', function() {
+            $(this).closest('.inputFormRow').remove();
+            // Re-index all remaining rows
+            $('.inputFormRow').each(function(index) {
+                $(this).find('.commodity-select').attr('name', 'commodity_id[' + index + ']');
+                $(this).find('.unit-select').attr('name', 'unit_id[' + index + ']');
+                $(this).find('.amount-input').attr('name', 'amount[' + index + ']');
+                $(this).find('.price-input').attr('name', 'price[' + index + ']');
             });
         });
 
         function pricefunc(el) {
-            var unitSelect = el.closest('#inputFormRow').querySelector('#unit');
+            var unitSelect = el.closest('.inputFormRow').querySelector('.unit-select');
             var id = el.value;
 
             // Clear unit options first

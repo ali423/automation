@@ -8,6 +8,7 @@ use App\Models\Commodity;
 use App\Models\ProductionRequest;
 use App\Services\Processes\ProductionRequestService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class ProductionRequestController extends Controller
 {
@@ -28,12 +29,18 @@ class ProductionRequestController extends Controller
     public function index()
     {
         $requests = ProductionRequest::query()
-            ->with(['activities', 'product', 'unit', 'materials.unit'])
-            ->orderBy('id', 'DESC')->get();
-        return view('dashboard.processes.production-request.index',
-            [
-                'requests' => $requests,
-            ]);
+            ->with([
+                'activities.user', // Load activities with user for creator_user attribute
+                'product.unit', // Load product with its unit
+                'unit', // Load production request unit
+                'materials.unit' // Load materials with their units
+            ])
+            ->orderBy('id', 'DESC')
+            ->paginate(20); // Add pagination for better performance
+        
+        return view('dashboard.processes.production-request.index', [
+            'requests' => $requests,
+        ]);
     }
 
     /**
@@ -43,12 +50,17 @@ class ProductionRequestController extends Controller
      */
     public function create()
     {
-        $products = Commodity::query()
-            ->where('type', 'product')
-            ->with(['unit', 'materials.unit'])
-            ->get();
+        // Use cached products with pagination for better performance
+        $products = Cache::remember('products_with_formulas', 600, function () { // Cache for 10 minutes
+            return Commodity::query()
+                ->where('type', 'product')
+                ->whereHas('materials') // Only products with formulas
+                ->with(['unit', 'materials.unit'])
+                ->orderBy('title')
+                ->get();
+        });
         
-        if (count($products) < 1) {
+        if ($products->count() < 1) {
             return redirect(route('commodity.create'))->withErrors('ابتدا حداقل یک محصول ثبت کنید.');
         }
         
@@ -94,10 +106,21 @@ class ProductionRequestController extends Controller
     public function show(ProductionRequest $productionRequest)
     {
         // Load the production request with all necessary relationships
-        $productionRequest->load(['product', 'unit', 'materials.unit', 'comments.user', 'files.user']);
+        $productionRequest->load([
+            'product.unit', // Load product with its unit
+            'unit', // Load production request unit
+            'materials.unit', // Load materials with their units
+            'comments.user', // Load comments with users
+            'files.user', // Load files with users
+            'activities.user' // Load activities with users for creator info
+        ]);
+        
+        // Pre-calculate inventory data for materials to avoid N+1 queries in view
+        $materialsWithInventory = $this->service->getMaterialsWithInventoryData($productionRequest);
         
         return view('dashboard.processes.production-request.show', [
             'request' => $productionRequest,
+            'materialsWithInventory' => $materialsWithInventory,
         ]);
     }
 
@@ -114,12 +137,17 @@ class ProductionRequestController extends Controller
             return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد. درخواست‌های تایید شده، رد شده، منقضی شده یا تکمیل شده قابل ویرایش نیستند.');
         }
         
-        $products = Commodity::query()
-            ->where('type', 'product')
-            ->with(['unit', 'materials.unit'])
-            ->get();
+        // Use cached products with pagination for better performance
+        $products = Cache::remember('products_with_formulas', 600, function () { // Cache for 10 minutes
+            return Commodity::query()
+                ->where('type', 'product')
+                ->whereHas('materials') // Only products with formulas
+                ->with(['unit', 'materials.unit'])
+                ->orderBy('title')
+                ->get();
+        });
         
-        if (count($products) < 1) {
+        if ($products->count() < 1) {
             return redirect(route('commodity.create'))->withErrors('ابتدا حداقل یک محصول ثبت کنید.');
         }
         
@@ -154,6 +182,9 @@ class ProductionRequestController extends Controller
             $this->service->update($productionRequest, $data, $file);
         });
         
+        // Clear related caches after update
+        $this->service->clearProductionCaches($productionRequest->id);
+        
         return redirect(route('production-request.index'))->with('successful', 'اطلاعات درخواست ویرایش شد.');
     }
 
@@ -173,6 +204,9 @@ class ProductionRequestController extends Controller
         DB::transaction(function () use ($productionRequest) {
             $this->service->delete($productionRequest);
         });
+        
+        // Clear related caches after deletion
+        $this->service->clearProductionCaches($productionRequest->id);
         
         return redirect(route('production-request.index'))->with('successful', 'درخواست حذف شد.');
     }
@@ -200,6 +234,10 @@ class ProductionRequestController extends Controller
             DB::transaction(function () use ($productionRequest) {
                 $this->service->approve($productionRequest);
             });
+            
+            // Clear related caches after approval
+            $this->service->clearProductionCaches($productionRequest->id);
+            
             return redirect(route('production-request.show', $productionRequest))->with('successful', 'درخواست تولید تایید شد.');
         } else {
             return redirect()->back()->withErrors($check_production['error']);
@@ -225,6 +263,10 @@ class ProductionRequestController extends Controller
         }
         
         $this->service->reject($productionRequest);
+        
+        // Clear related caches after rejection
+        $this->service->clearProductionCaches($productionRequest->id);
+        
         return redirect(route('production-request.show', $productionRequest))->with('successful', 'درخواست تولید رد شد.');
     }
 } 

@@ -29,13 +29,15 @@ class CommodityUpdateRequest extends FormRequest
             'title'=>['required',Rule::unique('commodities', 'title')->ignore($this->commodity->id)],
             'type'=>['required','in:material,product'],
             'warning_limit'=>['required','numeric'],
-            'unit_id' =>['required', 'exists:units,id']
+            'unit_id' =>['required', 'exists:units,id'],
         ];
 
         // For products, pieces_per_box is required
         if ($this->get('type') == 'product') {
             $rules['pieces_per_box'] = ['required','integer','min:1'];
             $rules['unit_id'] = ['required', 'exists:units,id'];
+            $rules['product_identifier'] = ['required','string','max:255',Rule::unique('commodities', 'product_identifier')->ignore($this->commodity->id)];
+            $rules['weight_per_unit'] = ['required','numeric','min:0.001'];
 
             $rules['materials']=['required','array','min:1'];
             $rules['materials.*']=['required',Rule::exists('commodities', 'id')->where('type','material'),'distinct'];
@@ -68,6 +70,7 @@ class CommodityUpdateRequest extends FormRequest
         } else {
             // For materials, pieces_per_box is not required
             $rules['purchase_price'] = ['required','numeric','min:100'];
+            $rules['weight_per_unit'] = ['nullable','numeric','min:0.001'];
         }
 
         return $rules;

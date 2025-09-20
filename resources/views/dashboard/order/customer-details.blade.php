@@ -120,48 +120,7 @@
                     <h4 class="card-title mb-2">لیست سفارشات {{ $customer->name }}</h4>
                     
                     <!-- Orders Summary -->
-                    @if($orders->count() > 0)
-                        @php
-                            $totalOrders = $orders->count();
-                            $totalValue = $orders->sum('total_value');
-                            $canDeliverCount = $orders->where('can_deliver', true)->count();
-                            $cannotDeliverCount = $orders->where('can_deliver', false)->count();
-                        @endphp
-                        <div class="row mb-3">
-                            <div class="col-md-3">
-                                <div class="card bg-primary text-white summary-card">
-                                    <div class="card-body text-center">
-                                        <h5>کل سفارشات</h5>
-                                        <h3>{{ $totalOrders }}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-success text-white summary-card">
-                                    <div class="card-body text-center">
-                                        <h5>قابل تحویل</h5>
-                                        <h3>{{ $canDeliverCount }}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-danger text-white summary-card">
-                                    <div class="card-body text-center">
-                                        <h5>غیرقابل تحویل</h5>
-                                        <h3>{{ $cannotDeliverCount }}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-info text-white summary-card">
-                                    <div class="card-body text-center">
-                                        <h5>ارزش کل</h5>
-                                        <h3>{{ number_format($totalValue) }} ریال</h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
+                    @include('dashboard.order.partials.order-summary-stats', ['summaryStats' => $summaryStats])
                     
                     <table id="datatable-buttons-customer" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">

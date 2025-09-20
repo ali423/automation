@@ -16,39 +16,21 @@
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title mb-2">لیست کالا ها</h4>
-                    <table id="datatable-buttons-commodity" class="table table-striped dt-responsive nowrap w-100">
-                        <thead class="text-center">
-                        <tr>
-                            <th>ردیف</th>
-                            <th> {{ __('fields.title') }}</th>
-                            <th> {{ __('fields.commodity.number') }}</th>
-                            <th> {{ __('fields.base_price') }}</th>
-                            <th> {{ __('fields.type') }}</th>
-                            <th>{{ __('fields.unit') }}</th>
-                            <th>{{ __('fields.details') }}</th>
-                        </tr>
-                        </thead>
-
-                        <tbody class="text-center">
-                        @php($i = 1)
-                        @foreach ($commodities as $commodity)
-                            <tr>
-                                <td>{{ $i }}</td>
-                                <td>{{ $commodity->title }}</td>
-                                <td>{{ $commodity->number }}</td>
-                                <td>{{ number_format($commodity->base_price) }}</td>
-                                <td>{{ __('fields.commodity.types')[$commodity->type] }}</td>
-                                <td>{{ $commodity->unit ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : '-' }}</td>
-                                <td><a href="{{ route('commodity.show', $commodity) }}" class=""><i
-                                            class="ti-more-alt font-24"></i></a>
-                                </td>
-                            </tr>
-                            @php($i++)
-                        @endforeach
-                        </tbody>
-                    </table>
+                    @include('dashboard.commodity.partials.commodity-table')
 
                 </div> <!-- end card body-->
+                
+                <!-- Pagination -->
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted">
+                            نمایش {{ $commodities->firstItem() }} تا {{ $commodities->lastItem() }} از {{ $commodities->total() }} کالا
+                        </div>
+                        <div>
+                            {{ $commodities->links() }}
+                        </div>
+                    </div>
+                </div>
             </div> <!-- end card -->
         </div><!-- end col-->
     </div>
@@ -91,7 +73,7 @@
                     text: "کپی",
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [5, 4, 3, 2, 1, 0],
+                        columns: [6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         },
@@ -103,7 +85,7 @@
                     text: 'pdf',
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [5, 4, 3, 2, 1, 0],
+                        columns: [6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         },
@@ -111,7 +93,7 @@
                     },
                         customize: function (doc) {
                             doc.defaultStyle.font = "IRANSansWeb";
-                            doc.content[1].table.widths = ['20%', '20%', '20%', '20%', '20%', '20%', '20%'];
+                            doc.content[1].table.widths = ['10%', '20%', '15%', '15%', '15%', '10%', '10%', '5%'];
                             doc.styles.tableBodyEven.alignment = 'center';
                             doc.styles.tableBodyOdd.alignment = 'center';
                         }
@@ -120,7 +102,7 @@
                                             extend: 'excel',
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [5, 4, 3, 2, 1, 0],
+                        columns: [6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         }
@@ -130,7 +112,7 @@
                                             extend: 'csv',
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [5, 4, 3, 2, 1, 0],
+                        columns: [6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         }
@@ -141,7 +123,7 @@
                     text: "پرینت",
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5],
+                        columns: [0, 1, 2, 3, 4, 5, 6],
                         modifier: {
                             page: 'current'
                         },

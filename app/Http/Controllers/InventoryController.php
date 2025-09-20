@@ -28,7 +28,7 @@ class InventoryController extends Controller
      */
     public function index()
     {
-        $inventories = $this->service->getActiveInventory();
+        $inventories = $this->service->getActiveInventoryWithCalculations();
         
         // Add empty state handling
         if ($inventories->isEmpty()) {
@@ -49,7 +49,11 @@ class InventoryController extends Controller
      */
     public function show(Inventory $inventory)
     {
-        return view('dashboard.inventory.show', compact('inventory'));
+        // Load relationships and pre-calculate financial data
+        $inventory->load(['commodity', 'unit']);
+        $financialData = $this->service->calculateFinancialData($inventory);
+        
+        return view('dashboard.inventory.show', compact('inventory', 'financialData'));
     }
 
     /**
@@ -60,9 +64,13 @@ class InventoryController extends Controller
      */
     public function edit(Inventory $inventory)
     {
-        $commodities = Commodity::all();
-        $units = Unit::all();
-        return view('dashboard.inventory.edit', compact('inventory', 'commodities', 'units'));
+        // Load inventory with relationships
+        $inventory->load(['commodity', 'unit']);
+        
+        // Get optimized data for form
+        $formData = $this->service->getFormData();
+        
+        return view('dashboard.inventory.edit', compact('inventory', 'formData'));
     }
 
     /**
@@ -124,32 +132,17 @@ class InventoryController extends Controller
     public function getCommodityInventory($commodityId)
     {
         try {
-            $commodity = Commodity::findOrFail($commodityId);
-            
-            // Get the latest inventory price for this commodity
-            $inventory = Inventory::where('commodity_id', $commodityId)
-                ->where('active', true)
-                ->orderBy('created_at', 'desc')
-                ->first();
-
-            // Use the calculated sale price from commodity (not stored in inventory)
-            $price = $commodity->sales_price ?? 0;
+            $inventoryData = $this->service->getCommodityInventoryData($commodityId);
             
             return response()->json([
                 'success' => true,
-                'price' => $price,
-                'commodity' => [
-                    'id' => $commodity->id,
-                    'title' => $commodity->title,
-                    'type' => $commodity->type
-                ]
+                'data' => $inventoryData
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در دریافت اطلاعات کالا',
-                'price' => 0
-            ], 500);
+                'message' => $e->getMessage()
+            ], 400);
         }
     }
 } 

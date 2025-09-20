@@ -122,27 +122,6 @@
                         </ul>
                     </li>
                 @endif
-                @if(Gate::check('read_warehouse') || Gate::check('create_warehouse'))
-                        <li
-                            @if($first_url_part== 'warehouse')
-                            class="treeview active"
-                            @else
-                            class="treeview"
-                            @endif>                        <a href="javascript:void(0)"><i class="ti-home"></i> <span>انبار ها</span> <i
-                                class="fa fa-angle-left"></i></a>
-                        <ul class="treeview-menu">
-                            @can('read_warehouse',App\Models\Warehouse::class)
-                                <li @if($first_url_part== 'warehouse' && $second_url_part== 'index') class="active" @endif><a href="{{ route('warehouse.index') }}">لیست انبار ها</a></li>
-                            @endcan
-                            @can('create_warehouse',App\Models\Warehouse::class)
-                                <li @if($first_url_part== 'warehouse' && $second_url_part== 'create') class="active" @endif><a href="{{ route('warehouse.create') }}">افزودن انبار جدید</a></li>
-                            @endcan
-                            @can('read_warehouse',App\Models\Warehouse::class)
-        
-                            @endcan
-                        </ul>
-                    </li>
-                @endif
                 @if(Gate::check('read_inventory'))
                     <li
                         @if($first_url_part== 'inventory')

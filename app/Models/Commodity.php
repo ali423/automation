@@ -14,6 +14,7 @@ class Commodity extends Model
 
     protected $fillable = [
         'number',
+        'product_identifier',
         'title',
         'profit_margin',
         'type',
@@ -21,6 +22,7 @@ class Commodity extends Model
         'warning_limit',
         'unit_id',
         'pieces_per_box',
+        'weight_per_unit',
     ];
 
     public function unit(){
@@ -32,11 +34,6 @@ class Commodity extends Model
         return $this->hasMany(UnitConversion::class);
     }
 
-    public function warehouses()
-    {
-        return $this->belongsToMany(Warehouse::class, 'commodity_warehouse', 'commodity_id', 'warehouse_id')
-            ->withPivot('commodity_amount','average_purchase_price');
-    }
 
     public function materials()
     {
@@ -60,36 +57,6 @@ class Commodity extends Model
         return $this->purchase_price;
     }
 
-    public function getWithdrawalAmountAttribute()
-    {
-        $amounts = json_decode($this->pivot->amount) ??null;
-        foreach ($amounts as $key => $value) {
-            $res[] = [
-                'warehouse' => Warehouse::query()->find($key),
-                'amount' => $value,
-                'unit' => $this->pivot->unit,
-            ];
-        }
-        return $res ??null;
-    }
-    public function getTotalAmountAttribute(){
-        $warehouses=$this->warehouses()->get()->toArray();
-        $amounts=array_column(array_column($warehouses,'pivot'),'commodity_amount');
-        return array_sum($amounts);
-    }
-    public function getAvrPriceAttribute(){
-        $warehouses=$this->warehouses();
-        if (!$warehouses->exists() || $this->type== 'product'){
-            return null;
-        }
-        $numerator=0;
-        $denominator=0;
-        foreach ($warehouses->get() as $warehouse){
-            $numerator=$numerator+($warehouse->pivot->commodity_amount*$warehouse->pivot->average_purchase_price);
-            $denominator=$denominator+$warehouse->pivot->commodity_amount;
-        }
-        return round(($numerator/$denominator),2);
-    }
 
     
     /**
@@ -132,5 +99,27 @@ class Commodity extends Model
     public function getProfitMarginPercentageAttribute()
     {
         return $this->profit_margin;
+    }
+
+    /**
+     * Calculate the total weight in kg for a given amount of this commodity
+     *
+     * @param float $amount The amount of the commodity
+     * @param int|null $unitId The unit ID (if null, uses main unit)
+     * @return float|null The total weight in kg
+     */
+    public function calculateWeight($amount, $unitId = null)
+    {
+        return calculate_weight($this, $amount, $unitId);
+    }
+
+    /**
+     * Get the weight per unit in kg
+     *
+     * @return float|null
+     */
+    public function getWeightPerUnitKgAttribute()
+    {
+        return $this->weight_per_unit;
     }
 }

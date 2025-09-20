@@ -37,26 +37,6 @@ return [
                         'unit_id' => 'واحد ماده'
                     ],
                 ],
-                'warehouses' => [
-                    'fa_name' => 'انبار کالا',
-                    'primary_key' => 'commodity_id',
-                    'pivots' => [
-                        'commodity_amount' => 'مقدار کالا'
-                    ],
-                ],
-            ]
-        ],
-        'App\Models\Warehouse' => [
-            'fa_name' => 'انبار ها',
-            'url' => 'warehouse',
-            'relations' => [
-                'commodities' => [
-                    'fa_name' => 'کالای های موجود در انبار',
-                    'primary_key' => 'warehouse_id',
-                    'pivots' => [
-                        'commodity_amount' => 'مقدار کالا'
-                    ],
-                ],
             ]
         ],
         'App\Models\ImportingRequest' => [

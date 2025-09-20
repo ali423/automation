@@ -13,7 +13,6 @@ use App\Http\Controllers\Processes\WithdrawalRequestController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UnitConversionController;
 use App\Http\Controllers\InventoryController;
@@ -48,7 +47,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('activity',ActivityController::class)->only('show','index');
 
     Route::resource('commodity',CommodityController::class);
-    Route::resource('warehouse',WarehouseController::class);
     Route::resource('customer',CustomerController::class);
     Route::resource('seller',SellerController::class);
 
@@ -101,6 +99,8 @@ Route::middleware('auth')->group(function () {
     Route::post('inventory/{inventory}/adjust-stock', [InventoryController::class, 'adjustStock'])->name('inventory.adjust-stock');
     Route::get('inventory-ajax/{commodityId}', [InventoryController::class, 'getCommodityInventory'])->name('inventory.ajax');
     Route::get('order/commodity-units/{commodityId}', [OrderController::class, 'getCommodityUnits'])->name('order.commodity.units');
+    Route::get('order/calculate-weight/{commodityId}/{amount}/{unitId}', [OrderController::class, 'calculateWeight'])->name('order.calculate.weight');
+    Route::get('order/partial/item-row', [OrderController::class, 'getItemRowPartial'])->name('order.partial.item-row');
 
 });
 

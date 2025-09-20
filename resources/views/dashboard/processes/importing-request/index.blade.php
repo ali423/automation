@@ -24,6 +24,8 @@
                                 <th> {{ __('fields.importing_request.number') }}</th>
                                 <th>{{ __('fields.created_at') }}</th>
                                 <th>{{ __('fields.creator') }}</th>
+                                <th>{{ __('fields.type') }}</th>
+                                <th>{{ __('fields.seller') }}</th>
                                 <th>{{ __('fields.details') }}</th>
                             </tr>
                         </thead>
@@ -38,6 +40,13 @@
                                     <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}
                                     </td>
                                     <td>سیستم</td>
+                                    <td>
+                                        @php($types = $request->commodities->pluck('type')->unique()->values())
+                                        @foreach ($types as $type)
+                                            <span class="badge badge-secondary">{{ __('fields.commodity.types.' . $type) }}</span>
+                                        @endforeach
+                                    </td>
+                                    <td>{{ optional($request->seller)->name ?? optional($request->seller)->comp_name ?? '-' }}</td>
                                     <td><a href="{{ route('importing-request.show', $request) }}" class=""><i class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>

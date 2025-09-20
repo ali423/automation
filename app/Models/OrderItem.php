@@ -113,4 +113,12 @@ class OrderItem extends Model
     {
         return $this->unit && is_object($this->unit) ? $this->unit->name : 'نامشخص';
     }
+
+    /**
+     * Calculate the weight in kg for this order item
+     */
+    public function getWeightKgAttribute()
+    {
+        return calculate_weight($this->commodity, $this->commodity_amount, $this->unit_id);
+    }
 } 

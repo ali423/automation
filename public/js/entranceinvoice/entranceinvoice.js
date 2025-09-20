@@ -76,38 +76,98 @@ window.onafterprint = function () {
 // Event listener for customer invoice button
 customerBtn.addEventListener("click", function () {
     showInvoice(customerInvoice);
+    // Set document title for better filename when saving/printing
+    const originalTitle = document.title;
+    const customerName = document.querySelector('input[name="customer"]')?.value || 'نامشخص';
+    const sellerName = document.querySelector('input[placeholder*="فروشنده"]')?.value || '';
+    const requestNumber = document.querySelector('input[name="request_number"]')?.value || '';
+    const requestDate = document.querySelector('input[name="created_at"]')?.value || '';
+    const entityName = customerName !== 'نامشخص' ? customerName : sellerName || 'نامشخص';
+    document.title = `حواله مشتری - ${entityName} - ${requestDate} - ${requestNumber}`;
     window.print();
+    // Restore original title after print
+    setTimeout(() => { document.title = originalTitle; }, 1000);
 });
 
 // Event listener for documentation invoice button
 documentationBtn.addEventListener("click", function () {
     showInvoice(documentationInvoice);
+    // Set document title for better filename when saving/printing
+    const originalTitle = document.title;
+    const customerName = document.querySelector('input[name="customer"]')?.value || 'نامشخص';
+    const sellerName = document.querySelector('input[placeholder*="فروشنده"]')?.value || '';
+    const requestNumber = document.querySelector('input[name="request_number"]')?.value || '';
+    const requestDate = document.querySelector('input[name="created_at"]')?.value || '';
+    const entityName = customerName !== 'نامشخص' ? customerName : sellerName || 'نامشخص';
+    document.title = `حواله حسابداری - ${entityName} - ${requestDate} - ${requestNumber}`;
     window.print();
+    // Restore original title after print
+    setTimeout(() => { document.title = originalTitle; }, 1000);
 });
 
 // Event listener for warehouse invoice button
 warehouseBtn.addEventListener("click", function () {
     showInvoice(warehouseInvoice);
+    // Set document title for better filename when saving/printing
+    const originalTitle = document.title;
+    const customerName = document.querySelector('input[name="customer"]')?.value || 'نامشخص';
+    const sellerName = document.querySelector('input[placeholder*="فروشنده"]')?.value || '';
+    const requestNumber = document.querySelector('input[name="request_number"]')?.value || '';
+    const requestDate = document.querySelector('input[name="created_at"]')?.value || '';
+    const entityName = customerName !== 'نامشخص' ? customerName : sellerName || 'نامشخص';
+    document.title = `حواله بارگیری - ${entityName} - ${requestDate} - ${requestNumber}`;
     window.print();
+    // Restore original title after print
+    setTimeout(() => { document.title = originalTitle; }, 1000);
 });
 
 // Event listener for factor button
 factorBtn.addEventListener("click", function () {
     showInvoice(finvoice);
+    // Set document title for better filename when saving/printing
+    const originalTitle = document.title;
+    const customerName = document.querySelector('input[name="customer"]')?.value || 'نامشخص';
+    const sellerName = document.querySelector('input[placeholder*="فروشنده"]')?.value || '';
+    const requestNumber = document.querySelector('input[name="request_number"]')?.value || '';
+    const requestDate = document.querySelector('input[name="created_at"]')?.value || '';
+    const entityName = customerName !== 'نامشخص' ? customerName : sellerName || 'نامشخص';
+    document.title = `فاکتور - ${entityName} - ${requestDate} - ${requestNumber}`;
     window.print();
+    // Restore original title after print
+    setTimeout(() => { document.title = originalTitle; }, 1000);
 });
 
 // Event listener for factor button 2
 factorBtn2.addEventListener("click", function () {
     showInvoice(finvoice2);
+    // Set document title for better filename when saving/printing
+    const originalTitle = document.title;
+    const customerName = document.querySelector('input[name="customer"]')?.value || 'نامشخص';
+    const sellerName = document.querySelector('input[placeholder*="فروشنده"]')?.value || '';
+    const requestNumber = document.querySelector('input[name="request_number"]')?.value || '';
+    const requestDate = document.querySelector('input[name="created_at"]')?.value || '';
+    const entityName = customerName !== 'نامشخص' ? customerName : sellerName || 'نامشخص';
+    document.title = `فاکتور - ${entityName} - ${requestDate} - ${requestNumber}`;
     window.print();
+    // Restore original title after print
+    setTimeout(() => { document.title = originalTitle; }, 1000);
 });
 
 // Event listener for tejarat button
 if (tejaratBtn && finvoiceTejarat) {
     tejaratBtn.addEventListener("click", function () {
         showInvoice(finvoiceTejarat);
+        // Set document title for better filename when saving/printing
+        const originalTitle = document.title;
+        const customerName = document.querySelector('input[name="customer"]')?.value || 'نامشخص';
+        const sellerName = document.querySelector('input[placeholder*="فروشنده"]')?.value || '';
+        const requestNumber = document.querySelector('input[name="request_number"]')?.value || '';
+        const requestDate = document.querySelector('input[name="created_at"]')?.value || '';
+        const entityName = customerName !== 'نامشخص' ? customerName : sellerName || 'نامشخص';
+        document.title = `نسخه سامانه تجارت - ${entityName} - ${requestDate} - ${requestNumber}`;
         window.print();
+        // Restore original title after print
+        setTimeout(() => { document.title = originalTitle; }, 1000);
     });
 }
 

@@ -42,9 +42,16 @@ class OrderController extends Controller
             ->whereHas('orderItems.commodity')
             ->orderByRaw("FIELD(status, \"pending\", \"done\")")
             ->orderBy('deadline', 'ASC')->get();
+            
+        // Add calculated properties
+        $ordersWithCounts = $orders->map(function ($order) {
+            $order->items_count = $order->orderItems->count();
+            return $order;
+        });
+            
         return view('dashboard.order.index',
             [
-                'orders' => $orders,
+                'orders' => $ordersWithCounts,
             ]);
     }
 
@@ -60,8 +67,15 @@ class OrderController extends Controller
             ->whereHas('orderItems.commodity')
             ->orderByRaw("FIELD(status, 'pending', 'done')")
             ->orderBy('deadline', 'ASC')->get();
+            
+        // Calculate total amounts for each order
+        $ordersWithTotals = $orders->map(function ($order) {
+            $order->total_amount = $order->orderItems->sum('commodity_amount');
+            return $order;
+        });
+            
         return view('dashboard.order.chart', [
-            'orders' => $orders,
+            'orders' => $ordersWithTotals,
         ]);
     }
 
@@ -133,12 +147,12 @@ class OrderController extends Controller
         // Load the order with all necessary relationships
         $order->load(['customer', 'orderItems.commodity', 'orderItems.unit', 'comments.user', 'files.user']);
         
-        $inventoryInfo = $this->service->getInventoryInfo($order);
+        // Add calculated properties
+        $order->items_count = $order->orderItems->count();
         
         return view('dashboard.order.show',
             [
                 'order' => $order,
-                'inventoryInfo' => $inventoryInfo,
             ]);
     }
 
@@ -239,6 +253,12 @@ class OrderController extends Controller
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
     public function confirm(Order $order){
+        // Load the order with all necessary relationships
+        $order->load(['customer', 'orderItems.commodity', 'orderItems.unit']);
+        
+        // Add calculated properties
+        $order->items_count = $order->orderItems->count();
+        
         return view('dashboard.order.confirm',
             [
                 'order' => $order,
@@ -464,6 +484,45 @@ class OrderController extends Controller
     }
 
     /**
+     * Calculate weight for a commodity with given amount and unit
+     *
+     * @param int $commodityId
+     * @param float $amount
+     * @param int $unitId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function calculateWeight($commodityId, $amount, $unitId)
+    {
+        try {
+            $commodity = Commodity::findOrFail($commodityId);
+            $weight = calculate_weight($commodity, $amount, $unitId);
+            
+            // Provide more specific feedback for why weight is unknown
+            $weightFormatted = 'نامشخص';
+            if ($weight === null) {
+                if (!$commodity->weight_per_unit) {
+                    $weightFormatted = 'وزن تعریف نشده';
+                } else {
+                    $weightFormatted = 'خطا در محاسبه';
+                }
+            } else {
+                $weightFormatted = number_format($weight, 3) . ' کیلوگرم';
+            }
+            
+            return response()->json([
+                'success' => true,
+                'weight' => $weight,
+                'weight_formatted' => $weightFormatted
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در محاسبه وزن: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
      * Display factory status page.
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
@@ -487,7 +546,7 @@ class OrderController extends Controller
                     $firstItem = $order->orderItems->first();
                     $inventory = Inventory::where('commodity_id', $firstItem->commodity_id)
                         ->where('unit_id', $firstItem->unit_id)
-                        ->where('active', true)
+                        ->where('amount', '>', 0)
                         ->sum('amount');
                 }
                 
@@ -506,9 +565,20 @@ class OrderController extends Controller
         // Get real warehouse chart data
         $warehouseChartData = $this->getWarehouseChartData();
 
+        // Calculate summary statistics
+        $summaryStats = [
+            'totalOrders' => $pendingOrders->count(),
+            'totalValue' => $pendingOrders->sum('total_value'),
+            'canDeliverCount' => $pendingOrders->where('can_deliver', true)->count(),
+            'cannotDeliverCount' => $pendingOrders->where('can_deliver', false)->count(),
+            'totalAmount' => $pendingOrders->sum('total_amount'),
+            'totalInventory' => $pendingOrders->sum('inventory_available'),
+        ];
+
         return view('dashboard.order.factory-status', [
             'pendingOrders' => $pendingOrders,
             'warehouseChartData' => $warehouseChartData,
+            'summaryStats' => $summaryStats,
         ]);
     }
 
@@ -531,7 +601,7 @@ class OrderController extends Controller
                 // Get inventory for this commodity
                 $inventory = Inventory::where('commodity_id', $item->commodity_id)
                     ->where('unit_id', $item->unit_id)
-                    ->where('active', true)
+                    ->where('amount', '>', 0)
                     ->sum('amount');
                 
                 $chartData[] = [
@@ -571,7 +641,7 @@ class OrderController extends Controller
                     // Get inventory for this commodity
                     $inventory = Inventory::where('commodity_id', $item->commodity_id)
                         ->where('unit_id', $item->unit_id)
-                        ->where('active', true)
+                        ->where('amount', '>', 0)
                         ->sum('amount');
                     
                     return (object)[
@@ -591,9 +661,36 @@ class OrderController extends Controller
                 });
             });
 
+        // Calculate summary statistics
+        $summaryStats = [
+            'totalOrders' => $customerOrders->count(),
+            'totalValue' => $customerOrders->sum('total_value'),
+            'canDeliverCount' => $customerOrders->where('can_deliver', true)->count(),
+            'cannotDeliverCount' => $customerOrders->where('can_deliver', false)->count(),
+        ];
+
         return view('dashboard.order.customer-details', [
             'customer' => $customer,
-            'orders' => $customerOrders
+            'orders' => $customerOrders,
+            'summaryStats' => $summaryStats,
         ]);
+    }
+
+    /**
+     * Get item row partial for AJAX requests
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return string
+     */
+    public function getItemRowPartial(Request $request)
+    {
+        $index = $request->input('index', 0);
+        $commodities = Commodity::query()->where('type', 'product')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get();
+        
+        return view('dashboard.order.partials.order-item-row', [
+            'commodities' => $commodities,
+            'index' => $index,
+            'showRemove' => true
+        ])->render();
     }
 }
