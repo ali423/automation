@@ -60,6 +60,27 @@
                         <span class="badge bg-info text-white ms-1">واحد مقصد: {{ $toUnit->name }}</span>
                     @endif
                 @endif
+                @if(isset($currentFilters['status']))
+                    @php
+                        $statusLabels = [
+                            'awaiting_approval' => 'در انتظار تایید',
+                            'approved' => 'تایید شده',
+                            'rejected' => 'رد شده',
+                            'expired' => 'منقضی شده',
+                            'done' => 'تکمیل شده'
+                        ];
+                        $statusLabel = $statusLabels[$currentFilters['status']] ?? $currentFilters['status'];
+                    @endphp
+                    <span class="badge bg-info text-white ms-1">وضعیت: {{ $statusLabel }}</span>
+                @endif
+                @if(isset($currentFilters['seller_id']))
+                    @php
+                        $seller = \App\Models\Seller::find($currentFilters['seller_id']);
+                    @endphp
+                    @if($seller)
+                        <span class="badge bg-info text-white ms-1">فروشنده: {{ $seller->name ?? $seller->comp_name }}</span>
+                    @endif
+                @endif
             </small>
         </div>
     @endif
@@ -160,6 +181,37 @@
                             <option value="{{ $unit->id }}" 
                                 {{ ($currentFilters['to_unit_id'] ?? '') == $unit->id ? 'selected' : '' }}>
                                 {{ $unit->name }} ({{ $unit->symbol }})
+                            </option>
+                        @endforeach
+                    </select>
+                @elseif($field === 'status')
+                    <select class="form-select form-select-sm" style="width: auto; min-width: 140px;" 
+                            data-filter="status">
+                        <option value="">{{ __('pagination.all_statuses') }}</option>
+                        <option value="awaiting_approval" {{ ($currentFilters['status'] ?? '') == 'awaiting_approval' ? 'selected' : '' }}>
+                            در انتظار تایید
+                        </option>
+                        <option value="approved" {{ ($currentFilters['status'] ?? '') == 'approved' ? 'selected' : '' }}>
+                            تایید شده
+                        </option>
+                        <option value="rejected" {{ ($currentFilters['status'] ?? '') == 'rejected' ? 'selected' : '' }}>
+                            رد شده
+                        </option>
+                        <option value="expired" {{ ($currentFilters['status'] ?? '') == 'expired' ? 'selected' : '' }}>
+                            منقضی شده
+                        </option>
+                        <option value="done" {{ ($currentFilters['status'] ?? '') == 'done' ? 'selected' : '' }}>
+                            تکمیل شده
+                        </option>
+                    </select>
+                @elseif($field === 'seller_id')
+                    <select class="form-select form-select-sm" style="width: auto; min-width: 160px;" 
+                            data-filter="seller_id">
+                        <option value="">{{ __('pagination.all_sellers') }}</option>
+                        @foreach(\App\Models\Seller::orderBy('name')->get() as $seller)
+                            <option value="{{ $seller->id }}" 
+                                {{ ($currentFilters['seller_id'] ?? '') == $seller->id ? 'selected' : '' }}>
+                                {{ $seller->name ?? $seller->comp_name }}
                             </option>
                         @endforeach
                     </select>
