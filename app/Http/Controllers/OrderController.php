@@ -678,19 +678,15 @@ class OrderController extends Controller
 
     /**
      * Get item row partial for AJAX requests
+     * Note: This method is now deprecated as we use client-side HTML generation for better performance
      *
      * @param \Illuminate\Http\Request $request
      * @return string
      */
     public function getItemRowPartial(Request $request)
     {
-        $index = $request->input('index', 0);
-        $commodities = Commodity::query()->where('type', 'product')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get();
-        
-        return view('dashboard.order.partials.order-item-row', [
-            'commodities' => $commodities,
-            'index' => $index,
-            'showRemove' => true
-        ])->render();
+        // This method is kept for backward compatibility but should not be used
+        // as we now generate HTML client-side for better performance
+        return response()->json(['error' => 'This endpoint is deprecated. Use client-side HTML generation instead.']);
     }
 }

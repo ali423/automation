@@ -22,19 +22,15 @@ class CommodityUnitService extends BaseService
         // Add the main unit of the commodity
         if ($commodity->unit) {
             $units->push($commodity->unit);
-            \Log::info("Added main unit: {$commodity->unit->name} (ID: {$commodity->unit->id}) for commodity {$commodity->id}");
         } else {
-            \Log::warning("Commodity {$commodity->id} has no main unit defined");
             return $units; // Return empty collection if no main unit
         }
         
         // Get all related units through unit conversions
         $relatedUnits = $this->getRelatedUnits($commodity);
-        \Log::info("Found " . $relatedUnits->count() . " related units for commodity {$commodity->id}");
         $units = $units->merge($relatedUnits);
         
         $result = $units->unique('id');
-        \Log::info("Total selectable units for commodity {$commodity->id}: " . $result->count());
         
         return $result;
     }
@@ -48,12 +44,10 @@ class CommodityUnitService extends BaseService
     public function getRelatedUnits(Commodity $commodity): Collection
     {
         if (!$commodity->unit) {
-            \Log::info("Commodity {$commodity->id} has no main unit");
             return collect();
         }
         
         $mainUnitId = $commodity->unit_id;
-        \Log::info("Looking for conversions for commodity {$commodity->id} with main unit ID: {$mainUnitId}");
         
         // Get all conversions where the main unit is either from_unit or to_unit
         $conversions = UnitConversion::where('commodity_id', $commodity->id)
@@ -64,28 +58,21 @@ class CommodityUnitService extends BaseService
             ->with(['fromUnit', 'toUnit'])
             ->get();
         
-        \Log::info("Found " . $conversions->count() . " conversions for commodity {$commodity->id}");
-        
         $relatedUnits = collect();
         
         foreach ($conversions as $conversion) {
-            \Log::info("Processing conversion: {$conversion->from_unit_id} -> {$conversion->to_unit_id}");
-            
             // Add the "from" unit if it's not the main unit
             if ($conversion->from_unit_id !== $mainUnitId) {
                 $relatedUnits->push($conversion->fromUnit);
-                \Log::info("Added from unit: {$conversion->fromUnit->name}");
             }
             
             // Add the "to" unit if it's not the main unit
             if ($conversion->to_unit_id !== $mainUnitId) {
                 $relatedUnits->push($conversion->toUnit);
-                \Log::info("Added to unit: {$conversion->toUnit->name}");
             }
         }
         
         $result = $relatedUnits->unique('id');
-        \Log::info("Total related units for commodity {$commodity->id}: " . $result->count());
         
         return $result;
     }

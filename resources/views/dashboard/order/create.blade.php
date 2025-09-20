@@ -99,37 +99,56 @@
                 calculateWeightForRow($(this).closest('.form-row'));
             });
             
-            // Calculate weight when amount changes
+            // Calculate weight when amount changes - with debouncing
+            var weightCalculationTimeout;
             $(document).on('input', '#amount', function () {
-                calculateWeightForRow($(this).closest('.form-row'));
+                var $row = $(this).closest('.form-row');
+                clearTimeout(weightCalculationTimeout);
+                weightCalculationTimeout = setTimeout(function() {
+                    calculateWeightForRow($row);
+                }, 300); // 300ms debounce
             });
             
-            // Function to calculate weight for a specific row
+            // Function to calculate weight for a specific row - optimized
             function calculateWeightForRow($row) {
                 var commodityId = $row.find('#commodity_id').val();
                 var unitId = $row.find('#unit_id').val();
                 var amount = $row.find('#amount').val();
                 var weightInput = $row.find('#weight');
                 
+                // Clear previous timeout for this row
+                var rowId = $row.attr('data-row-id') || 'row_' + Date.now();
+                $row.attr('data-row-id', rowId);
+                
                 if (commodityId && unitId && amount && amount > 0) {
+                    // Show loading state
+                    weightInput.val('در حال محاسبه...');
+                    
                     $.ajax({
                         url: '/order/calculate-weight/' + commodityId + '/' + amount + '/' + unitId,
                         type: 'get',
                         dataType: 'json',
+                        timeout: 5000, // 5 second timeout
                         success: function (response) {
-                            if (response.success) {
-                                weightInput.val(response.weight_formatted);
-                                weightInput.data('weight-value', response.weight); // Store numeric value for total calculation
-                            } else {
-                                weightInput.val('خطا در محاسبه');
-                                weightInput.data('weight-value', 0);
+                            // Only update if this is still the current row
+                            if ($row.attr('data-row-id') === rowId) {
+                                if (response.success) {
+                                    weightInput.val(response.weight_formatted);
+                                    weightInput.data('weight-value', response.weight);
+                                } else {
+                                    weightInput.val('خطا در محاسبه');
+                                    weightInput.data('weight-value', 0);
+                                }
+                                updateTotalWeight();
                             }
-                            updateTotalWeight();
                         },
                         error: function () {
-                            weightInput.val('خطا در محاسبه');
-                            weightInput.data('weight-value', 0);
-                            updateTotalWeight();
+                            // Only update if this is still the current row
+                            if ($row.attr('data-row-id') === rowId) {
+                                weightInput.val('خطا در محاسبه');
+                                weightInput.data('weight-value', 0);
+                                updateTotalWeight();
+                            }
                         }
                     });
                 } else {
@@ -139,77 +158,74 @@
                 }
             }
             
-            // Function to update total weight display
+            // Function to update total weight display - optimized
+            var totalWeightUpdateTimeout;
             function updateTotalWeight() {
-                var totalWeight = 0;
-                $('.form-row').each(function() {
-                    var weightValue = $(this).find('#weight').data('weight-value');
-                    if (weightValue && !isNaN(weightValue)) {
-                        totalWeight += parseFloat(weightValue);
-                    }
-                });
-                $('#totalWeight').text(totalWeight.toFixed(3) + ' کیلوگرم');
+                clearTimeout(totalWeightUpdateTimeout);
+                totalWeightUpdateTimeout = setTimeout(function() {
+                    var totalWeight = 0;
+                    $('.form-row').each(function() {
+                        var weightValue = $(this).find('#weight').data('weight-value');
+                        if (weightValue && !isNaN(weightValue)) {
+                            totalWeight += parseFloat(weightValue);
+                        }
+                    });
+                    $('#totalWeight').text(totalWeight.toFixed(3) + ' کیلوگرم');
+                }, 100); // Small debounce for total weight updates
             }
-            // Add row
+            // Add row - optimized version without AJAX
             $('#addRow').click(function () {
                 var index = $('#order_formul .form-row').length;
-                // Use AJAX to get the partial content
-                $.ajax({
-                    url: '{{ route("order.partial.item-row") }}',
-                    type: 'GET',
-                    data: { index: index },
-                    success: function(response) {
-                        $('#newRow').append(response);
-                    },
-                    error: function() {
-                        // Fallback to inline HTML if AJAX fails
-                        var html = `<div id="inputFormRow" class="form-row shadow p-4 mb-3">
-                            <div class="form-group col-md-3">
-                                <label for="commodity_id">{{ __('fields.commodity.name')}}</label>
-                                <select id="commodity_id" class="form-control" name="commodity_id[${index}]" required>
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach ($commodities as $commodity)
-                                        <option value="{{ $commodity->id }}">{{$commodity->title}}</option>
-                                    @endforeach
-                                </select>
-                                <div class="invalid-feedback">
-                                    {{ __('fields.commodity.name')}} را انتخاب کنید
-                                </div>
-                            </div>
-                            <div class="form-group col-md-2">
-                                <label for="unit_id"> {{ __('fields.unit') }}</label>
-                                <select id="unit_id" class="form-control" name="unit_id[${index}]" required>
-                                    <option value="">انتخاب کنید...</option>
-                                </select>
-                                <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
-                            </div>
-                            <div class="form-group col-md-2">
-                                <label for="amount"> {{  __('fields.commodity.amount') }}</label>
-                                <input type="number" id="amount" min="1" name="commodity_amount[${index}]" class="form-control"
-                                       autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}"
-                                       pattern="[0-9 .]" required="">
-                                <div class="invalid-feedback">
-                                    لطفاً {{  __('fields.commodity.amount') }} را وارد کنید.
-                                </div>
-                            </div>
-                            <div class="form-group col-md-2">
-                                <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
-                                <input type="text" id="price" name="price[${index}]" value="" class="form-control"
-                                       autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}">
-                            </div>
-                            <div class="form-group col-md-2">
-                                <label for="weight">وزن (کیلوگرم)</label>
-                                <input type="text" id="weight" class="form-control" readonly
-                                       placeholder="وزن محاسبه می‌شود...">
-                            </div>
-                            <i id="removeRow" type="button" class="ti-close" style="cursor:pointer; font-size:1.5rem; color:#dc3545; margin-top:2rem;"></i>
-                        </div>`;
-                        $('#newRow').append(html);
-                    }
-                });
+                var html = `<div id="inputFormRow" class="form-row shadow p-4 mb-3">
+                    <div class="form-group col-md-3">
+                        <label for="commodity_id">{{ __('fields.commodity.name')}}</label>
+                        <select id="commodity_id" class="form-control" name="commodity_id[${index}]" required>
+                            <option value="">انتخاب کنید</option>
+                            @foreach ($commodities as $commodity)
+                                <option value="{{ $commodity->id }}">{{$commodity->title}}</option>
+                            @endforeach
+                        </select>
+                        <div class="invalid-feedback">
+                            {{ __('fields.commodity.name')}} را انتخاب کنید
+                        </div>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="unit_id"> {{ __('fields.unit') }}</label>
+                        <select id="unit_id" class="form-control" name="unit_id[${index}]" required>
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                        <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="amount"> {{  __('fields.commodity.amount') }}</label>
+                        <input type="number" id="amount" min="1" name="commodity_amount[${index}]" class="form-control"
+                               autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}"
+                               pattern="[0-9 .]" required="">
+                        <div class="invalid-feedback">
+                            لطفاً {{  __('fields.commodity.amount') }} را وارد کنید.
+                        </div>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
+                        <input type="text" id="price" name="price[${index}]" value="" class="form-control"
+                               autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="weight">وزن (کیلوگرم)</label>
+                        <input type="text" id="weight" class="form-control" readonly
+                               placeholder="وزن محاسبه می‌شود...">
+                    </div>
+                    <div class="form-group col-md-1">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn btn-danger btn-sm remove-row">
+                            <i class="ti-close"></i>
+                        </button>
+                    </div>
+                </div>`;
+                $('#newRow').append(html);
             });
             // Remove row
-            $(document).on('click', '#removeRow', function () {
+            $(document).on('click', '.remove-row', function () {
                 $(this).closest('.form-row').remove();
                 updateTotalWeight(); // Update total weight when row is removed
             });
