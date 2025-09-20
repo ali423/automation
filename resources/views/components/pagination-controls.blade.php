@@ -1,77 +1,81 @@
-@props(['paginator', 'options'])
+@props(['paginator', 'options' => []])
 
-{{-- DataTables-style pagination controls following consistent module patterns --}}
-<div class="dataTables_wrapper">
-    <div class="row">
-        <div class="col-sm-12 col-md-6">
-            {{-- DataTables length (per page selection) --}}
-            <div class="dataTables_length">
-                <label for="per-page">
-                    {{ __('pagination.per_page') }}:
-                    <select id="per-page" class="form-select form-select-sm">
-                        @foreach([10, 25, 50, 100] as $perPage)
-                            <option value="{{ $perPage }}" {{ $paginator->perPage() == $perPage ? 'selected' : '' }}>
-                                {{ $perPage }}
-                            </option>
-                        @endforeach
-                    </select>
-                </label>
-            </div>
+@php
+    // Parse current filters from request
+    $currentFilters = [];
+    if (request('filters')) {
+        if (is_string(request('filters'))) {
+            $currentFilters = json_decode(request('filters'), true) ?: [];
+        } elseif (is_array(request('filters'))) {
+            $currentFilters = request('filters');
+        }
+    }
+@endphp
+
+{{-- Compact search and filter controls --}}
+<div class="mb-3">
+    {{-- Active Filters Display --}}
+    @if(!empty($currentFilters) || request('search'))
+        @php
+            $activeFilterCount = count($currentFilters) + (request('search') ? 1 : 0);
+        @endphp
+        <div class="mb-2">
+            <small class="text-dark">
+                <i class="ti-filter text-primary"></i> فیلترهای فعال ({{ $activeFilterCount }}):
+                @if(request('search'))
+                    <span class="badge bg-primary text-white ms-1">جستجو: {{ request('search') }}</span>
+                @endif
+                @if(isset($currentFilters['type']))
+                    <span class="badge bg-info text-white ms-1">نوع: {{ $currentFilters['type'] == 'product' ? 'محصول' : 'مواد اولیه' }}</span>
+                @endif
+                @if(isset($currentFilters['unit_id']))
+                    @php
+                        $unit = \App\Models\Unit::find($currentFilters['unit_id']);
+                    @endphp
+                    @if($unit)
+                        <span class="badge bg-info text-white ms-1">واحد: {{ $unit->name }}</span>
+                    @endif
+                @endif
+            </small>
         </div>
-        <div class="col-sm-12 col-md-6">
-            {{-- DataTables filter (search) --}}
+    @endif
+    
+    <div class="row">
+        <div class="col-md-6">
+            {{-- Search Input --}}
             @if(isset($options['searchable_fields']) && !empty($options['searchable_fields']))
-            <div class="dataTables_filter">
-                <label>
-                    جستجو:
-                    <input type="text" id="search-input" 
-                           placeholder="{{ __('pagination.search_placeholder') }}"
-                           value="{{ request('search') }}">
-                </label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="ti-search"></i>
+                </span>
+                <input type="text" id="search-input" 
+                       class="form-control" 
+                       placeholder="جستجو در عنوان، شماره یا شناسه کالا..."
+                       value="{{ request('search') }}">
+                @if(request('search'))
+                    <button class="btn btn-outline-secondary" type="button" id="clear-search">
+                        <i class="ti-close"></i>
+                    </button>
+                @endif
             </div>
             @endif
         </div>
-    </div>
-</div>
-
-{{-- Advanced Filters Row - Following consistent module patterns --}}
-@if(isset($options['filterable_fields']) && !empty($options['filterable_fields']))
-<div class="row mb-3">
-    <div class="col-12">
-        <div class="d-flex flex-wrap gap-2 align-items-center">
+        <div class="col-md-6">
+            {{-- Filter Controls --}}
+            @if(isset($options['filterable_fields']) && !empty($options['filterable_fields']))
+            <div class="d-flex gap-2 flex-wrap align-items-center">
+            
             @foreach($options['filterable_fields'] as $field)
-                @if($field === 'status')
-                    <select class="form-select form-select-sm" style="width: auto; min-width: 140px;" 
-                            data-filter="status">
-                        <option value="">{{ __('pagination.all_statuses') }}</option>
-                        <option value="pending" {{ request('filters.status') == 'pending' ? 'selected' : '' }}>
-                            {{ __('fields.order.status.pending') }}
-                        </option>
-                        <option value="done" {{ request('filters.status') == 'done' ? 'selected' : '' }}>
-                            {{ __('fields.order.status.done') }}
-                        </option>
-                    </select>
-                @elseif($field === 'type')
-                    <select class="form-select form-select-sm" style="width: auto; min-width: 140px;" 
+                @if($field === 'type')
+                    <select class="form-select form-select-sm" style="width: auto; min-width: 120px;" 
                             data-filter="type">
                         <option value="">{{ __('pagination.all_types') }}</option>
-                        <option value="product" {{ request('filters.type') == 'product' ? 'selected' : '' }}>
+                        <option value="product" {{ ($currentFilters['type'] ?? '') == 'product' ? 'selected' : '' }}>
                             {{ __('fields.commodity.types.product') }}
                         </option>
-                        <option value="material" {{ request('filters.type') == 'material' ? 'selected' : '' }}>
+                        <option value="material" {{ ($currentFilters['type'] ?? '') == 'material' ? 'selected' : '' }}>
                             {{ __('fields.commodity.types.material') }}
                         </option>
-                    </select>
-                @elseif($field === 'customer_id')
-                    <select class="form-select form-select-sm" style="width: auto; min-width: 160px;" 
-                            data-filter="customer_id">
-                        <option value="">{{ __('pagination.all_customers') }}</option>
-                        @foreach(\App\Models\Customer::orderBy('name')->get() as $customer)
-                            <option value="{{ $customer->id }}" 
-                                {{ request('filters.customer_id') == $customer->id ? 'selected' : '' }}>
-                                {{ $customer->name }}
-                            </option>
-                        @endforeach
                     </select>
                 @elseif($field === 'unit_id')
                     <select class="form-select form-select-sm" style="width: auto; min-width: 140px;" 
@@ -79,54 +83,29 @@
                         <option value="">{{ __('pagination.all_units') }}</option>
                         @foreach(\App\Models\Unit::orderBy('name')->get() as $unit)
                             <option value="{{ $unit->id }}" 
-                                {{ request('filters.unit_id') == $unit->id ? 'selected' : '' }}>
+                                {{ ($currentFilters['unit_id'] ?? '') == $unit->id ? 'selected' : '' }}>
                                 {{ $unit->name }} ({{ $unit->symbol }})
                             </option>
                         @endforeach
                     </select>
-                @elseif($field === 'role_id')
-                    <select class="form-select form-select-sm" style="width: auto; min-width: 140px;" 
-                            data-filter="role_id">
-                        <option value="">{{ __('pagination.all_roles') }}</option>
-                        @foreach(\App\Models\Role::orderBy('name')->get() as $role)
-                            <option value="{{ $role->id }}" 
-                                {{ request('filters.role_id') == $role->id ? 'selected' : '' }}>
-                                {{ $role->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                @elseif($field === 'seller_id')
-                    <select class="form-select form-select-sm" style="width: auto; min-width: 160px;" 
-                            data-filter="seller_id">
-                        <option value="">{{ __('pagination.all_sellers') }}</option>
-                        @foreach(\App\Models\Seller::orderBy('full_name')->get() as $seller)
-                            <option value="{{ $seller->id }}" 
-                                {{ request('filters.seller_id') == $seller->id ? 'selected' : '' }}>
-                                {{ $seller->full_name }}
-                            </option>
-                        @endforeach
-                    </select>
-                @else
-                    {{-- Generic filter input for other fields --}}
-                    <input type="text" class="form-control form-control-sm" 
-                           style="width: 150px;" 
-                           data-filter="{{ $field }}"
-                           placeholder="{{ ucfirst($field) }}"
-                           value="{{ request("filters.{$field}") }}">
                 @endif
             @endforeach
             
             <button class="btn btn-success btn-sm" id="apply-filters" type="button">
-                {{ __('pagination.apply_filters') }}
+                <i class="ti-check"></i> {{ __('pagination.apply_filters') }}
             </button>
             
-            <button class="btn btn-outline-secondary btn-sm" id="clear-filters" type="button">
-                {{ __('pagination.clear_filters') }}
-            </button>
+            @if(!empty($currentFilters) || request('search'))
+                <button class="btn btn-outline-secondary btn-sm" id="clear-filters" type="button">
+                    <i class="ti-close"></i> {{ __('pagination.clear_filters') }}
+                </button>
+            @endif
+            </div>
+            @endif
         </div>
     </div>
 </div>
-@endif
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -143,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Search handler
     const searchInput = document.getElementById('search-input');
+    const clearSearchBtn = document.getElementById('clear-search');
     
     if (searchInput) {
         // Auto-search on input change (like DataTables)
@@ -174,6 +154,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 url.searchParams.delete('page');
                 window.location.href = url.toString();
             }
+        });
+    }
+    
+    // Clear search handler
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', function() {
+            const url = new URL(window.location);
+            url.searchParams.delete('search');
+            url.searchParams.delete('page');
+            window.location.href = url.toString();
         });
     }
     

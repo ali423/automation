@@ -15,21 +15,33 @@
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-2">لیست کالا ها</h4>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="card-title mb-0">لیست کالا ها</h4>
+                        <div class="d-flex align-items-center gap-3">
+                            <!-- Per Page Selection -->
+                            <div class="d-flex align-items-center">
+                                <label for="per-page" class="form-label mb-0 me-2">{{ __('pagination.per_page') }}:</label>
+                                <select id="per-page" class="form-select form-select-sm" style="width: auto;">
+                                    @foreach([10, 25, 50, 100] as $perPage)
+                                        <option value="{{ $perPage }}" {{ $commodities->perPage() == $perPage ? 'selected' : '' }}>
+                                            {{ $perPage }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Search and Filters -->
+                    <x-pagination-controls :paginator="$commodities" :options="$options" />
+                    
                     @include('dashboard.commodity.partials.commodity-table')
 
                 </div> <!-- end card body-->
                 
-                <!-- Pagination -->
+                <!-- Pagination Navigation -->
                 <div class="card-footer">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="text-muted">
-                            نمایش {{ $commodities->firstItem() }} تا {{ $commodities->lastItem() }} از {{ $commodities->total() }} کالا
-                        </div>
-                        <div>
-                            {{ $commodities->links() }}
-                        </div>
-                    </div>
+                    <x-pagination-navigation :paginator="$commodities" />
                 </div>
             </div> <!-- end card -->
         </div><!-- end col-->
@@ -51,6 +63,13 @@
     <script src="{{ asset('js/default-assets/dataTables.sorting.persian.js') }}"></script>
     <script type="text/javascript">
         $(document).ready(function () {
+            // Per page change handler for main selector
+            $('#per-page').on('change', function() {
+                const url = new URL(window.location);
+                url.searchParams.set('per_page', this.value);
+                url.searchParams.delete('page'); // Reset to first page
+                window.location.href = url.toString();
+            });
             pdfMake.fonts = {
                 Roboto: {
                     normal: 'Roboto-Regular.ttf',
@@ -68,6 +87,9 @@
 
             $('#datatable-buttons-commodity').DataTable({
                 dom: 'Bfrtip',
+                paging: false, // Disable DataTables pagination since we're using server-side pagination
+                searching: false, // Disable DataTables search since we're using server-side search
+                ordering: false, // Disable DataTables sorting since we're using server-side sorting
                 buttons: [{
                     extend: 'copy',
                     text: "کپی",
