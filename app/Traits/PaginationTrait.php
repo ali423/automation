@@ -118,7 +118,15 @@ trait PaginationTrait
     {
         foreach ($filters as $field => $value) {
             if (in_array($field, $filterableFields) && !empty($value)) {
-                $this->applyFieldCondition($query, $field, $value, '=', $value, 'where');
+                // Special handling for status field to support both 'approvaled' and 'approved'
+                if ($field === 'status' && $value === 'approved') {
+                    $query->where(function ($q) {
+                        $q->where('status', 'approved')
+                          ->orWhere('status', 'approvaled');
+                    });
+                } else {
+                    $this->applyFieldCondition($query, $field, $value, '=', $value, 'where');
+                }
             }
         }
     }

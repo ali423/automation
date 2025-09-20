@@ -62,14 +62,19 @@
                 @endif
                 @if(isset($currentFilters['status']))
                     @php
-                        $statusLabels = [
-                            'awaiting_approval' => 'در انتظار تایید',
-                            'approved' => 'تایید شده',
-                            'rejected' => 'رد شده',
-                            'expired' => 'منقضی شده',
-                            'done' => 'تکمیل شده'
-                        ];
-                        $statusLabel = $statusLabels[$currentFilters['status']] ?? $currentFilters['status'];
+                        if(isset($options['status_options']) && isset($options['status_options'][$currentFilters['status']])) {
+                            $statusLabel = $options['status_options'][$currentFilters['status']];
+                        } else {
+                            // Fallback to default status labels
+                            $statusLabels = [
+                                'awaiting_approval' => 'در انتظار تایید',
+                                'approved' => 'تایید شده',
+                                'rejected' => 'رد شده',
+                                'expired' => 'منقضی شده',
+                                'done' => 'تکمیل شده'
+                            ];
+                            $statusLabel = $statusLabels[$currentFilters['status']] ?? $currentFilters['status'];
+                        }
                     @endphp
                     <span class="badge bg-info text-white ms-1">وضعیت: {{ $statusLabel }}</span>
                 @endif
@@ -212,21 +217,28 @@
                     <select class="form-select form-select-sm" style="width: auto; min-width: 140px;" 
                             data-filter="status">
                         <option value="">{{ __('pagination.all_statuses') }}</option>
-                        <option value="awaiting_approval" {{ ($currentFilters['status'] ?? '') == 'awaiting_approval' ? 'selected' : '' }}>
-                            در انتظار تایید
-                        </option>
-                        <option value="approved" {{ ($currentFilters['status'] ?? '') == 'approved' ? 'selected' : '' }}>
-                            تایید شده
-                        </option>
-                        <option value="rejected" {{ ($currentFilters['status'] ?? '') == 'rejected' ? 'selected' : '' }}>
-                            رد شده
-                        </option>
-                        <option value="expired" {{ ($currentFilters['status'] ?? '') == 'expired' ? 'selected' : '' }}>
-                            منقضی شده
-                        </option>
-                        <option value="done" {{ ($currentFilters['status'] ?? '') == 'done' ? 'selected' : '' }}>
-                            تکمیل شده
-                        </option>
+                        @if(isset($options['status_options']))
+                            @foreach($options['status_options'] as $value => $label)
+                                <option value="{{ $value }}" {{ ($currentFilters['status'] ?? '') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        @else
+                            {{-- Fallback to default status options if not provided --}}
+                            <option value="awaiting_approval" {{ ($currentFilters['status'] ?? '') == 'awaiting_approval' ? 'selected' : '' }}>
+                                در انتظار تایید
+                            </option>
+                            <option value="approved" {{ ($currentFilters['status'] ?? '') == 'approved' ? 'selected' : '' }}>
+                                تایید شده
+                            </option>
+                            <option value="rejected" {{ ($currentFilters['status'] ?? '') == 'rejected' ? 'selected' : '' }}>
+                                رد شده
+                            </option>
+                            <option value="expired" {{ ($currentFilters['status'] ?? '') == 'expired' ? 'selected' : '' }}>
+                                منقضی شده
+                            </option>
+                            <option value="done" {{ ($currentFilters['status'] ?? '') == 'done' ? 'selected' : '' }}>
+                                تکمیل شده
+                            </option>
+                        @endif
                     </select>
                 @elseif($field === 'seller_id')
                     <select class="form-select form-select-sm" style="width: auto; min-width: 160px;" 

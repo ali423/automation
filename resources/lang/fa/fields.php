@@ -108,8 +108,8 @@ return [
         'unit_cost' => 'هزینه واحد',
         'status' => [
             'awaiting_approval' => 'در انتظار تایید',
-            'approvaled' => 'تایید شده',
-            'approved' => 'تایید شده', // Legacy support for existing data
+            'approvaled' => 'تایید شده', // Legacy support for existing data
+            'approved' => 'تایید شده',
             'rejected' => 'رد شده',
             'expired' => 'منقضی شده',
             'done' => 'تکمیل شده',

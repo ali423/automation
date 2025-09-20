@@ -54,7 +54,14 @@ class WithdrawalRequestController extends Controller
             'searchable_fields' => ['number', 'customer.name', 'customer.comp_name'],
             'filterable_fields' => ['status', 'customer_id'],
             'per_page_options' => [5, 10, 25, 50, 100],
-            'search_placeholder' => 'جستجو در شماره درخواست، نام مشتری یا نام شرکت...'
+            'search_placeholder' => 'جستجو در شماره درخواست، نام مشتری یا نام شرکت...',
+            'status_options' => [
+                'awaiting_approval' => __('fields.withdrawal-request.status.awaiting_approval'),
+                'approved' => __('fields.withdrawal-request.status.approvaled'), // Maps to both 'approved' and 'approvaled'
+                'rejected' => __('fields.withdrawal-request.status.rejected'),
+                'expired' => __('fields.withdrawal-request.status.expired'),
+                'done' => __('fields.withdrawal-request.status.done'),
+            ]
         ];
         
         // Get customers for filter dropdown

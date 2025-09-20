@@ -56,7 +56,14 @@ class ProductionRequestController extends Controller
             'searchable_fields' => ['number', 'product.title', 'product.number'],
             'filterable_fields' => ['status', 'product_id'],
             'per_page_options' => [5, 10, 25, 50, 100],
-            'search_placeholder' => 'جستجو در شماره درخواست، نام محصول یا شماره محصول...'
+            'search_placeholder' => 'جستجو در شماره درخواست، نام محصول یا شماره محصول...',
+            'status_options' => [
+                'awaiting_approval' => __('fields.production-request.status.awaiting_approval'),
+                'approved' => __('fields.production-request.status.approved'), // Maps to both 'approved' and 'approvaled'
+                'rejected' => __('fields.production-request.status.rejected'),
+                'expired' => __('fields.production-request.status.expired'),
+                'done' => __('fields.production-request.status.done'),
+            ]
         ];
         
         // Get products for filter dropdown

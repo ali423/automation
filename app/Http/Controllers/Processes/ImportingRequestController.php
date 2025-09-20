@@ -55,7 +55,14 @@ class ImportingRequestController extends Controller
             'searchable_fields' => ['number', 'commodities.title'],
             'filterable_fields' => ['status', 'seller_id'],
             'per_page_options' => [5, 10, 25, 50, 100],
-            'search_placeholder' => 'جستجو در شماره درخواست یا نام کالا...'
+            'search_placeholder' => 'جستجو در شماره درخواست یا نام کالا...',
+            'status_options' => [
+                'awaiting_approval' => __('fields.importing_request.status.awaiting_approval'),
+                'approved' => __('fields.importing_request.status.approvaled'), // Maps to both 'approved' and 'approvaled'
+                'rejected' => __('fields.importing_request.status.rejected'),
+                'expired' => __('fields.importing_request.status.expired'),
+                'done' => __('fields.importing_request.status.done'),
+            ]
         ];
         
         return view('dashboard.processes.importing-request.index', [
