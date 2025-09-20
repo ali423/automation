@@ -36,6 +36,30 @@
                         <span class="badge bg-info text-white ms-1">واحد: {{ $unit->name }}</span>
                     @endif
                 @endif
+                @if(isset($currentFilters['commodity_id']))
+                    @php
+                        $commodity = \App\Models\Commodity::find($currentFilters['commodity_id']);
+                    @endphp
+                    @if($commodity)
+                        <span class="badge bg-info text-white ms-1">کالا: {{ $commodity->title }}</span>
+                    @endif
+                @endif
+                @if(isset($currentFilters['from_unit_id']))
+                    @php
+                        $fromUnit = \App\Models\Unit::find($currentFilters['from_unit_id']);
+                    @endphp
+                    @if($fromUnit)
+                        <span class="badge bg-info text-white ms-1">واحد مبدا: {{ $fromUnit->name }}</span>
+                    @endif
+                @endif
+                @if(isset($currentFilters['to_unit_id']))
+                    @php
+                        $toUnit = \App\Models\Unit::find($currentFilters['to_unit_id']);
+                    @endphp
+                    @if($toUnit)
+                        <span class="badge bg-info text-white ms-1">واحد مقصد: {{ $toUnit->name }}</span>
+                    @endif
+                @endif
             </small>
         </div>
     @endif
@@ -102,6 +126,39 @@
                         @foreach(\App\Models\Unit::orderBy('name')->get() as $unit)
                             <option value="{{ $unit->id }}" 
                                 {{ ($currentFilters['unit_id'] ?? '') == $unit->id ? 'selected' : '' }}>
+                                {{ $unit->name }} ({{ $unit->symbol }})
+                            </option>
+                        @endforeach
+                    </select>
+                @elseif($field === 'commodity_id')
+                    <select class="form-select form-select-sm" style="width: auto; min-width: 160px;" 
+                            data-filter="commodity_id">
+                        <option value="">{{ __('pagination.all_commodities') }}</option>
+                        @foreach(\App\Models\Commodity::orderBy('title')->get() as $commodity)
+                            <option value="{{ $commodity->id }}" 
+                                {{ ($currentFilters['commodity_id'] ?? '') == $commodity->id ? 'selected' : '' }}>
+                                {{ $commodity->title }}
+                            </option>
+                        @endforeach
+                    </select>
+                @elseif($field === 'from_unit_id')
+                    <select class="form-select form-select-sm" style="width: auto; min-width: 140px;" 
+                            data-filter="from_unit_id">
+                        <option value="">{{ __('pagination.all_from_units') }}</option>
+                        @foreach(\App\Models\Unit::orderBy('name')->get() as $unit)
+                            <option value="{{ $unit->id }}" 
+                                {{ ($currentFilters['from_unit_id'] ?? '') == $unit->id ? 'selected' : '' }}>
+                                {{ $unit->name }} ({{ $unit->symbol }})
+                            </option>
+                        @endforeach
+                    </select>
+                @elseif($field === 'to_unit_id')
+                    <select class="form-select form-select-sm" style="width: auto; min-width: 140px;" 
+                            data-filter="to_unit_id">
+                        <option value="">{{ __('pagination.all_to_units') }}</option>
+                        @foreach(\App\Models\Unit::orderBy('name')->get() as $unit)
+                            <option value="{{ $unit->id }}" 
+                                {{ ($currentFilters['to_unit_id'] ?? '') == $unit->id ? 'selected' : '' }}>
                                 {{ $unit->name }} ({{ $unit->symbol }})
                             </option>
                         @endforeach

@@ -28,6 +28,9 @@ return [
     'all_customers' => 'همه مشتریان',
     'all_units' => 'همه واحدها',
     'all_roles' => 'همه نقش‌ها',
+    'all_commodities' => 'همه کالاها',
+    'all_from_units' => 'همه واحدهای مبدا',
+    'all_to_units' => 'همه واحدهای مقصد',
 
     'all_sellers' => 'همه فروشندگان',
     'no_results' => 'هیچ نتیجه‌ای یافت نشد',

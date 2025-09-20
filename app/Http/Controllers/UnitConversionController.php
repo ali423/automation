@@ -8,11 +8,14 @@ use App\Models\Unit;
 use App\Services\UnitConversionService;
 use App\Http\Requests\UnitConversionRequest;
 use App\Http\Requests\UnitConversionUpdateRequest;
+use App\Traits\PaginationTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class UnitConversionController extends Controller
 {
+    use PaginationTrait;
+    
     protected $service;
 
     public function __construct(UnitConversionService $service)
@@ -33,17 +36,38 @@ class UnitConversionController extends Controller
         $commodities = Commodity::orderBy('id', 'DESC')->get();
         $units = Unit::all();
 
+        // Build query with eager loading to fix N+1 query problem
         $query = $this->service->queryWithRelations();
+        
+        // Apply commodity filter if provided
         if ($commodityId) {
             $query->where('commodity_id', $commodityId);
         }
-        $conversions = $query->orderBy('created_at', 'DESC')->get();
+        
+        // Use advanced pagination with search and filter capabilities
+        $conversions = $this->getPaginatedResults($query, $request, 10, [
+            'searchable_fields' => ['commodity.title', 'fromUnit.name', 'toUnit.name'],
+            'filterable_fields' => ['commodity_id', 'from_unit_id', 'to_unit_id'],
+            'sortable_fields' => ['id', 'created_at', 'updated_at', 'conversion_rate'],
+            'default_sort_field' => 'created_at',
+            'default_sort_direction' => 'desc',
+            'max_per_page' => 50
+        ]);
+        
+        // Prepare options for the pagination components
+        $paginationOptions = [
+            'searchable_fields' => ['commodity.title', 'fromUnit.name', 'toUnit.name'],
+            'filterable_fields' => ['commodity_id', 'from_unit_id', 'to_unit_id'],
+            'per_page_options' => [5, 10, 25, 50, 100],
+            'search_placeholder' => 'جستجو در کالا، واحد مبدا یا واحد مقصد...'
+        ];
 
         return view('dashboard.unit-conversion.index', [
             'conversions' => $conversions,
             'commodities' => $commodities,
             'selectedCommodityId' => $commodityId,
             'units' => $units,
+            'options' => $paginationOptions,
         ]);
     }
 

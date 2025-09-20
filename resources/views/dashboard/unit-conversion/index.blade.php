@@ -15,53 +15,28 @@
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title mb-2">{{ __('fields.conversion_list') }}</h4>
-
-                    <form method="GET" action="{{ route('unit-conversion.index') }}" class="mb-4">
-                        <div class="row align-items-end">
-                            <div class="col-md-4">
-                                <label for="commodity_id">{{ __('fields.commodity.name') }}</label>
-                                <select name="commodity_id" id="commodity_id" class="form-control select2">
-                                    <option value="">همه</option>
-                                    @foreach($commodities as $commodity)
-                                        <option value="{{ $commodity->id }}" {{ isset($selectedCommodityId) && $selectedCommodityId == $commodity->id ? 'selected' : '' }}>
-                                {{ $commodity->title }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-primary">فیلتر</button>
-                            </div>
-                        </div>
-                    </form>
+                    
+                    {{-- Pagination Controls --}}
+                    <x-pagination-controls :paginator="$conversions" :options="$options" />
                     
                     @if($conversions->count() > 0)
-                        <table id="datatable-buttons-conversion" class="table table-striped dt-responsive nowrap w-100">
-                            <thead class="text-center">
-                            <tr>
-                                <th>{{ __('fields.commodity.name') }}</th>
-                                <th>{{ __('fields.from_unit') }}</th>
-                                <th>{{ __('fields.to_unit') }}</th>
-                                <th>{{ __('fields.conversion_rate') }}</th>
-                                <th>{{ __('fields.created_at') }}</th>
-                                <th>{{ __('fields.details') }}</th>
-                            </tr>
-                            </thead>
-                            <tbody class="text-center">
-                            @foreach ($conversions as $conversion)
-                                <tr>
-                                    <td>{{ $conversion->commodity->title ?? '-' }}</td>
-                                    <td>{{ $conversion->fromUnit->name ?? '-' }} ({{ $conversion->fromUnit->symbol ?? '-' }})</td>
-                                    <td>{{ $conversion->toUnit->name ?? '-' }} ({{ $conversion->toUnit->symbol ?? '-' }})</td>
-                                    <td>{{ number_format($conversion->conversion_rate, 2) }}</td>
-                                    <td>{{ jdate($conversion->created_at)->format('Y/m/d') }}</td>
-                                    <td>
-                                        <a href="{{ route('unit-conversion.show', $conversion) }}" class=""><i class="ti-more-alt font-24"></i></a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="ti-info-circle"></i> 
+                                مرتب‌سازی فقط برای رکوردهای صفحه فعلی اعمال می‌شود
+                            </small>
+                        </div>
+                        @include('dashboard.unit-conversion.partials.conversion-table')
+                        
+                        {{-- Pagination Links --}}
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="text-muted">
+                                نمایش {{ $conversions->firstItem() }} تا {{ $conversions->lastItem() }} از {{ $conversions->total() }} رکورد
+                            </div>
+                            <div>
+                                {{ $conversions->links() }}
+                            </div>
+                        </div>
                     @else
                         <div class="text-center py-4">
                             <i class="ti-info-circle font-48 text-muted"></i>
@@ -107,21 +82,26 @@
             };
             $('#datatable-buttons-conversion').DataTable({
                 dom: 'Bfrtip',
+                paging: false, // Disable DataTables pagination since we're using server-side pagination
+                searching: false, // Disable DataTables search since we're using server-side search
+                ordering: true, // Keep DataTables sorting for current page
+                order: [], // Start with no default ordering
+                info: false, // Hide DataTables info since we have custom pagination info
                 buttons: [
                     {
-                    extend: 'copy',
-                    text: "کپی",
-                    className: 'btn btn-outline-primary',
-                        exportOptions: { columns: [0, 1, 2, 3, 4], modifier: { page: 'current' }, orthogonal: "rtlexport" }
-                },
+                        extend: 'copy',
+                        text: "کپی",
+                        className: 'btn btn-outline-primary',
+                        exportOptions: { columns: [6, 5, 4, 3, 2, 1, 0], modifier: { page: 'current' }, orthogonal: "rtlexport" }
+                    },
                     {
                         extend: 'pdf',
                         text: 'pdf',
                         className: 'btn btn-outline-primary',
-                        exportOptions: { columns: [0, 1, 2, 3, 4], modifier: { page: 'current' }, orthogonal: "rtlexport" },
+                        exportOptions: { columns: [6, 5, 4, 3, 2, 1, 0], modifier: { page: 'current' }, orthogonal: "rtlexport" },
                         customize: function (doc) {
                             doc.defaultStyle.font = "IRANSansWeb";
-                            doc.content[1].table.widths = ['20%', '20%', '20%', '20%', '20%', '20%'];
+                            doc.content[1].table.widths = ['10%', '20%', '20%', '20%', '15%', '10%', '5%'];
                             doc.styles.tableBodyEven.alignment = 'center';
                             doc.styles.tableBodyOdd.alignment = 'center';
                         }
@@ -129,18 +109,18 @@
                     {
                         extend: 'excel',
                         className: 'btn btn-outline-primary',
-                        exportOptions: { columns: [0, 1, 2, 3, 4], modifier: { page: 'current' } }
+                        exportOptions: { columns: [6, 5, 4, 3, 2, 1, 0], modifier: { page: 'current' } }
                     },
                     {
                         extend: 'csv',
                         className: 'btn btn-outline-primary',
-                        exportOptions: { columns: [0, 1, 2, 3, 4], modifier: { page: 'current' } }
+                        exportOptions: { columns: [6, 5, 4, 3, 2, 1, 0], modifier: { page: 'current' } }
                     },
                     {
                         extend: 'print',
                         text: "پرینت",
                         className: 'btn btn-outline-primary',
-                        exportOptions: { columns: [0, 1, 2, 3, 4], modifier: { page: 'current' }, orthogonal: "rtlexport" }
+                        exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6], modifier: { page: 'current' }, orthogonal: "rtlexport" }
                     }
                 ],
                 columnDefs: [{
@@ -156,13 +136,7 @@
                     paginate: {
                         previous: "قبلی",
                         next: "بعدی"
-                    },
-                    search: "جستجو:",
-                    lengthMenu: "نمایش _MENU_ رکورد در صفحه",
-                    zeroRecords: "هیچ رکوردی یافت نشد",
-                    info: "نمایش صفحه _PAGE_ از _PAGES_",
-                    infoEmpty: "هیچ رکوردی موجود نیست",
-                    infoFiltered: "(فیلتر شده از _MAX_ رکورد)"
+                    }
                 }
             });
         });
