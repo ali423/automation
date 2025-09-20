@@ -81,6 +81,14 @@
                         <span class="badge bg-info text-white ms-1">فروشنده: {{ $seller->name ?? $seller->comp_name }}</span>
                     @endif
                 @endif
+                @if(isset($currentFilters['role_id']))
+                    @php
+                        $role = \App\Models\Role::find($currentFilters['role_id']);
+                    @endphp
+                    @if($role)
+                        <span class="badge bg-info text-white ms-1">نقش: {{ $role->name }}</span>
+                    @endif
+                @endif
             </small>
         </div>
     @endif
@@ -212,6 +220,17 @@
                             <option value="{{ $seller->id }}" 
                                 {{ ($currentFilters['seller_id'] ?? '') == $seller->id ? 'selected' : '' }}>
                                 {{ $seller->name ?? $seller->comp_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                @elseif($field === 'role_id')
+                    <select class="form-select form-select-sm" style="width: auto; min-width: 140px;" 
+                            data-filter="role_id">
+                        <option value="">{{ __('pagination.all_roles') }}</option>
+                        @foreach(\App\Models\Role::orderBy('name')->get() as $role)
+                            <option value="{{ $role->id }}" 
+                                {{ ($currentFilters['role_id'] ?? '') == $role->id ? 'selected' : '' }}>
+                                {{ $role->name }}
                             </option>
                         @endforeach
                     </select>
