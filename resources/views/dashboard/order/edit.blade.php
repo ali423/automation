@@ -178,9 +178,14 @@
                 calculateWeightForRow($(this).closest('.form-row'));
             });
             
-            // Calculate weight when amount changes
+            // Calculate weight when amount changes - with debouncing
+            var weightCalculationTimeout;
             $(document).on('input', '#amount', function () {
-                calculateWeightForRow($(this).closest('.form-row'));
+                var $row = $(this).closest('.form-row');
+                clearTimeout(weightCalculationTimeout);
+                weightCalculationTimeout = setTimeout(function() {
+                    calculateWeightForRow($row);
+                }, 300); // 300ms debounce
             });
             // Add row
             $('#addRow').click(function () {
@@ -239,32 +244,46 @@
                 updateTotalWeight(); // Update total weight when row is removed
             });
             
-            // Function to calculate weight for a specific row
+            // Function to calculate weight for a specific row - optimized
             function calculateWeightForRow($row) {
                 var commodityId = $row.find('#commodity_id').val();
                 var unitId = $row.find('#unit_id').val();
                 var amount = $row.find('#amount').val();
                 var weightInput = $row.find('#weight');
                 
+                // Clear previous timeout for this row
+                var rowId = $row.attr('data-row-id') || 'row_' + Date.now();
+                $row.attr('data-row-id', rowId);
+                
                 if (commodityId && unitId && amount && amount > 0) {
+                    // Show loading state
+                    weightInput.val('در حال محاسبه...');
+                    
                     $.ajax({
                         url: '/order/calculate-weight/' + commodityId + '/' + amount + '/' + unitId,
                         type: 'get',
                         dataType: 'json',
+                        timeout: 5000, // 5 second timeout
                         success: function (response) {
-                            if (response.success) {
-                                weightInput.val(response.weight_formatted);
-                                weightInput.data('weight-value', response.weight); // Store numeric value for total calculation
-                            } else {
-                                weightInput.val('خطا در محاسبه');
-                                weightInput.data('weight-value', 0);
+                            // Only update if this is still the current row
+                            if ($row.attr('data-row-id') === rowId) {
+                                if (response.success) {
+                                    weightInput.val(response.weight_formatted);
+                                    weightInput.data('weight-value', response.weight);
+                                } else {
+                                    weightInput.val('خطا در محاسبه');
+                                    weightInput.data('weight-value', 0);
+                                }
+                                updateTotalWeight();
                             }
-                            updateTotalWeight();
                         },
                         error: function () {
-                            weightInput.val('خطا در محاسبه');
-                            weightInput.data('weight-value', 0);
-                            updateTotalWeight();
+                            // Only update if this is still the current row
+                            if ($row.attr('data-row-id') === rowId) {
+                                weightInput.val('خطا در محاسبه');
+                                weightInput.data('weight-value', 0);
+                                updateTotalWeight();
+                            }
                         }
                     });
                 } else {
@@ -274,16 +293,20 @@
                 }
             }
             
-            // Function to update total weight display
+            // Function to update total weight display - optimized
+            var totalWeightUpdateTimeout;
             function updateTotalWeight() {
-                var totalWeight = 0;
-                $('.form-row').each(function() {
-                    var weightValue = $(this).find('#weight').data('weight-value');
-                    if (weightValue && !isNaN(weightValue)) {
-                        totalWeight += parseFloat(weightValue);
-                    }
-                });
-                $('#totalWeight').text(totalWeight.toFixed(3) + ' کیلوگرم');
+                clearTimeout(totalWeightUpdateTimeout);
+                totalWeightUpdateTimeout = setTimeout(function() {
+                    var totalWeight = 0;
+                    $('.form-row').each(function() {
+                        var weightValue = $(this).find('#weight').data('weight-value');
+                        if (weightValue && !isNaN(weightValue)) {
+                            totalWeight += parseFloat(weightValue);
+                        }
+                    });
+                    $('#totalWeight').text(totalWeight.toFixed(3) + ' کیلوگرم');
+                }, 100); // Small debounce for total weight updates
             }
         });
     </script>
@@ -300,15 +323,12 @@
                 var currentUnitId = unitSelect.attr('data-selected-unit');
                 
                 if (commodityId && commodityId !== '') {
-                    console.log('Loading units for commodity ID:', commodityId, 'Current unit ID:', currentUnitId);
-                    
                     // Get commodity units for existing items
                     $.ajax({
                         url: '/order/commodity-units/' + commodityId,
                         type: 'get',
                         dataType: 'json',
                         success: function (response) {
-                            console.log('Units API response:', response);
                             if (response.success) {
                                 // Clear and populate unit options
                                 unitSelect.empty().append('<option value="">انتخاب کنید...</option>');
@@ -319,19 +339,14 @@
                                 // Set the selected unit value for existing items
                                 if (currentUnitId) {
                                     unitSelect.val(currentUnitId);
-                                    console.log('Set selected unit to:', currentUnitId);
                                 }
                                 
                                 // Calculate weight for existing items after units are loaded
                                 calculateWeightForRow($row);
-                            } else {
-                                console.error('Failed to load units:', response.message);
                             }
                         },
                         error: function(xhr, status, error) {
-                            console.error('Error loading units:', error);
-                            console.error('Status:', status);
-                            console.error('Response:', xhr.responseText);
+                            // Silent error handling - units will remain empty
                         }
                     });
                 }
