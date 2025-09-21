@@ -71,6 +71,26 @@ class Order extends Model
     }
 
     /**
+     * Get the total VAT amount for all items (10% for domestic products)
+     */
+    public function getTotalVatAmountAttribute()
+    {
+        $total = 0;
+        foreach ($this->orderItems as $item) {
+            $total += $item->vat_amount;
+        }
+        return $total;
+    }
+
+    /**
+     * Get the total price including VAT for all items
+     */
+    public function getTotalPriceWithVatAttribute()
+    {
+        return $this->total_price + $this->total_vat_amount;
+    }
+
+    /**
      * Get the created date in Y-m-d format
      */
     public function getCreatedDateAttribute()

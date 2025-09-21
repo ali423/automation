@@ -12,6 +12,8 @@
                             <th>واحد</th>
                             <th>قیمت واحد</th>
                             <th>قیمت کل</th>
+                            <th>مالیات ارزش افزوده</th>
+                            <th>قیمت کل با مالیات</th>
                             @if(isset($showWeight) && $showWeight)
                                 <th>وزن (کیلوگرم)</th>
                             @endif
@@ -26,6 +28,8 @@
                                 <td>{{ $item->unit_symbol }}</td>
                                 <td>{{ number_format($item->price) }} تومان</td>
                                 <td>{{ number_format($item->total_price) }} تومان</td>
+                                <td>{{ number_format($item->vat_amount) }} تومان</td>
+                                <td>{{ number_format($item->total_price_with_vat) }} تومان</td>
                                 @if(isset($showWeight) && $showWeight)
                                     <td>
                                         @if($item->weight_kg !== null)
@@ -42,6 +46,8 @@
                         <tr>
                             <th colspan="{{ isset($showWeight) && $showWeight ? '5' : '5' }}" class="text-left">مجموع کل:</th>
                             <th>{{ number_format($order->total_price) }} تومان</th>
+                            <th>{{ number_format($order->total_vat_amount) }} تومان</th>
+                            <th>{{ number_format($order->total_price_with_vat) }} تومان</th>
                             @if(isset($showWeight) && $showWeight)
                                 <th>
                                     {{ $order->total_weight_kg !== null ? number_format($order->total_weight_kg, 3) . ' کیلوگرم' : 'نامشخص' }}
