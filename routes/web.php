@@ -77,6 +77,8 @@ Route::middleware('auth')->group(function () {
     Route::get('importing/report',[ImportingRequestController::class,'createReport'])->name('importing.report.create');
 
     Route::post('importing/report',[ImportingRequestController::class,'storeReport'])->name('importing.report.store');
+    
+    Route::post('importing/report/convert-price',[ImportingRequestController::class,'convertPrice'])->name('importing.report.convert-price');
 
     Route::get('order/chart', [OrderController::class, 'chart'])->name('order.chart');
     Route::post('order/chart-data', [OrderController::class, 'getChartData'])->name('order.chart.data');
