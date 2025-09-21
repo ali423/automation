@@ -16,44 +16,15 @@
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title mb-2">لیست درخواست های خرید کالا</h4>
-                    <table id="datatable-buttons" class="table table-striped dt-responsive nowrap w-100">
-                        <thead class="text-center">
-                            <tr>
-                                <th>ردیف</th>
-                                <th> {{ __('fields.status') }}</th>
-                                <th> {{ __('fields.importing_request.number') }}</th>
-                                <th>{{ __('fields.created_at') }}</th>
-                                <th>{{ __('fields.creator') }}</th>
-                                <th>{{ __('fields.type') }}</th>
-                                <th>{{ __('fields.seller') }}</th>
-                                <th>{{ __('fields.details') }}</th>
-                            </tr>
-                        </thead>
-
-                        <tbody class="text-center">
-                            @php($i = 1)
-                            @foreach ($requests as $request)
-                                <tr>
-                                    <td>{{ $i }}</td>
-                                    <td>{{__('fields.importing_request.status')[$request->status]  }}</td>
-                                    <td>{{$request->number }}</td>
-                                    <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}
-                                    </td>
-                                    <td>سیستم</td>
-                                    <td>
-                                        @php($types = $request->commodities->pluck('type')->unique()->values())
-                                        @foreach ($types as $type)
-                                            <span class="badge badge-secondary">{{ __('fields.commodity.types.' . $type) }}</span>
-                                        @endforeach
-                                    </td>
-                                    <td>{{ optional($request->seller)->name ?? optional($request->seller)->comp_name ?? '-' }}</td>
-                                    <td><a href="{{ route('importing-request.show', $request) }}" class=""><i class="ti-more-alt font-24"></i></a>
-                                    </td>
-                                </tr>
-                                @php($i++)
-                            @endforeach
-                        </tbody>
-                    </table>
+                    
+                    {{-- Pagination Controls --}}
+                    <x-pagination-controls :paginator="$requests" :options="$options" />
+                    
+                    {{-- Importing Request Table --}}
+                    @include('dashboard.processes.importing-request.partials.importing-request-table')
+                    
+                    {{-- Pagination Navigation --}}
+                    <x-pagination-navigation :paginator="$requests" />
 
                 </div> <!-- end card body-->
             </div> <!-- end card -->
@@ -62,18 +33,5 @@
 @endsection
 
 @section('page_scripts')
-
-
-    <script src="{{ asset('js/default-assets/jquery.datatables.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/dataTables.bootstrap5.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/datatable-responsive.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/dataTables.buttons.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/jszip.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/pdfmake/pdfmake.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/pdfmake/vfs_fonts.js') }}"></script>
-    <script src="{{ asset('js/default-assets/buttons.html5.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/button.print.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/dataTables.sorting.persian.js') }}"></script>
-    <script src="{{ asset('js/default-assets/customDataTable.js') }}"></script>
-
+    {{-- Server-side pagination doesn't need DataTables scripts --}}
 @endsection

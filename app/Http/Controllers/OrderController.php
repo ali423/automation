@@ -11,12 +11,15 @@ use App\Models\WithdrawalRequest;
 use App\Services\OrderService;
 use App\Services\Processes\WithdrawalRequestService;
 use App\Services\CommodityUnitService;
+use App\Traits\PaginationTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Inventory;
 
 class OrderController extends Controller
 {
+    use PaginationTrait;
+    
     protected $service;
     protected $withdrawal_service;
     protected $commodityUnitService;
@@ -33,26 +36,52 @@ class OrderController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::query()->with(['customer', 'orderItems.commodity', 'orderItems.unit'])
+        // Build query with eager loading to fix N+1 query problem
+        $query = Order::with(['customer', 'orderItems.commodity', 'orderItems.unit'])
             ->whereHas('customer')
-            ->whereHas('orderItems.commodity')
-            ->orderByRaw("FIELD(status, \"pending\", \"done\")")
-            ->orderBy('deadline', 'ASC')->get();
-            
-        // Add calculated properties
-        $ordersWithCounts = $orders->map(function ($order) {
+            ->whereHas('orderItems.commodity');
+        
+        // Use advanced pagination with search and filter capabilities
+        $orders = $this->getPaginatedResults($query, $request, 10, [
+            'searchable_fields' => ['customer.name', 'customer.comp_name', 'deadline'],
+            'filterable_fields' => ['status', 'customer_id'],
+            'sortable_fields' => ['id', 'status', 'deadline', 'created_at', 'updated_at'],
+            'default_sort_field' => 'status',
+            'default_sort_direction' => 'asc',
+            'max_per_page' => 50
+        ]);
+        
+        // Add calculated properties to each order
+        $orders->getCollection()->transform(function ($order) {
             $order->items_count = $order->orderItems->count();
             return $order;
         });
-            
-        return view('dashboard.order.index',
-            [
-                'orders' => $ordersWithCounts,
-            ]);
+        
+        // Prepare options for the pagination components
+        $paginationOptions = [
+            'searchable_fields' => ['customer.name', 'customer.comp_name', 'deadline'],
+            'filterable_fields' => ['status', 'customer_id'],
+            'per_page_options' => [5, 10, 25, 50, 100],
+            'search_placeholder' => 'جستجو در نام مشتری، نام شرکت یا تاریخ مهلت...',
+            'status_options' => [
+                'pending' => __('fields.order.status.pending'),
+                'done' => __('fields.order.status.done'),
+            ]
+        ];
+        
+        // Get customers for filter dropdown
+        $customers = Customer::orderBy('name')->get();
+        
+        return view('dashboard.order.index', [
+            'orders' => $orders,
+            'customers' => $customers,
+            'options' => $paginationOptions,
+        ]);
     }
 
     /**

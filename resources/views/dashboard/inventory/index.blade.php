@@ -16,8 +16,18 @@
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title mb-2">لیست موجودی ها</h4>
+                    
+                    {{-- Pagination Controls --}}
+                    <x-pagination-controls :paginator="$inventories" :options="$options" />
+                    
                     @include('dashboard.inventory.partials.inventory-table')
+
                 </div> <!-- end card body-->
+                
+                <!-- Pagination Navigation -->
+                <div class="card-footer">
+                    <x-pagination-navigation :paginator="$inventories" />
+                </div>
             </div> <!-- end card -->
         </div><!-- end col-->
     </div>

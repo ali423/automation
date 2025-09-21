@@ -1,20 +1,26 @@
 {{-- Commodity table partial for index view --}}
+<div class="mb-2">
+    <small class="text-muted">
+        <i class="ti-info-circle"></i> 
+        مرتب‌سازی فقط برای رکوردهای صفحه فعلی اعمال می‌شود
+    </small>
+</div>
 <table id="datatable-buttons-commodity" class="table table-striped dt-responsive nowrap w-100">
     <thead class="text-center">
     <tr>
         <th>ردیف</th>
-        <th> {{ __('fields.title') }}</th>
-        <th> {{ __('fields.commodity.number') }}</th>
+        <th>{{ __('fields.title') }}</th>
+        <th>{{ __('fields.commodity.number') }}</th>
         <th>شناسه کالا</th>
-        <th> {{ __('fields.base_price') }}</th>
-        <th> {{ __('fields.type') }}</th>
+        <th>{{ __('fields.base_price') }}</th>
+        <th>{{ __('fields.type') }}</th>
         <th>{{ __('fields.unit') }}</th>
         <th>{{ __('fields.details') }}</th>
     </tr>
     </thead>
 
     <tbody class="text-center">
-    @foreach ($commodities as $index => $commodity)
+    @forelse ($commodities as $index => $commodity)
         <tr>
             <td>{{ $commodities->firstItem() + $index }}</td>
             <td>{{ $commodity->title }}</td>
@@ -27,6 +33,13 @@
                         class="ti-more-alt font-24"></i></a>
             </td>
         </tr>
-    @endforeach
+    @empty
+        <tr>
+            <td colspan="8" class="text-center text-muted py-4">
+                <i class="ti-info-circle font-24 mb-2"></i><br>
+                {{ __('pagination.no_results') }}
+            </td>
+        </tr>
+    @endforelse
     </tbody>
 </table>

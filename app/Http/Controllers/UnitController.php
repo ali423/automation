@@ -23,7 +23,24 @@ class UnitController extends Controller
      */
     public function index()
     {
-        $units = Unit::query()->orderBy('id', 'DESC')->get();
+        $query = Unit::query();
+        
+        // Search functionality
+        if (request('search')) {
+            $search = request('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('symbol', 'like', "%{$search}%");
+            });
+        }
+        
+        // Order by ID descending
+        $query->orderBy('id', 'DESC');
+        
+        // Pagination
+        $perPage = request('per_page', 10);
+        $units = $query->paginate($perPage);
+        
         return view('dashboard.unit.index', [
             'units' => $units,
         ]);

@@ -7,11 +7,14 @@ use App\Models\Inventory;
 use App\Models\Commodity;
 use App\Models\Unit;
 use App\Services\InventoryService;
+use App\Traits\PaginationTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class InventoryController extends Controller
 {
+    use PaginationTrait;
+    
     protected $service;
 
     public function __construct(InventoryService $service)
@@ -24,22 +27,56 @@ class InventoryController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $inventories = $this->service->getActiveInventoryWithCalculations();
+        // Build query with eager loading to fix N+1 query problem
+        $query = Inventory::with(['commodity', 'unit'])
+            ->where('amount', '>', 0);
         
-        // Add empty state handling
-        if ($inventories->isEmpty()) {
-            return view('dashboard.inventory.index', compact('inventories'))
-                ->with('message', 'هیچ موجودی فعالی یافت نشد. موجودی ها از طریق فرآیندهای خرید و فروش ایجاد می‌شوند.');
-        }
+        // Use advanced pagination with search and filter capabilities
+        $inventories = $this->getPaginatedResults($query, $request, 10, [
+            'searchable_fields' => ['commodity.title', 'commodity.number', 'commodity.product_identifier', 'unit.name'],
+            'filterable_fields' => ['commodity_id', 'unit_id'],
+            'sortable_fields' => ['id', 'created_at', 'updated_at', 'amount', 'purchase_price'],
+            'default_sort_field' => 'created_at',
+            'default_sort_direction' => 'desc',
+            'max_per_page' => 50
+        ]);
         
-        return view('dashboard.inventory.index', compact('inventories'));
+        // Pre-calculate financial data efficiently
+        $this->preCalculateFinancialData($inventories);
+        
+        // Prepare options for the pagination components
+        $paginationOptions = [
+            'searchable_fields' => ['commodity.title', 'commodity.number', 'commodity.product_identifier', 'unit.name'],
+            'filterable_fields' => ['commodity_id', 'unit_id'],
+            'per_page_options' => [5, 10, 25, 50, 100],
+            'search_placeholder' => 'جستجو در کالا، شماره، شناسه کالا یا واحد...'
+        ];
+        
+        return view('dashboard.inventory.index', [
+            'inventories' => $inventories,
+            'options' => $paginationOptions,
+        ]);
     }
-
-
+    
+    /**
+     * Pre-calculate financial data for multiple inventories efficiently
+     *
+     * @param \Illuminate\Pagination\LengthAwarePaginator $inventories
+     * @return void
+     */
+    private function preCalculateFinancialData($inventories)
+    {
+        // Pre-calculate financial data to avoid N+1 queries in views
+        $inventories->getCollection()->transform(function ($inventory) {
+            $inventory->financial_data = $this->service->calculateFinancialData($inventory);
+            return $inventory;
+        });
+    }
 
     /**
      * Display the specified resource.

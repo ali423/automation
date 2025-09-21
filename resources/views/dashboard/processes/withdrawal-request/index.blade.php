@@ -16,6 +16,10 @@
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title mb-2">لیست درخواست های فروش کالا</h4>
+                    
+                    {{-- Pagination Controls --}}
+                    <x-pagination-controls :paginator="$requests" :options="$options" />
+                    
                     <table id="datatable-buttons" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                             <tr>
@@ -31,9 +35,7 @@
                         </thead>
 
                         <tbody class="text-center">
-                            @php
-                                $i = 1;
-                            @endphp
+                            @php($i = ($requests->currentPage() - 1) * $requests->perPage() + 1)
                             @foreach ($requests as $request)
                                 <tr>
                                     <td>{{ $i }}</td>
@@ -47,14 +49,17 @@
                                     <td><a href="{{ route('withdrawal-request.show', $request) }}" class=""><i class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>
-                                @php
-                                    $i++;
-                                @endphp
+                                @php($i++)
                             @endforeach
                         </tbody>
                     </table>
 
                 </div> <!-- end card body-->
+                
+                <!-- Pagination Navigation -->
+                <div class="card-footer">
+                    <x-pagination-navigation :paginator="$requests" />
+                </div>
             </div> <!-- end card -->
         </div><!-- end col-->
     </div>
@@ -92,12 +97,17 @@
 
     $('#datatable-buttons').DataTable({
         dom: 'Bfrtip',
+        paging: false, // Disable DataTables pagination since we're using server-side pagination
+        searching: false, // Disable DataTables search since we're using server-side search
+        ordering: true, // Keep DataTables sorting for current page
+        order: [], // Start with no default ordering
+        info: false, // Hide DataTables info since we have custom pagination info
         buttons: [{
                 extend: 'copy',
                 text: "کپی",
                 className: 'btn btn-outline-primary',
                 exportOptions: {
-                    columns: [6,5,4, 3, 2, 1, 0],
+                    columns: [7, 6, 5, 4, 3, 2, 1, 0],
                     modifier: {
                         page: 'current'
                     },
@@ -109,7 +119,7 @@
                 text: 'pdf',
                 className: 'btn btn-outline-primary',
                 exportOptions: {
-                    columns: [6,5,4, 3, 2, 1, 0],
+                    columns: [7, 6, 5, 4, 3, 2, 1, 0],
                     modifier: {
                         page: 'current'
                     },
@@ -117,7 +127,7 @@
                 },
                 customize: function(doc) {
                     doc.defaultStyle.font = "IRANSansWeb";
-                    doc.content[1].table.widths = ['20%','20%','20%', '20%', '20%', '20%', '20%'];
+                    doc.content[1].table.widths = ['10%', '15%', '15%', '15%', '15%', '15%', '10%', '5%'];
                     doc.styles.tableBodyEven.alignment = 'center';
                     doc.styles.tableBodyOdd.alignment = 'center';
                 }
@@ -126,7 +136,7 @@
                 extend: 'excel',
                 className: 'btn btn-outline-primary',
                 exportOptions: {
-                    columns: [6,5,4, 3, 2, 1, 0],
+                    columns: [7, 6, 5, 4, 3, 2, 1, 0],
                     modifier: {
                         page: 'current'
                     }
@@ -136,7 +146,7 @@
                 extend: 'csv',
                 className: 'btn btn-outline-primary',
                 exportOptions: {
-                    columns: [6,5,4, 3, 2, 1, 0],
+                    columns: [7, 6, 5, 4, 3, 2, 1, 0],
                     modifier: {
                         page: 'current'
                     }
@@ -147,7 +157,7 @@
                 text: "پرینت",
                 className: 'btn btn-outline-primary',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4,5,6],
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
                     modifier: {
                         page: 'current'
                     },

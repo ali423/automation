@@ -11,10 +11,14 @@ use App\Models\Seller;
 use Illuminate\Http\Request;
 use App\Services\CommodityUnitService;
 use App\Services\Processes\ImportingRequestService;
+use App\Traits\PaginationTrait;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ImportingRequestController extends Controller
 {
+    use PaginationTrait;
+    
     protected $service;
     protected $commodityUnitService;
 
@@ -29,17 +33,43 @@ class ImportingRequestController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $requests = ImportingRequest::query()
-            ->with(['commodities.unit', 'seller'])
-            ->orderBy('id', 'DESC')->get();
-        return view('dashboard.processes.importing-request.index',
-            [
-                'requests' => $requests,
-            ]);
+        // Build query with eager loading to fix N+1 query problem
+        $query = ImportingRequest::with(['commodities.unit', 'seller']);
+        
+        // Use advanced pagination with search and filter capabilities
+        $requests = $this->getPaginatedResults($query, $request, 10, [
+            'searchable_fields' => ['number', 'commodities.title'],
+            'filterable_fields' => ['status', 'seller_id'],
+            'sortable_fields' => ['id', 'created_at', 'updated_at', 'status'],
+            'default_sort_field' => 'id',
+            'default_sort_direction' => 'desc',
+            'max_per_page' => 50
+        ]);
+        
+        // Prepare options for the pagination components
+        $paginationOptions = [
+            'searchable_fields' => ['number', 'commodities.title'],
+            'filterable_fields' => ['status', 'seller_id'],
+            'per_page_options' => [5, 10, 25, 50, 100],
+            'search_placeholder' => 'جستجو در شماره درخواست یا نام کالا...',
+            'status_options' => [
+                'awaiting_approval' => __('fields.importing_request.status.awaiting_approval'),
+                'approved' => __('fields.importing_request.status.approvaled'), // Maps to both 'approved' and 'approvaled'
+                'rejected' => __('fields.importing_request.status.rejected'),
+                'expired' => __('fields.importing_request.status.expired'),
+                'done' => __('fields.importing_request.status.done'),
+            ]
+        ];
+        
+        return view('dashboard.processes.importing-request.index', [
+            'requests' => $requests,
+            'options' => $paginationOptions,
+        ]);
     }
 
     /**

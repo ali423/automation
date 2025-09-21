@@ -7,10 +7,14 @@ use App\Http\Requests\CommodityUpdateRequest;
 use App\Models\Commodity;
 use App\Models\Unit;
 use App\Services\CommodityService;
+use App\Traits\PaginationTrait;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class CommodityController extends Controller
 {
+    use PaginationTrait;
+    
     protected $service;
 
     public function __construct(CommodityService $service)
@@ -23,27 +27,96 @@ class CommodityController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Fix N+1 query problem by eager loading relationships
-        $commodities = Commodity::with(['unit', 'materials.unit'])
-            ->orderBy('id', 'DESC')
-            ->paginate(20); // Add pagination for better performance
+        // Build query with eager loading to fix N+1 query problem
+        $query = Commodity::with(['unit', 'materials.unit']);
         
-        // Pre-calculate base prices to avoid N+1 queries in the view
-        foreach ($commodities as $commodity) {
-            $commodity->base_price = $this->calculateBasePrice($commodity);
-        }
+        // Use advanced pagination with search and filter capabilities
+        $commodities = $this->getPaginatedResults($query, $request, 10, [
+            'searchable_fields' => ['title', 'number', 'product_identifier'],
+            'filterable_fields' => ['type', 'unit_id'],
+            'sortable_fields' => [], // Disable server-side sorting, use DataTables sorting instead
+            'default_sort_field' => 'id',
+            'default_sort_direction' => 'desc',
+            'max_per_page' => 50
+        ]);
+        
+        // Pre-calculate base prices efficiently
+        $this->preCalculateBasePrices($commodities);
+        
+        // Prepare options for the pagination components
+        $paginationOptions = [
+            'searchable_fields' => ['title', 'number', 'product_identifier'],
+            'filterable_fields' => ['type', 'unit_id'],
+            'per_page_options' => [5, 10, 25, 50, 100],
+            'search_placeholder' => 'جستجو در عنوان، شماره یا شناسه کالا...'
+        ];
         
         return view('dashboard.commodity.index', [
             'commodities' => $commodities,
+            'options' => $paginationOptions,
         ]);
     }
     
     /**
-     * Calculate base price for a commodity without triggering N+1 queries
+     * Pre-calculate base prices for multiple commodities efficiently
+     *
+     * @param \Illuminate\Pagination\LengthAwarePaginator $commodities
+     * @return void
+     */
+    private function preCalculateBasePrices($commodities)
+    {
+        // Group commodities by type for efficient processing
+        $products = $commodities->where('type', 'product');
+        $materials = $commodities->where('type', 'material');
+        
+        // For materials, just use purchase_price
+        foreach ($materials as $material) {
+            $material->base_price = $material->purchase_price;
+        }
+        
+        // For products, calculate material costs efficiently
+        if ($products->isNotEmpty()) {
+            $this->calculateProductBasePrices($products->values());
+        }
+    }
+    
+    /**
+     * Calculate base prices for products efficiently
+     *
+     * @param \Illuminate\Support\Collection|\Illuminate\Pagination\LengthAwarePaginator $products
+     * @return void
+     */
+    private function calculateProductBasePrices($products)
+    {
+        $commodityUnitService = app(\App\Services\CommodityUnitService::class);
+        
+        foreach ($products as $product) {
+            $totalCost = 0;
+            
+            foreach ($product->materials as $material) {
+                $amount = $material->pivot->amount;
+                $unitId = $material->pivot->unit_id;
+                
+                // Convert to material's main unit for cost calculation
+                $amountInMaterialUnit = $commodityUnitService->convertToMainUnit($material, $amount, $unitId);
+                
+                if ($amountInMaterialUnit !== null) {
+                    $materialCost = $amountInMaterialUnit * $material->purchase_price;
+                    $totalCost += $materialCost;
+                }
+            }
+            
+            $product->base_price = round($totalCost, 2);
+        }
+    }
+
+    /**
+     * Calculate base price for a single commodity (legacy method for other uses)
      *
      * @param Commodity $commodity
      * @return float|null

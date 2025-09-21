@@ -16,6 +16,10 @@
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title mb-2">لیست سفارشات</h4>
+                    
+                    {{-- Pagination Controls --}}
+                    <x-pagination-controls :paginator="$orders" :options="$options" />
+                    
                     <table id="datatable-buttons-customer" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                             <tr>
@@ -30,9 +34,10 @@
                         </thead>
 
                         <tbody class="text-center">
+                            @php($i = ($orders->currentPage() - 1) * $orders->perPage() + 1)
                             @foreach ($orders as $order)
                                 <tr>
-                                    <td></td>
+                                    <td>{{ $i }}</td>
                                     <td>{{ $order->customer ? $order->customer->name : 'مشتری حذف شده' }}</td>
                                     <td>{{ $order->items_count }} کالا</td>
                                     <td>{{ $order->deadline }}</td>
@@ -41,11 +46,17 @@
                                     <td><a href="{{ route('order.show', $order) }}" class=""><i class="ti-more-alt font-24"></i></a>
                                     </td>
                                 </tr>
+                                @php($i++)
                             @endforeach
                         </tbody>
                     </table>
 
                 </div> <!-- end card body-->
+                
+                <!-- Pagination Navigation -->
+                <div class="card-footer">
+                    <x-pagination-navigation :paginator="$orders" />
+                </div>
             </div> <!-- end card -->
         </div><!-- end col-->
     </div>
@@ -83,12 +94,17 @@
 
             $('#datatable-buttons-customer').DataTable({
                 dom: 'Bfrtip',
-                buttons: [                    {
+                paging: false, // Disable DataTables pagination since we're using server-side pagination
+                searching: false, // Disable DataTables search since we're using server-side search
+                ordering: true, // Keep DataTables sorting for current page
+                order: [], // Start with no default ordering
+                info: false, // Hide DataTables info since we have custom pagination info
+                buttons: [{
                         extend: 'copy',
                         text: "کپی",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [4, 3, 2, 1, 0],
+                            columns: [6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
@@ -100,7 +116,7 @@
                         text: 'pdf',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [4, 3, 2, 1, 0],
+                            columns: [6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
@@ -108,7 +124,7 @@
                         },
                         customize: function(doc) {
                             doc.defaultStyle.font = "IRANSansWeb";
-                            doc.content[1].table.widths = ['20%','20%', '20%', '20%', '20%'];
+                            doc.content[1].table.widths = ['8%', '12%', '12%', '15%', '15%', '12%', '12%', '14%'];
                             doc.styles.tableBodyEven.alignment = 'center';
                             doc.styles.tableBodyOdd.alignment = 'center';
                         }
@@ -117,7 +133,7 @@
                         extend: 'excel',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [4, 3, 2, 1, 0],
+                            columns: [6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             }
@@ -127,7 +143,7 @@
                         extend: 'csv',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [4, 3, 2, 1, 0],
+                            columns: [6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             }
@@ -138,7 +154,7 @@
                         text: "پرینت",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4],
+                            columns: [0, 1, 2, 3, 4, 5, 6],
                             modifier: {
                                 page: 'current'
                             },
@@ -146,26 +162,15 @@
                         }
                     }
                 ],
-                columnDefs: [
-                    {
-                        searchable: false,
-                        orderable: false,
-                        targets: 0,
-                        render: function (data, type, row, meta) {
-                            return meta.row + 1;
+                columnDefs: [{
+                    targets: '_all',
+                    render: function(data, type, row) {
+                        if (type === 'rtlexport') {
+                            return data.split(' ').reverse().join(' ');
                         }
-                    },
-                    {
-                        targets: '_all',
-                        render: function(data, type, row) {
-                            if (type === 'rtlexport') {
-                                return data.split(' ').reverse().join(' ');
-                            }
-                            return data;
-                        }
+                        return data;
                     }
-                ],
-                order: [[1, 'asc']],
+                }],
                 "language": {
                     "paginate": {
                         "previous": "قبلی",

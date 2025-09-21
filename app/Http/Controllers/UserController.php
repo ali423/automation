@@ -11,9 +11,13 @@ use App\Models\Role;
 use App\Models\User;
 use App\Notifications\CommodityWarningNotification;
 use App\Services\UserService;
+use App\Traits\PaginationTrait;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+    use PaginationTrait;
+    
     protected $service;
     public function __construct(UserService $service)
     {
@@ -25,17 +29,40 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users=User::query()
-            ->with('activities')
-            ->orderBy('id', 'DESC')->get();
-        return view('dashboard.user.index',
-            [
-                'users'=>$users,
-            ]);
+        // Build query with eager loading to fix N+1 query problem
+        $query = User::with(['role', 'activities']);
+        
+        // Use advanced pagination with search and filter capabilities
+        $users = $this->getPaginatedResults($query, $request, 10, [
+            'searchable_fields' => ['name', 'lastname', 'user_name', 'role.name'],
+            'filterable_fields' => ['role_id'],
+            'sortable_fields' => ['id', 'name', 'lastname', 'user_name', 'created_at', 'updated_at'],
+            'default_sort_field' => 'created_at',
+            'default_sort_direction' => 'desc',
+            'max_per_page' => 50
+        ]);
+        
+        // Prepare options for the pagination components
+        $paginationOptions = [
+            'searchable_fields' => ['name', 'lastname', 'user_name', 'role.name'],
+            'filterable_fields' => ['role_id'],
+            'per_page_options' => [5, 10, 25, 50, 100],
+            'search_placeholder' => 'جستجو در نام، نام خانوادگی، نام کاربری یا نقش...'
+        ];
+        
+        // Get roles for filter dropdown
+        $roles = Role::all();
+        
+        return view('dashboard.user.index', [
+            'users' => $users,
+            'roles' => $roles,
+            'options' => $paginationOptions,
+        ]);
     }
 
     /**
@@ -122,10 +149,11 @@ class UserController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(User $user)
     {
-        //
+        // User deletion logic can be implemented here if needed
+        return response()->json(['message' => 'User deletion not implemented'], 501);
     }
 }

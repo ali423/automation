@@ -16,6 +16,10 @@
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title mb-2">لیست مشتری ها</h4>
+                    
+                    {{-- Pagination Controls --}}
+                    <x-pagination-controls :paginator="$customers" :options="$options" />
+                    
                     <table id="datatable-buttons-customer" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
                             <tr>
@@ -30,7 +34,7 @@
                         </thead>
 
                         <tbody class="text-center">
-                            @php($i = 1)
+                            @php($i = ($customers->currentPage() - 1) * $customers->perPage() + 1)
                             @foreach ($customers as $customer)
                                 <tr>
                                     <td>{{ $i }}</td>
@@ -53,6 +57,11 @@
                     </table>
 
                 </div> <!-- end card body-->
+                
+                <!-- Pagination Navigation -->
+                <div class="card-footer">
+                    <x-pagination-navigation :paginator="$customers" />
+                </div>
             </div> <!-- end card -->
         </div><!-- end col-->
     </div>
@@ -90,12 +99,17 @@
 
             $('#datatable-buttons-customer').DataTable({
                 dom: 'Bfrtip',
+                paging: false, // Disable DataTables pagination since we're using server-side pagination
+                searching: false, // Disable DataTables search since we're using server-side search
+                ordering: true, // Keep DataTables sorting for current page
+                order: [], // Start with no default ordering
+                info: false, // Hide DataTables info since we have custom pagination info
                 buttons: [{
                         extend: 'copy',
                         text: "کپی",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
+                            columns: [6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
@@ -107,7 +121,7 @@
                         text: 'pdf',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
+                            columns: [6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
@@ -115,7 +129,7 @@
                         },
                         customize: function(doc) {
                             doc.defaultStyle.font = "IRANSansWeb";
-                            doc.content[1].table.widths = ['20%','20%', '20%', '20%', '20%', '20%'];
+                            doc.content[1].table.widths = ['10%', '20%', '15%', '15%', '15%', '15%', '10%'];
                             doc.styles.tableBodyEven.alignment = 'center';
                             doc.styles.tableBodyOdd.alignment = 'center';
                         }
@@ -124,7 +138,7 @@
                         extend: 'excel',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
+                            columns: [6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             }
@@ -134,7 +148,7 @@
                         extend: 'csv',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [5, 4, 3, 2, 1, 0],
+                            columns: [6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             }
@@ -145,7 +159,7 @@
                         text: "پرینت",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5],
+                            columns: [0, 1, 2, 3, 4, 5, 6],
                             modifier: {
                                 page: 'current'
                             },
@@ -162,12 +176,12 @@
                         return data;
                     }
                 }],
-        "language": {
-            "paginate": {
-                "previous": "قبلی",
-                "next": "بعدی"
-            }
-        }
+                "language": {
+                    "paginate": {
+                        "previous": "قبلی",
+                        "next": "بعدی"
+                    }
+                }
             });
         });
     </script>

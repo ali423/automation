@@ -9,10 +9,14 @@ use App\Models\Customer;
 use App\Models\WithdrawalRequest;
 use App\Services\CommodityUnitService;
 use App\Services\Processes\WithdrawalRequestService;
+use App\Traits\PaginationTrait;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class WithdrawalRequestController extends Controller
 {
+    use PaginationTrait;
+    
     protected $service;
     protected $commodityUnitService;
 
@@ -27,17 +31,47 @@ class WithdrawalRequestController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $requests = WithdrawalRequest::query()
-            ->with(['commodities.unit', 'customer'])
-            ->orderBy('id', 'DESC')->get();
-        return view('dashboard.processes.withdrawal-request.index',
-            [
-                'requests' => $requests,
-            ]);
+        // Build query with eager loading to fix N+1 query problem
+        $query = WithdrawalRequest::with(['commodities.unit', 'customer']);
+        
+        // Use advanced pagination with search and filter capabilities
+        $requests = $this->getPaginatedResults($query, $request, 10, [
+            'searchable_fields' => ['number', 'customer.name', 'customer.comp_name'],
+            'filterable_fields' => ['status', 'customer_id'],
+            'sortable_fields' => ['id', 'number', 'status', 'created_at', 'updated_at'],
+            'default_sort_field' => 'created_at',
+            'default_sort_direction' => 'desc',
+            'max_per_page' => 50
+        ]);
+        
+        // Prepare options for the pagination components
+        $paginationOptions = [
+            'searchable_fields' => ['number', 'customer.name', 'customer.comp_name'],
+            'filterable_fields' => ['status', 'customer_id'],
+            'per_page_options' => [5, 10, 25, 50, 100],
+            'search_placeholder' => 'جستجو در شماره درخواست، نام مشتری یا نام شرکت...',
+            'status_options' => [
+                'awaiting_approval' => __('fields.withdrawal-request.status.awaiting_approval'),
+                'approved' => __('fields.withdrawal-request.status.approvaled'), // Maps to both 'approved' and 'approvaled'
+                'rejected' => __('fields.withdrawal-request.status.rejected'),
+                'expired' => __('fields.withdrawal-request.status.expired'),
+                'done' => __('fields.withdrawal-request.status.done'),
+            ]
+        ];
+        
+        // Get customers for filter dropdown
+        $customers = Customer::all();
+        
+        return view('dashboard.processes.withdrawal-request.index', [
+            'requests' => $requests,
+            'customers' => $customers,
+            'options' => $paginationOptions,
+        ]);
     }
 
     /**

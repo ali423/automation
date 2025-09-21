@@ -6,10 +6,13 @@ use App\Http\Requests\CustomerRequest;
 use App\Http\Requests\CustomerUpdateRequest;
 use App\Models\Customer;
 use App\Services\CustomerService;
+use App\Traits\PaginationTrait;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
+    use PaginationTrait;
+    
     protected $service;
 
     public function __construct(CustomerService $service)
@@ -21,17 +24,36 @@ class CustomerController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $customers=Customer::query()
-            ->with('activities')
-            ->orderBy('id', 'DESC')->get();
-        return view('dashboard.customer.index',
-            [
-                'customers'=>$customers,
-            ]);
+        // Build query with eager loading to fix N+1 query problem
+        $query = Customer::with(['activities']);
+        
+        // Use advanced pagination with search and filter capabilities
+        $customers = $this->getPaginatedResults($query, $request, 10, [
+            'searchable_fields' => ['name', 'mobile', 'comp_name', 'national_code', 'economic_code'],
+            'filterable_fields' => [],
+            'sortable_fields' => ['id', 'name', 'mobile', 'comp_name', 'created_at', 'updated_at'],
+            'default_sort_field' => 'created_at',
+            'default_sort_direction' => 'desc',
+            'max_per_page' => 50
+        ]);
+        
+        // Prepare options for the pagination components
+        $paginationOptions = [
+            'searchable_fields' => ['name', 'mobile', 'comp_name', 'national_code', 'economic_code'],
+            'filterable_fields' => [],
+            'per_page_options' => [5, 10, 25, 50, 100],
+            'search_placeholder' => 'جستجو در نام، موبایل، نام شرکت، کد ملی یا کد اقتصادی...'
+        ];
+        
+        return view('dashboard.customer.index', [
+            'customers' => $customers,
+            'options' => $paginationOptions,
+        ]);
     }
 
     /**
