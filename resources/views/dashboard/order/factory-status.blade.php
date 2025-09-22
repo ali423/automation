@@ -93,13 +93,8 @@
                     <!-- Orders Summary -->
                     @include('dashboard.order.partials.order-summary-stats', ['summaryStats' => $summaryStats])
                     
-                    <!-- Date fields and calculate button in a flex row -->
-                    <div id="factory-filter-group" class=" justify-content-start gap-2 mb-2" style="width: auto;">
-                        <input type="text" id="date_from" class="form-control usage" placeholder="از تاریخ" autocomplete="off" style="min-width: 110px;">
-                        <input type="text" id="date_to" class="form-control usage" placeholder="تا تاریخ" autocomplete="off" style="min-width: 110px;">
-                        <button id="calculate-factory" class="btn btn-success ml-2" type="button">محاسبه</button>
-                        <button id="clear-filters" class="btn btn-outline-secondary ml-2" type="button">پاک کردن فیلترها</button>
-                    </div>
+                    {{-- Pagination Controls (match index/chart pattern; no date range) --}}
+                    <x-pagination-controls :paginator="$pendingOrders" :options="$options" />
                     <div id="filter-status" class="text-info small mb-2" style="display: none;"></div>
                     <table id="datatable-buttons-factory" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
@@ -118,7 +113,7 @@
                         </thead>
                         <tbody class="text-center">
                             @if($pendingOrders->count() > 0)
-                                @php($i = 1)
+                                @php($i = ($pendingOrders->currentPage() - 1) * $pendingOrders->perPage() + 1)
                                 @foreach ($pendingOrders as $order)
                                     <tr data-order-id="{{ $order->id }}" 
                                         class="@if($order->can_deliver) table-success @else table-danger @endif">
@@ -151,6 +146,9 @@
                             @endif
                         </tbody>
                     </table>
+                </div>
+                <div class="card-footer">
+                    <x-pagination-navigation :paginator="$pendingOrders" />
                 </div>
             </div>
         </div>
@@ -192,6 +190,9 @@
 
             $('#datatable-buttons-factory').DataTable({
                 dom: 'Bfrtip',
+                paging: false,
+                searching: false,
+                info: false,
                 buttons: [                    {
                         extend: 'copy',
                         text: "کپی",
@@ -272,120 +273,14 @@
                 }
             });
 
-            // Move the date fields and calculate button next to the DataTable search box
-            var $factoryFilterGroup = $('#factory-filter-group').detach();
-            $('#datatable-buttons-factory_filter').addClass('d-flex align-items-center gap-2').append($factoryFilterGroup);
-            $('#datatable-buttons-factory_filter input[type="search"]').addClass('ml-2');
-
             $('#select-all-factory').prop('checked', true);
             $('.factory-checkbox').prop('checked', false);
 
-            // Initial chart data - use real data from controller
+            // Load full dataset from backend, but render based on current visible/selected rows
             var factoryData = @json($warehouseChartData['orders']);
-            
-            if (factoryData.length > 0) {
-                var chartData = {
-                    names: factoryData.map(function(item) { return item.productName; }),
-                    inventory: factoryData.map(function(item) { return item.inventory; }),
-                    orders: factoryData.map(function(item) { return item.orderedAmount; }),
-                    units: factoryData.map(function(item) { return item.unitSymbol || item.unit; })
-                };
-                
-                renderFactoryCharts(chartData);
-            } else {
-                $('#factory-charts').html('<div class="alert alert-info text-center">هیچ سفارش معلقی برای نمایش نمودار وجود ندارد.</div>');
-            }
+            updateCharts();
 
-            // Function to filter table rows based on date range
-            function filterTableByDate() {
-                // Convert Persian digits to English digits
-                function faToEn(str) {
-                    if (!str) return '';
-                    return str.replace(/[۰-۹]/g, function (d) {
-                        return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d);
-                    });
-                }
-                // Convert date string to number for comparison (YYYY/MM/DD -> YYYYMMDD)
-                function toNum(str) {
-                    if (!str) return null;
-                    str = faToEn(str);
-                    var parts = str.split('/');
-                    if (parts.length !== 3) return null;
-                    var y = parts[0];
-                    var m = parts[1].length === 1 ? '0' + parts[1] : parts[1];
-                    var d = parts[2].length === 1 ? '0' + parts[2] : parts[2];
-                    return parseInt(y + m + d);
-                }
-                
-                var dateFrom = $('#date_from').val();
-                var dateTo = $('#date_to').val();
-                
-                var fromNum = toNum(dateFrom);
-                var toNumVal = toNum(dateTo);
-                
-                // If both date fields are empty, show all rows
-                var filterByDate = !!(fromNum || toNumVal);
-                
-                // Update filter status indicator
-                if (filterByDate) {
-                    var filterText = '';
-                    if (dateFrom && dateTo) {
-                        filterText = 'فیلتر: از ' + dateFrom + ' تا ' + dateTo;
-                    } else if (dateFrom) {
-                        filterText = 'فیلتر: از ' + dateFrom;
-                    } else if (dateTo) {
-                        filterText = 'فیلتر: تا ' + dateTo;
-                    }
-                    $('#filter-status').text(filterText).show();
-                } else {
-                    $('#filter-status').hide();
-                }
-                
-                $('#datatable-buttons-factory tbody tr').each(function() {
-                    var $row = $(this);
-                    var dateStr = $row.find('td').eq(4).text().trim(); // Deadline column
-                    var dateNum = toNum(dateStr);
-                    
-                    if (!filterByDate) {
-                        $row.show();
-                        return;
-                    }
-                    
-                    // Check if date is within range
-                    var inRange = true;
-                    if (fromNum && dateNum < fromNum) inRange = false;
-                    if (toNumVal && dateNum > toNumVal) inRange = false;
-                    
-                    if (inRange) {
-                        $row.show();
-                    } else {
-                        $row.hide();
-                    }
-                });
-                
-                // Update select all checkbox state
-                var visibleRows = $('#datatable-buttons-factory tbody tr:visible');
-                var checkedVisibleRows = visibleRows.find('.factory-checkbox:checked');
-                $('#select-all-factory').prop('checked', visibleRows.length > 0 && checkedVisibleRows.length === visibleRows.length);
-            }
-
-            // Clear filters button click handler
-            $('#clear-filters').on('click', function() {
-                $('#date_from').val('');
-                $('#date_to').val('');
-                filterTableByDate();
-                updateCharts();
-            });
-
-            // Update charts when date filters change (with debounce to prevent too many calls)
-            var dateUpdateTimeout;
-            $('#date_from, #date_to').on('change', function() {
-                clearTimeout(dateUpdateTimeout);
-                dateUpdateTimeout = setTimeout(function() {
-                    filterTableByDate();
-                    updateCharts();
-                }, 500); // 500ms delay
-            });
+            // No client-side date filtering in factory view; server-side filters via shared controls
 
             // Function to update charts based on current filters
             function updateCharts() {

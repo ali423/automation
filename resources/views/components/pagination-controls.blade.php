@@ -85,7 +85,7 @@
                     @endphp
                     <span class="badge bg-info text-white ms-1">وضعیت: {{ $statusLabel }}</span>
                 @endif
-                @if((isset($options['show_date_range']) && $options['show_date_range']) && request()->routeIs('order.chart') && (isset($currentFilters['date_from']) || isset($currentFilters['date_to'])))
+                @if((isset($options['show_date_range']) && $options['show_date_range']) && (request()->routeIs('order.chart') || request()->routeIs('order.factory-status')) && (isset($currentFilters['date_from']) || isset($currentFilters['date_to'])))
                     <span class="badge bg-warning text-dark ms-1">
                         تاریخ: {{ $currentFilters['date_from'] ?? '...' }} تا {{ $currentFilters['date_to'] ?? '...' }}
                     </span>
@@ -170,7 +170,7 @@
             <div class="d-flex gap-2 flex-wrap align-items-center">
             
             {{-- Date Range (placed on the same row as other filters; only for chart view) --}}
-            @if(isset($options['show_date_range']) && $options['show_date_range'] && request()->routeIs('order.chart'))
+            @if(isset($options['show_date_range']) && $options['show_date_range'] && (request()->routeIs('order.chart') || request()->routeIs('order.factory-status')))
             <input type="text" id="date_from" class="form-control form-control-sm usage" placeholder="از تاریخ" autocomplete="off" style="width: auto; min-width: 140px;" value="{{ request('date_from') }}">
             <input type="text" id="date_to" class="form-control form-control-sm usage" placeholder="تا تاریخ" autocomplete="off" style="width: auto; min-width: 140px;" value="{{ request('date_to') }}">
             @endif
