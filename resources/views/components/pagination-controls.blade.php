@@ -10,6 +10,13 @@
             $currentFilters = request('filters');
         }
     }
+    // Include date range in current filters display if present
+    if (request('date_from')) {
+        $currentFilters['date_from'] = request('date_from');
+    }
+    if (request('date_to')) {
+        $currentFilters['date_to'] = request('date_to');
+    }
 @endphp
 
 {{-- Compact search and filter controls --}}
@@ -77,6 +84,11 @@
                         }
                     @endphp
                     <span class="badge bg-info text-white ms-1">وضعیت: {{ $statusLabel }}</span>
+                @endif
+                @if((isset($options['show_date_range']) && $options['show_date_range']) && request()->routeIs('order.chart') && (isset($currentFilters['date_from']) || isset($currentFilters['date_to'])))
+                    <span class="badge bg-warning text-dark ms-1">
+                        تاریخ: {{ $currentFilters['date_from'] ?? '...' }} تا {{ $currentFilters['date_to'] ?? '...' }}
+                    </span>
                 @endif
                 @if(isset($currentFilters['seller_id']))
                     @php
@@ -152,10 +164,16 @@
     </div>
     
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-12">
             {{-- Filter Controls --}}
             @if(isset($options['filterable_fields']) && !empty($options['filterable_fields']))
             <div class="d-flex gap-2 flex-wrap align-items-center">
+            
+            {{-- Date Range (placed on the same row as other filters; only for chart view) --}}
+            @if(isset($options['show_date_range']) && $options['show_date_range'] && request()->routeIs('order.chart'))
+            <input type="text" id="date_from" class="form-control form-control-sm usage" placeholder="از تاریخ" autocomplete="off" style="width: auto; min-width: 140px;" value="{{ request('date_from') }}">
+            <input type="text" id="date_to" class="form-control form-control-sm usage" placeholder="تا تاریخ" autocomplete="off" style="width: auto; min-width: 140px;" value="{{ request('date_to') }}">
+            @endif
             
             @foreach($options['filterable_fields'] as $field)
                 @if($field === 'type')
@@ -386,6 +404,13 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 url.searchParams.delete('filters');
             }
+            // Attach date range from chart view inputs if present
+            const dateFromInput = document.getElementById('date_from');
+            const dateToInput = document.getElementById('date_to');
+            const df = dateFromInput ? dateFromInput.value : '';
+            const dt = dateToInput ? dateToInput.value : '';
+            if (df) { url.searchParams.set('date_from', df); } else { url.searchParams.delete('date_from'); }
+            if (dt) { url.searchParams.set('date_to', dt); } else { url.searchParams.delete('date_to'); }
             
             url.searchParams.delete('page'); // Reset to first page
             window.location.href = url.toString();
@@ -397,6 +422,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const url = new URL(window.location);
             url.searchParams.delete('filters');
             url.searchParams.delete('search');
+            url.searchParams.delete('date_from');
+            url.searchParams.delete('date_to');
             url.searchParams.delete('page');
             window.location.href = url.toString();
         });

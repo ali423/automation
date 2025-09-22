@@ -61,13 +61,9 @@
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title mb-2">لیست سفارشات</h4>
-                    <!-- Date fields and calculate button in a flex row -->
-                    <div id="order-filter-group" class=" justify-content-start gap-2 mb-2" style="width: auto;">
-                        <input type="text" id="date_from" class="form-control usage" placeholder="از تاریخ" autocomplete="off" style="min-width: 110px;">
-                        <input type="text" id="date_to" class="form-control usage" placeholder="تا تاریخ" autocomplete="off" style="min-width: 110px;">
-                        <button id="calculate-orders" class="btn btn-success ml-2" type="button">محاسبه</button>
-                        <button id="clear-filters" class="btn btn-outline-secondary ml-2" type="button">پاک کردن فیلترها</button>
-                    </div>
+                    {{-- Pagination Controls (match index view) --}}
+                    <x-pagination-controls :paginator="$orders" :options="$options" />
+                    <!-- Date range inputs moved into pagination-controls component -->
                     <div id="filter-status" class="text-info small mb-2" style="display: none;"></div>
                     <table id="datatable-buttons-customer" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
@@ -86,7 +82,7 @@
                             </tr>
                         </thead>
                         <tbody class="text-center">
-                            @php($i = 1)
+                            @php($i = ($orders->currentPage() - 1) * $orders->perPage() + 1)
                             @foreach ($orders as $order)
                                 <tr data-order-id="{{ $order->id }}">
                                     <td><input type="checkbox" class="order-checkbox"></td>
@@ -102,6 +98,9 @@
                             @endforeach
                         </tbody>
                     </table>
+                    <div class="card-footer">
+                        <x-pagination-navigation :paginator="$orders" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -144,6 +143,9 @@
 
             $('#datatable-buttons-customer').DataTable({
                 dom: 'Bfrtip',
+                paging: false,
+                searching: false,
+                info: false,
                 buttons: [                    {
                         extend: 'copy',
                         text: "کپی",
@@ -224,10 +226,7 @@
                 }
             });
 
-            // Move the date fields and calculate button next to the DataTable search box
-            var $orderFilterGroup = $('#order-filter-group').detach();
-            $('#datatable-buttons-customer_filter').addClass('d-flex align-items-center gap-2').append($orderFilterGroup);
-            $('#datatable-buttons-customer_filter input[type="search"]').addClass('ml-2');
+            // Keep filter group static to preserve alignment
 
             $('#select-all-orders').prop('checked', true);
             $('.order-checkbox').prop('checked', false);
@@ -367,18 +366,24 @@
                 });
             }
 
-            // Calculate button click handler
+            // Calculate button click handler: persist dates and reload page (server-side filtering)
             $('#calculate-orders').on('click', function() {
-                filterTableByDate();
-                updateChart();
+                const url = new URL(window.location);
+                const df = $('#date_from').val();
+                const dt = $('#date_to').val();
+                if (df) { url.searchParams.set('date_from', df); } else { url.searchParams.delete('date_from'); }
+                if (dt) { url.searchParams.set('date_to', dt); } else { url.searchParams.delete('date_to'); }
+                url.searchParams.delete('page');
+                window.location.href = url.toString();
             });
             
-            // Clear filters button click handler
+            // Clear filters button click handler: remove dates and reload
             $('#clear-filters').on('click', function() {
-                $('#date_from').val('');
-                $('#date_to').val('');
-                filterTableByDate();
-                updateChart();
+                const url = new URL(window.location);
+                url.searchParams.delete('date_from');
+                url.searchParams.delete('date_to');
+                url.searchParams.delete('page');
+                window.location.href = url.toString();
             });
 
             // Select all functionality for order checkboxes
@@ -398,87 +403,15 @@
                 updateChart();
             });
 
-            // Function to filter table rows based on date range
-            function filterTableByDate() {
-                // Convert Persian digits to English digits
-                function faToEn(str) {
-                    if (!str) return '';
-                    return str.replace(/[۰-۹]/g, function (d) {
-                        return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d);
-                    });
-                }
-                // Convert date string to number for comparison (YYYY/MM/DD -> YYYYMMDD)
-                function toNum(str) {
-                    if (!str) return null;
-                    str = faToEn(str);
-                    var parts = str.split('/');
-                    if (parts.length !== 3) return null;
-                    var y = parts[0];
-                    var m = parts[1].length === 1 ? '0' + parts[1] : parts[1];
-                    var d = parts[2].length === 1 ? '0' + parts[2] : parts[2];
-                    return parseInt(y + m + d);
-                }
-                
-                var dateFrom = $('#date_from').val();
-                var dateTo = $('#date_to').val();
-                
-                var fromNum = toNum(dateFrom);
-                var toNumVal = toNum(dateTo);
-                
-                // If both date fields are empty, show all rows
-                var filterByDate = !!(fromNum || toNumVal);
-                
-                // Update filter status indicator
-                if (filterByDate) {
-                    var filterText = '';
-                    if (dateFrom && dateTo) {
-                        filterText = 'فیلتر: از ' + dateFrom + ' تا ' + dateTo;
-                    } else if (dateFrom) {
-                        filterText = 'فیلتر: از ' + dateFrom;
-                    } else if (dateTo) {
-                        filterText = 'فیلتر: تا ' + dateTo;
-                    }
-                    $('#filter-status').text(filterText).show();
-                } else {
-                    $('#filter-status').hide();
-                }
-                
-                $('#datatable-buttons-customer tbody tr').each(function() {
-                    var $row = $(this);
-                    var dateStr = $row.find('td').eq(4).text().trim(); // Deadline column
-                    var dateNum = toNum(dateStr);
-                    
-                    if (!filterByDate) {
-                        $row.show();
-                        return;
-                    }
-                    
-                    // Check if date is within range
-                    var inRange = true;
-                    if (fromNum && dateNum < fromNum) inRange = false;
-                    if (toNumVal && dateNum > toNumVal) inRange = false;
-                    
-                    if (inRange) {
-                        $row.show();
-                    } else {
-                        $row.hide();
-                    }
-                });
-                
-                // Update select all checkbox state
-                var visibleRows = $('#datatable-buttons-customer tbody tr:visible');
-                var checkedVisibleRows = visibleRows.find('.order-checkbox:checked');
-                $('#select-all-orders').prop('checked', visibleRows.length > 0 && checkedVisibleRows.length === visibleRows.length);
-            }
+            // Remove client-side row filtering; server returns filtered rows now
             
-            // Update chart when date filters change (with debounce to prevent too many calls)
+            // Update chart when date filters change (with debounce) without client-side row filtering
             var dateUpdateTimeout;
             $('#date_from, #date_to').on('change', function() {
                 clearTimeout(dateUpdateTimeout);
                 dateUpdateTimeout = setTimeout(function() {
-                    filterTableByDate();
                     updateChart();
-                }, 500); // 500ms delay
+                }, 500);
             });
         });
     </script>
