@@ -75,7 +75,7 @@
                     text: "کپی",
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [6, 5, 4, 3, 2, 1, 0],
+                        columns: [7, 6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         },
@@ -87,7 +87,7 @@
                     text: 'pdf',
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [6, 5, 4, 3, 2, 1, 0],
+                        columns: [7, 6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         },
@@ -104,7 +104,7 @@
                                             extend: 'excel',
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [6, 5, 4, 3, 2, 1, 0],
+                        columns: [7, 6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         }
@@ -114,7 +114,7 @@
                                             extend: 'csv',
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [6, 5, 4, 3, 2, 1, 0],
+                        columns: [7, 6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         }
@@ -125,7 +125,7 @@
                     text: "پرینت",
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6],
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7],
                         modifier: {
                             page: 'current'
                         },
