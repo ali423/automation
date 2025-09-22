@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
 use App\Services\CommodityUnitService;
 use App\Services\Processes\ImportingRequestService;
 use App\Traits\PaginationTrait;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ImportingRequestController extends Controller

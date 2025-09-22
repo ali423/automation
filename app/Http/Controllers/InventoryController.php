@@ -39,7 +39,7 @@ class InventoryController extends Controller
         // Use advanced pagination with search and filter capabilities
         $inventories = $this->getPaginatedResults($query, $request, 10, [
             'searchable_fields' => ['commodity.title', 'commodity.number', 'commodity.product_identifier', 'unit.name'],
-            'filterable_fields' => ['commodity_id', 'unit_id'],
+            'filterable_fields' => ['unit_id'],
             'sortable_fields' => ['id', 'created_at', 'updated_at', 'amount', 'purchase_price'],
             'default_sort_field' => 'created_at',
             'default_sort_direction' => 'desc',
@@ -52,7 +52,7 @@ class InventoryController extends Controller
         // Prepare options for the pagination components
         $paginationOptions = [
             'searchable_fields' => ['commodity.title', 'commodity.number', 'commodity.product_identifier', 'unit.name'],
-            'filterable_fields' => ['commodity_id', 'unit_id'],
+            'filterable_fields' => ['unit_id'],
             'per_page_options' => [5, 10, 25, 50, 100],
             'search_placeholder' => 'جستجو در کالا، شماره، شناسه کالا یا واحد...'
         ];

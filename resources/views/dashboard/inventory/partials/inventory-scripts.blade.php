@@ -40,7 +40,7 @@
                 text: "کپی",
                 className: 'btn btn-outline-primary',
                 exportOptions: {
-                    columns: [5, 4, 3, 2, 1, 0],
+                    columns: [6, 5, 4, 3, 2, 1, 0],
                     modifier: {
                         page: 'current'
                     },
@@ -52,7 +52,7 @@
                     text: 'pdf',
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [5, 4, 3, 2, 1, 0],
+                        columns: [6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         },
@@ -60,7 +60,7 @@
                     },
                     customize: function (doc) {
                         doc.defaultStyle.font = "IRANSansWeb";
-                        doc.content[1].table.widths = ['16.66%', '16.66%', '16.66%', '16.66%', '16.66%', '16.66%'];
+                        doc.content[1].table.widths = ['14.28%', '14.28%', '14.28%', '14.28%', '14.28%', '14.28%', '14.28%'];
                         doc.styles.tableBodyEven.alignment = 'center';
                         doc.styles.tableBodyOdd.alignment = 'center';
                     }
@@ -69,7 +69,7 @@
                     extend: 'excel',
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [5, 4, 3, 2, 1, 0],
+                        columns: [6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         }
@@ -79,7 +79,7 @@
                     extend: 'csv',
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [5, 4, 3, 2, 1, 0],
+                        columns: [6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         }
@@ -90,7 +90,7 @@
                     text: "پرینت",
                     className: 'btn btn-outline-primary',
                     exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5],
+                        columns: [0, 1, 2, 3, 4, 5, 6],
                         modifier: {
                             page: 'current'
                         },

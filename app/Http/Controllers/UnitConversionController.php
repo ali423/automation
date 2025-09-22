@@ -39,15 +39,12 @@ class UnitConversionController extends Controller
         // Build query with eager loading to fix N+1 query problem
         $query = $this->service->queryWithRelations();
         
-        // Apply commodity filter if provided
-        if ($commodityId) {
-            $query->where('commodity_id', $commodityId);
-        }
+        // Commodity filter removed; search by commodity title is supported via searchable_fields
         
         // Use advanced pagination with search and filter capabilities
         $conversions = $this->getPaginatedResults($query, $request, 10, [
             'searchable_fields' => ['commodity.title', 'fromUnit.name', 'toUnit.name'],
-            'filterable_fields' => ['commodity_id', 'from_unit_id', 'to_unit_id'],
+            'filterable_fields' => ['from_unit_id', 'to_unit_id'],
             'sortable_fields' => ['id', 'created_at', 'updated_at', 'conversion_rate'],
             'default_sort_field' => 'created_at',
             'default_sort_direction' => 'desc',
@@ -57,7 +54,7 @@ class UnitConversionController extends Controller
         // Prepare options for the pagination components
         $paginationOptions = [
             'searchable_fields' => ['commodity.title', 'fromUnit.name', 'toUnit.name'],
-            'filterable_fields' => ['commodity_id', 'from_unit_id', 'to_unit_id'],
+            'filterable_fields' => ['from_unit_id', 'to_unit_id'],
             'per_page_options' => [5, 10, 25, 50, 100],
             'search_placeholder' => 'جستجو در کالا، واحد مبدا یا واحد مقصد...'
         ];

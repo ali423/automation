@@ -20,12 +20,6 @@
                     <x-pagination-controls :paginator="$conversions" :options="$options" />
                     
                     @if($conversions->count() > 0)
-                        <div class="mb-2">
-                            <small class="text-muted">
-                                <i class="ti-info-circle"></i> 
-                                مرتب‌سازی فقط برای رکوردهای صفحه فعلی اعمال می‌شود
-                            </small>
-                        </div>
                         @include('dashboard.unit-conversion.partials.conversion-table')
                         
                         {{-- Pagination Links --}}

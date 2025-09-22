@@ -3,6 +3,7 @@
     <tr>
         <th>ردیف</th>
         <th>کالا</th>
+        <th>شناسه کالا</th>
         <th>واحد</th>
         <th>مقدار موجودی</th>
         <th>قیمت خرید</th>
@@ -17,6 +18,7 @@
             <tr>
                 <td>{{ $inventories->firstItem() + $loop->index }}</td>
                 <td>{{ $inventory->commodity->title ?? 'نامشخص' }}</td>
+                <td>{{ $inventory->commodity->product_identifier ?? '-' }}</td>
                 <td>{{ $inventory->unit->name ?? 'نامشخص' }}</td>
                 <td>{{ number_format($inventory->amount, 2) }}</td>
                 <td>{{ number_format($inventory->purchase_price ?? 0) }} تومان</td>
@@ -35,7 +37,7 @@
         @endforeach
     @else
         <tr>
-            <td colspan="7" class="text-center">
+            <td colspan="8" class="text-center">
                 <div class="alert alert-info">
                     <i class="ti-info-alt"></i>
                     @if(request('search') || request('filters'))
