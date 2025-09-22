@@ -15,6 +15,8 @@ use App\Traits\PaginationTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Inventory;
+use Morilog\Jalali\Jalalian;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class OrderController extends Controller
 {
@@ -71,7 +73,9 @@ class OrderController extends Controller
             'status_options' => [
                 'pending' => __('fields.order.status.pending'),
                 'done' => __('fields.order.status.done'),
-            ]
+            ],
+            // show date range controls only on chart view
+            'show_date_range' => true,
         ];
         
         // Get customers for filter dropdown
@@ -89,22 +93,83 @@ class OrderController extends Controller
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function chart()
+    public function chart(Request $request)
     {
-        $orders = Order::query()->with(['customer', 'orderItems.commodity', 'orderItems.unit'])
+        $ordersQuery = Order::query()->with(['customer', 'orderItems.commodity', 'orderItems.unit'])
             ->whereHas('customer')
             ->whereHas('orderItems.commodity')
             ->orderByRaw("FIELD(status, 'pending', 'done')")
-            ->orderBy('deadline', 'ASC')->get();
-            
-        // Calculate total amounts for each order
-        $ordersWithTotals = $orders->map(function ($order) {
+            ->orderBy('deadline', 'ASC');
+
+        // Apply server-side date filtering (persisted via query string)
+        $dateFrom = $request->query('date_from');
+        $dateTo = $request->query('date_to');
+        $normalizedDateFrom = $dateFrom ? $this->normalizePersianDate($dateFrom) : null;
+        $normalizedDateTo = $dateTo ? $this->normalizePersianDate($dateTo) : null;
+
+        // Because deadline is stored as string, compare via STR_TO_DATE with multiple possible formats
+        $deadlineExpr = "COALESCE(STR_TO_DATE(deadline, '%Y-%m-%d'), STR_TO_DATE(deadline, '%Y/%m/%d'), STR_TO_DATE(deadline, '%Y-%m-%d %H:%i:%s'), STR_TO_DATE(deadline, '%Y/%m/%d %H:%i:%s'))";
+        if ($normalizedDateFrom) {
+            $ordersQuery->whereRaw("$deadlineExpr >= ?", [$normalizedDateFrom]);
+        }
+        if ($normalizedDateTo) {
+            $ordersQuery->whereRaw("$deadlineExpr <= ?", [$normalizedDateTo]);
+        }
+
+        // Apply server-side search (similar to index view)
+        $search = $request->query('search');
+        if (!empty($search)) {
+            $ordersQuery->where(function($q) use ($search) {
+                $q->whereHas('customer', function($cq) use ($search) {
+                    $cq->where('name', 'like', "%{$search}%")
+                       ->orWhere('comp_name', 'like', "%{$search}%");
+                })
+                ->orWhere('deadline', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply server-side simple filters (status, customer_id, etc.)
+        $filtersParam = $request->query('filters');
+        $filters = [];
+        if (is_string($filtersParam)) {
+            $decoded = json_decode($filtersParam, true);
+            if (is_array($decoded)) { $filters = $decoded; }
+        } elseif (is_array($filtersParam)) {
+            $filters = $filtersParam;
+        }
+
+        if (!empty($filters)) {
+            if (!empty($filters['status'])) {
+                $ordersQuery->where('status', $filters['status']);
+            }
+            if (!empty($filters['customer_id'])) {
+                $ordersQuery->where('customer_id', (int)$filters['customer_id']);
+            }
+        }
+
+        $perPage = (int) $request->query('per_page', 10);
+        $orders = $ordersQuery->paginate($perPage)->appends($request->query());
+
+        // Calculate total amounts for each order on the current page
+        foreach ($orders as $order) {
             $order->total_amount = $order->orderItems->sum('commodity_amount');
-            return $order;
-        });
-            
+        }
+
+        // Prepare options for the pagination components (aligned with index view)
+        $paginationOptions = [
+            'searchable_fields' => ['customer.name', 'customer.comp_name', 'deadline'],
+            'filterable_fields' => ['status', 'customer_id'],
+            'per_page_options' => [5, 10, 25, 50, 100],
+            'search_placeholder' => 'جستجو در نام مشتری، نام شرکت یا تاریخ مهلت...',
+            'status_options' => [
+                'pending' => __('fields.order.status.pending'),
+                'done' => __('fields.order.status.done'),
+            ]
+        ];
+
         return view('dashboard.order.chart', [
-            'orders' => $ordersWithTotals,
+            'orders' => $orders,
+            'options' => $paginationOptions,
         ]);
     }
 
@@ -353,11 +418,11 @@ class OrderController extends Controller
         
         // Apply date filtering if provided
         if ($normalizedDateFrom) {
-            $ordersQuery->where('deadline', '>=', $normalizedDateFrom);
+            $ordersQuery->whereDate('deadline', '>=', $normalizedDateFrom);
         }
         
         if ($normalizedDateTo) {
-            $ordersQuery->where('deadline', '<=', $normalizedDateTo);
+            $ordersQuery->whereDate('deadline', '<=', $normalizedDateTo);
         }
         
         // Apply order ID filtering if provided
@@ -466,23 +531,20 @@ class OrderController extends Controller
             $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
             $dateWithEnglishDigits = str_replace($persianDigits, $englishDigits, $persianDate);
             
-            // Parse the date parts
-            $parts = explode('/', $dateWithEnglishDigits);
-            if (count($parts) !== 3) {
-                return null;
+            // Convert Jalali (YYYY/MM/DD) to Gregorian (Y-m-d) for DB comparisons
+            try {
+                $jalali = Jalalian::fromFormat('Y/m/d', $dateWithEnglishDigits);
+                return $jalali->toCarbon()->format('Y-m-d');
+            } catch (\Throwable $t) {
+                // Fall back to parsing as Gregorian in common formats
+                $tryFormats = ['Y/m/d', 'Y-m-d', 'Y/m/d H:i:s', 'Y-m-d H:i:s'];
+                foreach ($tryFormats as $fmt) {
+                    $dt = \DateTime::createFromFormat($fmt, $dateWithEnglishDigits);
+                    if ($dt !== false) {
+                        return $dt->format('Y-m-d');
+                    }
+                }
             }
-            
-            $year = (int)$parts[0];
-            $month = (int)$parts[1];
-            $day = (int)$parts[2];
-            
-            // Validate Persian date
-            if ($year < 1300 || $year > 1500 || $month < 1 || $month > 12 || $day < 1 || $day > 31) {
-                return null;
-            }
-            
-            // Return normalized date in YYYY/M/D format (matching database format)
-            return sprintf('%04d/%d/%d', $year, $month, $day);
             
         } catch (\Exception $e) {
             return null;
@@ -556,58 +618,149 @@ class OrderController extends Controller
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
-    public function factoryStatus()
+    public function factoryStatus(Request $request)
     {
-        // Get real pending orders with customer and commodity information
-        $pendingOrders = Order::where('status', 'pending')
-            ->with(['customer', 'orderItems.commodity', 'orderItems.unit'])
-            ->get()
-            ->map(function ($order) {
-                // Get total order amount and value
-                $totalAmount = $order->orderItems->sum('commodity_amount');
-                $totalValue = $order->orderItems->sum(function ($item) {
-                    return $item->price ? ($item->price * $item->commodity_amount) : 0;
-                });
-                
-                // Get inventory for this commodity
-                $inventory = 0;
-                if ($order->orderItems->isNotEmpty()) {
-                    $firstItem = $order->orderItems->first();
-                    $inventory = Inventory::where('commodity_id', $firstItem->commodity_id)
-                        ->where('unit_id', $firstItem->unit_id)
-                        ->where('amount', '>', 0)
-                        ->sum('amount');
-                }
-                
-                return (object)[
-                    'id' => $order->id,
-                    'customer' => $order->customer,
-                    'orderItems' => $order->orderItems,
-                    'deadline' => $order->deadline,
-                    'total_amount' => $totalAmount,
-                    'total_value' => $totalValue,
-                    'inventory_available' => $inventory,
-                    'can_deliver' => $inventory >= $totalAmount
-                ];
+        // Build base query with eager loads
+        $ordersQuery = Order::where('status', 'pending')
+            ->with(['customer', 'orderItems.commodity', 'orderItems.unit']);
+
+        // Apply server-side search (customer name/company, deadline)
+        $search = $request->query('search');
+        if (!empty($search)) {
+            $ordersQuery->where(function($q) use ($search) {
+                $q->whereHas('customer', function($cq) use ($search) {
+                    $cq->where('name', 'like', "%{$search}%")
+                       ->orWhere('comp_name', 'like', "%{$search}%");
+                })
+                ->orWhere('deadline', 'like', "%{$search}%");
             });
+        }
+
+        // Apply simple filters (e.g., customer_id) from shared controls
+        $filtersParam = $request->query('filters');
+        $filters = [];
+        if (is_string($filtersParam)) {
+            $decoded = json_decode($filtersParam, true);
+            if (is_array($decoded)) { $filters = $decoded; }
+        } elseif (is_array($filtersParam)) {
+            $filters = $filtersParam;
+        }
+
+        if (!empty($filters)) {
+            if (!empty($filters['customer_id'])) {
+                $ordersQuery->where('customer_id', (int)$filters['customer_id']);
+            }
+            // Note: deliverability status ('deliverable'/'undeliverable') is applied after computing can_deliver
+        }
+
+        // Apply date filtering (chart-like) based on query date_from/date_to
+        $dateFrom = $request->query('date_from');
+        $dateTo = $request->query('date_to');
+        $normalizedDateFrom = $dateFrom ? $this->normalizePersianDate($dateFrom) : null;
+        $normalizedDateTo = $dateTo ? $this->normalizePersianDate($dateTo) : null;
+        if ($normalizedDateFrom || $normalizedDateTo) {
+            $deadlineExpr = "COALESCE(STR_TO_DATE(deadline, '%Y-%m-%d'), STR_TO_DATE(deadline, '%Y/%m/%d'), STR_TO_DATE(deadline, '%Y-%m-%d %H:%i:%s'), STR_TO_DATE(deadline, '%Y/%m/%d %H:%i:%s'))";
+            if ($normalizedDateFrom) {
+                $ordersQuery->whereRaw("$deadlineExpr >= ?", [$normalizedDateFrom]);
+            }
+            if ($normalizedDateTo) {
+                $ordersQuery->whereRaw("$deadlineExpr <= ?", [$normalizedDateTo]);
+            }
+        }
+
+        // Fetch and compute derived fields
+        $ordersCollection = $ordersQuery->orderBy('deadline', 'ASC')->get();
+        foreach ($ordersCollection as $order) {
+            $totalAmount = $order->orderItems->sum('commodity_amount');
+            $totalValue = $order->orderItems->sum(function ($item) {
+                return $item->price ? ($item->price * $item->commodity_amount) : 0;
+            });
+            $inventory = 0;
+            if ($order->orderItems->isNotEmpty()) {
+                $firstItem = $order->orderItems->first();
+                $inventory = Inventory::where('commodity_id', $firstItem->commodity_id)
+                    ->where('unit_id', $firstItem->unit_id)
+                    ->where('amount', '>', 0)
+                    ->sum('amount');
+            }
+            $order->total_amount = $totalAmount;
+            $order->total_value = $totalValue;
+            $order->inventory_available = $inventory;
+            $order->can_deliver = $inventory >= $totalAmount;
+        }
+
+        // Apply deliverability status filter (قابل تحویل / غیر قابل تحویل)
+        if (!empty($filters['status'])) {
+            if ($filters['status'] === 'deliverable') {
+                $ordersCollection = $ordersCollection->where('can_deliver', true)->values();
+            } elseif ($filters['status'] === 'undeliverable') {
+                $ordersCollection = $ordersCollection->where('can_deliver', false)->values();
+            }
+        }
+
+        // Manual pagination after computing deliverability
+        $perPage = (int) $request->query('per_page', 10);
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $total = $ordersCollection->count();
+        $results = $ordersCollection->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $pendingOrders = new LengthAwarePaginator($results, $total, $perPage, $currentPage, [
+            'path' => $request->url(),
+            'query' => $request->query(),
+        ]);
 
         // Get real warehouse chart data
         $warehouseChartData = $this->getWarehouseChartData();
 
         // Calculate summary statistics
+        // Summary cards should IGNORE filters and pagination – compute over ALL pending orders
+        $allOrders = Order::where('status', 'pending')
+            ->with(['orderItems.commodity', 'orderItems.unit', 'customer'])
+            ->get();
+        foreach ($allOrders as $order) {
+            $totalAmount = $order->orderItems->sum('commodity_amount');
+            $totalValue = $order->orderItems->sum(function ($item) {
+                return $item->price ? ($item->price * $item->commodity_amount) : 0;
+            });
+            $inventory = 0;
+            if ($order->orderItems->isNotEmpty()) {
+                $firstItem = $order->orderItems->first();
+                $inventory = Inventory::where('commodity_id', $firstItem->commodity_id)
+                    ->where('unit_id', $firstItem->unit_id)
+                    ->where('amount', '>', 0)
+                    ->sum('amount');
+            }
+            $order->total_amount = $totalAmount;
+            $order->total_value = $totalValue;
+            $order->inventory_available = $inventory;
+            $order->can_deliver = $inventory >= $totalAmount;
+        }
         $summaryStats = [
-            'totalOrders' => $pendingOrders->count(),
-            'totalValue' => $pendingOrders->sum('total_value'),
-            'canDeliverCount' => $pendingOrders->where('can_deliver', true)->count(),
-            'cannotDeliverCount' => $pendingOrders->where('can_deliver', false)->count(),
-            'totalAmount' => $pendingOrders->sum('total_amount'),
-            'totalInventory' => $pendingOrders->sum('inventory_available'),
+            'totalOrders' => $allOrders->count(),
+            'totalValue' => $allOrders->sum('total_value'),
+            'canDeliverCount' => $allOrders->where('can_deliver', true)->count(),
+            'cannotDeliverCount' => $allOrders->where('can_deliver', false)->count(),
+            'totalAmount' => $allOrders->sum('total_amount'),
+            'totalInventory' => $allOrders->sum('inventory_available'),
+        ];
+
+        // Pagination options (include status deliverability and date range)
+        $paginationOptions = [
+            'searchable_fields' => ['customer.name', 'customer.comp_name', 'deadline'],
+            'filterable_fields' => ['customer_id', 'status'],
+            'per_page_options' => [5, 10, 25, 50, 100],
+            'search_placeholder' => 'جستجو در نام مشتری یا تاریخ...',
+            'status_options' => [
+                'deliverable' => 'قابل تحویل',
+                'undeliverable' => 'غیر قابل تحویل',
+            ],
+            'show_date_range' => true,
         ];
 
         return view('dashboard.order.factory-status', [
             'pendingOrders' => $pendingOrders,
             'warehouseChartData' => $warehouseChartData,
             'summaryStats' => $summaryStats,
+            'options' => $paginationOptions,
         ]);
     }
 
