@@ -82,6 +82,23 @@
                 <div class="card-body">
                     <h4 class="card-title mb-2">نمودار وضعیت کارخانه</h4>
                     <div id="factory-charts"></div>
+                    <div class="mt-3" id="factory-table-wrapper">
+                        <div class="table-responsive">
+                            <table id="factory-inventory-table" class="table table-sm table-striped table-bordered mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>محصول / مواد</th>
+                                        <th>نیاز</th>
+                                        <th>موجودی</th>
+                                        <th>اختلاف</th>
+                                        <th>واحد</th>
+                                        <th>وضعیت</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -292,11 +309,18 @@
                         message += ' (ممکن است فیلتر تاریخ باعث شده باشد هیچ ردیفی نمایش داده نشود)';
                     }
                     $('#factory-charts').html('<div class="alert alert-warning text-center">' + message + '</div>');
+                    renderFactoryTable({ names: [], orders: [], inventory: [], units: [] });
                 } else {
                     renderFactoryCharts({
                         names: selectedData.names,
                         inventory: selectedData.inventory,
                         orders: selectedData.orders,
+                        units: selectedData.units
+                    });
+                    renderFactoryTable({
+                        names: selectedData.names,
+                        orders: selectedData.orders,
+                        inventory: selectedData.inventory,
                         units: selectedData.units
                     });
                 }
@@ -401,6 +425,52 @@
                 var chart = new ApexCharts(document.getElementById(chartId), factoryData);
                 chart.render();
             });
+        }
+
+        function renderFactoryTable(data) {
+            var $table = $('#factory-inventory-table');
+            var $tbody = $table.find('tbody');
+
+            if ($.fn.DataTable && $.fn.DataTable.isDataTable($table)) {
+                $table.DataTable().destroy();
+            }
+
+            $tbody.empty();
+
+            if (!data.names || data.names.length === 0) {
+                $tbody.append('<tr><td colspan="5" class="text-center text-muted">داده‌ای برای نمایش وجود ندارد</td></tr>');
+            } else {
+                data.names.forEach(function(name, idx) {
+                    var orders = (data.orders && data.orders[idx] !== undefined) ? parseFloat(data.orders[idx]) : 0;
+                    var inv = (data.inventory && data.inventory[idx] !== undefined) ? parseFloat(data.inventory[idx]) : 0;
+                    var unit = (data.units && data.units[idx]) ? data.units[idx] : '';
+                    var diff = inv - orders;
+                    var statusOk = inv >= orders;
+                    var statusBadge = statusOk
+                        ? '<span class="badge badge-success">کافی</span>'
+                        : '<span class="badge badge-danger">کمبود</span>';
+
+                    $tbody.append(
+                        '<tr>' +
+                            '<td>' + name + '</td>' +
+                            '<td data-order="' + orders + '">' + orders + ' ' + unit + '</td>' +
+                            '<td data-order="' + inv + '">' + inv + ' ' + unit + '</td>' +
+                            '<td data-order="' + diff + '">' + diff + ' ' + unit + '</td>' +
+                            '<td>' + unit + '</td>' +
+                            '<td>' + statusBadge + '</td>' +
+                        '</tr>'
+                    );
+                });
+            }
+
+            if ($.fn.DataTable) {
+                $table.DataTable({
+                    paging: false,
+                    searching: false,
+                    info: false,
+                    order: [[1, 'desc']]
+                });
+            }
         }
     </script>
 @endsection
