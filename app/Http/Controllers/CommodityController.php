@@ -25,6 +25,51 @@ class CommodityController extends Controller
     }
 
     /**
+     * Prices tab page (client-side rendering and export)
+     *
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\View
+     */
+    public function prices(Request $request)
+    {
+        $this->authorize('viewAny', Commodity::class);
+
+        // Options consistent with index
+        $options = [
+            'searchable_fields' => ['title', 'number', 'product_identifier'],
+            'filterable_fields' => ['unit_id'],
+            'sortable_fields' => [],
+            'default_sort_field' => 'id',
+            'default_sort_direction' => 'desc',
+            'max_per_page' => 50,
+            'per_page_options' => [5, 10, 25, 50, 100],
+            'search_placeholder' => 'جستجو در عنوان، شماره یا شناسه کالا...'
+        ];
+
+        // Build query
+        $query = Commodity::with(['unit', 'materials.unit'])
+            ->where('type', 'product');
+        $commodities = $this->getPaginatedResults($query, $request, 10, $options);
+
+        // Pre-calc for current page
+        $commodities->getCollection()->transform(function ($c) {
+            $c->base_price = $this->calculateBasePrice($c);
+            $c->sales_price = $this->calculateSalesPrice($c);
+            return $c;
+        });
+
+        $units = Unit::select('id', 'name', 'symbol')->orderBy('name')->get();
+
+        return view('dashboard.commodity.prices', [
+            'commodities' => $commodities,
+            'options' => $options,
+            'units' => $units,
+        ]);
+    }
+
+    // Removed client-side pricesData endpoint; using server-side pagination and filters exclusively
+
+    /**
      * Display a listing of the resource.
      *
      * @param Request $request

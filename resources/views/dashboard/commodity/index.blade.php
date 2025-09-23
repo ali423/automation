@@ -15,7 +15,17 @@
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-2">لیست کالا ها</h4>
+                    <h4 class="card-title mb-3">لیست کالا ها</h4>
+
+                    {{-- Tabs header --}}
+                    <ul class="nav nav-tabs mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="#">لیست کالاها</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('commodity.prices', request()->query()) }}">قیمت‌ها</a>
+                        </li>
+                    </ul>
                     
                     {{-- Pagination Controls --}}
                     <x-pagination-controls :paginator="$commodities" :options="$options" />
