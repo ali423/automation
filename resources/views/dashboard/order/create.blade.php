@@ -57,6 +57,10 @@
                 var priceInput = $(this).closest('.form-row').find('#price');
                 var unitSelect = $(this).closest('.form-row').find('#unit_id');
                 
+                // Set loading states
+                unitSelect.prop('disabled', true).empty().append('<option value="">در حال بارگذاری...</option>');
+                priceInput.prop('disabled', true).attr('placeholder','در حال بارگذاری...');
+
                 // Get commodity units
                 $.ajax({
                     url: '/order/commodity-units/' + commodity_id,
@@ -69,7 +73,13 @@
                             response.units.forEach(function(unit) {
                                 unitSelect.append('<option value="' + unit.id + '">' + unit.name + ' (' + unit.symbol + ')</option>');
                             });
+                            unitSelect.prop('disabled', false);
+                        } else {
+                            unitSelect.empty().append('<option value="">خطا در بارگذاری</option>').prop('disabled', false);
                         }
+                    },
+                    error: function () {
+                        unitSelect.empty().append('<option value="">خطا در بارگذاری</option>').prop('disabled', false);
                     }
                 });
                 
@@ -79,8 +89,11 @@
                     type: 'get',
                     dataType: 'json',
                     success: function (response) {
-                        price = response['price'];
-                        priceInput.val(price);
+                        price = (response && response.data) ? response.data.price : null;
+                        priceInput.val(price ?? '').attr('placeholder','').prop('disabled', false);
+                    },
+                    error: function () {
+                        priceInput.val('').attr('placeholder','نامشخص').prop('disabled', false);
                     }
                 });
                 

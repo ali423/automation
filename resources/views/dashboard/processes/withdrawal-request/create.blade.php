@@ -116,22 +116,33 @@
         });
 
         function pricefunc(el) {
-            var unitSelect = el.closest('.inputFormRow').querySelector('.unit-select');
+            var container = el.closest('.inputFormRow');
+            var unitSelect = container.querySelector('.unit-select');
+            var priceInput = container.querySelector('.price-input');
             var id = el.value;
 
-            // Clear unit options first
-            unitSelect.innerHTML = '<option value="">انتخاب کنید...</option>';
+            // Loading states
+            unitSelect.disabled = true;
+            unitSelect.innerHTML = '<option value="">در حال بارگذاری...</option>';
+            priceInput.disabled = true;
+            priceInput.placeholder = 'در حال بارگذاری...';
 
             if (!id) {
+                // reset
+                unitSelect.disabled = false;
+                unitSelect.innerHTML = '<option value="">انتخاب کنید...</option>';
+                priceInput.value = '';
+                priceInput.placeholder = '';
+                priceInput.disabled = false;
                 return;
             }
 
-            // Get commodity type from preloaded data
+            // Get commodity type from preloaded data (kept for potential future logic)
             var type = commodityTypesData[id];
-            // Note: Only products are available for selection in withdrawal requests
 
-            // Get selectable units from preloaded data
+            // Populate selectable units from preloaded data
             var units = commodityUnitsData[id];
+            unitSelect.innerHTML = '<option value="">انتخاب کنید...</option>';
             if (units) {
                 units.forEach(function(unit) {
                     var option = document.createElement('option');
@@ -140,6 +151,25 @@
                     unitSelect.appendChild(option);
                 });
             }
+            unitSelect.disabled = false;
+
+            // Fetch price via AJAX
+            $.ajax({
+                url: '/inventory-ajax/' + id,
+                type: 'get',
+                dataType: 'json',
+                success: function(response) {
+                    var price = (response && response.data) ? response.data.price : null;
+                    priceInput.value = (price ?? '');
+                    priceInput.placeholder = '';
+                    priceInput.disabled = false;
+                },
+                error: function() {
+                    priceInput.value = '';
+                    priceInput.placeholder = 'نامشخص';
+                    priceInput.disabled = false;
+                }
+            });
         }
     </script>
     <!-- These plugins only need for the run this page -->
