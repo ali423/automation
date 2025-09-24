@@ -2,733 +2,421 @@
 @section('title', 'داشبورد')
 
 @section('page_styles')
-    <!-- These plugins only need for the run this page -->
-    <link rel="stylesheet" href="{{ asset('js/default-assets/vector-map/jquery-jvectormap-2.0.2.css') }}">
+<!-- These plugins only need for the run this page -->
+<link rel="stylesheet" href="{{ asset('js/default-assets/vector-map/jquery-jvectormap-2.0.2.css') }}">
+<style>
+    .main-dashboard-card {
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .main-dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .main-tab-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .main-tab-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .main-dashboard-card:hover .main-tab-header::before {
+        left: 100%;
+    }
+
+    .main-tab-icon {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .main-tab-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .sub-tabs-container {
+        padding: 0;
+        background: #f8f9fa;
+    }
+
+    .sub-tab-item {
+        padding: 15px 20px;
+        border-bottom: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: #495057;
+    }
+
+    .sub-tab-item:last-child {
+        border-bottom: none;
+    }
+
+    .sub-tab-item:hover {
+        background: #e3f2fd;
+        color: #1976d2;
+        text-decoration: none;
+        transform: translateX(5px);
+    }
+
+    .sub-tab-icon {
+        font-size: 1.2rem;
+        margin-left: 15px;
+        width: 20px;
+        text-align: center;
+    }
+
+    .sub-tab-text {
+        flex: 1;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .sub-tab-arrow {
+        font-size: 0.9rem;
+        opacity: 0.6;
+        transition: all 0.2s ease;
+    }
+
+    .sub-tab-item:hover .sub-tab-arrow {
+        opacity: 1;
+        transform: translateX(3px);
+    }
+
+    .status-tab {
+        background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    }
+
+    .status-tab .sub-tab-item:hover {
+        background: rgba(76, 175, 80, 0.1);
+        color: #2e7d32;
+    }
+
+    .production-tab {
+        background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    }
+
+    .purchase-tab {
+        background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+    }
+
+    .order-tab {
+        background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+    }
+
+    .inventory-tab {
+        background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
+    }
+
+    .factory-status-tab {
+        background: linear-gradient(135deg, #795548 0%, #5d4037 100%);
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+        margin-top: 20px;
+        margin-bottom: 60px;
+        /* Add space before footer */
+    }
+
+    .dashboard-container {
+        min-height: calc(100vh - 200px);
+        /* Ensure minimum height */
+        padding-bottom: 40px;
+        /* Extra padding at bottom */
+    }
+
+    /* Ensure proper spacing between content and footer */
+    .main-content {
+        margin-bottom: 60px;
+    }
+
+    /* Footer styling */
+    .footer-area {
+        background: #f8f9fa !important;
+        border-top: 1px solid #e9ecef !important;
+        padding: 20px 0 !important;
+        margin-top: 40px !important;
+        min-height: 60px !important;
+    }
+
+    .footer-area p {
+        margin: 0 !important;
+        color: #6c757d !important;
+        font-size: 14px !important;
+    }
+
+    .footer-area a {
+        color: #007bff !important;
+        text-decoration: none !important;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .main-tab-header {
+            padding: 15px;
+        }
+
+        .main-tab-icon {
+            font-size: 2rem;
+        }
+
+        .main-tab-title {
+            font-size: 1.2rem;
+        }
+    }
+</style>
 @endsection
 
 @section('content')
 
-    <!-- Main Content Area -->
-    <div id="main-links" class="row">
-    @if(Gate::check('read_user') || Gate::check('create_user'))
-        <!-- Single Widget -->
-            <div class="main-link col-12 col-3 col-md box-margin height-card">
-                <div class="card">
-                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="user">
-                        <div class="text-center">
-                            <div>
-                                <i class="ti-user font-24"></i>
-                            </div>
-                            <h6>کاربران</h6>
-                        </div>
-                        <div class="d-md-none">
-                            <ul class="list-unstyled d-flex">
-                                <li><a href="#" class="btn btn-white m-1">لیست کاربران</a></li>
-                                <li><a href="#" class="btn btn-white m-1">افزودن کاربر جدید</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    @endif
-    @if(Gate::check('read_role') || Gate::check('create_role'))
-        <!-- Single Widget -->
-            <div class="col-12 col-3 col-md box-margin height-card">
-                <div class="card">
-                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="role">
-                        <div class="text-center">
-                            <div>
-                                <i class="ti-id-badge font-24"></i>
-                            </div>
-                            <h6>نقش ها</h6>
-                        </div>
-                        <div class="d-md-none">
-                            <ul class="list-unstyled d-flex">
-                                <li><a href="#" class="btn btn-white m-1">لیست نقش ها</a></li>
-                                <li><a href="#" class="btn btn-white m-1">افزودن نقش جدید</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    @endif
-    @can('read_activity',App\Models\Activity::class)
-        <!-- Single Widget -->
-            <div class="col-12 col-3 col-md box-margin height-card">
-                <div class="card">
-                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="activity">
-                        <div class="text-center">
-                            <div>
-                                <i class="icon-search font-24"></i>
-                            </div>
-                            <h6>فعالیت ها</h6>
-                        </div>
-                        <div class="d-md-none">
-                            <ul class="list-unstyled d-flex">
-                                <li><a href="#" class="btn btn-white m-1">لیست فعالیت ها</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    @endif
-    @if(Gate::check('read_commodity') || Gate::check('create_commodity'))
-        <!-- Single Widget -->
-            <div class="col-12 col-3 col-md box-margin height-card">
-                <div class="card">
-                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="commodity">
-                        <div class="text-center">
-                            <div>
-                                <i class="icon-layers font-24"></i>
-                            </div>
-                            <h6>کالاهای سیستم</h6>
-                        </div>
-                        <div class="d-md-none">
-                            <ul class="list-unstyled d-flex">
-                                <li><a href="#" class="btn btn-white m-1">لیست کالا ها</a></li>
-                                <li><a href="#" class="btn btn-white m-1">افزودن کالای جدید</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    @endif
-    @if(Gate::check('read_unit') || Gate::check('create_unit'))
-        <!-- Single Widget -->
-            <div class="col-12 col-3 col-md box-margin height-card">
-                <div class="card">
-                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="unit">
-                        <div class="text-center">
-                            <div>
-                                <i class="ti-ruler-pencil font-24"></i>
-                            </div>
-                            <h6>واحدهای اندازه‌گیری</h6>
-                        </div>
-                        <div class="d-md-none">
-                            <ul class="list-unstyled d-flex">
-                                <li><a href="#" class="btn btn-white m-1">لیست واحد ها</a></li>
-                                <li><a href="#" class="btn btn-white m-1">افزودن واحد جدید</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    @endif
-    @if(Gate::check('read_unit_conversion') || Gate::check('create_unit_conversion'))
-        <!-- Single Widget -->
-            <div class="col-12 col-3 col-md box-margin height-card">
-                <div class="card">
-                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="unit-conversion">
-                        <div class="text-center">
-                            <div>
-                                <i class="ti-exchange-vertical font-24"></i>
-                            </div>
-                            <h6>تبدیل واحد ها</h6>
-                        </div>
-                        <div class="d-md-none">
-                            <ul class="list-unstyled d-flex">
-                                <li><a href="#" class="btn btn-white m-1">لیست تبدیل ها</a></li>
-                                <li><a href="#" class="btn btn-white m-1">افزودن تبدیل جدید</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    @endif
-    @if(Gate::check('read_importing') || Gate::check('create_importing'))
-        <!-- Single Widget -->
-            <div class="col-12 col-md box-margin height-card">
-                <div class="card">
-                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="process">
-                        <div class="text-center">
-                            <div>
-                                <i class="ti-truck font-24"></i>
-                            </div>
-                                                            <h6>خرید کالا</h6>
-                        </div>
-                        <div class="d-md-none">
-                            <ul class="list-unstyled d-flex">
-                                <li><a href="#" class="btn btn-white m-1">لیست درخواست ها</a></li>
-                                <li><a href="#" class="btn btn-white m-1">ثبت درخواست</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    @endif
-    @if(Gate::check('read_customer') || Gate::check('create_customer'))
-        <!-- Single Widget -->
-            <div class="col-12 col-md box-margin height-card">
-                <div class="card">
-                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="customer">
-                        <div class="text-center">
-                            <div>
-                                <i class="ti-shopping-cart font-24"></i>
-                            </div>
-                            <h6>مشتری ها</h6>
-                        </div>
-                        <div class="d-md-none">
-                            <ul class="list-unstyled d-flex">
-                                <li><a href="#" class="btn btn-white m-1">لیست مشتریان</a></li>
-                                <li><a href="#" class="btn btn-white m-1">ثبت مشتری</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    @endif
-    @if(Gate::check('read_withdrawal') || Gate::check('create_withdrawal'))
-        <!-- Single Widget -->
-            <div class="col-12 col-md box-margin height-card">
-                <div class="card">
-                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="withrawal">
-                        <div class="text-center">
-                            <div>
-                                <i class="ti-shopping-cart-full font-24"></i>
-                            </div>
-                            <h6>فروش فرآورده</h6>
-                        </div>
-                        <div class="d-md-none">
-                            <ul class="list-unstyled d-flex">
-                                <li><a href="#" class="btn btn-white m-1">لیست فروش</a></li>
-                                <li><a href="#" class="btn btn-white m-1">ثبت فروش</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    @endif
-    @if(Gate::check('read_production') || Gate::check('create_production'))
-        <!-- Single Widget -->
-            <div class="col-12 col-md box-margin height-card">
-                <div class="card">
-                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="production">
-                        <div class="text-center">
-                            <div>
-                                <i class="ti-settings font-24"></i>
-                            </div>
-                            <h6>تولید</h6>
-                        </div>
-                        <div class="d-md-none">
-                            <ul class="list-unstyled d-flex">
-                                <li><a href="#" class="btn btn-white m-1">لیست درخواست های تولید</a></li>
-                                <li><a href="#" class="btn btn-white m-1">ثبت درخواست تولید</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    @endif
-
-    @if(Gate::check('read_order') || Gate::check('create_order'))
-        <!-- Single Widget -->
-            <div class="col-12 col-md box-margin height-card">
-                <div class="card">
-                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="order">
-                        <div class="text-center">
-                            <div>
-                                <i class="ti-receipt font-24"></i>
-                            </div>
-                            <h6>سفارشات</h6>
-                        </div>
-                        <div class="d-md-none">
-                            <ul class="list-unstyled d-flex">
-                                <li><a href="#" class="btn btn-white m-1">لیست فروش</a></li>
-                                <li><a href="#" class="btn btn-white m-1">ثبت فروش</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-    @if(Gate::check('read_order') || Gate::check('create_order'))
-        <!-- Single Widget -->
-            <div class="col-12 col-md box-margin height-card">
-                <div class="card">
-                    <div class="link card-body d-flex align-items-center justify-content-center" data-link="factory-status">
-                        <div class="text-center">
-                            <div>
-                                <i class="ti-bar-chart font-24"></i>
-                            </div>
-                            <h6>وضعیت کارخونه</h6>
-                        </div>
-                        <div class="d-md-none">
-                            <ul class="list-unstyled d-flex">
-                                <li><a href="#" class="btn btn-white m-1">مشاهده وضعیت</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endif
-    </div>
-
-
-    <div id="users-links" class="row d-none d-md-flex">
-        <div class="col box-margin height-card">
-            <div class="card">
-                {{-- start user --}}
-                <div id="user" class="card-body row">
-                    <!-- Single Widget -->
-                    @can('read_user',App\Models\User::class)
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    </br></br>
-                                    <a href="{{ route('user.index') }}" class="bg-red">
-                                        <div>
-                                            <div>
-                                                <i class="ti-list-ol font-24"></i>
-                                            </div>
-                                            <h6>لیست کاربران</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
-                    @can('create_user',App\Models\User::class)
-                    <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    <a href="{{ route('user.create') }}" class="bg-blue">
-                                        <div>
-                                            <div>
-                                                <i class="ti-write font-24"></i>
-                                            </div>
-                                            <h6>افزودن کاربر جدید</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
-                </div>
-                {{-- end user --}}
-
-                {{-- start role --}}
-                <div id="role" class="d-none card-body row">
-                    <!-- Single Widget -->
-                    @can('read_role',App\Models\Role::class)
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    </br></br>
-                                    <a href="{{ route('role.index') }}" class="bg-red">
-                                        <div>
-                                            <div>
-                                                <i class="ti-list-ol font-24"></i>
-                                            </div>
-                                            <h6>لیست نقش ها</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
-                    @can('create_role',App\Models\Role::class)
-                    <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    <a href="{{ route('role.create') }}" class="bg-blue">
-                                        <div>
-                                            <div>
-                                                <i class="ti-write font-24"></i>
-                                            </div>
-                                            <h6>افزودن نقش جدید</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
-                </div>
-                {{-- end role --}}
-                @can('read_activity',App\Models\Activity::class)
-                    {{-- start activity --}}
-                    <div id="activity" class="d-none card-body row">
-                        <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    </br></br>
-                                    <a href="{{ route('activity.index') }}" class="bg-red">
-                                        <div>
-                                            <div>
-                                                <i class="ti-list-ol font-24"></i>
-                                            </div>
-                                            <h6>لیست فعالیت ها</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {{-- end activity --}}
-                @endcan
-                {{-- start commodity --}}
-                <div id="commodity" class="d-none card-body row">
-                    <!-- Single Widget -->
-                    @can('read_commodity',App\Models\Commodity::class)
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    </br></br>
-                                    <a href="{{ route('commodity.index') }}" class="bg-red">
-                                        <div>
-                                            <div>
-                                                <i class="ti-list-ol font-24"></i>
-                                            </div>
-                                            <h6>لیست کالاها</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
-                    @can('create_commodity',App\Models\Commodity::class)
-                    <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    <a href="{{ route('commodity.create') }}" class="bg-blue">
-                                        <div>
-                                            <div>
-                                                <i class="ti-write font-24"></i>
-                                            </div>
-                                            <h6>افزودن کالای جدید</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
-                </div>
-                {{-- end commodity --}}
-
-                {{-- start unit --}}
-                <div id="unit" class="d-none card-body row">
-                    <!-- Single Widget -->
-                    @can('read_unit',App\Models\Unit::class)
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    </br></br>
-                                    <a href="{{ route('unit.index') }}" class="bg-red">
-                                        <div>
-                                            <div>
-                                                <i class="ti-list-ol font-24"></i>
-                                            </div>
-                                            <h6>لیست واحدها</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
-                    @can('create_unit',App\Models\Unit::class)
-                    <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    <a href="{{ route('unit.create') }}" class="bg-blue">
-                                        <div>
-                                            <div>
-                                                <i class="ti-write font-24"></i>
-                                            </div>
-                                            <h6>افزودن واحد جدید</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
-                </div>
-                {{-- end unit --}}
-
-                {{-- start unit-conversion --}}
-                <div id="unit-conversion" class="d-none card-body row">
-                    <!-- Single Widget -->
-                    @can('read_unit_conversion',App\Models\UnitConversion::class)
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    </br></br>
-                                    <a href="{{ route('unit-conversion.select-commodity') }}" class="bg-red">
-                                        <div>
-                                            <div>
-                                                <i class="ti-list-ol font-24"></i>
-                                            </div>
-                                            <h6>لیست تبدیل ها</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
-                    @can('create_unit_conversion',App\Models\UnitConversion::class)
-                    <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    <a href="{{ route('unit-conversion.select-commodity') }}" class="bg-blue">
-                                        <div>
-                                            <div>
-                                                <i class="ti-write font-24"></i>
-                                            </div>
-                                            <h6>افزودن تبدیل جدید</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
-                </div>
-                {{-- end unit-conversion --}}
-
-                {{-- start proccess --}}
-                <div id="process" class="d-none card-body row">
-                @can('read_importing',App\Models\ImportingRequest::class)
-                    <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    </br></br>
-                                    <a href="{{ route('importing-request.index') }}" class="bg-red">
-                                        <div>
-                                            <div>
-                                                <i class="ti-list-ol font-24"></i>
-                                            </div>
-                                            <h6>لیست درخواست ها</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                @endif
-                @can('create_importing',App\Models\ImportingRequest::class)
-                    <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    <a href="{{ route('importing-request.create') }}" class="bg-blue">
-                                        <div>
-                                            <div>
-                                                <i class="ti-write font-24"></i>
-                                            </div>
-                                            <h6>ثبت درخواست جدید</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-                </div>
-                {{-- end process --}}
-                {{-- start customer --}}
-                <div id="customer" class="d-none card-body row">
-                @can('read_customer',App\Models\Customer::class)
-                    <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    </br></br>
-                                    <a href="{{ route('customer.index') }}" class="bg-red">
-                                        <div>
-                                            <div>
-                                                <i class="ti-list-ol font-24"></i>
-                                            </div>
-                                            <h6>لیست مشتریان</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                @endcan
-                @can('create_customer',App\Models\Customer::class)
-                    <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    <a href="{{ route('customer.create') }}" class="bg-blue">
-                                        <div>
-                                            <div>
-                                                <i class="ti-write font-24"></i>
-                                            </div>
-                                            <h6>ثبت مشتری جدید</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
-                </div>
-                {{-- end customer --}}
-                {{-- start customer --}}
-                <div id="withrawal" class="d-none card-body row">
-                    <!-- Single Widget -->
-                    @can('read_withdrawal',App\Models\WithdrawalRequest::class)
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    </br></br>
-                                    <a href="{{ route('withdrawal-request.index') }}" class="bg-red">
-                                        <div>
-                                            <div>
-                                                <i class="ti-list-ol font-24"></i>
-                                            </div>
-                                            <h6>لیست فروش</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
-                    @can('create_withdrawal',App\Models\WithdrawalRequest::class)
-                    <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    <a href="{{ route('withdrawal-request.create') }}" class="bg-blue">
-                                        <div>
-                                            <div>
-                                                <i class="ti-write font-24"></i>
-                                            </div>
-                                            <h6>ثبت فروش جدید</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
-                </div>
-                {{-- end customer --}}
-                {{-- start production --}}
-                <div id="production" class="d-none card-body row">
-                @can('read_production',App\Models\ProductionRequest::class)
-                    <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    </br></br>
-                                    <a href="{{ route('production-request.index') }}" class="bg-red">
-                                        <div>
-                                            <div>
-                                                <i class="ti-list-ol font-24"></i>
-                                            </div>
-                                            <h6>لیست درخواست های تولید</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                @endcan
-                @can('create_production',App\Models\ProductionRequest::class)
-                    <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    <a href="{{ route('production-request.create') }}" class="bg-blue">
-                                        <div>
-                                            <div>
-                                                <i class="ti-write font-24"></i>
-                                            </div>
-                                            <h6>ثبت درخواست تولید جدید</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
-                </div>
-                {{-- end production --}}
-                {{-- start order --}}
-                <div id="order" class="d-none card-body row">
-                @can('read_order',App\Models\Order::class)
-                    <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    </br></br>
-                                    <a href="{{ route('order.index') }}" class="bg-red">
-                                        <div>
-                                            <div>
-                                                <i class="ti-list-ol font-24"></i>
-                                            </div>
-                                            <h6>لیست سفارشات</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                @endcan
-                @can('create_order',App\Models\Order::class)
-                    <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    <a href="{{ route('order.create') }}" class="bg-blue">
-                                        <div>
-                                            <div>
-                                                <i class="ti-write font-24"></i>
-                                            </div>
-                                            <h6>ثبت سفارش جدید</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endcan
-                </div>
-                {{-- end order --}}
-
-                {{-- start factory-status --}}
-                <div id="factory-status" class="d-none card-body row">
-                @can('read_order',App\Models\Order::class)
-                    <!-- Single Widget -->
-                        <div class="col height-card">
-                            <div class="card">
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    </br></br>
-                                    <a href="{{ route('order.factory-status') }}" class="bg-green">
-                                        <div>
-                                            <div>
-                                                <i class="ti-factory font-24"></i>
-                                            </div>
-                                            <h6>مشاهده وضعیت کارخونه</h6>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                @endcan
-                </div>
-                {{-- end factory-status --}}
-            </div>
+<!-- Modern Dashboard -->
+<div class="container-fluid dashboard-container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-center mb-4" style="color: #2c3e50; font-weight: 700;">داشبورد سیستم اتوماسیون</h2>
         </div>
     </div>
+
+    <div class="dashboard-grid">
+        <!-- تولید (Production) -->
+        @if(Gate::check('read_production') || Gate::check('create_production'))
+        <div class="main-dashboard-card">
+            <div class="main-tab-header production-tab">
+                <i class="ti-settings main-tab-icon"></i>
+                <h3 class="main-tab-title">تولید</h3>
+            </div>
+            <div class="sub-tabs-container">
+                @can('create_production',App\Models\ProductionRequest::class)
+                <a href="{{ route('production-request.create') }}" class="sub-tab-item">
+                    <i class="ti-write sub-tab-icon"></i>
+                    <span class="sub-tab-text">اظهار تولید</span>
+                    <i class="ti-angle-left sub-tab-arrow"></i>
+                </a>
+                @endcan
+                @can('read_production',App\Models\ProductionRequest::class)
+                <a href="{{ route('production-request.index') }}" class="sub-tab-item">
+                    <i class="ti-list-ol sub-tab-icon"></i>
+                    <span class="sub-tab-text">لیست اظهار تولید</span>
+                    <i class="ti-angle-left sub-tab-arrow"></i>
+                </a>
+                @endcan
+            </div>
+        </div>
+        @endif
+
+        <!-- خرید کالا (Purchase) -->
+        @if(Gate::check('read_importing') || Gate::check('create_importing'))
+        <div class="main-dashboard-card">
+            <div class="main-tab-header purchase-tab">
+                <i class="ti-truck main-tab-icon"></i>
+                <h3 class="main-tab-title">خرید کالا</h3>
+            </div>
+            <div class="sub-tabs-container">
+                @can('create_importing',App\Models\ImportingRequest::class)
+                <a href="{{ route('importing-request.create') }}" class="sub-tab-item">
+                    <i class="ti-write sub-tab-icon"></i>
+                    <span class="sub-tab-text">ثبت ورود جدید</span>
+                    <i class="ti-angle-left sub-tab-arrow"></i>
+                </a>
+                @endcan
+                @can('read_importing',App\Models\ImportingRequest::class)
+                <a href="{{ route('importing-request.index') }}" class="sub-tab-item">
+                    <i class="ti-list-ol sub-tab-icon"></i>
+                    <span class="sub-tab-text">لیست ورود کالا ها</span>
+                    <i class="ti-angle-left sub-tab-arrow"></i>
+                </a>
+                @endcan
+            </div>
+        </div>
+        @endif
+
+        <!-- سفارشات (Orders) -->
+        @if(Gate::check('read_order') || Gate::check('create_order'))
+        <div class="main-dashboard-card">
+            <div class="main-tab-header order-tab">
+                <i class="ti-receipt main-tab-icon"></i>
+                <h3 class="main-tab-title">سفارشات</h3>
+            </div>
+            <div class="sub-tabs-container">
+                @can('create_order',App\Models\Order::class)
+                <a href="{{ route('order.create') }}" class="sub-tab-item">
+                    <i class="ti-write sub-tab-icon"></i>
+                    <span class="sub-tab-text">ثبت سفارش جدید</span>
+                    <i class="ti-angle-left sub-tab-arrow"></i>
+                </a>
+                @endcan
+                @can('read_order',App\Models\Order::class)
+                <a href="{{ route('order.index') }}" class="sub-tab-item">
+                    <i class="ti-list-ol sub-tab-icon"></i>
+                    <span class="sub-tab-text">لیست سفارشات</span>
+                    <i class="ti-angle-left sub-tab-arrow"></i>
+                </a>
+                @endcan
+            </div>
+        </div>
+        @endif
+
+        <!-- وضعیت موجودی کالای کارخانه (Inventory Status) -->
+        @if(Gate::check('read_inventory') || Gate::check('read_commodity'))
+        <div class="main-dashboard-card">
+            <div class="main-tab-header inventory-tab">
+                <i class="ti-package main-tab-icon"></i>
+                <h3 class="main-tab-title">وضعیت موجودی کالای کارخانه</h3>
+            </div>
+            <div class="sub-tabs-container">
+                @can('read_inventory',App\Models\Inventory::class)
+                <a href="{{ route('inventory.index') }}" class="sub-tab-item">
+                    <i class="ti-eye sub-tab-icon"></i>
+                    <span class="sub-tab-text">مشاهده موجودی</span>
+                    <i class="ti-angle-left sub-tab-arrow"></i>
+                </a>
+                @endcan
+            </div>
+        </div>
+        @endif
+
+        <!-- وضعیت سفارشات (Factory Status) -->
+        @if(Gate::check('read_order'))
+        <div class="main-dashboard-card">
+            <div class="main-tab-header factory-status-tab">
+                <i class="ti-bar-chart main-tab-icon"></i>
+                <h3 class="main-tab-title">وضعیت سفارشات</h3>
+            </div>
+            <div class="sub-tabs-container">
+                <a href="{{ route('order.factory-status') }}" class="sub-tab-item">
+                    <i class="ti-factory sub-tab-icon"></i>
+                    <span class="sub-tab-text">مشاهده وضعیت کارخانه</span>
+                    <i class="ti-angle-left sub-tab-arrow"></i>
+                </a>
+            </div>
+        </div>
+        @endif
+    </div>
+</div>
+
 @endsection
 
 @section('page_scripts')
-    <!-- These plugins only need for the run this page -->
-    <script src="{{ asset('js/default-assets/apexchart.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/dashboard-active.js') }}"></script>
-    <script src="{{ asset('js/default-assets/peity.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/peity-demo.js') }}"></script>
-    <script src="{{ asset('js/default-assets/vector-map/jquery-jvectormap-2.0.2.min.js') }}"></script>
-    <script src="{{ asset('js/default-assets/vector-map/jquery-jvectormap-world-mill-en.js') }}"></script>
-    <script src="{{ asset('js/default-assets/vector-map/jquery-jvectormap-in-mill.js') }}"></script>
-    <script src="{{ asset('js/default-assets/vector-map/jquery-jvectormap-us-aea-en.js') }}"></script>
-    <script src="{{ asset('js/default-assets/vector-map/jquery-jvectormap-uk-mill-en.js') }}"></script>
-    <script src="{{ asset('js/default-assets/vector-map/jquery-jvectormap-au-mill.js') }}"></script>
-    <script src="{{ asset('js/default-assets/vector-map/jvectormap.custom.js') }}"></script>
-    <script src="{{ asset('js/canvas.min.js') }}"></script>
+<!-- These plugins only need for the run this page -->
+<script src="{{ asset('js/default-assets/apexchart.min.js') }}"></script>
+<script src="{{ asset('js/default-assets/peity.min.js') }}"></script>
+<script src="{{ asset('js/default-assets/peity-demo.js') }}"></script>
+<script src="{{ asset('js/canvas.min.js') }}"></script>
 
-    {{-- main links js --}}
-    <script src="{{ asset('js/main-links/main-links.js') }}"></script>
+<script>
+    $(document).ready(function() {
+        // Add smooth animations and interactions
+        $('.main-dashboard-card').each(function(index) {
+            $(this).css('animation-delay', (index * 0.1) + 's');
+            $(this).addClass('fade-in-up');
+        });
 
+        // Add click ripple effect
+        $('.sub-tab-item').on('click', function(e) {
+            var $this = $(this);
+            var ripple = $('<span class="ripple"></span>');
+            var rect = this.getBoundingClientRect();
+            var size = Math.max(rect.width, rect.height);
+            var x = e.clientX - rect.left - size / 2;
+            var y = e.clientY - rect.top - size / 2;
+
+            ripple.css({
+                width: size,
+                height: size,
+                left: x,
+                top: y
+            });
+
+            $this.append(ripple);
+
+            setTimeout(function() {
+                ripple.remove();
+            }, 600);
+        });
+
+        // Add hover effects for better UX
+        $('.main-dashboard-card').hover(
+            function() {
+                $(this).find('.main-tab-header').addClass('pulse');
+            },
+            function() {
+                $(this).find('.main-tab-header').removeClass('pulse');
+            }
+        );
+    });
+
+    // Add CSS for animations
+    $('<style>')
+        .prop('type', 'text/css')
+        .html(`
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+        
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        .pulse {
+            animation: pulse 0.3s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    `)
+        .appendTo('head');
+</script>
 
 @endsection

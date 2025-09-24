@@ -16,10 +16,9 @@ class CreateImportingCommoditiesTable extends Migration
         Schema::create('importing_commodities', function (Blueprint $table) {
             $table->foreignId('importation_id')->references('id')->on('importing_requests')->onDelete('cascade');
             $table->foreignId('commodity_id')->constrained();
-            $table->foreignId('warehouses_id')->constrained();
             $table->unsignedBigInteger('unit_id'); // Unit of measurement
             $table->foreign('unit_id')->references('id')->on('units')->onDelete('cascade');
-            $table->primary(['importation_id','commodity_id']);
+            $table->primary(['importation_id', 'commodity_id']);
             $table->double('amount');
             $table->double('purchase_price')->nullable();
         });
