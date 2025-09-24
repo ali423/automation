@@ -63,6 +63,8 @@ Route::middleware('auth')->group(function () {
     Route::get('importing-request/reject/{id}',[ImportingRequestController::class,'rejectRequest'])->name('reject.importing');
 
     Route::get('withdrawal-request/approval/{id}',[WithdrawalRequestController::class,'approvalRequest'])->name('approval.withdrawal');
+    Route::get('withdrawal-request/approval/{id}/form',[WithdrawalRequestController::class,'approvalForm'])->name('approval.withdrawal.form');
+    Route::post('withdrawal-request/approval/{id}',[WithdrawalRequestController::class,'approvalSubmit'])->name('approval.withdrawal.submit');
 
     Route::get('withdrawal-request/reject/{id}',[WithdrawalRequestController::class,'rejectRequest'])->name('reject.withdrawal');
 

@@ -380,7 +380,10 @@ class OrderController extends Controller
             }
             $withdrawal = DB::transaction(function () use ($order, $data, $file) {
                 $this->service->updateStatus($order);
-                return $this->withdrawal_service->create($data, $file);
+                $withdrawal = $this->withdrawal_service->create($data, $file);
+                // Link order to withdrawal for future reference and display
+                $order->update(['withdrawal_request_id' => $withdrawal->id]);
+                return $withdrawal;
             });
         } else {
             return redirect()->back()->withErrors($inventory_check['error']);

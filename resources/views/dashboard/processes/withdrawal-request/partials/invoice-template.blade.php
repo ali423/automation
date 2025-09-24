@@ -24,6 +24,15 @@
                     <div>خریدار/ نماینده خریدار: <span>{{ $request->customer ? $request->customer->name : 'نامشخص' }}</span></div>
                     <div>شماره درخواست: <span>{{ $request->number }}</span></div>
                 </div>
+
+                <div class="mb-2">
+                    <div><strong>راننده:</strong> <span>{{ $request->driver_name ?? 'نامشخص' }}</span></div>
+                    <div><strong>تلفن راننده:</strong> <span>{{ $request->driver_phone ?? '-' }}</span></div>
+                    <div><strong>وسیله نقلیه:</strong> <span>{{ $request->vehicle_type ?? '-' }}</span></div>
+                    <div><strong>پلاک:</strong> 
+                        <span>{{ trim(($request->plate_serial ?? '') . ' ' . ($request->plate_number ?? '')) ?: '-' }}</span>
+                    </div>
+                </div>
                 
                 <div class="mb-3">
                     <div class="row">
@@ -107,11 +116,10 @@
                 </div>
                 
                 <div class="mb-5">
-                    اینجانب <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000"> </span>
+                    اینجانب <span style="display:inline-block;width: 150px;border-bottom:1px dashed #000">{{ $request->driver_name ?? '' }}</span>
                     راننده خودرو به شماره پلاک 
-                    <div class="pelak"> </div>
-                    <div class="pelak" style="width: 100px"> </div>
-                    شماره تماس <span style="display:inline-block;width: 100px;border-bottom:1px dashed #000"> </span>
+                    <span style="display:inline-block;width: 150px;border-bottom:1px dashed #000">{{ trim(($request->plate_serial ?? '') . ' ' . ($request->plate_number ?? '')) }}</span>
+                    شماره تماس <span style="display:inline-block;width: 150px;border-bottom:1px dashed #000">{{ $request->driver_phone ?? '' }}</span>
                     محموله فوق را تحویل گرفتم.
                 </div>
                 

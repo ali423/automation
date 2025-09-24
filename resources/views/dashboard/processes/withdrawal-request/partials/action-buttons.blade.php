@@ -2,7 +2,7 @@
 <div class="row">
     <div class="col-md-6 mb-1 mb-md-0">
         @if ($request->status == 'awaiting_approval')
-            <a href="{{ route('approval.withdrawal', $request) }}"
+            <a href="{{ route('approval.withdrawal.form', $request) }}"
                class="btn btn-primary px-1">تایید درخواست</a>
         @endif
     </div>

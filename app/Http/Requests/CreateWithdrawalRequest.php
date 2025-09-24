@@ -38,6 +38,11 @@ class CreateWithdrawalRequest extends FormRequest
             'price.*' => ['nullable', 'numeric'],
             'file' => ['nullable', 'mimes:jpg,svg,png,jpeg,pdf,txt,zip,rar', 'max:5120'],
             'comment' => ['nullable', 'string'],
+            'driver_name' => ['nullable', 'string', 'max:255'],
+            'driver_phone' => ['nullable', 'string', 'max:50'],
+            'vehicle_type' => ['nullable', 'string', 'max:100'],
+            'plate_serial' => ['nullable', 'string', 'max:50'],
+            'plate_number' => ['nullable', 'string', 'max:50'],
         ];
     }
 
@@ -123,6 +128,7 @@ class CreateWithdrawalRequest extends FormRequest
             'price.*.numeric' => 'قیمت باید عدد باشد.',
             'file.mimes' => 'فرمت فایل مجاز نیست.',
             'file.max' => 'حجم فایل نباید بیشتر از 5 مگابایت باشد.',
+            // driver fields are captured at approval time; no required messages here
         ];
     }
 }

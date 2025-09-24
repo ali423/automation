@@ -289,6 +289,12 @@ class WithdrawalRequestController extends Controller
         if ($withdrawalRequest->status != 'awaiting_approval') {
             return redirect()->back()->withErrors('در این مرحله امکان تایید وجود ندارد .');
         }
+
+        // Enforce driver info capture: redirect to approval form if missing
+        if (empty($withdrawalRequest->driver_name) || empty($withdrawalRequest->driver_phone)) {
+            return redirect()->route('approval.withdrawal.form', $withdrawalRequest->id)
+                ->withErrors('لطفاً اطلاعات راننده را تکمیل و سپس تایید کنید.');
+        }
         
         $check_expired = $this->service->checkExpiredRequest($withdrawalRequest);
         if ($check_expired['success'] == false) {
@@ -304,6 +310,69 @@ class WithdrawalRequestController extends Controller
             return redirect()->back()->withErrors($check_inventory['error']);
         }
         
+        return redirect(route('withdrawal-request.show', $withdrawalRequest))->with('successful', 'درخواست با موفقیت تایید شد.');
+    }
+
+    /**
+     * Show approval form to capture driver info before approval
+     */
+    public function approvalForm($id)
+    {
+        if (!auth()->user()->role->havePermission('status_withdrawal')) {
+            return redirect()->back()->withErrors('شما این دسترسی را ندارید .');
+        }
+        $withdrawalRequest = WithdrawalRequest::query()->findOrFail($id);
+        if ($withdrawalRequest->status != 'awaiting_approval') {
+            return redirect()->back()->withErrors('در این مرحله امکان تایید وجود ندارد .');
+        }
+        return view('dashboard.processes.withdrawal-request.approve', [
+            'request' => $withdrawalRequest,
+        ]);
+    }
+
+    /**
+     * Submit approval with driver info
+     */
+    public function approvalSubmit(\Illuminate\Http\Request $request, $id)
+    {
+        if (!auth()->user()->role->havePermission('status_withdrawal')) {
+            return redirect()->back()->withErrors('شما این دسترسی را ندارید .');
+        }
+        $withdrawalRequest = WithdrawalRequest::query()->findOrFail($id);
+        if ($withdrawalRequest->status != 'awaiting_approval') {
+            return redirect()->back()->withErrors('در این مرحله امکان تایید وجود ندارد .');
+        }
+
+        // Validate driver info
+        $validated = $request->validate([
+            'driver_name' => ['required','string','max:255'],
+            'driver_phone' => ['required','string','max:50'],
+            'vehicle_type' => ['nullable','string','max:100'],
+            'plate_serial' => ['nullable','string','max:50'],
+            'plate_number' => ['nullable','string','max:50'],
+        ], [
+            'driver_name.required' => 'نام راننده الزامی است.',
+            'driver_phone.required' => 'تلفن راننده الزامی است.',
+        ]);
+
+        // Save driver info
+        $withdrawalRequest->update($validated);
+
+        // Proceed with the same checks and approval
+        $check_expired = $this->service->checkExpiredRequest($withdrawalRequest);
+        if ($check_expired['success'] == false) {
+            return redirect()->back()->withErrors($check_expired['error']);
+        }
+
+        $check_inventory = $this->service->checkWithdrawal($withdrawalRequest);
+        if ($check_inventory['success'] == true) {
+            \DB::transaction(function () use ($withdrawalRequest) {
+                $this->service->approvalWithdrawal($withdrawalRequest);
+            });
+        } else {
+            return redirect()->back()->withErrors($check_inventory['error']);
+        }
+
         return redirect(route('withdrawal-request.show', $withdrawalRequest))->with('successful', 'درخواست با موفقیت تایید شد.');
     }
 

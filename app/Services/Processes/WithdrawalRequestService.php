@@ -45,6 +45,11 @@ class WithdrawalRequestService extends BaseService
             'customer_id' => $data['customer_id'],
             'status' => 'awaiting_approval',
             'number' => $number,
+            'driver_name' => $data['driver_name'] ?? null,
+            'driver_phone' => $data['driver_phone'] ?? null,
+            'vehicle_type' => $data['vehicle_type'] ?? null,
+            'plate_serial' => $data['plate_serial'] ?? null,
+            'plate_number' => $data['plate_number'] ?? null,
         ]);
         
         $request->commodities()->attach($commodity);
