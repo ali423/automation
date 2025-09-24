@@ -17,6 +17,11 @@ class WithdrawalRequest extends Model
         'customer_id',
         'status',
         'number',
+        'driver_name',
+        'driver_phone',
+        'vehicle_type',
+        'plate_serial',
+        'plate_number',
     ];
     
     public function commodities()

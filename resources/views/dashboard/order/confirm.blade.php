@@ -124,6 +124,8 @@
                                 <textarea class="form-control rounded-0 form-control-md" name="comment" id="comment" rows="6" placeholder="توضیحات اضافی در مورد تحویل...">{{ old('comment') }}</textarea>
                             </div>
 
+                            
+
                             <button type="submit" class="btn btn-primary mr-2">ثبت درخواست</button>
                             <a href="{{ route('order.show', $order) }}" class="btn btn-secondary mr-2">مشاهده سفارش</a>
                             <a href="{{ route('order.index') }}" class="btn btn-danger">انصراف</a>

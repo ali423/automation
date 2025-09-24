@@ -53,6 +53,22 @@
                                     <label>{{ __('fields.done_date') }}</label>
                                     <input type="text"  class="form-control" value="{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($order->updated_at)) }}" disabled>
                                 </div>
+                                @if($order->withdrawalRequest)
+                                <div class="form-group col-md-8">
+                                    <label>اطلاعات راننده</label>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control mb-2" value="{{ $order->withdrawalRequest->driver_name ?? 'نامشخص' }}" disabled>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control mb-2" value="{{ $order->withdrawalRequest->driver_phone ?? '-' }}" disabled>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control mb-2" value="{{ trim(($order->withdrawalRequest->plate_serial ?? '') . ' ' . ($order->withdrawalRequest->plate_number ?? '')) ?: '-' }}" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
                             </div>
                             @endif
 

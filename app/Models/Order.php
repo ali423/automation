@@ -18,6 +18,7 @@ class Order extends Model
         'customer_id',
         'deadline',
         'status',
+        'withdrawal_request_id',
     ];
 
     /**
@@ -34,6 +35,14 @@ class Order extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Link to the related withdrawal request (delivery document)
+     */
+    public function withdrawalRequest()
+    {
+        return $this->belongsTo(\App\Models\WithdrawalRequest::class, 'withdrawal_request_id');
     }
 
     /**
