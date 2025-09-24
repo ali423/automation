@@ -54,6 +54,23 @@
                                          <h4 class="card-title mb-2">نمودار مواد اولیه مورد نیاز (سفارشات در حال پردازش) و موجودی</h4>
                      <p class="text-muted small mb-3">نمودار بر اساس فیلترهای انتخاب شده در لیست سفارشات به‌روزرسانی می‌شود. فقط سفارشات با وضعیت "در حال پردازش" در محاسبات نمودار لحاظ می‌شوند.</p>
                     <div id="order-inventory-charts"></div>
+                    <div class="mt-3" id="order-inventory-table-wrapper">
+                        <div class="table-responsive">
+                            <table id="order-inventory-table" class="table table-sm table-striped table-bordered mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>مواد اولیه</th>
+                                        <th>نیاز</th>
+                                        <th>موجودی</th>
+                                        <th>اختلاف</th>
+                                        <th>واحد</th>
+                                        <th>وضعیت</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -330,6 +347,53 @@
                 });
             }
 
+            function renderTable(data) {
+                var $table = $('#order-inventory-table');
+                var $tbody = $table.find('tbody');
+
+                if ($.fn.DataTable && $.fn.DataTable.isDataTable($table)) {
+                    $table.DataTable().destroy();
+                }
+
+                $tbody.empty();
+
+                if (!data.names || data.names.length === 0) {
+                    $tbody.append('<tr><td colspan="5" class="text-center text-muted">داده‌ای برای نمایش وجود ندارد</td></tr>');
+                    return;
+                }
+
+                data.names.forEach(function(name, idx) {
+                    var need = (data.amounts && data.amounts[idx] !== undefined) ? parseFloat(data.amounts[idx]) : 0;
+                    var inv = (data.inventory && data.inventory[idx] !== undefined) ? parseFloat(data.inventory[idx]) : 0;
+                    var diff = inv - need;
+                    var unit = (data.units && data.units[idx]) ? data.units[idx] : '';
+                    var statusOk = parseFloat(inv) >= parseFloat(need);
+                    var statusBadge = statusOk
+                        ? '<span class="badge badge-success">کافی</span>'
+                        : '<span class="badge badge-danger">کمبود</span>';
+
+                    $tbody.append(
+                        '<tr>' +
+                            '<td>' + name + '</td>' +
+                            '<td data-order="' + need + '">' + need + ' ' + unit + '</td>' +
+                            '<td data-order="' + inv + '">' + inv + ' ' + unit + '</td>' +
+                            '<td data-order="' + diff + '">' + diff + ' ' + unit + '</td>' +
+                            '<td>' + unit + '</td>' +
+                            '<td>' + statusBadge + '</td>' +
+                        '</tr>'
+                    );
+                });
+
+                if ($.fn.DataTable) {
+                    $table.DataTable({
+                        paging: false,
+                        searching: false,
+                        info: false,
+                        order: [[1, 'desc']]
+                    });
+                }
+            }
+
             // Initial chart rendering with all orders (since 'select all' is checked and no date filter)
             updateChart();
 
@@ -349,6 +413,12 @@
                     },
                     success: function(response) {
                         renderCharts({
+                            names: response.names,
+                            amounts: response.amounts,
+                            units: response.units,
+                            inventory: response.inventory
+                        });
+                        renderTable({
                             names: response.names,
                             amounts: response.amounts,
                             units: response.units,
