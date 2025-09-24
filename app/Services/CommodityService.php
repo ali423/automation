@@ -68,6 +68,7 @@ class CommodityService extends BaseService
                 'unit_id' => $data['unit_id'],
                 'pieces_per_box' => null, // Not needed for materials
                 'weight_per_unit' => $data['weight_per_unit'] ?? null,
+                'purchase_price' => $data['purchase_price'],
             ]);
         } else {
             // Update the product first
