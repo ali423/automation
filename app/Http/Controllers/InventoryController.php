@@ -36,6 +36,23 @@ class InventoryController extends Controller
         $query = Inventory::with(['commodity', 'unit'])
             ->where('amount', '>', 0);
         
+        // Apply type filter on related commodity if provided
+        if ($request->filled('filters')) {
+            $filters = $request->get('filters');
+            if (is_string($filters)) {
+                $filters = json_decode($filters, true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    $filters = [];
+                }
+            }
+            if (is_array($filters) && !empty($filters['type'])) {
+                $type = $filters['type'];
+                $query->whereHas('commodity', function ($q) use ($type) {
+                    $q->where('type', $type);
+                });
+            }
+        }
+        
         // Use advanced pagination with search and filter capabilities
         $inventories = $this->getPaginatedResults($query, $request, 10, [
             'searchable_fields' => ['commodity.title', 'commodity.number', 'commodity.product_identifier', 'unit.name'],
@@ -52,7 +69,7 @@ class InventoryController extends Controller
         // Prepare options for the pagination components
         $paginationOptions = [
             'searchable_fields' => ['commodity.title', 'commodity.number', 'commodity.product_identifier', 'unit.name'],
-            'filterable_fields' => ['unit_id'],
+            'filterable_fields' => ['type', 'unit_id'],
             'per_page_options' => [5, 10, 25, 50, 100],
             'search_placeholder' => 'جستجو در کالا، شماره، شناسه کالا یا واحد...'
         ];
