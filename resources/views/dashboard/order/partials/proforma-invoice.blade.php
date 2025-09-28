@@ -73,7 +73,7 @@
                                 <th scope="col">تعداد در کارتن</th>
                                 <th scope="col">مقدار اضافی</th>
                                 <th scope="col">فی</th>
-                                <th scope="col">جمع کل + مالیات ارزش افزوده</th>
+                                <th scope="col">جمع کل</th>
                             </tr>
                             </thead>
                             <tbody>
