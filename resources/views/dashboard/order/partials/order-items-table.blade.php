@@ -26,10 +26,10 @@
                                 <td>{{ $item->commodity ? $item->commodity->title : 'کالا حذف شده' }}</td>
                                 <td>{{ number_format($item->commodity_amount) }}</td>
                                 <td>{{ $item->unit_symbol }}</td>
-                                <td>{{ number_format($item->price) }} تومان</td>
-                                <td>{{ number_format($item->total_price) }} تومان</td>
-                                <td>{{ number_format($item->vat_amount) }} تومان</td>
-                                <td>{{ number_format($item->total_price_with_vat) }} تومان</td>
+                                <td>{{ number_format($item->price) }} ریال</td>
+                                <td>{{ number_format($item->total_price) }} ریال</td>
+                                <td>{{ number_format($item->vat_amount) }} ریال</td>
+                                <td>{{ number_format($item->total_price_with_vat) }} ریال</td>
                                 @if(isset($showWeight) && $showWeight)
                                     <td>
                                         @if($item->weight_kg !== null)
@@ -45,9 +45,9 @@
                     <tfoot>
                         <tr>
                             <th colspan="5" class="text-left">مجموع کل:</th>
-                            <th>{{ number_format($order->total_price) }} تومان</th>
-                            <th>{{ number_format($order->total_vat_amount) }} تومان</th>
-                            <th>{{ number_format($order->total_price_with_vat) }} تومان</th>
+                            <th>{{ number_format($order->total_price) }} ریال</th>
+                            <th>{{ number_format($order->total_vat_amount) }} ریال</th>
+                            <th>{{ number_format($order->total_price_with_vat) }} ریال</th>
                             @if(isset($showWeight) && $showWeight)
                                 <th>
                                     {{ $order->total_weight_kg !== null ? number_format($order->total_weight_kg, 3) . ' کیلوگرم' : 'نامشخص' }}

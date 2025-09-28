@@ -27,13 +27,13 @@
                                 <input type="text" value="{{ number_format($inventory->amount, 2) }}" class="form-control" disabled>
                             </div>
                             <div class="form-group col-md-3">
-                                <label>قیمت خرید (تومان)</label>
+                                <label>قیمت خرید (ریال)</label>
                                 <input type="text" value="{{ number_format($inventory->purchase_price ?? 0) }}" class="form-control" disabled>
                             </div>
                         </div>
                         <div class="form-row col-md-12">
                             <div class="form-group col-md-6">
-                                <label>قیمت فروش (تومان)</label>
+                                <label>قیمت فروش (ریال)</label>
                                 <input type="text" value="{{ isset($financialData) && $financialData['has_sale_price'] ? number_format($financialData['sale_price']) : 'محاسبه نشده' }}" class="form-control" disabled>
                                 <small class="form-text text-muted">
                                     @if(isset($financialData) && $financialData['is_product'])
@@ -44,7 +44,7 @@
                                 </small>
                             </div>
                             <div class="form-group col-md-6">
-                                <label>ارزش کل موجودی (تومان)</label>
+                                <label>ارزش کل موجودی (ریال)</label>
                                 <input type="text" value="{{ isset($financialData) ? number_format($financialData['total_value']) : 'محاسبه نشده' }}" class="form-control" disabled>
                                 <small class="form-text text-muted">
                                     @if(isset($financialData) && $financialData['is_product'])
@@ -78,12 +78,12 @@
                                             <h6>محاسبات:</h6>
                                             <ul class="mb-0">
                                                 @if(isset($financialData) && $financialData['is_product'])
-                                                    <li>سود: {{ number_format($financialData['profit']) }} تومان</li>
+                                                    <li>سود: {{ number_format($financialData['profit']) }} ریال</li>
                                                     <li>درصد سود: {{ number_format($financialData['profit_percentage'], 1) }}%</li>
-                                                    <li>ارزش کل موجودی: {{ number_format($financialData['total_value']) }} تومان</li>
+                                                    <li>ارزش کل موجودی: {{ number_format($financialData['total_value']) }} ریال</li>
                                                 @else
-                                                    <li>قیمت خرید: {{ number_format($financialData['purchase_price'] ?? 0) }} تومان</li>
-                                                    <li>ارزش کل موجودی: {{ number_format($financialData['total_value'] ?? 0) }} تومان</li>
+                                                    <li>قیمت خرید: {{ number_format($financialData['purchase_price'] ?? 0) }} ریال</li>
+                                                    <li>ارزش کل موجودی: {{ number_format($financialData['total_value'] ?? 0) }} ریال</li>
                                                     <li class="text-warning"><i class="ti-info-circle"></i> مواد اولیه قیمت فروش ندارند</li>
                                                 @endif
                                             </ul>
@@ -102,7 +102,7 @@
                                                 <i class="fa fa-plus-minus"></i> تنظیم موجودی
                                             </button>
                                         @endcan
-                                        
+
                                         @if(isset($financialData) && $financialData['is_product'])
                                             <a href="{{ route('commodity.edit', $inventory->commodity) }}" class="btn btn-info btn-block">
                                                 <i class="ti-settings"></i> تنظیم درصد سود
@@ -177,4 +177,4 @@
 
 @section('page_scripts')
     @include('dashboard.inventory.partials.form-scripts')
-@endsection 
+@endsection

@@ -74,16 +74,16 @@
                                             <div class="mt-2">
                                                 <strong>تغییرات:</strong>
                                                 <div class="p-1">
-                                                    - قیمت قبلی: <span class="text-danger">{{ number_format($activity->changes['old_price']) }} تومان</span>
+                                                    - قیمت قبلی: <span class="text-danger">{{ number_format($activity->changes['old_price']) }} ریال</span>
                                                 </div>
                                                 <div class="p-1">
-                                                    - قیمت جدید: <span class="text-success">{{ number_format($activity->changes['new_price']) }} تومان</span>
+                                                    - قیمت جدید: <span class="text-success">{{ number_format($activity->changes['new_price']) }} ریال</span>
                                                 </div>
                                             </div>
                                         @endif
                                     </div>
                                 </div>
-                                
+
                                 @if($activity->changes['reason'] && $activity->changes['reason'] !== 'بدون دلیل')
                                     <div class="card-body border-top">
                                         <div class="text-info">
@@ -174,7 +174,7 @@
                                         </div>
                                     </div>
                                 @endif
-                                
+
 
                             @endif
 

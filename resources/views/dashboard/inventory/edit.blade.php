@@ -56,7 +56,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group col-md-3">
-                                    <label for="purchase_price">قیمت خرید (تومان)</label>
+                                    <label for="purchase_price">قیمت خرید (ریال)</label>
                                     <input type="number" step="0.01" min="0.01" name="purchase_price" value="{{ old('purchase_price', $inventory->purchase_price) }}" class="form-control @error('purchase_price') is-invalid @enderror"
                                            id="purchase_price" placeholder="قیمت خرید" required="">
                                     <div class="invalid-feedback">
@@ -64,7 +64,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group col-md-3">
-                                    <label>قیمت فروش (تومان)</label>
+                                    <label>قیمت فروش (ریال)</label>
                                     <input type="text" value="{{ $inventory->sale_price ? number_format($inventory->sale_price) : 'محاسبه نشده' }}" class="form-control" disabled>
                                     <small class="form-text text-muted">
                                         @if($inventory->commodity->type == 'product')
@@ -75,7 +75,7 @@
                                     </small>
                                 </div>
                                 <div class="form-group col-md-3">
-                                    <label>ارزش کل موجودی (تومان)</label>
+                                    <label>ارزش کل موجودی (ریال)</label>
                                     <input type="text" value="{{ $inventory->sale_price ? number_format($inventory->amount * $inventory->sale_price) : number_format($inventory->amount * $inventory->purchase_price) }}" class="form-control" disabled>
                                     <small class="form-text text-muted">
                                         @if($inventory->commodity->type == 'product')
@@ -105,4 +105,4 @@
 
 @section('page_scripts')
     @include('dashboard.inventory.partials.form-scripts')
-@endsection 
+@endsection

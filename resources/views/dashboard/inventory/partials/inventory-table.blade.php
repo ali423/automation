@@ -21,10 +21,10 @@
                 <td>{{ $inventory->commodity->product_identifier ?? '-' }}</td>
                 <td>{{ $inventory->unit->name ?? 'نامشخص' }}</td>
                 <td>{{ number_format($inventory->amount, 2) }}</td>
-                <td>{{ number_format($inventory->purchase_price ?? 0) }} تومان</td>
+                <td>{{ number_format($inventory->purchase_price ?? 0) }} ریال</td>
                 <td>
                     @if(isset($inventory->financial_data) && $inventory->financial_data['is_product'])
-                        {{ number_format($inventory->financial_data['sale_price']) }} تومان
+                        {{ number_format($inventory->financial_data['sale_price']) }} ریال
                         <small class="d-block text-muted">محاسبه شده</small>
                     @else
                         <span class="text-muted">-</span>
