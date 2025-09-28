@@ -77,3 +77,53 @@ if (!function_exists('calculate_withdrawal_request_total_weight')) {
         return $totalWeight;
     }
 }
+
+if (!function_exists('setting')) {
+    /**
+     * Get a setting value by key
+     *
+     * @param string $key The setting key
+     * @param mixed $default The default value if setting not found
+     * @return mixed The setting value
+     */
+    function setting($key, $default = null)
+    {
+        return \App\Models\Setting::getValue($key, $default);
+    }
+}
+
+if (!function_exists('vat_percentage')) {
+    /**
+     * Get the current VAT rate as percentage
+     *
+     * @return float The VAT rate as percentage (e.g., 10 for 10%)
+     */
+    function vat_percentage()
+    {
+        return setting('vat_rate', 10);
+    }
+}
+
+if (!function_exists('vat_rate')) {
+    /**
+     * Get the current VAT rate as decimal
+     *
+     * @return float The VAT rate as decimal (e.g., 0.1 for 10%)
+     */
+    function vat_rate()
+    {
+        return vat_percentage() / 100;
+    }
+}
+
+if (!function_exists('default_product_identifier')) {
+    /**
+     * Get the default product identifier
+     *
+     * @return string The default product identifier
+     */
+    function default_product_identifier()
+    {
+        return '2923649785421';
+    }
+}

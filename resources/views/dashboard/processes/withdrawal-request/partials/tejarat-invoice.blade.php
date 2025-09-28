@@ -110,13 +110,13 @@
                             <tr>
                                 <td scope="row">{{ $i }}</td>
                                 <td>{{ $commodity->number }}</td>
-                                <td>{{ $commodity->product_identifier ?? '2923649785421' }}</td>
+                                <td>{{ $commodity->product_identifier ?? default_product_identifier() }}</td>
                                 <td>{{ $commodity->title }}</td>
                                 <td>{{ number_format($commodity->pivot->amount) }}</td>
                                 <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
                                 <td colspan="1.5">{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
-                                <td colspan="1.5">10%</td>
-                                <td colspan="1.5">{{ isset($commodity->pivot->price) ? number_format(round($commodity->pivot->amount * $commodity->pivot->price * 1.1)) : '-' }}</td>
+                                <td colspan="1.5">{{ number_format(vat_percentage(), 0) }}%</td>
+                                <td colspan="1.5">{{ isset($commodity->pivot->price) ? number_format(round($commodity->pivot->amount * $commodity->pivot->price * (1 + vat_rate()))) : '-' }}</td>
                             </tr>
                             @php
                                 $i++;

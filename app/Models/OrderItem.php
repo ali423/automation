@@ -61,12 +61,12 @@ class OrderItem extends Model
     }
 
     /**
-     * Calculate the VAT amount for this item (10% for domestic products)
+     * Calculate the VAT amount for this item (dynamic rate for domestic products)
      */
     public function getVatAmountAttribute()
     {
         if ($this->commodity && $this->commodity->type === 'product') {
-            return $this->total_price * 0.1; // 10% VAT
+            return $this->total_price * vat_rate(); // vat_rate() returns decimal (0.1 for 10%)
         }
         return 0;
     }

@@ -259,6 +259,22 @@
                     </ul>
                 </li>
                 @endif
+
+                <!-- Settings Section -->
+                @if(Gate::check('read_user') || Gate::check('create_user') || Gate::check('read_role') || Gate::check('create_role'))
+                <li
+                    @if($first_url_part=='settings' )
+                    class="treeview active"
+                    @else
+                    class="treeview"
+                    @endif> <a href="javascript:void(0)"><i class="ti-settings"></i> <span>تنظیمات سیستم</span> <i
+                            class="fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        <li @if($first_url_part=='settings' && $second_url_part=='index' ) class="active" @endif><a href="{{ route('settings.index') }}">تنظیمات</a></li>
+                        <li @if($first_url_part=='settings' && $second_url_part=='create' ) class="active" @endif><a href="{{ route('settings.create') }}">افزودن تنظیمات جدید</a></li>
+                    </ul>
+                </li>
+                @endif
             </ul>
         </nav>
     </div>
