@@ -35,6 +35,7 @@
                         <table id="datatable-buttons-commodity-prices" class="table table-striped dt-responsive nowrap w-100">
                             <thead class="text-center">
                                 <tr>
+                                    <th><input type="checkbox" id="select-all"></th>
                                     <th>ردیف</th>
                                     <th>{{ __('fields.title') }}</th>
                                     <th>{{ __('fields.commodity.number') }}</th>
@@ -50,6 +51,7 @@
                                     @php($i = ($commodities->currentPage() - 1) * $commodities->perPage() + 1)
                                     @foreach($commodities as $c)
                                         <tr>
+                                            <td><input type="checkbox" class="row-select" value="{{ $c->id }}" data-id="{{ $c->id }}"></td>
                                             <td>{{ $i }}</td>
                                             <td>{{ $c->title }}</td>
                                             <td>{{ $c->number }}</td>
@@ -118,8 +120,11 @@
                         text: 'دانلود (با سود) - CSV',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            // Exclude base price (index 4) when exporting with profit
-                            columns: [7,6,5,3,2,1,0],
+                            // Exclude checkbox (0) and base price (5) when exporting with profit
+                            columns: [8,7,6,4,3,2,1],
+                            rows: function (idx, data, node) {
+                                return $(node).find('.row-select').prop('checked');
+                            },
                             modifier: { page: 'all' },
                             orthogonal: 'rtlexport'
                         }
@@ -129,8 +134,11 @@
                         text: 'دانلود (با سود) - PDF',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            // Exclude base price (index 4) when exporting with profit
-                            columns: [7,6,5,3,2,1,0],
+                            // Exclude checkbox (0) and base price (5) when exporting with profit
+                            columns: [8,7,6,4,3,2,1],
+                            rows: function (idx, data, node) {
+                                return $(node).find('.row-select').prop('checked');
+                            },
                             modifier: { page: 'all' },
                             orthogonal: 'rtlexport'
                         },
@@ -147,7 +155,11 @@
                         text: 'دانلود (بدون سود) - CSV',
                         className: 'btn btn-outline-secondary',
                         exportOptions: {
-                            columns: [7,6,4,3,2,1,0],
+                            // Exclude checkbox (0) and sales price (6) when exporting without profit
+                            columns: [8,7,5,4,3,2,1],
+                            rows: function (idx, data, node) {
+                                return $(node).find('.row-select').prop('checked');
+                            },
                             modifier: { page: 'all' },
                             orthogonal: 'rtlexport'
                         }
@@ -157,7 +169,11 @@
                         text: 'دانلود (بدون سود) - PDF',
                         className: 'btn btn-outline-secondary',
                         exportOptions: {
-                            columns: [7,6,4,3,2,1,0],
+                            // Exclude checkbox (0) and sales price (6) when exporting without profit
+                            columns: [8,7,5,4,3,2,1],
+                            rows: function (idx, data, node) {
+                                return $(node).find('.row-select').prop('checked');
+                            },
                             modifier: { page: 'all' },
                             orthogonal: 'rtlexport'
                         },
@@ -186,6 +202,12 @@
             // No client-side reload; server pagination/filters handled by form submit
 
             // Buttons are configured in DataTables init above
+
+            // Select/Deselect all checkboxes
+            $('#select-all').on('change', function () {
+                const checked = $(this).is(':checked');
+                $('.row-select').prop('checked', checked);
+            });
         });
     </script>
     
