@@ -59,7 +59,7 @@
                                             <td>{{ number_format($c->base_price ?? 0) }}</td>
                                             <td>{{ $c->sales_price !== null ? number_format($c->sales_price) : '-' }}</td>
                                             <td>{{ __('fields.commodity.types')[$c->type] }}</td>
-                                            <td>{{ $c->unit ? $c->unit->name . ' (' . $c->unit->symbol . ')' : '-' }}</td>
+                                            <td>{{ $c->unit ? $c->unit->name : '-' }}</td>
                                         </tr>
                                         @php($i++)
                                     @endforeach
@@ -168,6 +168,7 @@
                         extend: 'pdf',
                         text: 'دانلود (بدون سود) - PDF',
                         className: 'btn btn-outline-secondary',
+                        title: 'جدول قیمت های تمام شده محصولات',
                         exportOptions: {
                             // Exclude checkbox (0) and sales price (6) when exporting without profit
                             columns: [8,7,5,4,3,2,1],
@@ -175,10 +176,28 @@
                                 return $(node).find('.row-select').prop('checked');
                             },
                             modifier: { page: 'all' },
-                            orthogonal: 'rtlexport'
+                            orthogonal: 'rtlexport',
+                            format: {
+                                body: function (data, row, column, node) {
+                                    // Column 8 is the unit column in the source table
+                                    if (column === 8 && typeof data === 'string') {
+                                        // Remove symbol e.g., "نام واحد (SYM)" -> "نام واحد"
+                                        return data.split('(')[0].trim();
+                                    }
+                                    return data;
+                                }
+                            }
                         },
                         customize: function (doc) {
                             doc.defaultStyle.font = 'IRANSansWeb';
+                            doc.info = doc.info || {};
+                            var titleText = 'جدول قیمت های تمام شده محصولات';
+                            doc.info.title = titleText;
+                            if (doc.content && doc.content.length > 0 && doc.content[0].text !== undefined) {
+                                // Centered header with RTL visual fix (reverse words)
+                                var rtlTitle = titleText.split(' ').reverse().join(' ');
+                                doc.content[0] = { text: rtlTitle, alignment: 'center', margin: [0, 0, 0, 12] };
+                            }
                             doc.content[1].table.widths = ['10%', '20%', '15%', '15%', '15%', '10%', '15%'];
                             doc.styles.tableBodyEven.alignment = 'center';
                             doc.styles.tableBodyOdd.alignment = 'center';
