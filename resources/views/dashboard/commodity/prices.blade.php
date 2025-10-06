@@ -6,6 +6,43 @@
     <link rel="stylesheet" href="{{ asset('css/default-assets/buttons.bootstrap4.css') }}">
     <link rel="stylesheet" href="{{ asset('css/default-assets/select.bootstrap4.css') }}">
     <link rel="stylesheet" href="{{ asset('css/datatables-td.css') }}">
+    <style>
+        .sortable-handle {
+            cursor: move;
+            color: #6c757d;
+            font-size: 16px;
+            padding: 5px;
+            user-select: none;
+        }
+        .sortable-handle:hover {
+            color: #495057;
+        }
+        .sortable-row {
+            transition: background-color 0.2s ease;
+        }
+        .sortable-row:hover {
+            background-color: #f8f9fa;
+        }
+        .sortable-row.dragging {
+            opacity: 0.5;
+            background-color: #e3f2fd;
+        }
+        .sortable-ghost {
+            opacity: 0.4;
+            background-color: #e3f2fd;
+        }
+        .sortable-chosen {
+            background-color: #e3f2fd;
+        }
+        .sortable-drag {
+            background-color: #e3f2fd;
+        }
+        .sortable-placeholder {
+            background-color: #e3f2fd;
+            border: 2px dashed #2196f3;
+            height: 50px;
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -36,6 +73,7 @@
                             <thead class="text-center">
                                 <tr>
                                     <th><input type="checkbox" id="select-all"></th>
+                                    <th>ترتیب</th>
                                     <th>ردیف</th>
                                     <th>{{ __('fields.title') }}</th>
                                     <th>{{ __('fields.commodity.number') }}</th>
@@ -50,8 +88,9 @@
                                 @isset($commodities)
                                     @php($i = ($commodities->currentPage() - 1) * $commodities->perPage() + 1)
                                     @foreach($commodities as $c)
-                                        <tr>
+                                        <tr class="sortable-row" data-id="{{ $c->id }}">
                                             <td><input type="checkbox" class="row-select" value="{{ $c->id }}" data-id="{{ $c->id }}"></td>
+                                            <td><span class="sortable-handle">⋮⋮</span></td>
                                             <td>{{ $i }}</td>
                                             <td>{{ $c->title }}</td>
                                             <td>{{ $c->number }}</td>
@@ -88,7 +127,9 @@
     <script src="{{ asset('js/default-assets/pdfmake/vfs_fonts.js') }}"></script>
     <script src="{{ asset('js/default-assets/buttons.html5.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/button.print.min.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="{{ asset('js/default-assets/dataTables.sorting.persian.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
             pdfMake.fonts = {
@@ -106,6 +147,9 @@
                 }
             };
 
+            // Initialize sortable functionality
+            initializeSortable();
+
             const table = $('#datatable-buttons-commodity-prices').DataTable({
                 dom: 'Bfrtip',
                 paging: false, // server pagination used
@@ -116,26 +160,28 @@
                 data: null,
                 buttons: [
                     {
-                        extend: 'csv',
-                        text: 'دانلود (با سود) - CSV',
-                        className: 'btn btn-outline-primary',
+                        extend: 'excel',
+                        text: 'دانلود (با سود) - Excel',
+                        className: 'btn btn-outline-success',
                         exportOptions: {
-                            // Exclude checkbox (0) and base price (5) when exporting with profit
-                            columns: [8,7,6,4,3,2,1],
+                            // Exclude checkbox (0), drag handle (1), and base price (6) when exporting with profit
+                            // Use columns: [9,8,7,5,4,3,2] to include sales price with profit
+                            columns: [9,8,7,5,4,3,2],
                             rows: function (idx, data, node) {
                                 return $(node).find('.row-select').prop('checked');
                             },
-                            modifier: { page: 'all' },
-                            orthogonal: 'rtlexport'
+                            modifier: { page: 'all' }
                         }
                     },
                     {
                         extend: 'pdf',
                         text: 'دانلود (با سود) - PDF',
                         className: 'btn btn-outline-primary',
+                        title: 'لیست قیمت محصولات',
                         exportOptions: {
-                            // Exclude checkbox (0) and base price (5) when exporting with profit
-                            columns: [8,7,6,4,3,2,1],
+                            // Exclude checkbox (0), drag handle (1), and base price (6) when exporting with profit
+                            // Use columns: [9,8,7,5,4,3,2] to include sales price with profit
+                            columns: [9,8,7,5,4,3,2],
                             rows: function (idx, data, node) {
                                 return $(node).find('.row-select').prop('checked');
                             },
@@ -144,24 +190,45 @@
                         },
                         customize: function (doc) {
                             doc.defaultStyle.font = 'IRANSansWeb';
-                            // 7 columns widths after removing base price
+                            doc.info = doc.info || {};
+                            var titleText = 'لیست قیمت محصولات';
+                            doc.info.title = titleText;
+                            if (doc.content && doc.content.length > 0 && doc.content[0].text !== undefined) {
+                                // Centered header with RTL visual fix (reverse words)
+                                var rtlTitle = titleText.split(' ').reverse().join(' ');
+                                doc.content[0] = { text: rtlTitle, alignment: 'center', margin: [0, 0, 0, 12] };
+                            }
+                            
+                            // Change header text for unit column (first column in export)
+                            if (doc.content && doc.content[1] && doc.content[1].table && doc.content[1].table.body) {
+                                var tableBody = doc.content[1].table.body;
+                                if (tableBody[0] && tableBody[0][0]) {
+                                    // Check if it contains the unit text and replace it
+                                    var headerText = tableBody[0][0].text || '';
+                                    if (headerText.includes('واحد اندازه گیری')) {
+                                        tableBody[0][0].text = 'واحد کالا';
+                                    }
+                                }
+                            }
+                            
+                            // 7 columns widths after removing checkbox, drag handle, and base price
                             doc.content[1].table.widths = ['12%', '20%', '18%', '18%', '14%', '12%', '6%'];
                             doc.styles.tableBodyEven.alignment = 'center';
                             doc.styles.tableBodyOdd.alignment = 'center';
                         }
                     },
                     {
-                        extend: 'csv',
-                        text: 'دانلود (بدون سود) - CSV',
-                        className: 'btn btn-outline-secondary',
+                        extend: 'excel',
+                        text: 'دانلود (بدون سود) - Excel',
+                        className: 'btn btn-outline-success',
                         exportOptions: {
-                            // Exclude checkbox (0) and sales price (6) when exporting without profit
-                            columns: [8,7,5,4,3,2,1],
+                            // Exclude checkbox (0), drag handle (1), and sales price (7) when exporting without profit
+                            // Use columns: [9,8,6,5,4,3,2] to exclude sales price
+                            columns: [9,8,6,5,4,3,2],
                             rows: function (idx, data, node) {
                                 return $(node).find('.row-select').prop('checked');
                             },
-                            modifier: { page: 'all' },
-                            orthogonal: 'rtlexport'
+                            modifier: { page: 'all' }
                         }
                     },
                     {
@@ -170,8 +237,9 @@
                         className: 'btn btn-outline-secondary',
                         title: 'جدول قیمت های تمام شده محصولات',
                         exportOptions: {
-                            // Exclude checkbox (0) and sales price (6) when exporting without profit
-                            columns: [8,7,5,4,3,2,1],
+                            // Exclude checkbox (0), drag handle (1), and sales price (7) when exporting without profit
+                            // Use columns: [9,8,6,5,4,3,2] to exclude sales price
+                            columns: [9,8,6,5,4,3,2],
                             rows: function (idx, data, node) {
                                 return $(node).find('.row-select').prop('checked');
                             },
@@ -179,8 +247,8 @@
                             orthogonal: 'rtlexport',
                             format: {
                                 body: function (data, row, column, node) {
-                                    // Column 8 is the unit column in the source table
-                                    if (column === 8 && typeof data === 'string') {
+                                    // Column 9 is the unit column in the source table
+                                    if (column === 9 && typeof data === 'string') {
                                         // Remove symbol e.g., "نام واحد (SYM)" -> "نام واحد"
                                         return data.split('(')[0].trim();
                                     }
@@ -198,6 +266,19 @@
                                 var rtlTitle = titleText.split(' ').reverse().join(' ');
                                 doc.content[0] = { text: rtlTitle, alignment: 'center', margin: [0, 0, 0, 12] };
                             }
+                            
+                            // Change header text for unit column (first column in export)
+                            if (doc.content && doc.content[1] && doc.content[1].table && doc.content[1].table.body) {
+                                var tableBody = doc.content[1].table.body;
+                                if (tableBody[0] && tableBody[0][0]) {
+                                    // Check if it contains the unit text and replace it
+                                    var headerText = tableBody[0][0].text || '';
+                                    if (headerText.includes('واحد اندازه گیری')) {
+                                        tableBody[0][0].text = 'واحد کالا';
+                                    }
+                                }
+                            }
+                            
                             doc.content[1].table.widths = ['10%', '20%', '15%', '15%', '15%', '10%', '15%'];
                             doc.styles.tableBodyEven.alignment = 'center';
                             doc.styles.tableBodyOdd.alignment = 'center';
@@ -228,6 +309,82 @@
                 $('.row-select').prop('checked', checked);
             });
         });
+
+        // Sortable functionality
+        function initializeSortable() {
+            const tbody = document.querySelector('#datatable-buttons-commodity-prices tbody');
+            if (!tbody) return;
+
+            // Load saved order from localStorage
+            loadSavedOrder();
+
+            const sortable = Sortable.create(tbody, {
+                handle: '.sortable-handle',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                onStart: function (evt) {
+                    evt.item.classList.add('dragging');
+                },
+                onEnd: function (evt) {
+                    evt.item.classList.remove('dragging');
+                    updateRowNumbers();
+                    saveOrder();
+                }
+            });
+        }
+
+        function loadSavedOrder() {
+            const savedOrder = localStorage.getItem('commodity-prices-order');
+            if (!savedOrder) return;
+
+            try {
+                const order = JSON.parse(savedOrder);
+                const tbody = document.querySelector('#datatable-buttons-commodity-prices tbody');
+                if (!tbody) return;
+
+                // Create a map of current rows by data-id
+                const rows = Array.from(tbody.querySelectorAll('tr[data-id]'));
+                const rowMap = {};
+                rows.forEach(row => {
+                    rowMap[row.getAttribute('data-id')] = row;
+                });
+
+                // Reorder rows according to saved order
+                order.forEach(id => {
+                    if (rowMap[id]) {
+                        tbody.appendChild(rowMap[id]);
+                    }
+                });
+
+                updateRowNumbers();
+            } catch (e) {
+                console.error('Error loading saved order:', e);
+            }
+        }
+
+        function saveOrder() {
+            const rows = document.querySelectorAll('#datatable-buttons-commodity-prices tbody tr[data-id]');
+            const order = Array.from(rows).map(row => row.getAttribute('data-id'));
+            localStorage.setItem('commodity-prices-order', JSON.stringify(order));
+        }
+
+        function updateRowNumbers() {
+            const rows = document.querySelectorAll('#datatable-buttons-commodity-prices tbody tr[data-id]');
+            rows.forEach((row, index) => {
+                const rowNumberCell = row.querySelector('td:nth-child(3)'); // Third column is row number
+                if (rowNumberCell) {
+                    rowNumberCell.textContent = index + 1;
+                }
+            });
+        }
+
+        // Function to get current order for PDF export
+        function getCurrentOrder() {
+            const rows = document.querySelectorAll('#datatable-buttons-commodity-prices tbody tr[data-id]');
+            return Array.from(rows).map(row => row.getAttribute('data-id'));
+        }
     </script>
     
 @endsection
