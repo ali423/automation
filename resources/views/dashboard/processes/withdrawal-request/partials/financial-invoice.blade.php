@@ -154,7 +154,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="9" class="text-left"> مالیات بر ارزش افزوده : %10 </td>
+                            <td colspan="9" class="text-left"> مالیات بر ارزش افزوده : %{{ number_format(vat_percentage(), 0) }} </td>
                         </tr>
                         <tr>
                             <td colspan="9" class="text-left">جمع کل : {{ isset($totalPrice) && isset($totalPrice['number']) ? number_format($totalPrice['number']) : '0' }}</td>

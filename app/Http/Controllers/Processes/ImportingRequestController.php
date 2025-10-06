@@ -377,4 +377,29 @@ class ImportingRequestController extends Controller
             'formatted_price' => number_format(round($convertedPrice, 2))
         ]);
     }
+
+    /**
+     * Return selectable units for a commodity (AJAX)
+     */
+    public function getSelectableUnits(Request $request)
+    {
+        $validated = $request->validate([
+            'commodity_id' => 'required|exists:commodities,id',
+        ]);
+
+        $commodity = Commodity::find($validated['commodity_id']);
+        $units = $this->commodityUnitService->getSelectableUnits($commodity) ?? collect();
+
+        $responseUnits = collect($units)->map(function ($unit) {
+            return [
+                'id' => $unit->id,
+                'display_name' => trim(($unit->name ?? '') . (isset($unit->symbol) && $unit->symbol !== '' ? ' (' . $unit->symbol . ')' : '')),
+            ];
+        })->values();
+
+        return response()->json([
+            'success' => true,
+            'units' => $responseUnits,
+        ]);
+    }
 }

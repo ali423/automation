@@ -12,6 +12,7 @@ use App\Http\Controllers\Processes\ProductionRequestController;
 use App\Http\Controllers\Processes\WithdrawalRequestController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SellerController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UnitConversionController;
@@ -45,6 +46,8 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('role',RoleController::class);
     Route::resource('activity',ActivityController::class)->only('show','index');
+    Route::resource('settings',SettingsController::class)->except(['destroy']);
+    Route::patch('settings/{setting}/toggle', [SettingsController::class, 'toggle'])->name('settings.toggle');
 
     // Prices tab and data (client-side export support) - keep BEFORE resource to avoid route shadowing
     Route::get('commodity/prices', [CommodityController::class, 'prices'])->name('commodity.prices');
@@ -53,7 +56,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('seller',SellerController::class);
 
     Route::resource('importing-request',ImportingRequestController::class);
-
+    Route::post('importing-request/get-selectable-units', [ImportingRequestController::class, 'getSelectableUnits'])->name('importing-request.get-selectable-units');
     Route::resource('withdrawal-request',WithdrawalRequestController::class);
 
     Route::resource('production-request',ProductionRequestController::class);
