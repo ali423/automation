@@ -42,6 +42,30 @@
             border: 2px dashed #2196f3;
             height: 50px;
         }
+        
+        /* Dynamic table styling for better text wrapping */
+        #datatable-buttons-commodity-prices {
+            table-layout: auto;
+        }
+        
+        #datatable-buttons-commodity-prices td {
+            word-wrap: break-word;
+            word-break: break-word;
+            white-space: normal;
+            max-width: 200px;
+            vertical-align: middle;
+        }
+        
+        #datatable-buttons-commodity-prices th {
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+        
+        /* Specific styling for title column */
+        #datatable-buttons-commodity-prices td:nth-child(4) {
+            max-width: 250px;
+            text-align: center;
+        }
     </style>
 @endsection
 
@@ -150,6 +174,69 @@
             // Initialize sortable functionality
             initializeSortable();
 
+            // Function to calculate dynamic column widths based on content
+            function calculateDynamicColumnWidths(tableBody, columnCount) {
+                if (!tableBody || !tableBody.length) {
+                    // Fallback to default widths if no data
+                    return Array(columnCount).fill(100 / columnCount + '%');
+                }
+
+                var maxLengths = Array(columnCount).fill(0);
+                var totalRows = Math.min(tableBody.length, 20); // Analyze up to 20 rows for performance
+                
+                // Analyze each column to find maximum content length
+                for (var row = 0; row < totalRows; row++) {
+                    if (tableBody[row] && tableBody[row].length >= columnCount) {
+                        for (var col = 0; col < columnCount; col++) {
+                            var cellContent = tableBody[row][col].text || '';
+                            var contentLength = cellContent.length;
+                            
+                            // Special handling for different column types
+                            if (col === 2) { // Title column - give more space for long titles
+                                contentLength = Math.max(contentLength * 0.8, 15); // Minimum 15 chars
+                            } else if (col === 1) { // Type column - usually short
+                                contentLength = Math.max(contentLength, 8);
+                            } else if (col === 0) { // Unit column - usually short
+                                contentLength = Math.max(contentLength, 6);
+                            } else { // Other columns
+                                contentLength = Math.max(contentLength, 10);
+                            }
+                            
+                            maxLengths[col] = Math.max(maxLengths[col], contentLength);
+                        }
+                    }
+                }
+
+                // Calculate total length for percentage calculation
+                var totalLength = maxLengths.reduce(function(sum, length) {
+                    return sum + length;
+                }, 0);
+
+                // Convert to percentages with minimum and maximum constraints
+                var widths = maxLengths.map(function(length) {
+                    var percentage = (length / totalLength) * 100;
+                    // Set minimum and maximum constraints
+                    percentage = Math.max(percentage, 8);  // Minimum 8%
+                    percentage = Math.min(percentage, 35); // Maximum 35%
+                    return percentage + '%';
+                });
+
+                // Adjust if total exceeds 100% due to constraints
+                var totalPercentage = widths.reduce(function(sum, width) {
+                    return sum + parseFloat(width);
+                }, 0);
+
+                if (totalPercentage > 100) {
+                    // Scale down proportionally
+                    var scaleFactor = 100 / totalPercentage;
+                    widths = widths.map(function(width) {
+                        return (parseFloat(width) * scaleFactor) + '%';
+                    });
+                }
+
+                return widths;
+            }
+
             const table = $('#datatable-buttons-commodity-prices').DataTable({
                 dom: 'Bfrtip',
                 paging: false, // server pagination used
@@ -211,10 +298,56 @@
                                 }
                             }
                             
-                            // 7 columns widths after removing checkbox, drag handle, and base price
-                            doc.content[1].table.widths = ['12%', '20%', '18%', '18%', '14%', '12%', '6%'];
-                            doc.styles.tableBodyEven.alignment = 'center';
-                            doc.styles.tableBodyOdd.alignment = 'center';
+                            // Calculate dynamic column widths based on content
+                            var dynamicWidths = calculateDynamicColumnWidths(doc.content[1].table.body, 7);
+                            doc.content[1].table.widths = dynamicWidths;
+                            
+                            // Set table layout to auto for better text wrapping
+                            doc.content[1].table.layout = 'auto';
+                            
+                            // Add custom styles for better text handling
+                            doc.styles.tableBodyEven = {
+                                alignment: 'center',
+                                fontSize: 9,
+                                lineHeight: 1.2,
+                                margin: [2, 2, 2, 2],
+                                fillColor: '#e8f4fd'
+                            };
+                            doc.styles.tableBodyOdd = {
+                                alignment: 'center',
+                                fontSize: 9,
+                                lineHeight: 1.2,
+                                margin: [2, 2, 2, 2],
+                                fillColor: '#ffffff'
+                            };
+                            
+                            // Add header styles
+                            doc.styles.tableHeader = {
+                                alignment: 'center',
+                                fontSize: 10,
+                                bold: true,
+                                fillColor: '#2c3e50',
+                                color: 'white',
+                                margin: [2, 2, 2, 2]
+                            };
+                            
+                            // Process table body to handle long text with proper wrapping
+                            if (doc.content[1] && doc.content[1].table && doc.content[1].table.body) {
+                                var tableBody = doc.content[1].table.body;
+                                for (var i = 0; i < tableBody.length; i++) {
+                                    for (var j = 0; j < tableBody[i].length; j++) {
+                                        var cell = tableBody[i][j];
+                                        if (cell && cell.text && cell.text.length > 30) {
+                                            // For long text, add proper styling for wrapping
+                                            cell.style = {
+                                                fontSize: 8,
+                                                lineHeight: 1.1,
+                                                margin: [1, 1, 1, 1]
+                                            };
+                                        }
+                                    }
+                                }
+                            }
                         }
                     },
                     {
@@ -279,9 +412,56 @@
                                 }
                             }
                             
-                            doc.content[1].table.widths = ['10%', '20%', '15%', '15%', '15%', '10%', '15%'];
-                            doc.styles.tableBodyEven.alignment = 'center';
-                            doc.styles.tableBodyOdd.alignment = 'center';
+                            // Calculate dynamic column widths based on content
+                            var dynamicWidths = calculateDynamicColumnWidths(doc.content[1].table.body, 7);
+                            doc.content[1].table.widths = dynamicWidths;
+                            
+                            // Set table layout to auto for better text wrapping
+                            doc.content[1].table.layout = 'auto';
+                            
+                            // Add custom styles for better text handling
+                            doc.styles.tableBodyEven = {
+                                alignment: 'center',
+                                fontSize: 9,
+                                lineHeight: 1.2,
+                                margin: [2, 2, 2, 2],
+                                fillColor: '#e8f4fd'
+                            };
+                            doc.styles.tableBodyOdd = {
+                                alignment: 'center',
+                                fontSize: 9,
+                                lineHeight: 1.2,
+                                margin: [2, 2, 2, 2],
+                                fillColor: '#ffffff'
+                            };
+                            
+                            // Add header styles
+                            doc.styles.tableHeader = {
+                                alignment: 'center',
+                                fontSize: 10,
+                                bold: true,
+                                fillColor: '#2c3e50',
+                                color: 'white',
+                                margin: [2, 2, 2, 2]
+                            };
+                            
+                            // Process table body to handle long text with proper wrapping
+                            if (doc.content[1] && doc.content[1].table && doc.content[1].table.body) {
+                                var tableBody = doc.content[1].table.body;
+                                for (var i = 0; i < tableBody.length; i++) {
+                                    for (var j = 0; j < tableBody[i].length; j++) {
+                                        var cell = tableBody[i][j];
+                                        if (cell && cell.text && cell.text.length > 30) {
+                                            // For long text, add proper styling for wrapping
+                                            cell.style = {
+                                                fontSize: 8,
+                                                lineHeight: 1.1,
+                                                margin: [1, 1, 1, 1]
+                                            };
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 ],
