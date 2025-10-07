@@ -122,4 +122,11 @@ class Commodity extends Model
     {
         return $this->weight_per_unit;
     }
+
+    /**
+     * Calculate the price per box/carton
+     *
+     * @return float|null
+     */
+    
 }
