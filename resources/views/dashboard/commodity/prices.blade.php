@@ -103,7 +103,7 @@
                                     <th>{{ __('fields.commodity.number') }}</th>
                                     <th>شناسه کالا</th>
                                     <th>{{ __('fields.base_price') }}</th>
-                                    <th>قیمت فروش با احتساب سود</th>
+                                    <th>قیمت نهایی</th>
                                     <th>{{ __('fields.type') }}</th>
                                     <th>{{ __('fields.unit') }}</th>
                                 </tr>
@@ -112,7 +112,7 @@
                                 @isset($commodities)
                                     @php($i = ($commodities->currentPage() - 1) * $commodities->perPage() + 1)
                                     @foreach($commodities as $c)
-                                        <tr class="sortable-row" data-id="{{ $c->id }}">
+                                        <tr class="sortable-row" data-id="{{ $c->id }}" data-carton-price="{{ $c->carton_price }}">
                                             <td><input type="checkbox" class="row-select" value="{{ $c->id }}" data-id="{{ $c->id }}"></td>
                                             <td><span class="sortable-handle">⋮⋮</span></td>
                                             <td>{{ $i }}</td>
@@ -120,7 +120,7 @@
                                             <td>{{ $c->number }}</td>
                                             <td>{{ $c->type == 'product' ? ($c->product_identifier ?? '-') : '-' }}</td>
                                             <td>{{ number_format($c->base_price ?? 0) }}</td>
-                                            <td>{{ $c->sales_price !== null ? number_format($c->sales_price) : '-' }}</td>
+                                            <td>{{ $c->sales_price_with_vat !== null ? number_format($c->sales_price_with_vat) : '-' }}</td>
                                             <td>{{ __('fields.commodity.types')[$c->type] }}</td>
                                             <td>{{ $c->unit ? $c->unit->name : '-' }}</td>
                                         </tr>
@@ -252,10 +252,12 @@
                         text: 'دانلود (با سود) - Excel',
                         className: 'btn btn-outline-success',
                         action: function (e, dt, button, config) {
-                            // Get selected rows or all rows
-                            var selectedRows = dt.rows({ selected: true }).data();
-                            var allRows = dt.rows({ page: 'all' }).data();
-                            var rowsToExport = selectedRows.length > 0 ? selectedRows : allRows;
+                            // Get selected rows or all rows and their DOM nodes (for carton price)
+                            var selected = dt.rows({ selected: true });
+                            var all = dt.rows({ page: 'all' });
+                            var useSelected = selected.data().length > 0;
+                            var rowsToExport = useSelected ? selected.data() : all.data();
+                            var nodesToExport = useSelected ? selected.nodes().toArray() : all.nodes().toArray();
                             
                             // Prepare data with reversed column order: واحد کالا، قیمت نهایی، قیمت کارتون، عنوان، ردیف
                             var exportData = [];
@@ -277,16 +279,15 @@
                                 }
                                 rowData.push(unit);
                                 
-                                // Get sales price (column 7 in original table) - second column
-                                var salesPrice = row[7] || '-';
-                                rowData.push(salesPrice);
+                                // Get final price with VAT (column 7 now shows VAT-included) - second column
+                                var finalPrice = row[7] || '-';
+                                rowData.push(finalPrice);
                                 
-                                // Calculate box price from sales price (column 7 in original table) - third column
-                                var salesPriceNum = parseFloat((row[7] || '0').replace(/,/g, ''));
-                                var boxPrice = '-';
-                                if (!isNaN(salesPriceNum) && salesPriceNum > 0) {
-                                    boxPrice = (salesPriceNum * 12).toLocaleString('fa-IR');
-                                }
+                                // Use server-calculated carton price from row's data attribute - third column
+                                var trNode = nodesToExport[index];
+                                var cartonAttr = trNode ? trNode.getAttribute('data-carton-price') : null;
+                                var cartonPrice = cartonAttr ? parseFloat(cartonAttr) : NaN;
+                                var boxPrice = (!isNaN(cartonPrice) && cartonPrice > 0) ? cartonPrice.toLocaleString('fa-IR') : '-';
                                 rowData.push(boxPrice);
                                 
                                 // Get title (column 3 in original table) - fourth column
@@ -379,15 +380,13 @@
                             columns: [9,7,3,2],
                             format: {
                                 body: function (data, row, column, node) {
-                                    // Add box price calculation for sales price column (column 7 in original table)
+                                    // Inject carton price coming from server into the exported data for PDF
                                     if (column === 7) {
-                                        var salesPrice = parseFloat(data.replace(/,/g, ''));
-                                        if (!isNaN(salesPrice) && salesPrice > 0) {
-                                            // Calculate box price (assuming pieces_per_box = 12)
-                                            var boxPrice = salesPrice * 12;
-                                            return data + '|' + boxPrice.toLocaleString();
-                                        }
-                                        return data + '|-';
+                                        var tr = node && node.parentNode ? node.parentNode : null;
+                                        var cartonAttr = tr ? tr.getAttribute('data-carton-price') : null;
+                                        var cartonPrice = cartonAttr ? parseFloat(cartonAttr) : NaN;
+                                        var cartonText = (!isNaN(cartonPrice) && cartonPrice > 0) ? cartonPrice.toLocaleString() : '-';
+                                        return data + '|' + cartonText;
                                     }
                                     return data;
                                 }
