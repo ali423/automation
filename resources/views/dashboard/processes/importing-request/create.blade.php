@@ -17,11 +17,11 @@
                             @csrf
                             <div class="form-row m-3">
                                 <div class="form-group col">
-                                    <label for="seller_id">نام فروشنده</label>
+                                    <label for="seller_id">نام شرکت</label>
                                     <select id="seller_id" class="form-control" name="seller_id" required>
                                         <option value="">انتخاب کنید</option>
                                         @foreach ($sellers as $seller)
-                                            <option value="{{ $seller->id }}">{{$seller->name}}</option>
+                                            <option value="{{ $seller->id }}">{{$seller->comp_name ?? $seller->name}}</option>
                                         @endforeach
                                     </select>
                                     <div class="invalid-feedback">
