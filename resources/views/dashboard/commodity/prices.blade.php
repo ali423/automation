@@ -249,32 +249,123 @@
                 data: null,
                 buttons: [
                     {
-                        extend: 'excel',
                         text: 'دانلود (با سود) - Excel',
                         className: 'btn btn-outline-success',
-                        exportOptions: {
-                            // Exclude checkbox (0), drag handle (1), base price (6), commodity number (4), commodity id (5), and type (8) when exporting with profit
-                            // Use columns: [9,7,3,2] to include unit, sales price, title, and row number
-                            columns: [9,7,3,2],
-                            format: {
-                                body: function (data, row, column, node) {
-                                    // Add box price calculation for sales price column (column 7 in original table)
-                                    if (column === 7) {
-                                        var salesPrice = parseFloat(data.replace(/,/g, ''));
-                                        if (!isNaN(salesPrice) && salesPrice > 0) {
-                                            // Calculate box price (assuming pieces_per_box = 12)
-                                            var boxPrice = salesPrice * 12;
-                                            return data + '|' + boxPrice.toLocaleString();
-                                        }
-                                        return data + '|-';
-                                    }
-                                    return data;
+                        action: function (e, dt, button, config) {
+                            // Get selected rows or all rows
+                            var selectedRows = dt.rows({ selected: true }).data();
+                            var allRows = dt.rows({ page: 'all' }).data();
+                            var rowsToExport = selectedRows.length > 0 ? selectedRows : allRows;
+                            
+                            // Prepare data with reversed column order: واحد کالا، قیمت نهایی، قیمت کارتون، عنوان، ردیف
+                            var exportData = [];
+                            
+                            // Add title row with centered styling
+                            exportData.push(['لیست قیمت محصولات']);
+                            
+                            // Add headers (reversed order)
+                            exportData.push(['واحد کالا', 'قیمت نهایی', 'قیمت کارتون', 'عنوان', 'ردیف']);
+                            
+                            // Add data rows
+                            rowsToExport.each(function(row, index) {
+                                var rowData = [];
+                                
+                                // Get unit (column 9 in original table) - first column
+                                var unit = row[9] || '-';
+                                if (unit && unit.includes('(')) {
+                                    unit = unit.split('(')[0].trim(); // Remove symbol part
                                 }
-                            },
-                            rows: function (idx, data, node) {
-                                return $(node).find('.row-select').prop('checked');
-                            },
-                            modifier: { page: 'all' }
+                                rowData.push(unit);
+                                
+                                // Get sales price (column 7 in original table) - second column
+                                var salesPrice = row[7] || '-';
+                                rowData.push(salesPrice);
+                                
+                                // Calculate box price from sales price (column 7 in original table) - third column
+                                var salesPriceNum = parseFloat((row[7] || '0').replace(/,/g, ''));
+                                var boxPrice = '-';
+                                if (!isNaN(salesPriceNum) && salesPriceNum > 0) {
+                                    boxPrice = (salesPriceNum * 12).toLocaleString('fa-IR');
+                                }
+                                rowData.push(boxPrice);
+                                
+                                // Get title (column 3 in original table) - fourth column
+                                rowData.push(row[3] || '');
+                                
+                                // Get row number (index + 1) - last column
+                                rowData.push(index + 1);
+                                
+                                exportData.push(rowData);
+                            });
+                            
+                            // Create and download Excel file with better formatting
+                            var ws = XLSX.utils.aoa_to_sheet(exportData);
+                            
+                            // Set column widths for better display
+                            ws['!cols'] = [
+                                { wch: 15 }, // واحد کالا
+                                { wch: 15 }, // قیمت نهایی
+                                { wch: 15 }, // قیمت کارتون
+                                { wch: 30 }, // عنوان
+                                { wch: 8 }   // ردیف
+                            ];
+                            
+                            // Style the title row
+                            if (ws['A1']) {
+                                ws['A1'].s = {
+                                    font: { bold: true, size: 16 },
+                                    alignment: { horizontal: 'center', vertical: 'center' },
+                                    fill: { fgColor: { rgb: 'F8F9FA' } }
+                                };
+                            }
+                            
+                            // Style the header row
+                            var headerRow = 2; // Row 2 contains headers
+                            ['A', 'B', 'C', 'D', 'E'].forEach(function(col, index) {
+                                var cellRef = col + headerRow;
+                                if (ws[cellRef]) {
+                                    ws[cellRef].s = {
+                                        font: { bold: true, color: { rgb: 'FFFFFF' } },
+                                        fill: { fgColor: { rgb: '2C3E50' } },
+                                        alignment: { horizontal: 'center', vertical: 'center' },
+                                        border: {
+                                            top: { style: 'thin', color: { rgb: '000000' } },
+                                            bottom: { style: 'thin', color: { rgb: '000000' } },
+                                            left: { style: 'thin', color: { rgb: '000000' } },
+                                            right: { style: 'thin', color: { rgb: '000000' } }
+                                        }
+                                    };
+                                }
+                            });
+                            
+                            // Style data rows with alternating colors
+                            for (var i = 3; i <= exportData.length; i++) {
+                                var isEven = (i - 3) % 2 === 0;
+                                ['A', 'B', 'C', 'D', 'E'].forEach(function(col) {
+                                    var cellRef = col + i;
+                                    if (ws[cellRef]) {
+                                        ws[cellRef].s = {
+                                            alignment: { horizontal: 'center', vertical: 'center' },
+                                            fill: { fgColor: { rgb: isEven ? 'F8F9FA' : 'FFFFFF' } },
+                                            border: {
+                                                top: { style: 'thin', color: { rgb: 'E9ECEF' } },
+                                                bottom: { style: 'thin', color: { rgb: 'E9ECEF' } },
+                                                left: { style: 'thin', color: { rgb: 'E9ECEF' } },
+                                                right: { style: 'thin', color: { rgb: 'E9ECEF' } }
+                                            }
+                                        };
+                                    }
+                                });
+                            }
+                            
+                            // Merge title cells for better appearance
+                            ws['!merges'] = [
+                                { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }
+                            ];
+                            
+                            var wb = XLSX.utils.book_new();
+                            XLSX.utils.book_append_sheet(wb, ws, 'لیست قیمت محصولات');
+                            XLSX.writeFile(wb, 'لیست قیمت محصولات.xlsx');
                         }
                     },
                     {
