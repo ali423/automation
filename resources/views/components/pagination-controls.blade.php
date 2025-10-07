@@ -95,7 +95,7 @@
                         $seller = \App\Models\Seller::find($currentFilters['seller_id']);
                     @endphp
                     @if($seller)
-                        <span class="badge bg-info text-white ms-1">فروشنده: {{ $seller->name ?? $seller->comp_name }}</span>
+                        <span class="badge bg-info text-white ms-1">فروشنده: {{ $seller->comp_name ?? $seller->name }}</span>
                     @endif
                 @endif
                 @if(isset($currentFilters['role_id']))
@@ -265,7 +265,7 @@
                         @foreach(\App\Models\Seller::orderBy('name')->get() as $seller)
                             <option value="{{ $seller->id }}" 
                                 {{ ($currentFilters['seller_id'] ?? '') == $seller->id ? 'selected' : '' }}>
-                                {{ $seller->name ?? $seller->comp_name }}
+                                {{ $seller->comp_name ?? $seller->name }}
                             </option>
                         @endforeach
                     </select>
