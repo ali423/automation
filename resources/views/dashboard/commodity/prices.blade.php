@@ -100,11 +100,8 @@
                                     <th>ترتیب</th>
                                     <th>ردیف</th>
                                     <th>{{ __('fields.title') }}</th>
-                                    <th>{{ __('fields.commodity.number') }}</th>
-                                    <th>شناسه کالا</th>
                                     <th>{{ __('fields.base_price') }}</th>
                                     <th>قیمت نهایی</th>
-                                    <th>{{ __('fields.type') }}</th>
                                     <th>{{ __('fields.unit') }}</th>
                                 </tr>
                             </thead>
@@ -117,11 +114,8 @@
                                             <td><span class="sortable-handle">⋮⋮</span></td>
                                             <td>{{ $i }}</td>
                                             <td>{{ $c->title }}</td>
-                                            <td>{{ $c->number }}</td>
-                                            <td>{{ $c->type == 'product' ? ($c->product_identifier ?? '-') : '-' }}</td>
                                             <td>{{ number_format($c->base_price ?? 0) }}</td>
                                             <td>{{ $c->sales_price_with_vat !== null ? number_format($c->sales_price_with_vat) : '-' }}</td>
-                                            <td>{{ __('fields.commodity.types')[$c->type] }}</td>
                                             <td>{{ $c->unit ? $c->unit->name : '-' }}</td>
                                         </tr>
                                         @php($i++)
@@ -272,15 +266,15 @@
                             rowsToExport.each(function(row, index) {
                                 var rowData = [];
                                 
-                                // Get unit (column 9 in original table) - first column
-                                var unit = row[9] || '-';
+                                // Get unit (column 6 in new table) - first column
+                                var unit = row[6] || '-';
                                 if (unit && unit.includes('(')) {
                                     unit = unit.split('(')[0].trim(); // Remove symbol part
                                 }
                                 rowData.push(unit);
                                 
-                                // Get final price with VAT (column 7 now shows VAT-included) - second column
-                                var finalPrice = row[7] || '-';
+                                // Get final price with VAT (column 5 now shows VAT-included) - second column
+                                var finalPrice = row[5] || '-';
                                 rowData.push(finalPrice);
                                 
                                 // Use server-calculated carton price from row's data attribute - third column
@@ -290,7 +284,7 @@
                                 var boxPrice = (!isNaN(cartonPrice) && cartonPrice > 0) ? cartonPrice.toLocaleString('fa-IR') : '-';
                                 rowData.push(boxPrice);
                                 
-                                // Get title (column 3 in original table) - fourth column
+                                // Get title (column 3 in new table) - fourth column
                                 rowData.push(row[3] || '');
                                 
                                 // Get row number (index + 1) - last column
@@ -375,13 +369,13 @@
                         className: 'btn btn-outline-primary',
                         title: 'لیست قیمت محصولات',
                         exportOptions: {
-                            // Exclude checkbox (0), drag handle (1), base price (6), commodity number (4), commodity id (5), and type (8) when exporting with profit
-                            // Use columns: [9,7,3,2] to include unit, sales price, title, and row number
-                            columns: [9,7,3,2],
+                            // Exclude checkbox (0), drag handle (1), and base price (4) when exporting with profit
+                            // Use columns: [6,5,3,2] to include unit, sales price, title, and row number
+                            columns: [6,5,3,2],
                             format: {
                                 body: function (data, row, column, node) {
                                     // Inject carton price coming from server into the exported data for PDF
-                                    if (column === 7) {
+                                    if (column === 5) {
                                         var tr = node && node.parentNode ? node.parentNode : null;
                                         var cartonAttr = tr ? tr.getAttribute('data-carton-price') : null;
                                         var cartonPrice = cartonAttr ? parseFloat(cartonAttr) : NaN;
@@ -510,17 +504,115 @@
                         }
                     },
                     {
-                        extend: 'excel',
                         text: 'دانلود (بدون سود) - Excel',
                         className: 'btn btn-outline-success',
-                        exportOptions: {
-                            // Exclude checkbox (0), drag handle (1), and sales price (7) when exporting without profit
-                            // Use columns: [9,8,6,5,4,3,2] to exclude sales price
-                            columns: [9,8,6,5,4,3,2],
-                            rows: function (idx, data, node) {
-                                return $(node).find('.row-select').prop('checked');
-                            },
-                            modifier: { page: 'all' }
+                        action: function (e, dt, button, config) {
+                            // Get selected rows or all rows
+                            var selected = dt.rows({ selected: true });
+                            var all = dt.rows({ page: 'all' });
+                            var useSelected = selected.data().length > 0;
+                            var rowsToExport = useSelected ? selected.data() : all.data();
+                            
+                            // Prepare data with specific columns: ردیف، عنوان، قیمت پایه (ریال)، واحد کالا
+                            var exportData = [];
+                            
+                            // Add title row with centered styling
+                            exportData.push(['جدول قیمت های تمام شده محصولات']);
+                            
+                            // Add headers
+                            exportData.push(['واحد کالا', 'قیمت پایه (ریال)', 'عنوان', 'ردیف']);
+                            
+                            // Add data rows
+                            rowsToExport.each(function(row, index) {
+                                var rowData = [];
+                                
+                                // Get unit (column 6 in new table) - first column
+                                var unit = row[6] || '-';
+                                if (unit && unit.includes('(')) {
+                                    unit = unit.split('(')[0].trim(); // Remove symbol part
+                                }
+                                rowData.push(unit);
+                                
+                                // Get base price (column 4 in new table) - second column
+                                var basePrice = row[4] || '-';
+                                rowData.push(basePrice);
+                                
+                                // Get title (column 3 in new table) - third column
+                                rowData.push(row[3] || '');
+                                
+                                // Get row number (index + 1) - fourth column
+                                rowData.push(index + 1);
+                                
+                                exportData.push(rowData);
+                            });
+                            
+                            // Create and download Excel file with better formatting
+                            var ws = XLSX.utils.aoa_to_sheet(exportData);
+                            
+                            // Set column widths for better display
+                            ws['!cols'] = [
+                                { wch: 15 }, // واحد کالا
+                                { wch: 15 }, // قیمت پایه (ریال)
+                                { wch: 30 }, // عنوان
+                                { wch: 8 }   // ردیف
+                            ];
+                            
+                            // Style the title row
+                            if (ws['A1']) {
+                                ws['A1'].s = {
+                                    font: { bold: true, size: 16 },
+                                    alignment: { horizontal: 'center', vertical: 'center' },
+                                    fill: { fgColor: { rgb: 'F8F9FA' } }
+                                };
+                            }
+                            
+                            // Style the header row
+                            var headerRow = 2; // Row 2 contains headers
+                            ['A', 'B', 'C', 'D'].forEach(function(col, index) {
+                                var cellRef = col + headerRow;
+                                if (ws[cellRef]) {
+                                    ws[cellRef].s = {
+                                        font: { bold: true, color: { rgb: 'FFFFFF' } },
+                                        fill: { fgColor: { rgb: '2C3E50' } },
+                                        alignment: { horizontal: 'center', vertical: 'center' },
+                                        border: {
+                                            top: { style: 'thin', color: { rgb: '000000' } },
+                                            bottom: { style: 'thin', color: { rgb: '000000' } },
+                                            left: { style: 'thin', color: { rgb: '000000' } },
+                                            right: { style: 'thin', color: { rgb: '000000' } }
+                                        }
+                                    };
+                                }
+                            });
+                            
+                            // Style data rows with alternating colors
+                            for (var i = 3; i <= exportData.length; i++) {
+                                var isEven = (i - 3) % 2 === 0;
+                                ['A', 'B', 'C', 'D'].forEach(function(col) {
+                                    var cellRef = col + i;
+                                    if (ws[cellRef]) {
+                                        ws[cellRef].s = {
+                                            alignment: { horizontal: 'center', vertical: 'center' },
+                                            fill: { fgColor: { rgb: isEven ? 'F8F9FA' : 'FFFFFF' } },
+                                            border: {
+                                                top: { style: 'thin', color: { rgb: 'E9ECEF' } },
+                                                bottom: { style: 'thin', color: { rgb: 'E9ECEF' } },
+                                                left: { style: 'thin', color: { rgb: 'E9ECEF' } },
+                                                right: { style: 'thin', color: { rgb: 'E9ECEF' } }
+                                            }
+                                        };
+                                    }
+                                });
+                            }
+                            
+                            // Merge title cells for better appearance
+                            ws['!merges'] = [
+                                { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }
+                            ];
+                            
+                            var wb = XLSX.utils.book_new();
+                            XLSX.utils.book_append_sheet(wb, ws, 'جدول قیمت های تمام شده محصولات');
+                            XLSX.writeFile(wb, 'جدول قیمت های تمام شده محصولات.xlsx');
                         }
                     },
                     {
@@ -529,9 +621,9 @@
                         className: 'btn btn-outline-secondary',
                         title: 'جدول قیمت های تمام شده محصولات',
                         exportOptions: {
-                            // Exclude checkbox (0), drag handle (1), and sales price (7) when exporting without profit
-                            // Use columns: [9,8,6,5,4,3,2] to exclude sales price
-                            columns: [9,8,6,5,4,3,2],
+                            // Exclude checkbox (0), drag handle (1), and sales price (5) when exporting without profit
+                            // Use columns: [6,4,3,2] to exclude sales price
+                            columns: [6,4,3,2],
                             rows: function (idx, data, node) {
                                 return $(node).find('.row-select').prop('checked');
                             },
@@ -539,8 +631,8 @@
                             orthogonal: 'rtlexport',
                             format: {
                                 body: function (data, row, column, node) {
-                                    // Column 9 is the unit column in the source table
-                                    if (column === 9 && typeof data === 'string') {
+                                    // Column 6 is the unit column in the source table
+                                    if (column === 6 && typeof data === 'string') {
                                         // Remove symbol e.g., "نام واحد (SYM)" -> "نام واحد"
                                         return data.split('(')[0].trim();
                                     }
@@ -572,7 +664,7 @@
                             }
                             
                             // Calculate dynamic column widths based on content
-                            var dynamicWidths = calculateDynamicColumnWidths(doc.content[1].table.body, 7);
+                            var dynamicWidths = calculateDynamicColumnWidths(doc.content[1].table.body, 4);
                             doc.content[1].table.widths = dynamicWidths;
                             
                             // Set table layout to auto for better text wrapping
