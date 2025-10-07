@@ -360,7 +360,7 @@ class CommodityController extends Controller
 
         // Add 10% VAT to sales price
         $vatAmount = $salesPrice * 0.10;
-        return round($salesPrice + $vatAmount, 2);
+        return $salesPrice + $vatAmount;
     }
 
     /**
@@ -381,7 +381,7 @@ class CommodityController extends Controller
         }
 
         // Calculate carton price: sales price with VAT * pieces per box
-        return round($salesPriceWithVAT * $commodity->pieces_per_box, 2);
+        return $salesPriceWithVAT * $commodity->pieces_per_box;
     }
     public function commodityType($id)
     {
