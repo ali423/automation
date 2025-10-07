@@ -175,6 +175,45 @@
         text-decoration: none !important;
     }
 
+    /* Raw Materials Chart Styles */
+    #dashboard-raw-materials-charts {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .mini-dashboard-chart {
+        flex: 1 1 300px;
+        min-width: 240px;
+        max-width: 350px;
+        height: 260px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        padding: 12px;
+        margin-bottom: 0;
+        box-sizing: border-box;
+    }
+
+    @media (max-width: 900px) {
+        .mini-dashboard-chart {
+            flex-basis: 48%;
+            min-width: 180px;
+            max-width: 100%;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .mini-dashboard-chart {
+            flex-basis: 100%;
+            min-width: 120px;
+            max-width: 100%;
+        }
+    }
+
     @media (max-width: 768px) {
         .dashboard-grid {
             grid-template-columns: 1fr;
@@ -320,6 +359,38 @@
         </div>
         @endif
     </div>
+
+    <!-- Raw Materials Chart Section -->
+    @if(Gate::check('read_order') || Gate::check('read_inventory'))
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-2">وضعیت مواد اولیه</h4>
+                    <p class="text-muted small mb-3">نمودار بر اساس فیلترهای انتخاب شده در لیست سفارشات به‌روزرسانی می‌شود. فقط سفارشات با وضعیت "در حال پردازش" در محاسبات نمودار لحاظ می‌شوند.</p>
+                    <div id="dashboard-raw-materials-charts"></div>
+                    <div class="mt-3" id="dashboard-raw-materials-table-wrapper">
+                        <div class="table-responsive">
+                            <table id="dashboard-raw-materials-table" class="table table-sm table-striped table-bordered mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>مواد اولیه</th>
+                                        <th>نیاز</th>
+                                        <th>موجودی</th>
+                                        <th>اختلاف</th>
+                                        <th>واحد</th>
+                                        <th>وضعیت</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
 
 @endsection
@@ -333,11 +404,162 @@
 
 <script>
     $(document).ready(function() {
+        // Load and render raw materials chart
+        loadRawMaterialsChart();
+        
+        function loadRawMaterialsChart() {
+            $.ajax({
+                url: '{{ route("dashboard.chart.data") }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    renderRawMaterialsCharts({
+                        names: response.names,
+                        amounts: response.amounts,
+                        units: response.units,
+                        inventory: response.inventory
+                    });
+                    renderRawMaterialsTable({
+                        names: response.names,
+                        amounts: response.amounts,
+                        units: response.units,
+                        inventory: response.inventory
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching chart data:', xhr);
+                    $('#dashboard-raw-materials-charts').html('<div class="alert alert-warning text-center">خطا در دریافت اطلاعات نمودار</div>');
+                }
+            });
+        }
+
+        function renderRawMaterialsCharts(data) {
+            $('#dashboard-raw-materials-charts').empty();
+            
+            if (data.names.length === 0) {
+                $('#dashboard-raw-materials-charts').append('<div class="alert alert-info text-center">هیچ سفارش در حال پردازشی انتخاب نشده است یا محصولات انتخاب شده فرمول مواد اولیه ندارند.</div>');
+                return;
+            }
+            
+            data.names.forEach(function(name, idx) {
+                var chartId = 'dashboard-raw-materials-chart-' + idx;
+                $('#dashboard-raw-materials-charts').append('<div id="'+chartId+'" class="mini-dashboard-chart"></div>');
+                
+                
+                var chartData = {
+                    chart: { 
+                        height: 220, 
+                        type: "bar",
+                        toolbar: {
+                            show: false
+                        }
+                    },
+                    plotOptions: { 
+                        bar: { 
+                            horizontal: false, 
+                            columnWidth: "55%", 
+                            endingShape: "rounded" 
+                        } 
+                    },
+                    dataLabels: { enabled: false },
+                    stroke: { 
+                        show: true, 
+                        width: 2, 
+                        colors: ["transparent"] 
+                    },
+                    series: [
+                        { 
+                            name: "مواد اولیه مورد نیاز", 
+                            data: [data.amounts[idx]] 
+                        },
+                        { 
+                            name: "موجودی مواد اولیه", 
+                            data: [data.inventory[idx]] 
+                        }
+                    ],
+                    colors: ["#e74c3c", "#27ae60"],
+                    xaxis: { 
+                        categories: [name],
+                        labels: {
+                            style: {
+                                fontSize: '12px'
+                            }
+                        }
+                    },
+                    yaxis: { 
+                        title: { 
+                            text: data.units[idx],
+                            style: {
+                                fontSize: '12px'
+                            }
+                        },
+                        labels: {
+                            style: {
+                                fontSize: '11px'
+                            }
+                        }
+                    },
+                    fill: { opacity: 1 },
+                    tooltip: {
+                        y: {
+                            formatter: function (e) {
+                                return e + ' ' + data.units[idx];
+                            },
+                        },
+                    },
+                    legend: {
+                        position: 'top',
+                        fontSize: '12px'
+                    }
+                };
+                
+                var chart = new ApexCharts(document.getElementById(chartId), chartData);
+                chart.render();
+            });
+        }
+
+        function renderRawMaterialsTable(data) {
+            var $table = $('#dashboard-raw-materials-table');
+            var $tbody = $table.find('tbody');
+
+            $tbody.empty();
+
+            if (!data.names || data.names.length === 0) {
+                $tbody.append('<tr><td colspan="6" class="text-center text-muted">داده‌ای برای نمایش وجود ندارد</td></tr>');
+                return;
+            }
+
+            data.names.forEach(function(name, idx) {
+                var need = (data.amounts && data.amounts[idx] !== undefined) ? parseFloat(data.amounts[idx]) : 0;
+                var inv = (data.inventory && data.inventory[idx] !== undefined) ? parseFloat(data.inventory[idx]) : 0;
+                var diff = inv - need;
+                var unit = (data.units && data.units[idx]) ? data.units[idx] : '';
+                var statusOk = parseFloat(inv) >= parseFloat(need);
+                var statusBadge = statusOk
+                    ? '<span class="badge bg-success">کافی</span>'
+                    : '<span class="badge bg-danger">کمبود</span>';
+
+                $tbody.append(
+                    '<tr>' +
+                        '<td>' + name + '</td>' +
+                        '<td data-order="' + need + '">' + need.toLocaleString() + ' ' + unit + '</td>' +
+                        '<td data-order="' + inv + '">' + inv.toLocaleString() + ' ' + unit + '</td>' +
+                        '<td data-order="' + diff + '">' + diff.toLocaleString() + ' ' + unit + '</td>' +
+                        '<td>' + unit + '</td>' +
+                        '<td>' + statusBadge + '</td>' +
+                    '</tr>'
+                );
+            });
+        }
+
         // Add smooth animations and interactions
         $('.main-dashboard-card').each(function(index) {
             $(this).css('animation-delay', (index * 0.1) + 's');
             $(this).addClass('fade-in-up');
         });
+
 
         // Add click ripple effect
         $('.sub-tab-item').on('click', function(e) {
