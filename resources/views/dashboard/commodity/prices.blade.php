@@ -191,13 +191,15 @@
                             var cellContent = tableBody[row][col].text || '';
                             var contentLength = cellContent.length;
                             
-                            // Special handling for different column types
-                            if (col === 2) { // Title column - give more space for long titles
+                            // Special handling for different column types (5 columns: unit, sales price, box price, title, row number)
+                            if (col === 3) { // Title column - give more space for long titles
                                 contentLength = Math.max(contentLength * 0.8, 15); // Minimum 15 chars
-                            } else if (col === 1) { // Type column - usually short
-                                contentLength = Math.max(contentLength, 8);
                             } else if (col === 0) { // Unit column - usually short
                                 contentLength = Math.max(contentLength, 6);
+                            } else if (col === 4) { // Row number column - very short
+                                contentLength = Math.max(contentLength, 4);
+                            } else if (col === 1 || col === 2) { // Sales price and box price columns
+                                contentLength = Math.max(contentLength, 10);
                             } else { // Other columns
                                 contentLength = Math.max(contentLength, 10);
                             }
@@ -251,9 +253,24 @@
                         text: 'دانلود (با سود) - Excel',
                         className: 'btn btn-outline-success',
                         exportOptions: {
-                            // Exclude checkbox (0), drag handle (1), and base price (6) when exporting with profit
-                            // Use columns: [9,8,7,5,4,3,2] to include sales price with profit
-                            columns: [9,8,7,5,4,3,2],
+                            // Exclude checkbox (0), drag handle (1), base price (6), commodity number (4), commodity id (5), and type (8) when exporting with profit
+                            // Use columns: [9,7,3,2] to include unit, sales price, title, and row number
+                            columns: [9,7,3,2],
+                            format: {
+                                body: function (data, row, column, node) {
+                                    // Add box price calculation for sales price column (column 7 in original table)
+                                    if (column === 7) {
+                                        var salesPrice = parseFloat(data.replace(/,/g, ''));
+                                        if (!isNaN(salesPrice) && salesPrice > 0) {
+                                            // Calculate box price (assuming pieces_per_box = 12)
+                                            var boxPrice = salesPrice * 12;
+                                            return data + '|' + boxPrice.toLocaleString();
+                                        }
+                                        return data + '|-';
+                                    }
+                                    return data;
+                                }
+                            },
                             rows: function (idx, data, node) {
                                 return $(node).find('.row-select').prop('checked');
                             },
@@ -266,9 +283,24 @@
                         className: 'btn btn-outline-primary',
                         title: 'لیست قیمت محصولات',
                         exportOptions: {
-                            // Exclude checkbox (0), drag handle (1), and base price (6) when exporting with profit
-                            // Use columns: [9,8,7,5,4,3,2] to include sales price with profit
-                            columns: [9,8,7,5,4,3,2],
+                            // Exclude checkbox (0), drag handle (1), base price (6), commodity number (4), commodity id (5), and type (8) when exporting with profit
+                            // Use columns: [9,7,3,2] to include unit, sales price, title, and row number
+                            columns: [9,7,3,2],
+                            format: {
+                                body: function (data, row, column, node) {
+                                    // Add box price calculation for sales price column (column 7 in original table)
+                                    if (column === 7) {
+                                        var salesPrice = parseFloat(data.replace(/,/g, ''));
+                                        if (!isNaN(salesPrice) && salesPrice > 0) {
+                                            // Calculate box price (assuming pieces_per_box = 12)
+                                            var boxPrice = salesPrice * 12;
+                                            return data + '|' + boxPrice.toLocaleString();
+                                        }
+                                        return data + '|-';
+                                    }
+                                    return data;
+                                }
+                            },
                             rows: function (idx, data, node) {
                                 return $(node).find('.row-select').prop('checked');
                             },
@@ -286,20 +318,56 @@
                                 doc.content[0] = { text: rtlTitle, alignment: 'center', margin: [0, 0, 0, 12] };
                             }
                             
-                            // Change header text for unit column (first column in export)
+                            // Process table data and add box price column
                             if (doc.content && doc.content[1] && doc.content[1].table && doc.content[1].table.body) {
                                 var tableBody = doc.content[1].table.body;
-                                if (tableBody[0] && tableBody[0][0]) {
-                                    // Check if it contains the unit text and replace it
-                                    var headerText = tableBody[0][0].text || '';
-                                    if (headerText.includes('واحد اندازه گیری')) {
-                                        tableBody[0][0].text = 'واحد کالا';
+                                
+                                // Process header row
+                                if (tableBody[0]) {
+                                    // Change unit column header
+                                    if (tableBody[0][0]) {
+                                        var headerText = tableBody[0][0].text || '';
+                                        if (headerText.includes('واحد اندازه گیری')) {
+                                            tableBody[0][0].text = 'واحد کالا';
+                                        }
+                                    }
+                                    
+                                    // Change sales price column header and add box price header
+                                    if (tableBody[0][1]) {
+                                        var salesPriceHeader = tableBody[0][1].text || '';
+                                        if (salesPriceHeader.includes('قیمت فروش با احتساب سود')) {
+                                            tableBody[0][1].text = 'قیمت نهایی';
+                                        }
+                                    }
+                                    
+                                    // Add box price column header
+                                    tableBody[0].splice(2, 0, { text: 'قیمت کارتن', style: 'tableHeader' });
+                                }
+                                
+                                // Process data rows
+                                for (var i = 1; i < tableBody.length; i++) {
+                                    if (tableBody[i] && tableBody[i][1]) {
+                                        var salesPriceText = tableBody[i][1].text || '';
+                                        
+                                        // Extract sales price and box price from formatted data
+                                        var parts = salesPriceText.split('|');
+                                        var salesPrice = parts[0] || '';
+                                        var boxPrice = parts[1] || '-';
+                                        
+                                        // Update sales price column
+                                        tableBody[i][1].text = salesPrice;
+                                        
+                                        // Add box price column
+                                        tableBody[i].splice(2, 0, { 
+                                            text: boxPrice, 
+                                            style: i % 2 === 0 ? 'tableBodyEven' : 'tableBodyOdd' 
+                                        });
                                     }
                                 }
                             }
                             
-                            // Calculate dynamic column widths based on content
-                            var dynamicWidths = calculateDynamicColumnWidths(doc.content[1].table.body, 7);
+                            // Calculate dynamic column widths based on content (5 columns: unit, sales price, box price, title, row number)
+                            var dynamicWidths = calculateDynamicColumnWidths(doc.content[1].table.body, 5);
                             doc.content[1].table.widths = dynamicWidths;
                             
                             // Set table layout to auto for better text wrapping
@@ -330,6 +398,7 @@
                                 color: 'white',
                                 margin: [2, 2, 2, 2]
                             };
+                            
                             
                             // Process table body to handle long text with proper wrapping
                             if (doc.content[1] && doc.content[1].table && doc.content[1].table.body) {

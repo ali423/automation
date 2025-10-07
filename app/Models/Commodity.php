@@ -122,4 +122,23 @@ class Commodity extends Model
     {
         return $this->weight_per_unit;
     }
+
+    /**
+     * Calculate the price per box/carton
+     *
+     * @return float|null
+     */
+    public function getBoxPriceAttribute()
+    {
+        if ($this->pieces_per_box === null || $this->pieces_per_box <= 0) {
+            return null;
+        }
+
+        $salesPrice = $this->sales_price;
+        if ($salesPrice === null) {
+            return null;
+        }
+
+        return round($salesPrice * $this->pieces_per_box, 2);
+    }
 }
