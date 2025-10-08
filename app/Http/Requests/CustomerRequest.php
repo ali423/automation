@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CustomerRequest extends FormRequest
 {
@@ -25,13 +26,13 @@ class CustomerRequest extends FormRequest
     {
         return [
             'name' => ['required','string'],
-            'mobile' => ['required', 'unique:customers,mobile','ir_mobile:zero'],
+            'mobile' => ['required', 'ir_mobile:zero', Rule::unique('customers', 'mobile')->whereNull('deleted_at')],
             'comp_name' => ['nullable','string'],
             'address' => ['required',],
             'zip_code' => ['nullable','numeric','digits:10'],
-            'phone' => ['nullable','ir_phone_with_code','unique:customers,phone'],
-            'national_code' => ['nullable','numeric','digits:10','unique:customers,national_code'],
-            'economic_code' => ['nullable','numeric','digits:12','unique:customers,economic_code'],
+            'phone' => ['nullable','ir_phone_with_code', Rule::unique('customers', 'phone')->whereNull('deleted_at')],
+            'national_code' => ['nullable','numeric','digits:10', Rule::unique('customers', 'national_code')->whereNull('deleted_at')],
+            'economic_code' => ['nullable','numeric','digits:12', Rule::unique('customers', 'economic_code')->whereNull('deleted_at')],
         ];
     }
 }
