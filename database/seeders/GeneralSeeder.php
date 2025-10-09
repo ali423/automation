@@ -118,7 +118,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2001,
                 'title' => 'روغن موتور 5W-30',
-                'profit_margin' => 25.00, // 25% profit margin
+                'sales_price' => 50000, // Direct sales price in Rials
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 500,
                 'type' => 'product',
@@ -127,7 +127,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2002,
                 'title' => 'روغن موتور 10W-40',
-                'profit_margin' => 22.00, // 22% profit margin
+                'sales_price' => 48000, // Direct sales price in Rials
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 400,
                 'type' => 'product',
@@ -136,7 +136,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2003,
                 'title' => 'روغن موتور 15W-50',
-                'profit_margin' => 28.00, // 28% profit margin
+                'sales_price' => 55000, // Direct sales price in Rials
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 300,
                 'type' => 'product',
@@ -145,7 +145,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2004,
                 'title' => 'روغن گیربکس',
-                'profit_margin' => 30.00, // 30% profit margin
+                'sales_price' => 60000, // Direct sales price in Rials
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 200,
                 'type' => 'product',
@@ -154,7 +154,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2005,
                 'title' => 'روغن هیدرولیک',
-                'profit_margin' => 20.00, // 20% profit margin
+                'sales_price' => 45000, // Direct sales price in Rials
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 350,
                 'type' => 'product',
@@ -163,7 +163,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2006,
                 'title' => 'روغن دنده',
-                'profit_margin' => 28.00, // 28% profit margin
+                'sales_price' => 55000, // Direct sales price in Rials
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 250,
                 'type' => 'product',
@@ -172,7 +172,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2007,
                 'title' => 'روغن ترمز',
-                'profit_margin' => 18.00, // 18% profit margin
+                'sales_price' => 40000, // Direct sales price in Rials
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 150,
                 'type' => 'product',
@@ -181,7 +181,7 @@ class GeneralSeeder extends Seeder
             [
                 'number' => 2008,
                 'title' => 'روغن فرمان',
-                'profit_margin' => 22.00, // 22% profit margin
+                'sales_price' => 48000, // Direct sales price in Rials
                 'purchase_price' => null, // Will be calculated from materials
                 'warning_limit' => 180,
                 'type' => 'product',
