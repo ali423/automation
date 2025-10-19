@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CustomerUpdateRequest extends FormRequest
 {
@@ -25,13 +26,13 @@ class CustomerUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required','string'],
-            'mobile' => ['required', 'unique:customers,mobile,'.$this->customer->id],
+            'mobile' => ['required', Rule::unique('customers', 'mobile')->whereNull('deleted_at')->ignore($this->customer->id)],
             'comp_name' => ['nullable','string'],
             'address' => ['required',],
             'zip_code' => ['nullable','ir_postal_code'],
-            'phone' => ['nullable','ir_phone_with_code','unique:customers,phone,'.$this->customer->id],
-            'national_code' => ['nullable','ir_national_code','unique:customers,national_code,'.$this->customer->id],
-            'economic_code' => ['nullable','numeric','unique:customers,economic_code,'.$this->customer->id],
+            'phone' => ['nullable','ir_phone_with_code', Rule::unique('customers', 'phone')->whereNull('deleted_at')->ignore($this->customer->id)],
+            'national_code' => ['nullable','ir_national_code', Rule::unique('customers', 'national_code')->whereNull('deleted_at')->ignore($this->customer->id)],
+            'economic_code' => ['nullable','numeric', Rule::unique('customers', 'economic_code')->whereNull('deleted_at')->ignore($this->customer->id)],
         ];
     }
 }

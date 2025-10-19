@@ -59,14 +59,10 @@
 
 <!-- Financial Information -->
 <div class="form-row">
-    <div class="form-group col-md-6">
-        <label>قیمت فروش (ریال)</label>
-        <input type="text" value="{{ $commodity->sales_price ? number_format($commodity->sales_price) : 'محاسبه نشده' }}" class="form-control" disabled>
-    </div>
     @if($commodity->type == 'product')
     <div class="form-group col-md-6">
-        <label>درصد سود</label>
-        <input type="text" value="{{ $commodity->profit_margin ? $commodity->profit_margin . '%' : 'تعریف نشده' }}" class="form-control" disabled>
+        <label>{{ __('fields.sales_price') }} (ریال)</label>
+        <input type="text" value="{{ $commodity->sales_price ? number_format($commodity->sales_price) : 'تعریف نشده' }}" class="form-control" disabled>
     </div>
     @else
     <div class="form-group col-md-6">

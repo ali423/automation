@@ -34,7 +34,7 @@ class CommodityService extends BaseService
                 'number' => $number,
                 'product_identifier' => $data['product_identifier'],
                 'title' => $data['title'],
-                'profit_margin' => $data['profit_margin'],
+                'sales_price' => $data['sales_price'],
                 'type' => $data['type'],
                 'warning_limit'=>$data['warning_limit'],
                 'unit_id' => $data['unit_id'],
@@ -63,7 +63,7 @@ class CommodityService extends BaseService
         if ($commodity->type == 'material') {
             return $commodity->update([
                 'title' => $data['title'],
-                'profit_margin' => null,
+                'sales_price' => null,
                 'warning_limit'=>$data['warning_limit'],
                 'unit_id' => $data['unit_id'],
                 'pieces_per_box' => null, // Not needed for materials
@@ -75,7 +75,7 @@ class CommodityService extends BaseService
             $commodity->update([
                 'title' => $data['title'],
                 'product_identifier' => $data['product_identifier'],
-                'profit_margin' => $data['profit_margin'],
+                'sales_price' => $data['sales_price'],
                 'warning_limit'=>$data['warning_limit'],
                 'unit_id' => $data['unit_id'],
                 'pieces_per_box' => $data['pieces_per_box'],

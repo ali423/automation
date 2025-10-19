@@ -9,7 +9,7 @@ return [
     'warning_limit' => 'حد هشدار',
     'sell-price' => 'قیمت فروش',
     'sell-price_per_unit' => 'قیمت فروش هر واحد کالا',
-    'profit_margin' => 'درصد سود',
+    'sales_price' => 'قیمت فروش',
     'purchase_price' => 'قیمت خرید',
     'purchase_unit_price' => 'قیمت خرید (ریال)',
     'avr_purchase_price' => 'میانگین قیمت خرید (ریال)',

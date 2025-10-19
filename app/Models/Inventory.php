@@ -43,8 +43,8 @@ class Inventory extends Model
     }
 
     /**
-     * Get the calculated sale price based on commodity's profit margin
-     * For products: calculated from material costs + profit margin
+     * Get the direct sale price from commodity
+     * For products: uses the direct sales_price field
      * For materials: null (materials don't have sale prices)
      *
      * @return float|null

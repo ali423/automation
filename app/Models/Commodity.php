@@ -16,7 +16,7 @@ class Commodity extends Model
         'number',
         'product_identifier',
         'title',
-        'profit_margin',
+        'sales_price',
         'type',
         'purchase_price',
         'warning_limit',
@@ -71,7 +71,7 @@ class Commodity extends Model
     }
 
     /**
-     * Calculate the sales price dynamically based on material costs and profit margin
+     * Get the direct sales price for products
      *
      * @return float|null
      */
@@ -81,25 +81,9 @@ class Commodity extends Model
             return null;
         }
 
-        $basePrice = $this->base_price;
-        if ($basePrice === null || $this->profit_margin === null) {
-            return null;
-        }
-
-        // Calculate sales price: base price + profit margin percentage
-        $profitAmount = $basePrice * ($this->profit_margin / 100);
-        return round($basePrice + $profitAmount, 2);
+        return $this->attributes['sales_price'] ?? null;
     }
 
-    /**
-     * Get the profit margin percentage
-     *
-     * @return float|null
-     */
-    public function getProfitMarginPercentageAttribute()
-    {
-        return $this->profit_margin;
-    }
 
     /**
      * Calculate the total weight in kg for a given amount of this commodity
@@ -122,4 +106,11 @@ class Commodity extends Model
     {
         return $this->weight_per_unit;
     }
+
+    /**
+     * Calculate the price per box/carton
+     *
+     * @return float|null
+     */
+    
 }

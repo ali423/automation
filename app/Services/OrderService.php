@@ -45,12 +45,16 @@ class OrderService extends BaseService
                     }
                 }
                 
+                // Determine price: prefer provided price; fallback to commodity sales_price
+                $providedPrice = $data['price'][$index] ?? null;
+                $fallbackPrice = optional(Commodity::find($commodityId))->sales_price ?? 0;
+
                 OrderItem::create([
                     'order_id' => $order->id,
                     'commodity_id' => $commodityId,
                     'commodity_amount' => $data['commodity_amount'][$index] ?? 0,
                     'unit_id' => $unitId,
-                    'price' => $data['price'][$index] ?? 0,
+                    'price' => ($providedPrice !== null && $providedPrice !== '') ? $providedPrice : $fallbackPrice,
                 ]);
             }
         }
@@ -103,12 +107,16 @@ class OrderService extends BaseService
                     }
                 }
                 
+                // Determine price: prefer provided price; fallback to commodity sales_price
+                $providedPrice = $data['price'][$index] ?? null;
+                $fallbackPrice = optional(Commodity::find($commodityId))->sales_price ?? 0;
+
                 OrderItem::create([
                     'order_id' => $order->id,
                     'commodity_id' => $commodityId,
                     'commodity_amount' => $data['commodity_amount'][$index] ?? 0,
                     'unit_id' => $unitId,
-                    'price' => $data['price'][$index] ?? 0,
+                    'price' => ($providedPrice !== null && $providedPrice !== '') ? $providedPrice : $fallbackPrice,
                 ]);
             }
         }

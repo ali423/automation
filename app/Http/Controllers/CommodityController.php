@@ -54,7 +54,11 @@ class CommodityController extends Controller
         // Pre-calc for current page
         $commodities->getCollection()->transform(function ($c) {
             $c->base_price = $this->calculateBasePrice($c);
-            $c->sales_price = $this->calculateSalesPrice($c);
+            $c->sales_price = $this->getSalesPrice($c);
+            // Calculate sales price with VAT (10%)
+            $c->sales_price_with_vat = $this->calculateSalesPriceWithVAT($c);
+            // Calculate carton price if applicable
+            $c->carton_price = $this->calculateCartonPrice($c);
             return $c;
         });
 
@@ -320,25 +324,57 @@ class CommodityController extends Controller
 
     
     /**
-     * Calculate sales price for a commodity
+     * Get sales price for a commodity
      *
      * @param Commodity $commodity
      * @return float|null
      */
-    private function calculateSalesPrice(Commodity $commodity)
+    private function getSalesPrice(Commodity $commodity)
     {
         if ($commodity->type !== 'product') {
             return null;
         }
 
-        $basePrice = $this->calculateBasePrice($commodity);
-        if ($basePrice === null || $commodity->profit_margin === null) {
+        return $commodity->sales_price;
+    }
+
+    /**
+     * Calculate sales price with VAT (10%) for a commodity
+     *
+     * @param Commodity $commodity
+     * @return float|null
+     */
+    private function calculateSalesPriceWithVAT(Commodity $commodity)
+    {
+        $salesPrice = $this->getSalesPrice($commodity);
+        if ($salesPrice === null) {
             return null;
         }
 
-        // Calculate sales price: base price + profit margin percentage
-        $profitAmount = $basePrice * ($commodity->profit_margin / 100);
-        return round($basePrice + $profitAmount, 2);
+        // Add 10% VAT to sales price
+        $vatAmount = $salesPrice * 0.10;
+        return $salesPrice + $vatAmount;
+    }
+
+    /**
+     * Calculate carton price for a commodity (if it has pieces_per_box)
+     *
+     * @param Commodity $commodity
+     * @return float|null
+     */
+    private function calculateCartonPrice(Commodity $commodity)
+    {
+        if ($commodity->pieces_per_box === null || $commodity->pieces_per_box <= 0) {
+            return null;
+        }
+
+        $salesPriceWithVAT = $this->calculateSalesPriceWithVAT($commodity);
+        if ($salesPriceWithVAT === null) {
+            return null;
+        }
+
+        // Calculate carton price: sales price with VAT * pieces per box
+        return $salesPriceWithVAT * $commodity->pieces_per_box;
     }
     public function commodityType($id)
     {

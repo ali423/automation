@@ -45,7 +45,7 @@ class CommodityUpdateRequest extends FormRequest
             $rules['material_amount.*']=['required','numeric','min:0.00001'];
             $rules['material_units']=['required','array','min:1'];
             $rules['material_units.*']=['required','exists:units,id']; // Allow any unit for materials
-            $rules['profit_margin']=['required','numeric','min:0','max:100'];
+            $rules['sales_price']=['required','numeric','min:0'];
 
             // Validate that material amounts are reasonable (not percentage-based validation)
             $materials=$this->get('materials');

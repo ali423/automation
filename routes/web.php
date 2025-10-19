@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/logout',[LoginController::class,'logout'])->name('logout');
     Route::get('/',[DashboardController::class,'index'])->name('home');
+    Route::post('dashboard/chart-data', [DashboardController::class, 'getChartData'])->name('dashboard.chart.data');
     Route::resource('user',UserController::class)->except('destroy');
     Route::get('user/rest-password/{user:id}',[UserController::class,'resetPassword'])->name('reset-password');
     Route::patch('user/rest-password/{user:id}',[UserController::class,'resetPasswordStore'])->name('reset-password.store');
