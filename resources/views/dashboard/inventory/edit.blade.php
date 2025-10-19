@@ -68,7 +68,7 @@
                                     <input type="text" value="{{ $inventory->sale_price ? number_format($inventory->sale_price) : 'محاسبه نشده' }}" class="form-control" disabled>
                                     <small class="form-text text-muted">
                                         @if($inventory->commodity->type == 'product')
-                                            قیمت بر اساس درصد سود کالا محاسبه می‌شود
+                                            قیمت فروش محصول
                                         @else
                                             <span class="text-warning"><i class="ti-info-circle"></i> مواد اولیه قیمت فروش ندارند</span>
                                         @endif

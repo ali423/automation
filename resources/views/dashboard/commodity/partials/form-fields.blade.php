@@ -50,12 +50,12 @@
                class="form-control" placeholder="{{ __('fields.warning_limit') }}" required>
         <div class="invalid-feedback">{{ __('fields.warning_limit') }} را وارد کنید</div>
     </div>
-    <div id="profit_margin" class="form-group col-md-3">
-        <label for="profit_margin">درصد سود (%)</label>
-        <input type="number" step="0.01" min="0" max="100" name="profit_margin"
-               value="{{ old('profit_margin', $commodity->profit_margin ?? '') }}"
-               class="form-control" placeholder="درصد سود">
-        <div class="invalid-feedback">درصد سود را وارد کنید</div>
+    <div id="sales_price" class="form-group col-md-3">
+        <label for="sales_price">{{ __('fields.sales_price') }} (ریال)</label>
+        <input type="number" step="0.01" min="0" name="sales_price"
+               value="{{ old('sales_price', $commodity->sales_price ?? '') }}"
+               class="form-control" placeholder="{{ __('fields.sales_price') }}">
+        <div class="invalid-feedback">{{ __('fields.sales_price') }} را وارد کنید</div>
     </div>
     <div id="purchase_price" class="form-group col-md-3">
         <label for="purchase_price"> {{ __('fields.purchase_price') }} هر <span class="unit_label2">{{ $commodity->unit->symbol ?? 'واحد' }}</span> (ریال)</label>

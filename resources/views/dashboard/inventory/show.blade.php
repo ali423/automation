@@ -37,7 +37,7 @@
                                 <input type="text" value="{{ isset($financialData) && $financialData['has_sale_price'] ? number_format($financialData['sale_price']) : 'محاسبه نشده' }}" class="form-control" disabled>
                                 <small class="form-text text-muted">
                                     @if(isset($financialData) && $financialData['is_product'])
-                                        قیمت بر اساس درصد سود کالا محاسبه می‌شود
+                                        قیمت فروش محصول
                                     @else
                                         <span class="text-warning"><i class="ti-info-circle"></i> مواد اولیه قیمت فروش ندارند</span>
                                     @endif
@@ -105,7 +105,7 @@
 
                                         @if(isset($financialData) && $financialData['is_product'])
                                             <a href="{{ route('commodity.edit', $inventory->commodity) }}" class="btn btn-info btn-block">
-                                                <i class="ti-settings"></i> تنظیم درصد سود
+                                                <i class="ti-settings"></i> تنظیم قیمت فروش
                                             </a>
                                         @endif
                                     </div>

@@ -430,7 +430,7 @@ class InventoryService extends BaseService
             ->orderBy('created_at', 'desc')
             ->first();
 
-        // Use the calculated sale price from commodityF
+        // Use the direct sale price from commodity
         $price = $commodity->sales_price ?? 0;
         
         return [
