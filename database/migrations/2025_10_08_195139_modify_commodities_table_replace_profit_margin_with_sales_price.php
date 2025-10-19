@@ -120,27 +120,31 @@ class ModifyCommoditiesTableReplaceProfitMarginWithSalesPrice extends Migration
     }
 
     /**
-     * Create snapshot table with both profit_margin and sales_price columns
+     * Create snapshot table with same structure as commodities
      */
     private function createSnapshotTable(): void
     {
         DB::statement('DROP TABLE IF EXISTS commodities_snapshot');
         DB::statement('CREATE TABLE commodities_snapshot LIKE commodities');
+    }
 
-        // Add sales_price column if it doesn't exist
+    /**
+     * Copy all data from commodities to snapshot table, then add sales_price column
+     */
+    private function copyDataToSnapshot(): int
+    {
+        // First, copy all data (same structure)
+        DB::statement('INSERT INTO commodities_snapshot SELECT * FROM commodities');
+
+        $count = DB::table('commodities_snapshot')->count();
+
+        // Now add sales_price column to snapshot
         $hasColumn = Schema::hasColumn('commodities_snapshot', 'sales_price');
         if (!$hasColumn) {
             DB::statement("ALTER TABLE commodities_snapshot ADD COLUMN sales_price DECIMAL(10, 2) NULL COMMENT 'Calculated sales price'");
         }
-    }
 
-    /**
-     * Copy all data from commodities to snapshot table
-     */
-    private function copyDataToSnapshot(): int
-    {
-        DB::statement('INSERT INTO commodities_snapshot SELECT * FROM commodities');
-        return DB::table('commodities_snapshot')->count();
+        return $count;
     }
 
     /**
