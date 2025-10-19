@@ -138,10 +138,10 @@ class ModifyCommoditiesTableReplaceProfitMarginWithSalesPrice extends Migration
 
         $count = DB::table('commodities_snapshot')->count();
 
-        // Now add sales_price column to snapshot
+        // Now add sales_price column to snapshot (DECIMAL(15,2) to handle large Rial values)
         $hasColumn = Schema::hasColumn('commodities_snapshot', 'sales_price');
         if (!$hasColumn) {
-            DB::statement("ALTER TABLE commodities_snapshot ADD COLUMN sales_price DECIMAL(10, 2) NULL COMMENT 'Calculated sales price'");
+            DB::statement("ALTER TABLE commodities_snapshot ADD COLUMN sales_price DECIMAL(15, 2) NULL COMMENT 'Calculated sales price'");
         }
 
         return $count;
@@ -213,8 +213,8 @@ class ModifyCommoditiesTableReplaceProfitMarginWithSalesPrice extends Migration
         // Drop profit_margin column
         DB::statement('ALTER TABLE commodities DROP COLUMN profit_margin');
 
-        // Add sales_price column
-        DB::statement("ALTER TABLE commodities ADD COLUMN sales_price DECIMAL(10, 2) NULL COMMENT 'Direct sales price for products'");
+        // Add sales_price column (DECIMAL(15,2) to handle large Rial values)
+        DB::statement("ALTER TABLE commodities ADD COLUMN sales_price DECIMAL(15, 2) NULL COMMENT 'Direct sales price for products'");
     }
 
     /**
