@@ -51,18 +51,21 @@
             $('input[name="product_identifier"]').attr('required', 'required');
             $('#pieces_per_box_group').show();
             $('#product_identifier_group').show();
+            $('#sales_price').show();
         } else if (selectedType === 'material') {
             $('input[name="purchase_price"]').attr('required', 'required');
             $('input[name="sales_price"]').removeAttr('required');
             $('input[name="product_identifier"]').removeAttr('required');
             $('#pieces_per_box_group').hide();
             $('#product_identifier_group').hide();
+            $('#sales_price').hide();
         } else {
             $('input[name="purchase_price"]').removeAttr('required');
             $('input[name="sales_price"]').removeAttr('required');
             $('input[name="product_identifier"]').removeAttr('required');
             $('#pieces_per_box_group').hide();
             $('#product_identifier_group').hide();
+            $('#sales_price').hide();
         }
     });
     
