@@ -57,7 +57,7 @@
                class="form-control" placeholder="{{ __('fields.sales_price') }}">
         <div class="invalid-feedback">{{ __('fields.sales_price') }} را وارد کنید</div>
     </div>
-    <div id="purchase_price" class="form-group col-md-3">
+    <div id="purchase_price" class="form-group col-md-3" style="display: {{ (old('type', $commodity->type ?? '') == 'material') ? 'block' : 'none' }};">
         <label for="purchase_price"> {{ __('fields.purchase_price') }} هر <span class="unit_label2">{{ $commodity->unit->symbol ?? 'واحد' }}</span> (ریال)</label>
         <input type="number" step="0.01" min="100" name="purchase_price"
                value="{{ old('purchase_price', $commodity->purchase_price ?? '') }}" class="form-control"
