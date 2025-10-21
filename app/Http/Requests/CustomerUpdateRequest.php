@@ -29,10 +29,10 @@ class CustomerUpdateRequest extends FormRequest
             'mobile' => ['required', Rule::unique('customers', 'mobile')->whereNull('deleted_at')->ignore($this->customer->id)],
             'comp_name' => ['nullable','string'],
             'address' => ['required',],
-            'zip_code' => ['nullable','ir_postal_code'],
+            'zip_code' => ['nullable'],
             'phone' => ['nullable','ir_phone_with_code', Rule::unique('customers', 'phone')->whereNull('deleted_at')->ignore($this->customer->id)],
-            'national_code' => ['nullable','ir_national_code', Rule::unique('customers', 'national_code')->whereNull('deleted_at')->ignore($this->customer->id)],
-            'economic_code' => ['nullable','numeric', Rule::unique('customers', 'economic_code')->whereNull('deleted_at')->ignore($this->customer->id)],
+            'national_code' => ['nullable'],
+            'economic_code' => ['nullable'],
         ];
     }
 }
