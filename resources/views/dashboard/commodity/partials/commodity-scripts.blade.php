@@ -54,6 +54,7 @@
             $('#product_identifier_group').show();
             $('#weight_per_unit_group').show();
             $('#sales_price').show();
+            $('#purchase_price').hide();
         } else if (selectedType === 'material') {
             $('input[name="purchase_price"]').attr('required', 'required');
             $('input[name="sales_price"]').removeAttr('required');
@@ -63,6 +64,7 @@
             $('#product_identifier_group').hide();
             $('#weight_per_unit_group').hide();
             $('#sales_price').hide();
+            $('#purchase_price').show();
         } else {
             $('input[name="purchase_price"]').removeAttr('required');
             $('input[name="sales_price"]').removeAttr('required');
@@ -72,6 +74,7 @@
             $('#product_identifier_group').hide();
             $('#weight_per_unit_group').hide();
             $('#sales_price').hide();
+            $('#purchase_price').hide();
         }
     });
     
