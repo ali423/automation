@@ -28,10 +28,10 @@ class SellerUpdateRequest extends FormRequest
             'mobile' => ['nullable', 'unique:sellers,mobile,'.$this->seller->id],
             'comp_name' => ['nullable','string'],
             'address' => ['nullable',],
-            'zip_code' => ['nullable','ir_postal_code'],
+            'zip_code' => ['nullable'],
             'phone' => ['nullable','ir_phone_with_code','unique:sellers,phone,'.$this->seller->id],
-            'national_code' => ['nullable','ir_national_code','unique:sellers,national_code,'.$this->seller->id],
-            'economic_code' => ['nullable','numeric','unique:sellers,economic_code,'.$this->seller->id],
+            'national_code' => ['nullable'],
+            'economic_code' => ['nullable'],
 
         ];
     }

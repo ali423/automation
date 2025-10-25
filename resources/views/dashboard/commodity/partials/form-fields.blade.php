@@ -40,7 +40,7 @@
     <div id="weight_per_unit_group" class="form-group col-md-3" style="display: {{ (old('type', $commodity->type ?? '') == 'product') ? 'block' : 'none' }};">
         <label for="weight_per_unit">وزن هر واحد (کیلوگرم)</label>
         <input type="number" step="0.001" name="weight_per_unit" value="{{ old('weight_per_unit', $commodity->weight_per_unit ?? '') }}" class="form-control"
-               id="weight_per_unit" placeholder="مثال: 0.5" min="0.001">
+               id="weight_per_unit" placeholder="مثال: 0.5" min="0.001" required>
         <div class="invalid-feedback">لطفاً وزن هر واحد را وارد کنید</div>
     </div>
     <div class="form-group col-md-3">
@@ -50,14 +50,14 @@
                class="form-control" placeholder="{{ __('fields.warning_limit') }}" required>
         <div class="invalid-feedback">{{ __('fields.warning_limit') }} را وارد کنید</div>
     </div>
-    <div id="sales_price" class="form-group col-md-3">
+    <div id="sales_price" class="form-group col-md-3" style="display: {{ (old('type', $commodity->type ?? '') == 'product') ? 'block' : 'none' }};">
         <label for="sales_price">{{ __('fields.sales_price') }} (ریال)</label>
         <input type="number" step="0.01" min="0" name="sales_price"
                value="{{ old('sales_price', $commodity->sales_price ?? '') }}"
                class="form-control" placeholder="{{ __('fields.sales_price') }}">
         <div class="invalid-feedback">{{ __('fields.sales_price') }} را وارد کنید</div>
     </div>
-    <div id="purchase_price" class="form-group col-md-3">
+    <div id="purchase_price" class="form-group col-md-3" style="display: {{ (old('type', $commodity->type ?? '') == 'material') ? 'block' : 'none' }};">
         <label for="purchase_price"> {{ __('fields.purchase_price') }} هر <span class="unit_label2">{{ $commodity->unit->symbol ?? 'واحد' }}</span> (ریال)</label>
         <input type="number" step="0.01" min="100" name="purchase_price"
                value="{{ old('purchase_price', $commodity->purchase_price ?? '') }}" class="form-control"

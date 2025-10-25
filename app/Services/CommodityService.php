@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Commodity;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class CommodityService extends BaseService
 {
@@ -12,6 +13,14 @@ class CommodityService extends BaseService
     public function __construct(ProductFormulaService $productFormulaService)
     {
         $this->productFormulaService = $productFormulaService;
+    }
+
+    /**
+     * Clear products cache to ensure production requests show updated product list
+     */
+    private function clearProductsCache()
+    {
+        Cache::forget('products_with_formulas');
     }
 
     public function create($data)
@@ -54,6 +63,10 @@ class CommodityService extends BaseService
             
             // Create unit-based formula
             $this->productFormulaService->createFormula($product, $materialsData);
+            
+            // Clear the products cache to ensure new products appear in production requests
+            $this->clearProductsCache();
+            
             return true;
         }
     }
@@ -94,6 +107,10 @@ class CommodityService extends BaseService
             
             // Update unit-based formula
             $this->productFormulaService->updateFormula($commodity, $materialsData);
+            
+            // Clear the products cache to ensure updated products appear in production requests
+            $this->clearProductsCache();
+            
             return true;
         }
     }

@@ -28,10 +28,10 @@ class SellerRequest extends FormRequest
             'mobile' => ['nullable', 'unique:sellers,mobile','ir_mobile:zero'],
             'comp_name' => ['nullable','string'],
             'address' => ['nullable',],
-            'zip_code' => ['nullable','numeric','digits:10'],
+            'zip_code' => ['nullable'],
             'phone' => ['nullable','ir_phone_with_code','unique:sellers,phone'],
-            'national_code' => ['nullable','numeric','digits:10','unique:sellers,national_code'],
-            'economic_code' => ['nullable','numeric','digits:12','unique:sellers,economic_code'],
+            'national_code' => ['nullable'],
+            'economic_code' => ['nullable'],
         ];
     }
 }

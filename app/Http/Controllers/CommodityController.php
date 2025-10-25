@@ -10,6 +10,7 @@ use App\Services\CommodityService;
 use App\Traits\PaginationTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class CommodityController extends Controller
 {
@@ -319,6 +320,10 @@ class CommodityController extends Controller
     public function destroy(Commodity $commodity)
     {
         $commodity->delete();
+        
+        // Clear the products cache to ensure deleted products are removed from production requests
+        Cache::forget('products_with_formulas');
+        
         return redirect(route('commodity.index'))->with('successful', 'اطلاعات حذف شدند.');
     }
 
