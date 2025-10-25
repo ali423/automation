@@ -41,8 +41,7 @@ class InventoryService extends BaseService
             ]);
         }
 
-        // Clear inventory-related caches when stock is added
-        $this->clearInventoryCaches($commodityId);
+        // No cache clearing needed since we removed caching mechanisms
         
         return $inventory;
     }
@@ -116,8 +115,7 @@ class InventoryService extends BaseService
         }
         }
 
-        // Clear inventory-related caches when stock is removed
-        $this->clearInventoryCaches($commodityId);
+        // No cache clearing needed since we removed caching mechanisms
 
         return true;
     }
@@ -307,8 +305,7 @@ class InventoryService extends BaseService
             'purchase_price' => $data['purchase_price'],
         ]);
 
-        // Clear inventory-related caches when inventory is updated
-        $this->clearInventoryCaches($inventory->commodity_id);
+        // No cache clearing needed since we removed caching mechanisms
         
         return $inventory;
     }
@@ -320,8 +317,7 @@ class InventoryService extends BaseService
     {
         $inventory->update(['amount' => 0]);
         
-        // Clear inventory-related caches when inventory is deleted
-        $this->clearInventoryCaches($inventory->commodity_id);
+        // No cache clearing needed since we removed caching mechanisms
         
         return $inventory;
     }
@@ -348,8 +344,7 @@ class InventoryService extends BaseService
             'amount' => $newAmount
         ]);
 
-        // Clear inventory-related caches when stock is adjusted
-        $this->clearInventoryCaches($inventory->commodity_id);
+        // No cache clearing needed since we removed caching mechanisms
 
         // Log the adjustment
         $this->logStockAdjustment($inventory, $adjustmentType, $quantity, $reason);
@@ -470,37 +465,106 @@ class InventoryService extends BaseService
      */
     private function clearInventoryCaches($commodityId)
     {
-        // Clear batch inventory data cache for this commodity
-        // We need to clear all possible cache keys that might include this commodity
-        $cacheKeys = [
-            'batch_inventory_costs_',
-            'batch_inventory_data_',
-            'production_materials_inventory_'
-        ];
+        // Clear specific cache keys that might contain this commodity
+        $this->clearSpecificCacheKeys($commodityId);
         
-        // Since we can't easily get all cache keys with specific patterns,
-        // we'll use a more targeted approach by clearing caches that might contain this commodity
-        // This is a simplified approach - in production, consider using cache tags
-        
-        // Clear any cache keys that might contain this commodity ID
-        // We'll use a pattern-based approach for now
-        $this->clearCacheByPattern($cacheKeys, $commodityId);
+        // Also clear any production request caches that might be affected
+        $this->clearProductionRequestCaches($commodityId);
     }
 
     /**
-     * Clear cache keys by pattern (simplified approach)
-     * In production, consider using Redis cache tags for better performance
+     * Clear specific cache keys for a commodity
      */
-    private function clearCacheByPattern($patterns, $commodityId)
+    private function clearSpecificCacheKeys($commodityId)
     {
-        // For now, we'll clear all caches with our known patterns
-        // This is not the most efficient approach, but it ensures cache consistency
-        foreach ($patterns as $pattern) {
-            // Clear all caches that start with this pattern
-            // Note: This is a simplified approach. In production with Redis,
-            // you would use SCAN with pattern matching or cache tags
-            Cache::flush(); // For now, we'll flush all cache to be safe
-            break; // Only need to flush once
+        // Get all products that might use this commodity as a material
+        $products = \App\Models\Commodity::whereHas('materials', function($query) use ($commodityId) {
+            $query->where('material_id', $commodityId);
+        })->pluck('id')->toArray();
+        
+        // Clear batch inventory caches for this commodity
+        $this->clearBatchInventoryCaches([$commodityId]);
+        
+        // Clear batch inventory caches for products that use this commodity
+        if (!empty($products)) {
+            $this->clearBatchInventoryCaches($products);
+        }
+    }
+    
+    /**
+     * Clear production request caches that might be affected by this commodity
+     */
+    private function clearProductionRequestCaches($commodityId)
+    {
+        // Get all production requests that might be affected
+        $productionRequestIds = \App\Models\ProductionRequest::whereHas('materials', function($query) use ($commodityId) {
+            $query->where('material_id', $commodityId);
+        })->pluck('id')->toArray();
+        
+        // Clear specific production request caches
+        foreach ($productionRequestIds as $requestId) {
+            $request = \App\Models\ProductionRequest::find($requestId);
+            if ($request) {
+                $cacheKey = "production_materials_inventory_{$request->id}_{$request->updated_at->timestamp}";
+                Cache::forget($cacheKey);
+            }
+        }
+    }
+    
+    /**
+     * Clear batch inventory caches for specific commodity IDs
+     */
+    private function clearBatchInventoryCaches($commodityIds)
+    {
+        // Generate all possible cache keys for these commodities
+        $allCombinations = $this->generateAllCombinations($commodityIds);
+        
+        foreach ($allCombinations as $combination) {
+            $costsKey = 'batch_inventory_costs_' . md5(implode(',', $combination));
+            $dataKey = 'batch_inventory_data_' . md5(implode(',', $combination));
+            
+            Cache::forget($costsKey);
+            Cache::forget($dataKey);
+        }
+    }
+    
+    /**
+     * Generate all possible combinations of commodity IDs for cache clearing
+     */
+    private function generateAllCombinations($commodityIds)
+    {
+        $combinations = [];
+        
+        // Add individual commodity IDs
+        foreach ($commodityIds as $id) {
+            $combinations[] = [$id];
+        }
+        
+        // Add combinations of 2 or more if there are multiple commodities
+        if (count($commodityIds) > 1) {
+            $combinations[] = $commodityIds;
+        }
+        
+        return $combinations;
+    }
+    
+    /**
+     * Clear all production request caches (nuclear option for cache issues)
+     */
+    private function clearAllProductionRequestCaches()
+    {
+        // Get all production requests and clear their caches
+        $productionRequests = \App\Models\ProductionRequest::all();
+        
+        foreach ($productionRequests as $request) {
+            $cacheKey = "production_materials_inventory_{$request->id}_{$request->updated_at->timestamp}";
+            Cache::forget($cacheKey);
+        }
+        
+        // Also clear product formula caches
+        $products = \App\Models\Commodity::where('type', 'product')->pluck('id');
+        foreach ($products as $productId) {
+            Cache::forget("product_formula_{$productId}");
         }
     }
 }
