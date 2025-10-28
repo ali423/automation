@@ -112,8 +112,8 @@
                                             -
                                         @endif
                                     </td>
-                                    <td>{{ number_format($item->price) }}</td>
-                                    <td>{{ number_format($item->total_price) }}</td>
+                                    <td>{{ number_format($item->price_with_vat) }}</td>
+                                    <td>{{ number_format($item->total_price_with_vat) }}</td>
                                 </tr>
                                 @endforeach
                                 <tr>
@@ -129,13 +129,13 @@
                                 <tr>
                                     <td colspan="11" class="text-left">
                                         <div class="d-flex justify-content-between">
-                                            <span>جمع کل : {{ number_format($order->total_price) }}</span>
+                                            <span>جمع کل : {{ number_format($order->total_price_with_vat) }}</span>
                                             <span>وزن کل : {{ $order->total_weight_kg !== null ? number_format($order->total_weight_kg, 3) . ' کیلوگرم' : 'نامشخص' }}</span>
                                         </div>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td colspan="11" class="text-left">جمع کل به حروف: {{ $order->total_price }}</td>
+                                    <td colspan="11" class="text-left">جمع کل به حروف: {{ $order->total_price_with_vat }}</td>
                                 </tr>
                                 <tr>
                                     <td colspan="11" class="text-left" style="height: 80px">مهر و امضای فروشنده:</td>
