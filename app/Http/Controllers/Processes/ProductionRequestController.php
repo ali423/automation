@@ -83,15 +83,13 @@ class ProductionRequestController extends Controller
      */
     public function create()
     {
-        // Use cached products with pagination for better performance
-        $products = Cache::remember('products_with_formulas', 600, function () { // Cache for 10 minutes
-            return Commodity::query()
-                ->where('type', 'product')
-                ->whereHas('materials') // Only products with formulas
-                ->with(['unit', 'materials.unit'])
-                ->orderBy('title')
-                ->get();
-        });
+        // Get products with formulas (no caching for real-time data)
+        $products = Commodity::query()
+            ->where('type', 'product')
+            ->whereHas('materials') // Only products with formulas
+            ->with(['unit', 'materials.unit'])
+            ->orderBy('title')
+            ->get();
         
         if ($products->count() < 1) {
             return redirect(route('commodity.create'))->withErrors('ابتدا حداقل یک محصول ثبت کنید.');
@@ -170,15 +168,13 @@ class ProductionRequestController extends Controller
             return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد. درخواست‌های تایید شده، رد شده، منقضی شده یا تکمیل شده قابل ویرایش نیستند.');
         }
         
-        // Use cached products with pagination for better performance
-        $products = Cache::remember('products_with_formulas', 600, function () { // Cache for 10 minutes
-            return Commodity::query()
-                ->where('type', 'product')
-                ->whereHas('materials') // Only products with formulas
-                ->with(['unit', 'materials.unit'])
-                ->orderBy('title')
-                ->get();
-        });
+        // Get products with formulas (no caching for real-time data)
+        $products = Commodity::query()
+            ->where('type', 'product')
+            ->whereHas('materials') // Only products with formulas
+            ->with(['unit', 'materials.unit'])
+            ->orderBy('title')
+            ->get();
         
         if ($products->count() < 1) {
             return redirect(route('commodity.create'))->withErrors('ابتدا حداقل یک محصول ثبت کنید.');
@@ -215,8 +211,7 @@ class ProductionRequestController extends Controller
             $this->service->update($productionRequest, $data, $file);
         });
         
-        // Clear related caches after update
-        $this->service->clearProductionCaches($productionRequest->id);
+        // No cache clearing needed since we removed caching
         
         return redirect(route('production-request.index'))->with('successful', 'اطلاعات درخواست ویرایش شد.');
     }
@@ -268,8 +263,7 @@ class ProductionRequestController extends Controller
                 $this->service->approve($productionRequest);
             });
             
-            // Clear related caches after approval
-            $this->service->clearProductionCaches($productionRequest->id);
+            // No cache clearing needed since we removed caching
             
             return redirect(route('production-request.show', $productionRequest))->with('successful', 'درخواست تولید تایید شد.');
         } else {

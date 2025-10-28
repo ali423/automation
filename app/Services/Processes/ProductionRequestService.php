@@ -326,37 +326,33 @@ class ProductionRequestService extends BaseService
     }
 
     /**
-     * Get inventory costs for multiple materials in a single query
+     * Get fresh inventory costs for multiple materials (no caching)
      */
     protected function getBatchInventoryCosts($materialIds)
     {
-        $cacheKey = 'batch_inventory_costs_' . md5(implode(',', $materialIds));
+        $costs = [];
         
-        return Cache::remember($cacheKey, 300, function () use ($materialIds) { // Cache for 5 minutes
-            $costs = [];
-            
-            // Get all inventory records for these materials in one query
-            $inventories = DB::table('inventories')
-                ->whereIn('commodity_id', $materialIds)
-                ->where('amount', '>', 0)
-                ->select('commodity_id', 'purchase_price', 'amount')
-                ->get()
-                ->groupBy('commodity_id');
+        // Get all inventory records for these materials in one query
+        $inventories = DB::table('inventories')
+            ->whereIn('commodity_id', $materialIds)
+            ->where('amount', '>', 0)
+            ->select('commodity_id', 'purchase_price', 'amount')
+            ->get()
+            ->groupBy('commodity_id');
 
-            foreach ($inventories as $commodityId => $inventoryRecords) {
-                $totalValue = 0;
-                $totalAmount = 0;
-                
-                foreach ($inventoryRecords as $record) {
-                    $totalValue += $record->purchase_price * $record->amount;
-                    $totalAmount += $record->amount;
-                }
-                
-                $costs[$commodityId] = $totalAmount > 0 ? $totalValue / $totalAmount : 0;
+        foreach ($inventories as $commodityId => $inventoryRecords) {
+            $totalValue = 0;
+            $totalAmount = 0;
+            
+            foreach ($inventoryRecords as $record) {
+                $totalValue += $record->purchase_price * $record->amount;
+                $totalAmount += $record->amount;
             }
             
-            return $costs;
-        });
+            $costs[$commodityId] = $totalAmount > 0 ? $totalValue / $totalAmount : 0;
+        }
+        
+        return $costs;
     }
 
 
@@ -430,35 +426,40 @@ class ProductionRequestService extends BaseService
     }
 
     /**
-     * Get inventory data for multiple materials in a single query
+     * Get fresh inventory data for multiple materials (no caching)
+     */
+    protected function getFreshInventoryData($materialIds)
+    {
+        $inventoryData = [];
+        
+        // Get all inventory records for these materials in one query
+        $inventories = DB::table('inventories')
+            ->whereIn('commodity_id', $materialIds)
+            ->where('amount', '>', 0)
+            ->select('commodity_id', 'unit_id', 'amount')
+            ->get()
+            ->groupBy('commodity_id');
+
+        foreach ($inventories as $commodityId => $records) {
+            $inventoryData[$commodityId] = [];
+            foreach ($records as $record) {
+                $inventoryData[$commodityId][] = [
+                    'unit_id' => $record->unit_id,
+                    'amount' => $record->amount
+                ];
+            }
+        }
+        
+        return $inventoryData;
+    }
+
+    /**
+     * Get inventory data for multiple materials in a single query (cached version - deprecated)
      */
     protected function getBatchInventoryData($materialIds)
     {
-        $cacheKey = 'batch_inventory_data_' . md5(implode(',', $materialIds));
-        
-        return Cache::remember($cacheKey, 300, function () use ($materialIds) { // Cache for 5 minutes
-            $inventoryData = [];
-            
-            // Get all inventory records for these materials in one query
-            $inventories = DB::table('inventories')
-                ->whereIn('commodity_id', $materialIds)
-                ->where('amount', '>', 0)
-                ->select('commodity_id', 'unit_id', 'amount')
-                ->get()
-                ->groupBy('commodity_id');
-
-            foreach ($inventories as $commodityId => $records) {
-                $inventoryData[$commodityId] = [];
-                foreach ($records as $record) {
-                    $inventoryData[$commodityId][] = [
-                        'unit_id' => $record->unit_id,
-                        'amount' => $record->amount
-                    ];
-                }
-            }
-            
-            return $inventoryData;
-        });
+        // Use fresh data instead of cached data
+        return $this->getFreshInventoryData($materialIds);
     }
 
 
@@ -513,182 +514,129 @@ class ProductionRequestService extends BaseService
     }
 
     /**
-     * Get materials with pre-calculated inventory data to avoid N+1 queries in views
+     * Get materials with real-time inventory data (no caching)
      */
     public function getMaterialsWithInventoryData($productionRequest)
     {
-        // Use cache key based on production request ID and updated_at timestamp
-        $cacheKey = "production_materials_inventory_{$productionRequest->id}_{$productionRequest->updated_at->timestamp}";
+        $unitConversionService = app(\App\Services\UnitConversionService::class);
+        $materialsWithInventory = [];
+
+        // Get fresh inventory data for all materials
+        $materialIds = $productionRequest->materials->pluck('id')->toArray();
+        $allInventoryData = $this->getFreshInventoryData($materialIds);
         
-        return Cache::remember($cacheKey, 300, function () use ($productionRequest) { // Cache for 5 minutes
-            $unitConversionService = app(\App\Services\UnitConversionService::class);
-            $materialsWithInventory = [];
+        // Get all units
+        $unitIds = collect($allInventoryData)->flatten(1)->pluck('unit_id')->unique()->toArray();
+        $units = \App\Models\Unit::whereIn('id', $unitIds)->get()->keyBy('id');
 
-            // Batch load all inventory data for all materials
-            $materialIds = $productionRequest->materials->pluck('id')->toArray();
-            $allInventoryData = $this->getBatchInventoryData($materialIds);
+        foreach ($productionRequest->materials as $material) {
+            // Get fresh inventory data for this material
+            $inventoryData = $allInventoryData[$material->id] ?? [];
             
-            // Batch load all units
-            $unitIds = collect($allInventoryData)->flatten(1)->pluck('unit_id')->unique()->toArray();
-            $units = \App\Models\Unit::whereIn('id', $unitIds)->get()->keyBy('id');
-
-            foreach ($productionRequest->materials as $material) {
-                // Get pre-loaded inventory data for this material
-                $inventoryData = $allInventoryData[$material->id] ?? [];
-                
-                // Calculate total available stock in the formula unit
-                $availableStock = 0;
-                $conversionInfo = '';
-                $availableUnits = [];
-                
-                foreach ($inventoryData as $inventory) {
-                    if ($inventory['amount'] > 0) {
-                        $unit = $units[$inventory['unit_id']] ?? null;
-                        if ($unit) {
-                            $availableUnits[] = "{$inventory['amount']} {$unit->symbol}";
-                        }
+            // Calculate total available stock in the formula unit
+            $availableStock = 0;
+            $conversionInfo = '';
+            $availableUnits = [];
+            
+            foreach ($inventoryData as $inventory) {
+                if ($inventory['amount'] > 0) {
+                    $unit = $units[$inventory['unit_id']] ?? null;
+                    if ($unit) {
+                        $availableUnits[] = "{$inventory['amount']} {$unit->symbol}";
+                    }
+                    
+                    if ($inventory['unit_id'] == $material->pivot->unit_id) {
+                        // Direct match - no conversion needed
+                        $availableStock += $inventory['amount'];
+                    } else {
+                        // Convert from available unit to formula unit
+                        $convertedAmount = $unitConversionService->convert(
+                            $inventory['amount'],
+                            $inventory['unit_id'],
+                            $material->pivot->unit_id,
+                            $material->id
+                        );
                         
-                        if ($inventory['unit_id'] == $material->pivot->unit_id) {
-                            // Direct match - no conversion needed
-                            $availableStock += $inventory['amount'];
-                        } else {
-                            // Convert from available unit to formula unit
-                            $convertedAmount = $unitConversionService->convert(
-                                $inventory['amount'],
-                                $inventory['unit_id'],
-                                $material->pivot->unit_id,
-                                $material->id
-                            );
-                            
-                            if ($convertedAmount !== null && $convertedAmount > 0) {
-                                $availableStock += $convertedAmount;
-                                if ($unit) {
-                                    $conversionInfo .= " (تبدیل شده از {$inventory['amount']} {$unit->symbol})";
-                                }
+                        if ($convertedAmount !== null && $convertedAmount > 0) {
+                            $availableStock += $convertedAmount;
+                            if ($unit) {
+                                $conversionInfo .= " (تبدیل شده از {$inventory['amount']} {$unit->symbol})";
                             }
                         }
                     }
                 }
-                
-                // If no stock found, show available inventory information
-                $allAvailableInfo = '';
-                if ($availableStock == 0 && !empty($availableUnits)) {
-                    $allAvailableInfo = ' (موجود در: ' . implode(', ', $availableUnits) . ')';
-                }
-                
-                // Determine stock status for styling
-                $stockStatus = 'success';
-                $stockIcon = 'fa-check-circle';
-                $stockText = 'کافی';
-                
-                if ($availableStock < $material->pivot->required_amount) {
-                    $stockStatus = 'danger';
-                    $stockIcon = 'fa-times-circle';
-                    $stockText = 'ناکافی';
-                } elseif ($availableStock < $material->pivot->required_amount * 1.1) {
-                    $stockStatus = 'warning';
-                    $stockIcon = 'fa-exclamation-triangle';
-                    $stockText = 'کم';
-                }
-                
-                $materialsWithInventory[] = [
-                    'material' => $material,
-                    'availableStock' => $availableStock,
-                    'conversionInfo' => $conversionInfo,
-                    'allAvailableInfo' => $allAvailableInfo,
-                    'stockStatus' => $stockStatus,
-                    'stockIcon' => $stockIcon,
-                    'stockText' => $stockText,
-                ];
             }
+            
+            // If no stock found, show available inventory information
+            $allAvailableInfo = '';
+            if ($availableStock == 0 && !empty($availableUnits)) {
+                $allAvailableInfo = ' (موجود در: ' . implode(', ', $availableUnits) . ')';
+            }
+            
+            // Determine stock status for styling
+            $stockStatus = 'success';
+            $stockIcon = 'fa-check-circle';
+            $stockText = 'کافی';
+            
+            if ($availableStock < $material->pivot->required_amount) {
+                $stockStatus = 'danger';
+                $stockIcon = 'fa-times-circle';
+                $stockText = 'ناکافی';
+            } elseif ($availableStock < $material->pivot->required_amount * 1.1) {
+                $stockStatus = 'warning';
+                $stockIcon = 'fa-exclamation-triangle';
+                $stockText = 'کم';
+            }
+            
+            $materialsWithInventory[] = [
+                'material' => $material,
+                'availableStock' => $availableStock,
+                'conversionInfo' => $conversionInfo,
+                'allAvailableInfo' => $allAvailableInfo,
+                'stockStatus' => $stockStatus,
+                'stockIcon' => $stockIcon,
+                'stockText' => $stockText,
+            ];
+        }
 
-            return $materialsWithInventory;
-        });
+        return $materialsWithInventory;
     }
 
     /**
-     * Get cached product formulas to avoid repeated database queries
+     * Get fresh product formulas (no caching)
      */
     public function getCachedProductFormulas($productId)
     {
-        $cacheKey = "product_formula_{$productId}";
-        
-        return Cache::remember($cacheKey, 600, function () use ($productId) { // Cache for 10 minutes
-            return Commodity::where('id', $productId)
-                ->with(['materials.unit', 'unit'])
-                ->first();
-        });
+        return Commodity::where('id', $productId)
+            ->with(['materials.unit', 'unit'])
+            ->first();
     }
 
     /**
-     * Clear production-related caches with improved strategy
+     * Clear production-related caches (simplified - most caching removed)
      */
     public function clearProductionCaches($productionRequestId = null, $productId = null)
     {
-        if ($productionRequestId) {
-            // Clear specific production request cache
-            $productionRequest = ProductionRequest::find($productionRequestId);
-            if ($productionRequest) {
-                // Clear materials inventory cache
-                $cacheKey = "production_materials_inventory_{$productionRequest->id}_{$productionRequest->updated_at->timestamp}";
-                Cache::forget($cacheKey);
-                
-                // Clear any related product formula cache
-                if ($productionRequest->product_id) {
-                    Cache::forget("product_formula_{$productionRequest->product_id}");
-                }
-            }
-        }
-        
-        if ($productId) {
-            // Clear product formula cache
-            Cache::forget("product_formula_{$productId}");
-            
-            // Clear batch inventory caches that might include this product's materials
-            $this->clearInventoryCaches($productId);
-        }
-        
-        // Clear general batch inventory caches if no specific IDs provided
-        if (!$productionRequestId && !$productId) {
-            $this->clearAllInventoryCaches();
-        }
+        // Since we removed most caching, this method is now mostly for compatibility
+        // No specific cache clearing needed as we're using fresh data
+        return true;
     }
 
     /**
-     * Clear inventory-related caches for a specific product
+     * Clear inventory-related caches for a specific product (simplified)
      */
     private function clearInventoryCaches($productId)
     {
-        // Get all material IDs for this product
-        $product = Commodity::with('materials')->find($productId);
-        if ($product && $product->materials->isNotEmpty()) {
-            $materialIds = $product->materials->pluck('id')->toArray();
-            $costsCacheKey = 'batch_inventory_costs_' . md5(implode(',', $materialIds));
-            $dataCacheKey = 'batch_inventory_data_' . md5(implode(',', $materialIds));
-            
-            Cache::forget($costsCacheKey);
-            Cache::forget($dataCacheKey);
-        }
+        // No caching to clear since we removed most caching mechanisms
+        return true;
     }
 
     /**
-     * Clear all inventory-related caches
+     * Clear all inventory-related caches (simplified)
      */
     private function clearAllInventoryCaches()
     {
-        // Get all cache keys that start with our prefixes
-        $keys = [
-            'batch_inventory_costs_',
-            'batch_inventory_data_',
-            'product_formula_',
-            'production_materials_inventory_'
-        ];
-        
-        foreach ($keys as $prefix) {
-            // Note: This is a simplified approach. In production, you might want to use
-            // a more sophisticated cache tagging system like Redis tags
-            Cache::flush(); // For now, we'll flush all cache to be safe
-            break; // Only need to flush once
-        }
+        // No caching to clear since we removed most caching mechanisms
+        return true;
     }
 }

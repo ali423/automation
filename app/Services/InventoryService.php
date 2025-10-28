@@ -6,6 +6,7 @@ use App\Models\Inventory;
 use App\Models\Commodity;
 use App\Models\Unit;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class InventoryService extends BaseService
 {
@@ -30,17 +31,19 @@ class InventoryService extends BaseService
                 'amount' => $newAmount,
                 'purchase_price' => $purchasePrice ?? $inventory->purchase_price,
             ]);
-            
-            return $inventory;
         } else {
             // Create new inventory record
-            return Inventory::create([
+            $inventory = Inventory::create([
                 'commodity_id' => $commodityId,
                 'unit_id' => $unitId,
                 'amount' => $amount,
                 'purchase_price' => $purchasePrice,
             ]);
         }
+
+        // No cache clearing needed since we removed caching mechanisms
+        
+        return $inventory;
     }
 
     /**
@@ -111,6 +114,8 @@ class InventoryService extends BaseService
             $inventory->update(['amount' => $newAmount]);
         }
         }
+
+        // No cache clearing needed since we removed caching mechanisms
 
         return true;
     }
@@ -299,6 +304,8 @@ class InventoryService extends BaseService
             'amount' => $data['amount'],
             'purchase_price' => $data['purchase_price'],
         ]);
+
+        // No cache clearing needed since we removed caching mechanisms
         
         return $inventory;
     }
@@ -309,6 +316,9 @@ class InventoryService extends BaseService
     public function delete($inventory)
     {
         $inventory->update(['amount' => 0]);
+        
+        // No cache clearing needed since we removed caching mechanisms
+        
         return $inventory;
     }
 
@@ -333,6 +343,8 @@ class InventoryService extends BaseService
         $inventory->update([
             'amount' => $newAmount
         ]);
+
+        // No cache clearing needed since we removed caching mechanisms
 
         // Log the adjustment
         $this->logStockAdjustment($inventory, $adjustmentType, $quantity, $reason);
@@ -446,5 +458,113 @@ class InventoryService extends BaseService
                 'unit' => $inventory->unit->name ?? 'نامشخص'
             ] : null
         ];
+    }
+
+    /**
+     * Clear inventory-related caches for a specific commodity
+     */
+    private function clearInventoryCaches($commodityId)
+    {
+        // Clear specific cache keys that might contain this commodity
+        $this->clearSpecificCacheKeys($commodityId);
+        
+        // Also clear any production request caches that might be affected
+        $this->clearProductionRequestCaches($commodityId);
+    }
+
+    /**
+     * Clear specific cache keys for a commodity
+     */
+    private function clearSpecificCacheKeys($commodityId)
+    {
+        // Get all products that might use this commodity as a material
+        $products = \App\Models\Commodity::whereHas('materials', function($query) use ($commodityId) {
+            $query->where('material_id', $commodityId);
+        })->pluck('id')->toArray();
+        
+        // Clear batch inventory caches for this commodity
+        $this->clearBatchInventoryCaches([$commodityId]);
+        
+        // Clear batch inventory caches for products that use this commodity
+        if (!empty($products)) {
+            $this->clearBatchInventoryCaches($products);
+        }
+    }
+    
+    /**
+     * Clear production request caches that might be affected by this commodity
+     */
+    private function clearProductionRequestCaches($commodityId)
+    {
+        // Get all production requests that might be affected
+        $productionRequestIds = \App\Models\ProductionRequest::whereHas('materials', function($query) use ($commodityId) {
+            $query->where('material_id', $commodityId);
+        })->pluck('id')->toArray();
+        
+        // Clear specific production request caches
+        foreach ($productionRequestIds as $requestId) {
+            $request = \App\Models\ProductionRequest::find($requestId);
+            if ($request) {
+                $cacheKey = "production_materials_inventory_{$request->id}_{$request->updated_at->timestamp}";
+                Cache::forget($cacheKey);
+            }
+        }
+    }
+    
+    /**
+     * Clear batch inventory caches for specific commodity IDs
+     */
+    private function clearBatchInventoryCaches($commodityIds)
+    {
+        // Generate all possible cache keys for these commodities
+        $allCombinations = $this->generateAllCombinations($commodityIds);
+        
+        foreach ($allCombinations as $combination) {
+            $costsKey = 'batch_inventory_costs_' . md5(implode(',', $combination));
+            $dataKey = 'batch_inventory_data_' . md5(implode(',', $combination));
+            
+            Cache::forget($costsKey);
+            Cache::forget($dataKey);
+        }
+    }
+    
+    /**
+     * Generate all possible combinations of commodity IDs for cache clearing
+     */
+    private function generateAllCombinations($commodityIds)
+    {
+        $combinations = [];
+        
+        // Add individual commodity IDs
+        foreach ($commodityIds as $id) {
+            $combinations[] = [$id];
+        }
+        
+        // Add combinations of 2 or more if there are multiple commodities
+        if (count($commodityIds) > 1) {
+            $combinations[] = $commodityIds;
+        }
+        
+        return $combinations;
+    }
+    
+    /**
+     * Clear all production request caches (nuclear option for cache issues)
+     */
+    private function clearAllProductionRequestCaches()
+    {
+        // Get all production requests and clear their caches
+        $productionRequests = \App\Models\ProductionRequest::all();
+        
+        foreach ($productionRequests as $request) {
+            $cacheKey = "production_materials_inventory_{$request->id}_{$request->updated_at->timestamp}";
+            Cache::forget($cacheKey);
+        }
+        
+        // Also clear product formula caches
+        $products = \App\Models\Commodity::where('type', 'product')->pluck('id');
+        foreach ($products as $productId) {
+            Cache::forget("product_formula_{$productId}");
+        }
     }
 }
