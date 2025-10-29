@@ -80,6 +80,17 @@ class OrderItem extends Model
     }
 
     /**
+     * Calculate the unit price with VAT
+     */
+    public function getPriceWithVatAttribute()
+    {
+        if ($this->commodity && $this->commodity->type === 'product') {
+            return $this->price * (1 + vat_rate()); // Add 10% VAT for products
+        }
+        return $this->price; // No VAT for materials
+    }
+
+    /**
      * Get the amount in kilograms
      */
     // public function getKgAmountAttribute()
