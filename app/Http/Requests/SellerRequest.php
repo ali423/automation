@@ -29,7 +29,7 @@ class SellerRequest extends FormRequest
             'comp_name' => ['nullable','string'],
             'address' => ['nullable',],
             'zip_code' => ['nullable'],
-            'phone' => ['nullable','ir_phone_with_code','unique:sellers,phone'],
+            'phone' => ['nullable','unique:sellers,phone'],
             'national_code' => ['nullable'],
             'economic_code' => ['nullable'],
         ];
