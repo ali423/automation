@@ -49,10 +49,15 @@
                     <table class="table-borderless" style="border: 0.5px solid #e0e0e0;">
                         <colgroup>
                             <col span="1" style="width: 5%;">
-                            <col span="1" style="width: 8%;">
+                            @if($invoiceType !== 'warehouse')
+                                <col span="1" style="width: 8%;">
+                            @endif
                             <col span="1" style="width: 35%;">
                             <col span="1" style="width: 10%;">
                             <col span="1" style="width: 10%;">
+                            @if($invoiceType === 'warehouse')
+                                <col span="1" style="width: 10%;">
+                            @endif
                             <col span="1" style="width: 10%;">
                             @if($invoiceType === 'documentation')
                                 <col span="1" style="width: 12%;">
@@ -62,10 +67,15 @@
                         <thead>
                             <tr class="table-header">
                                 <th scope="col">ردیف</th>
-                                <th scope="col">برند</th>
+                                @if($invoiceType !== 'warehouse')
+                                    <th scope="col">برند</th>
+                                @endif
                                 <th scope="col">مدل</th>
                                 <th scope="col">واحد</th>
                                 <th scope="col">تعداد</th>
+                                @if($invoiceType === 'warehouse')
+                                    <th scope="col">تعداد بسته‌بندی</th>
+                                @endif
                                 <th scope="col">وزن(کیلوگرم)</th>
                                 @if($invoiceType === 'documentation')
                                     <th scope="col">فی(ریال)</th>
@@ -83,10 +93,21 @@
                             @foreach($request->commodities as $commodity)
                                 <tr>
                                     <td scope="row">{{ $i }}</td>
-                                    <td>{{ $commodity->brand ?? 'زیگما' }}</td>
+                                    @if($invoiceType !== 'warehouse')
+                                        <td>{{ $commodity->brand ?? 'زیگما' }}</td>
+                                    @endif
                                     <td style="text-align: center;">{{ $commodity->title }}</td>
                                     <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
-                                    <td>{{ $commodity->pivot->amount }}</td>
+                                    <td>{{ $invoiceType === 'warehouse' ? number_format($commodity->pivot->amount, 0) : $commodity->pivot->amount }}</td>
+                                    @if($invoiceType === 'warehouse')
+                                        <td>
+                                            @if(isset($request->box_quantities[$commodity->id]) && $request->box_quantities[$commodity->id]['can_calculate'])
+                                                {{ $request->box_quantities[$commodity->id]['boxes'] }}
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+                                    @endif
                                     <td>
                                         @php
                                             $weight = calculate_weight($commodity, $commodity->pivot->amount, $commodity->pivot->unit_id);
@@ -103,7 +124,7 @@
                                 @endphp
                             @endforeach
                             <tr>
-                                <td colspan="{{ $invoiceType === 'documentation' ? '8' : '6' }}" class="text-right">
+                                <td colspan="{{ $invoiceType === 'documentation' ? '8' : ($invoiceType === 'warehouse' ? '6' : '7') }}" class="text-right">
                                     مجموع وزن / مقدار: {{ $request->commodities->sum('pivot.amount') }}
                                     <br>وزن کل: {{ $totalWeight !== null ? number_format($totalWeight, 3) . ' کیلوگرم' : 'نامشخص' }}
                                     @if($invoiceType === 'documentation')
@@ -115,13 +136,15 @@
                     </table>
                 </div>
                 
-                <div class="mb-5">
-                    اینجانب <span style="display:inline-block;width: 150px;border-bottom:1px dashed #000">{{ $request->driver_name ?? '' }}</span>
-                    راننده خودرو به شماره پلاک 
-                    <span style="display:inline-block;width: 150px;border-bottom:1px dashed #000">{{ trim(($request->plate_serial ?? '') . ' ' . ($request->plate_number ?? '')) }}</span>
-                    شماره تماس <span style="display:inline-block;width: 150px;border-bottom:1px dashed #000">{{ $request->driver_phone ?? '' }}</span>
-                    محموله فوق را تحویل گرفتم.
-                </div>
+                @if($invoiceType !== 'warehouse')
+                    <div class="mb-5">
+                        اینجانب <span style="display:inline-block;width: 150px;border-bottom:1px dashed #000">{{ $request->driver_name ?? '' }}</span>
+                        راننده خودرو به شماره پلاک 
+                        <span style="display:inline-block;width: 150px;border-bottom:1px dashed #000">{{ trim(($request->plate_serial ?? '') . ' ' . ($request->plate_number ?? '')) }}</span>
+                        شماره تماس <span style="display:inline-block;width: 150px;border-bottom:1px dashed #000">{{ $request->driver_phone ?? '' }}</span>
+                        محموله فوق را تحویل گرفتم.
+                    </div>
+                @endif
                 
                 <div class="d-flex justify-content-around align-items-center mb-3">
                     <h6>امضاء تحویل گیرنده کالا</h6>
