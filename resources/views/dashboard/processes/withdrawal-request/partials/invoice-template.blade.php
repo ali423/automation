@@ -54,6 +54,9 @@
                             <col span="1" style="width: 35%;">
                             <col span="1" style="width: 10%;">
                             <col span="1" style="width: 10%;">
+                            @if($invoiceType === 'warehouse')
+                                <col span="1" style="width: 10%;">
+                            @endif
                             <col span="1" style="width: 10%;">
                             @if($invoiceType === 'documentation')
                                 <col span="1" style="width: 10%;">
