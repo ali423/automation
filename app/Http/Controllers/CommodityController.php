@@ -42,7 +42,7 @@ class CommodityController extends Controller
             'sortable_fields' => [],
             'default_sort_field' => 'id',
             'default_sort_direction' => 'desc',
-            'max_per_page' => 50,
+            'max_per_page' => 100,
             'per_page_options' => [5, 10, 25, 50, 100],
             'search_placeholder' => 'جستجو در عنوان، شماره یا شناسه کالا...'
         ];
@@ -92,7 +92,7 @@ class CommodityController extends Controller
             'sortable_fields' => [], // Disable server-side sorting, use DataTables sorting instead
             'default_sort_field' => 'id',
             'default_sort_direction' => 'desc',
-            'max_per_page' => 50
+            'max_per_page' => 100
         ]);
         
         // Pre-calculate base prices efficiently
