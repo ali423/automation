@@ -48,7 +48,7 @@ class ProductionRequestController extends Controller
             'sortable_fields' => ['id', 'number', 'status', 'production_amount', 'total_cost', 'created_at', 'updated_at'],
             'default_sort_field' => 'created_at',
             'default_sort_direction' => 'desc',
-            'max_per_page' => 50
+            'max_per_page' => 100
         ]);
         
         // Prepare options for the pagination components

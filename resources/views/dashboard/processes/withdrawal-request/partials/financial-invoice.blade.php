@@ -87,17 +87,38 @@
                 </table>
                 
                 <!-- Items Table -->
+                <style>
+                    @media print {
+                        @page {
+                            size: landscape;
+                        }
+                    }
+                    .factortable {
+                        border: 2px solid #000 !important;
+                    }
+                    .factortable th,
+                    .factortable td {
+                        border: 2px solid #000 !important;
+                    }
+                    .factortable thead tr {
+                        height: auto;
+                        white-space: nowrap;
+                    }
+                    .factortable thead th {
+                        padding: 8px 4px;
+                        font-size: 12px;
+                        line-height: 1.2;
+                    }
+                </style>
                 <table class="factortable table table-bordered text-center">
                     <thead>
                     <tr class="table-secondary">
                         <th scope="col">ردیف</th>
-                        <th scope="col">کد کالا</th>
                         <th scope="col">نام کالا</th>
                         <th scope="col">تعداد / مقدار</th>
                         <th scope="col">واحد</th>
                         <th scope="col">تعداد کارتن</th>
                         <th scope="col">تعداد در کارتن</th>
-                        <th scope="col">تعداد اضافی</th>
                         <th scope="col">فی</th>
                         <th scope="col">جمع کل</th>
                     </tr>
@@ -107,13 +128,16 @@
                             $i = 1;
                             // Pre-calculate total price once to avoid multiple attribute calls
                             $totalPrice = $request->total_price ?? null;
+                            // Calculate VAT amount
+                            $totalAmount = isset($totalPrice) && isset($totalPrice['number']) ? $totalPrice['number'] : 0;
+                            $vatAmount = $totalAmount * vat_rate();
+                            $totalWithVat = $totalAmount + $vatAmount;
                         @endphp
                         @foreach($request->commodities as $commodity)
                             <tr>
                                 <td scope="row">{{ $i }}</td>
-                                <td>{{ $commodity->number }}</td>
                                 <td>{{ $commodity->title }}</td>
-                                <td>{{ $commodity->pivot->amount }}</td>
+                                <td>{{ number_format($commodity->pivot->amount, 0, '.', '') }}</td>
                                 <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
                                 <td>
                                     @if(isset($request->box_quantities[$commodity->id]) && $request->box_quantities[$commodity->id]['can_calculate'])
@@ -129,13 +153,6 @@
                                         -
                                     @endif
                                 </td>
-                                <td>
-                                    @if(isset($request->box_quantities[$commodity->id]) && $request->box_quantities[$commodity->id]['can_calculate'])
-                                        {{ $request->box_quantities[$commodity->id]['remaining_pieces'] }}
-                                    @else
-                                        -
-                                    @endif
-                                </td>
                                 <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
                                 <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price) : '-' }}</td>
                             </tr>
@@ -144,7 +161,7 @@
                             @endphp
                         @endforeach
                         <tr>
-                            <td colspan="10" rowspan="4" class="text-left" style="vertical-align: top">
+                            <td colspan="4" rowspan="5" class="text-left" style="vertical-align: top">
                                 <div class="d-flex justify-content-between">
                                     <span>شرایط و نحوه تسویه: </span>
                                     <span>نقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
@@ -152,25 +169,29 @@
                                 </div>
                                 <p>توضیحات:</p>
                             </td>
+                            <td colspan="4" class="text-left">جمع کل : {{ number_format($totalAmount) }}</td>
                         </tr>
                         <tr>
-                            <td colspan="9" class="text-left"> مالیات بر ارزش افزوده : %{{ number_format(vat_percentage(), 0) }} </td>
+                            <td colspan="4" class="text-left"> مالیات بر ارزش افزوده (%{{ number_format(vat_percentage(), 0) }}) : {{ number_format($vatAmount) }}</td>
                         </tr>
                         <tr>
-                            <td colspan="9" class="text-left">جمع کل : {{ isset($totalPrice) && isset($totalPrice['number']) ? number_format($totalPrice['number']) : '0' }}</td>
+                            <td colspan="4" class="text-left">جمع کل با مالیات : {{ number_format($totalWithVat) }}</td>
                         </tr>
                         <tr>
-                            <td colspan="9" class="text-left">جمع کل به حروف: 
-                                @if(isset($totalPrice) && isset($totalPrice['world']))
-                                    {{ $totalPrice['world'] }} ریال
-                                @else
-                                    صفر ریال
-                                @endif
+                            <td colspan="4" class="text-left">جمع کل به حروف: 
+                                @php
+                                    use NumberToWords\NumberToWords;
+                                    $numberToWords = NumberToWords::transformNumber('fa', $totalWithVat);
+                                @endphp
+                                {{ $numberToWords }} ریال
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="10" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
-                            <td colspan="9" class="text-left">مهر و امضای خریدار:</td>
+                            <td colspan="4"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
+                            <td colspan="4" class="text-left">مهر و امضای خریدار:</td>
                         </tr>
                     </tbody>
                 </table>

@@ -138,6 +138,9 @@
                        class="form-control" 
                        placeholder="{{ $options['search_placeholder'] ?? 'جستجو...' }}"
                        value="{{ request('search') }}">
+                <button class="btn btn-primary" type="button" id="search-button">
+                    <i class="ti-search"></i> جستجو
+                </button>
                 @if(request('search'))
                     <button class="btn btn-outline-secondary" type="button" id="clear-search">
                         <i class="ti-close"></i>
@@ -336,38 +339,34 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Search handler
     const searchInput = document.getElementById('search-input');
+    const searchButton = document.getElementById('search-button');
     const clearSearchBtn = document.getElementById('clear-search');
     
+    // Function to perform search
+    function performSearch() {
+        const url = new URL(window.location);
+        if (searchInput.value.trim()) {
+            url.searchParams.set('search', searchInput.value.trim());
+        } else {
+            url.searchParams.delete('search');
+        }
+        url.searchParams.delete('page'); // Reset to first page
+        window.location.href = url.toString();
+    }
+    
     if (searchInput) {
-        // Auto-search on input change (like DataTables)
-        let searchTimeout;
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(function() {
-                const url = new URL(window.location);
-                if (searchInput.value.trim()) {
-                    url.searchParams.set('search', searchInput.value.trim());
-                } else {
-                    url.searchParams.delete('search');
-                }
-                url.searchParams.delete('page'); // Reset to first page
-                window.location.href = url.toString();
-            }, 500); // 500ms delay for better UX
-        });
-        
         // Enter key handler
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                clearTimeout(searchTimeout);
-                const url = new URL(window.location);
-                if (searchInput.value.trim()) {
-                    url.searchParams.set('search', searchInput.value.trim());
-                } else {
-                    url.searchParams.delete('search');
-                }
-                url.searchParams.delete('page');
-                window.location.href = url.toString();
+                performSearch();
             }
+        });
+    }
+    
+    // Search button handler
+    if (searchButton) {
+        searchButton.addEventListener('click', function() {
+            performSearch();
         });
     }
     
