@@ -55,7 +55,7 @@ class OrderController extends Controller
             'sortable_fields' => ['id', 'status', 'deadline', 'created_at', 'updated_at'],
             'default_sort_field' => 'status',
             'default_sort_direction' => 'asc',
-            'max_per_page' => 50
+            'max_per_page' => 100
         ]);
         
         // Add calculated properties to each order
