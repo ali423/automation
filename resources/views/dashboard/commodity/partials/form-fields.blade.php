@@ -43,6 +43,12 @@
                id="weight_per_unit" placeholder="مثال: 0.5" min="0.001" required>
         <div class="invalid-feedback">لطفاً وزن هر واحد را وارد کنید</div>
     </div>
+    <div id="litrage_group" class="form-group col-md-3" style="display: {{ (old('type', $commodity->type ?? '') == 'product') ? 'block' : 'none' }};">
+        <label for="litrage">حجم هر واحد (لیتر)</label>
+        <input type="number" step="0.01" name="litrage" value="{{ old('litrage', $commodity->litrage ?? '') }}" class="form-control"
+               id="litrage" placeholder="لیتراژ" min="0">
+        <div class="invalid-feedback">لطفاً حجم هر واحد را وارد کنید</div>
+    </div>
     <div class="form-group col-md-3">
         <label for="warning_limit"> {{ __('fields.warning_limit') }} <span class="unit_label">({{ $commodity->unit->symbol ?? 'واحد' }})</span></label>
         <input type="number" step="0.01" name="warning_limit"
