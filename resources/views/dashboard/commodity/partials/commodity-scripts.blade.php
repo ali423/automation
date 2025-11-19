@@ -53,6 +53,7 @@
             $('#pieces_per_box_group').show();
             $('#product_identifier_group').show();
             $('#weight_per_unit_group').show();
+            $('#litrage_group').show();
             $('#sales_price').show();
             $('#purchase_price').hide();
         } else if (selectedType === 'material') {
@@ -63,6 +64,7 @@
             $('#pieces_per_box_group').hide();
             $('#product_identifier_group').hide();
             $('#weight_per_unit_group').hide();
+            $('#litrage_group').hide();
             $('#sales_price').hide();
             $('#purchase_price').show();
         } else {
@@ -73,6 +75,7 @@
             $('#pieces_per_box_group').hide();
             $('#product_identifier_group').hide();
             $('#weight_per_unit_group').hide();
+            $('#litrage_group').hide();
             $('#sales_price').hide();
             $('#purchase_price').hide();
         }

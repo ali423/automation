@@ -49,6 +49,7 @@ class CommodityService extends BaseService
                 'unit_id' => $data['unit_id'],
                 'pieces_per_box' => $data['pieces_per_box'],
                 'weight_per_unit' => $data['weight_per_unit'] ?? null,
+                'litrage' => $data['litrage'] ?? null,
             ]);
             
             // Prepare materials data for unit-based formula
@@ -93,6 +94,7 @@ class CommodityService extends BaseService
                 'unit_id' => $data['unit_id'],
                 'pieces_per_box' => $data['pieces_per_box'],
                 'weight_per_unit' => $data['weight_per_unit'] ?? null,
+                'litrage' => $data['litrage'] ?? null,
             ]);
             
             // Prepare materials data for unit-based formula
