@@ -38,6 +38,7 @@ class CommodityRequest extends FormRequest
             $rules['unit_id'] = ['required', 'exists:units,id'];
             $rules['product_identifier'] = ['required','string','max:255','unique:commodities,product_identifier'];
             $rules['weight_per_unit'] = ['required','numeric','min:0.001'];
+            $rules['litrage'] = ['nullable','numeric','min:0'];
 
             $rules['materials']=['required','array','min:1'];
             $rules['materials.*']=['required',Rule::exists('commodities', 'id')->where('type','material'),'distinct'];

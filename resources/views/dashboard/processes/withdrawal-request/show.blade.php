@@ -146,6 +146,7 @@
             background: white !important;
             z-index: 9999 !important;
             overflow-y: auto !important;
+            overflow-x: hidden !important;
             padding: 20px !important;
         }
         
@@ -157,6 +158,21 @@
         /* Override the showprint display for proper positioning */
         .invoice.showprint, #finvoice2.showprint, #finvoice-tejarat.showprint {
             display: block !important;
+        }
+        
+        /* Fix for tejarat invoice to prevent cropping and scrollbar issues */
+        #finvoice-tejarat.showprint {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
+        
+        #finvoice-tejarat.showprint .card {
+            margin: 0 !important;
+            border: none !important;
+        }
+        
+        #finvoice-tejarat.showprint .card-body {
+            padding: 15px !important;
         }
     </style>
 @endsection

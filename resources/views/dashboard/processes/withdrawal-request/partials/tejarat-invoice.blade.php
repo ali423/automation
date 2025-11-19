@@ -1,4 +1,126 @@
 <!-- Tejarat Invoice Template -->
+<style>
+    @media print {
+        @page {
+            size: A4 landscape;
+            margin: 8mm;
+        }
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        #finvoice-tejarat {
+            overflow: visible !important;
+            height: auto !important;
+            max-height: none !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            page-break-after: avoid !important;
+        }
+        #finvoice-tejarat .card {
+            border: none !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            page-break-inside: avoid !important;
+        }
+        #finvoice-tejarat .card-body {
+            padding: 5px !important;
+            margin: 0 !important;
+        }
+        #finvoice-tejarat .row {
+            margin: 0 !important;
+        }
+        #finvoice-tejarat .col-sm-12,
+        #finvoice-tejarat .col-xs-12 {
+            padding: 0 !important;
+        }
+        .factortable {
+            border: 1px solid #000 !important;
+            border-collapse: collapse !important;
+            width: 100% !important;
+            margin: 0 !important;
+            page-break-inside: avoid !important;
+            font-size: 10px !important;
+        }
+        .factortable th,
+        .factortable td {
+            border: 1px solid #000 !important;
+            padding: 4px 3px !important;
+            font-size: 10px !important;
+            line-height: 1.2 !important;
+        }
+        .factortable thead {
+            display: table-header-group !important;
+        }
+        .factortable thead tr {
+            page-break-after: avoid !important;
+        }
+        .factortable tbody {
+            display: table-row-group !important;
+        }
+        .factortable tbody tr {
+            page-break-inside: avoid !important;
+        }
+        .factortable tbody tr:last-child {
+            page-break-after: avoid !important;
+        }
+        .sellerspecs,
+        .customerspecs {
+            border-collapse: collapse !important;
+            width: 100% !important;
+            margin: 5px 0 !important;
+            font-size: 10px !important;
+            border: 1px solid #000 !important;
+        }
+        .sellerspecs td,
+        .sellerspecs th,
+        .customerspecs td,
+        .customerspecs th {
+            border: 1px solid #000 !important;
+            padding: 4px !important;
+            font-size: 10px !important;
+        }
+        .logo img {
+            max-width: 120px !important;
+            height: auto !important;
+        }
+        h4 {
+            font-size: 14px !important;
+            margin: 5px 0 !important;
+        }
+        p {
+            margin: 2px 0 !important;
+            font-size: 10px !important;
+        }
+    }
+    @media screen {
+        #finvoice-tejarat.showprint {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            max-height: 100vh !important;
+            height: auto !important;
+        }
+        #finvoice-tejarat.showprint .card {
+            max-width: 100% !important;
+            margin: 0 auto !important;
+        }
+        .factortable {
+            border-collapse: collapse !important;
+            width: 100% !important;
+        }
+        .factortable th,
+        .factortable td {
+            border: 1px solid #dee2e6 !important;
+            padding: 8px 4px !important;
+        }
+    }
+</style>
 <div id="finvoice-tejarat" class="col-xl-12 box-margin height-card d-none hideprint">
     <div class="card card-body">
         <div class="row">
@@ -20,30 +142,18 @@
                     <tbody>
                     <tr>
                         <td class="text-left">نام شخص حقیقی / حقوقی : شرکت روغن موتور قم<span> </span></td>
-                        <td></td>
-                        <td></td>
                         <td>شماره اقتصادی : 411134945318</td>
-                        <td></td>
                         <td>شماره ثبت :</td>
-                        <td></td>
                     </tr>
                     <tr>
                         <td class="text-left">استان: <span>قم</span></td>
                         <td>شهرستان : سلفچگان</td>
-                        <td></td>
                         <td> کد پستی ده رقمی : 3746139845</td>
-                        <td></td>
                         <td>شناسه ملی : 10860961755</td>
-                        <td></td>
                     </tr>
                     <tr>
                         <td class="text-left">نشانی : <span>شهرک صنعتی سلفچگان - خ سینا - خیابان فتح</span></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
                         <td>تلفن / فکس : 02533673907</td>
-                        <td></td>
                     </tr>
                     </tbody>
                 </table>
@@ -57,36 +167,36 @@
                     <tr>
                         <td class="text-left">
                              نام خریدار: <span>{{ $request->customer ? $request->customer->name.'-'. ($request->customer->comp_name ?? '') : 'نامشخص' }} </span></td>
-                        <td></td>
-                        <td></td>
                         <td>شماره اقتصادی: {{$request->customer ? ($request->customer->economic_code ?? '') : ''}}</td>
-                        <td></td>
                         <td> شماره ملی:{{ $request->customer ? ($request->customer->national_code ?? '') : ''}}</td>
-                        <td></td>
                     </tr>
                     <tr>
                         <td class="text-left">استان: <span>{{ $request->customer ? ($request->customer->province ?? '') : '' }}</span></td>
                         <td>شهرستان: {{ $request->customer ? ($request->customer->city ?? '') : '' }}</td>
-                        <td></td>
                         <td> کدپستی:{{$request->customer ? ($request->customer->zip_code ?? '') : ''}}</td>
-                        <td></td>
                         <td>شهر: {{ $request->customer ? ($request->customer->city ?? '') : '' }}</td>
-                        <td></td>
                     </tr>
                     <tr>
                         <td class="text-left">آدرس: <span>{{$request->customer ? ($request->customer->address ?? '') : ''}} </span></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
                         <td>تلفن: {{$request->customer ? ($request->customer->mobile ?? '') : ''}}</td>
-                        <td></td>
                     </tr>
                     </tbody>
                 </table>
                 
                 <!-- Items Table -->
-                <table class="factortable table table-bordered text-center">
+                <table class="factortable table text-center">
+                    <colgroup>
+                        <col style="width: 5%;">
+                        <col style="width: 8%;">
+                        <col style="width: 10%;">
+                        <col style="width: 20%;">
+                        <col style="width: 8%;">
+                        <col style="width: 8%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 11%;">
+                        <col style="width: 10%;">
+                    </colgroup>
                     <thead>
                     <tr class="table-secondary">
                         <th scope="col">ردیف</th>
@@ -95,9 +205,10 @@
                         <th scope="col">نام کالا</th>
                         <th scope="col">تعداد / مقدار</th>
                         <th scope="col">واحد</th>
-                        <th scope="col" colspan="1.5">فی</th>
-                        <th scope="col" colspan="1.5">مالیات بر ارزش افزوده</th>
-                        <th scope="col" colspan="1.5">جمع کل</th>
+                        <th scope="col">حجم (لیتر)</th>
+                        <th scope="col">فی</th>
+                        <th scope="col">مالیات بر ارزش افزوده</th>
+                        <th scope="col">جمع کل</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -105,8 +216,18 @@
                             $i = 1;
                             // Pre-calculate total price once to avoid multiple attribute calls
                             $totalPrice = $request->total_price ?? null;
+                            $commodityUnitService = app(\App\Services\CommodityUnitService::class);
                         @endphp
                         @foreach($request->commodities as $commodity)
+                            @php
+                                // Calculate litrage: Convert amount to base unit, then multiply by litrage per base unit
+                                $amountInBaseUnit = $commodityUnitService->convertToMainUnit(
+                                    $commodity,
+                                    $commodity->pivot->amount,
+                                    $commodity->pivot->unit_id
+                                );
+                                $totalLitrage = ($amountInBaseUnit ?? 0) * ($commodity->litrage ?? 0);
+                            @endphp
                             <tr>
                                 <td scope="row">{{ $i }}</td>
                                 <td>{{ $commodity->number }}</td>
@@ -114,16 +235,17 @@
                                 <td>{{ $commodity->title }}</td>
                                 <td>{{ number_format($commodity->pivot->amount) }}</td>
                                 <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
-                                <td colspan="1.5">{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
-                                <td colspan="1.5">{{ number_format(vat_percentage(), 0) }}%</td>
-                                <td colspan="1.5">{{ isset($commodity->pivot->price) ? number_format(round($commodity->pivot->amount * $commodity->pivot->price * (1 + vat_rate()))) : '-' }}</td>
+                                <td>{{ number_format($totalLitrage, 2) }}</td>
+                                <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
+                                <td>{{ number_format(vat_percentage(), 0) }}%</td>
+                                <td>{{ isset($commodity->pivot->price) ? number_format(round($commodity->pivot->amount * $commodity->pivot->price * (1 + vat_rate()))) : '-' }}</td>
                             </tr>
                             @php
                                 $i++;
                             @endphp
                         @endforeach
                         <tr>
-                        <td colspan="5" rowspan="3" class="text-left" style="vertical-align: top">
+                        <td colspan="7" rowspan="3" class="text-left" style="vertical-align: top">
                             <div class="d-flex justify-content-between">
                                 <span>شرایط و نحوه تسویه: </span>
                                 <span>نقدی <span class="border"
@@ -133,9 +255,7 @@
                             </div>
                             <p>توضیحات:</p>
                         </td>
-                    </tr>
-                    <tr>
-                        <td colspan="4" class="text-left">جمع کل : 
+                        <td colspan="3" class="text-left">جمع کل : 
                             @if(isset($totalPrice) && isset($totalPrice['number']))
                                 {{ number_format(round($totalPrice['number'] * 1.1)) }}
                             @else
@@ -144,7 +264,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="4" class="text-left">جمع کل به حروف:
+                        <td colspan="3" class="text-left">جمع کل به حروف:
                             @if(isset($totalPrice) && isset($totalPrice['world']))
                                 {{ $totalPrice['world'] }} ریال
                             @else
@@ -153,8 +273,11 @@
                         </td>
                     </tr>
                     <tr>
+                        <td colspan="3" style="height: 20px;"></td>
+                    </tr>
+                    <tr>
                         <td colspan="5" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
-                        <td colspan="4" class="text-left">مهر و امضای خریدار:</td>
+                        <td colspan="5" class="text-left">مهر و امضای خریدار:</td>
                     </tr>
                     </tbody>
                 </table>
