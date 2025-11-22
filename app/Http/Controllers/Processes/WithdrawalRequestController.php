@@ -350,6 +350,7 @@ class WithdrawalRequestController extends Controller
             'vehicle_type' => ['nullable','string','max:100'],
             'plate_serial' => ['nullable','string','max:50'],
             'plate_number' => ['nullable','string','max:50'],
+            'bill_of_lading_number' => ['nullable','string','max:255'],
         ], [
             'driver_name.required' => 'نام راننده الزامی است.',
             'driver_phone.required' => 'تلفن راننده الزامی است.',
