@@ -37,6 +37,12 @@
                                     <input type="text" name="plate_number" class="form-control" placeholder="شماره پلاک (مثلاً: 123 ب 12)" value="{{ old('plate_number', $request->plate_number) }}">
                                 </div>
                             </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <label>شماره بارنامه</label>
+                                    <input type="text" name="bill_of_lading_number" class="form-control" placeholder="شماره بارنامه" value="{{ old('bill_of_lading_number', $request->bill_of_lading_number) }}">
+                                </div>
+                            </div>
 
                             <div class="mt-3">
                                 <button type="submit" class="btn btn-primary">تایید و ثبت</button>

@@ -22,6 +22,7 @@ class WithdrawalRequest extends Model
         'vehicle_type',
         'plate_serial',
         'plate_number',
+        'bill_of_lading_number',
     ];
     
     public function commodities()
