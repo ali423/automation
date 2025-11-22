@@ -246,12 +246,27 @@
                         text: 'دانلود (با سود) - Excel',
                         className: 'btn btn-outline-success',
                         action: function (e, dt, button, config) {
-                            // Get selected rows or all rows and their DOM nodes (for carton price)
-                            var selected = dt.rows({ selected: true });
-                            var all = dt.rows({ page: 'all' });
-                            var useSelected = selected.data().length > 0;
-                            var rowsToExport = useSelected ? selected.data() : all.data();
-                            var nodesToExport = useSelected ? selected.nodes().toArray() : all.nodes().toArray();
+                            // Get all rows and filter by checkbox selection
+                            var allRows = dt.rows({ page: 'all' });
+                            var allNodes = allRows.nodes().toArray();
+                            var allData = allRows.data().toArray();
+                            
+                            // Filter rows based on checkbox state
+                            var filteredData = [];
+                            var filteredNodes = [];
+                            allNodes.forEach(function(node, index) {
+                                var checkbox = $(node).find('.row-select');
+                                if (checkbox.length && checkbox.prop('checked')) {
+                                    filteredData.push(allData[index]);
+                                    filteredNodes.push(node);
+                                }
+                            });
+                            
+                            // If no checkboxes are selected, export all rows
+                            if (filteredData.length === 0) {
+                                filteredData = allData;
+                                filteredNodes = allNodes;
+                            }
                             
                             // Prepare data with reversed column order: واحد کالا، قیمت نهایی، قیمت کارتون، عنوان، ردیف
                             var exportData = [];
@@ -263,7 +278,7 @@
                             exportData.push(['واحد کالا', 'قیمت نهایی', 'قیمت کارتون', 'عنوان', 'ردیف']);
                             
                             // Add data rows
-                            rowsToExport.each(function(row, index) {
+                            filteredData.forEach(function(row, index) {
                                 var rowData = [];
                                 
                                 // Get unit (column 6 in new table) - first column
@@ -278,7 +293,7 @@
                                 rowData.push(finalPrice);
                                 
                                 // Use server-calculated carton price from row's data attribute - third column
-                                var trNode = nodesToExport[index];
+                                var trNode = filteredNodes[index];
                                 var cartonAttr = trNode ? trNode.getAttribute('data-carton-price') : null;
                                 var cartonPrice = cartonAttr ? parseFloat(cartonAttr) : NaN;
                                 var boxPrice = (!isNaN(cartonPrice) && cartonPrice > 0) ? cartonPrice.toLocaleString('fa-IR') : '-';
@@ -507,11 +522,24 @@
                         text: 'دانلود (بدون سود) - Excel',
                         className: 'btn btn-outline-success',
                         action: function (e, dt, button, config) {
-                            // Get selected rows or all rows
-                            var selected = dt.rows({ selected: true });
-                            var all = dt.rows({ page: 'all' });
-                            var useSelected = selected.data().length > 0;
-                            var rowsToExport = useSelected ? selected.data() : all.data();
+                            // Get all rows and filter by checkbox selection
+                            var allRows = dt.rows({ page: 'all' });
+                            var allNodes = allRows.nodes().toArray();
+                            var allData = allRows.data().toArray();
+                            
+                            // Filter rows based on checkbox state
+                            var filteredData = [];
+                            allNodes.forEach(function(node, index) {
+                                var checkbox = $(node).find('.row-select');
+                                if (checkbox.length && checkbox.prop('checked')) {
+                                    filteredData.push(allData[index]);
+                                }
+                            });
+                            
+                            // If no checkboxes are selected, export all rows
+                            if (filteredData.length === 0) {
+                                filteredData = allData;
+                            }
                             
                             // Prepare data with specific columns: ردیف، عنوان، قیمت پایه (ریال)، واحد کالا
                             var exportData = [];
@@ -523,7 +551,7 @@
                             exportData.push(['واحد کالا', 'قیمت پایه (ریال)', 'عنوان', 'ردیف']);
                             
                             // Add data rows
-                            rowsToExport.each(function(row, index) {
+                            filteredData.forEach(function(row, index) {
                                 var rowData = [];
                                 
                                 // Get unit (column 6 in new table) - first column
