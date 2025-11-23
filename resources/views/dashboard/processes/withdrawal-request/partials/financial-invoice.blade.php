@@ -1,4 +1,165 @@
 <!-- Financial Invoice Template -->
+<style>
+    @media print {
+        @page {
+            size: landscape;
+        }
+        #finvoice2 {
+            font-size: 9px !important;
+        }
+        #finvoice2 .factortable {
+            border: 2px solid #000 !important;
+        }
+        #finvoice2 .factortable th,
+        #finvoice2 .factortable td {
+            border: 2px solid #000 !important;
+            font-size: 9px !important;
+            padding: 4px !important;
+            color: #000 !important;
+        }
+        #finvoice2 .sellerspecs,
+        #finvoice2 .customerspecs {
+            border: 2px solid #000 !important;
+        }
+        #finvoice2 .sellerspecs td,
+        #finvoice2 .sellerspecs th,
+        #finvoice2 .customerspecs td,
+        #finvoice2 .customerspecs th {
+            border: 2px solid #000 !important;
+            font-size: 9px !important;
+            padding: 4px !important;
+            color: #000 !important;
+        }
+        #finvoice2 h4 {
+            font-size: 11px !important;
+        }
+        #finvoice2 p {
+            font-size: 9px !important;
+            margin-bottom: 2px !important;
+        }
+        #finvoice2 .mb-3 {
+            margin-bottom: 4px !important;
+        }
+        #finvoice2 .border {
+            margin-bottom: 2px !important;
+        }
+        #finvoice2 .card-body {
+            padding: 4px !important;
+        }
+        #finvoice2 .d-flex {
+            margin-bottom: 2px !important;
+        }
+    }
+    @media screen {
+        #finvoice2 {
+            font-size: 10px;
+        }
+        #finvoice2 .factortable th,
+        #finvoice2 .factortable td {
+            font-size: 10px;
+            color: #000 !important;
+        }
+        #finvoice2 .sellerspecs td,
+        #finvoice2 .sellerspecs th,
+        #finvoice2 .customerspecs td,
+        #finvoice2 .customerspecs th {
+            font-size: 10px;
+            color: #000 !important;
+        }
+    }
+    #finvoice2 .factortable {
+        border-collapse: collapse;
+        width: 100%;
+        direction: rtl;
+        margin-bottom: 4px !important;
+    }
+    #finvoice2 .factortable th,
+    #finvoice2 .factortable td {
+        text-align: center !important;
+        vertical-align: middle;
+        border: 1px solid #dee2e6;
+        padding: 6px 3px;
+        color: #000 !important;
+        line-height: 1.1;
+    }
+    #finvoice2 .factortable thead tr {
+        background-color: #f8f9fa;
+    }
+    #finvoice2 .factortable thead th {
+        padding: 6px 3px;
+        font-size: 10px;
+        line-height: 1.1;
+        white-space: nowrap;
+    }
+    #finvoice2 .factortable td.text-right {
+        text-align: right !important;
+    }
+    #finvoice2 .sellerspecs,
+    #finvoice2 .customerspecs {
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 4px !important;
+    }
+    #finvoice2 .sellerspecs td,
+    #finvoice2 .sellerspecs th,
+    #finvoice2 .customerspecs td,
+    #finvoice2 .customerspecs th {
+        border: 1px solid #dee2e6;
+        padding: 6px 3px;
+        color: #000 !important;
+        font-size: 10px;
+        text-align: right !important;
+        line-height: 1.1;
+    }
+    #finvoice2 {
+        color: #000 !important;
+    }
+    #finvoice2 * {
+        color: #000 !important;
+    }
+    #finvoice2 .mb-3 {
+        margin-bottom: 4px !important;
+    }
+    #finvoice2 .border {
+        margin-bottom: 2px !important;
+        padding: 1px !important;
+    }
+    #finvoice2 h4 {
+        font-size: 12px;
+        margin-bottom: 2px !important;
+        line-height: 1.2;
+    }
+    #finvoice2 p {
+        margin-bottom: 1px !important;
+        font-size: 10px;
+        line-height: 1.1;
+    }
+    #finvoice2 .card-body {
+        padding: 4px !important;
+    }
+    #finvoice2 .d-flex {
+        margin-bottom: 2px !important;
+    }
+    #finvoice2 .factortable {
+        margin-bottom: 4px !important;
+    }
+    #finvoice2 .sellerspecs,
+    #finvoice2 .customerspecs {
+        margin-bottom: 4px !important;
+    }
+    #finvoice2 .row {
+        margin: 0 !important;
+    }
+    #finvoice2 .col-sm-12 {
+        padding: 0 !important;
+    }
+    @media print {
+        #finvoice2 .factortable td[style*="height"] {
+            height: 45px !important;
+            padding: 3px !important;
+        }
+    }
+</style>
 <div id="finvoice2" class="col-xl-12 box-margin height-card d-none hideprint">
     <div class="card card-body">
         <div class="row">
@@ -20,31 +181,19 @@
                 <table class="table sellerspecs">
                     <tbody>
                     <tr>
-                        <td class="text-left">نام شخص حقیقی / حقوقی : شرکت روغن موتور قم<span> </span></td>
-                        <td></td>
-                        <td></td>
+                        <td>نام شخص حقیقی / حقوقی : شرکت روغن موتور قم</td>
                         <td>شماره اقتصادی : 411134945318</td>
-                        <td></td>
                         <td>شماره ثبت :</td>
-                        <td></td>
                     </tr>
                     <tr>
-                        <td class="text-left">استان: <span>قم</span></td>
+                        <td>استان: قم</td>
                         <td>شهرستان : سلفچگان</td>
-                        <td></td>
                         <td>کد پستی ده رقمی : 3746139845</td>
-                        <td></td>
-                        <td>شناسه ملی : 10860961755</td>
-                        <td></td>
                     </tr>
                     <tr>
-                        <td class="text-left">نشانی : <span>شهرک صنعتی سلفچگان - خ سینا - خیابان فتح</span></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td>شناسه ملی : 10860961755</td>
                         <td>تلفن / فکس : 02533673907</td>
-                        <td></td>
+                        <td>نشانی : شهرک صنعتی سلفچگان - خ سینا - خیابان فتح</td>
                     </tr>
                     </tbody>
                 </table>
@@ -56,60 +205,24 @@
                 <table class="table customerspecs">
                     <tbody>
                     <tr>
-                        <td class="text-left">
-                            نام خریدار: <span>{{ $request->customer ? $request->customer->name.'-'. ($request->customer->comp_name ?? '') : 'نامشخص' }} </span></td>
-                        <td></td>
-                        <td></td>
+                        <td>نام خریدار: {{ $request->customer ? $request->customer->name.'-'. ($request->customer->comp_name ?? '') : 'نامشخص' }}</td>
                         <td>شماره اقتصادی: {{$request->customer ? ($request->customer->economic_code ?? '') : ''}}</td>
-                        <td></td>
-                        <td> شماره ملی:{{ $request->customer ? ($request->customer->national_code ?? '') : ''}}</td>
-                        <td></td>
+                        <td>شماره ملی: {{ $request->customer ? ($request->customer->national_code ?? '') : ''}}</td>
                     </tr>
                     <tr>
-                        <td class="text-left">استان: <span>{{ $request->customer ? ($request->customer->province ?? '') : '' }}</span></td>
+                        <td>استان: {{ $request->customer ? ($request->customer->province ?? '') : '' }}</td>
                         <td>شهرستان: {{ $request->customer ? ($request->customer->city ?? '') : '' }}</td>
-                        <td></td>
-                        <td> کدپستی:{{$request->customer ? ($request->customer->zip_code ?? '') : ''}}</td>
-                        <td></td>
-                        <td>شهر: {{ $request->customer ? ($request->customer->city ?? '') : '' }}</td>
-                        <td></td>
+                        <td>کدپستی: {{$request->customer ? ($request->customer->zip_code ?? '') : ''}}</td>
                     </tr>
                     <tr>
-                        <td class="text-left">آدرس: <span>{{$request->customer ? ($request->customer->address ?? '') : ''}} </span></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td>شهر: {{ $request->customer ? ($request->customer->city ?? '') : '' }}</td>
                         <td>تلفن: {{$request->customer ? ($request->customer->mobile ?? '') : ''}}</td>
-                        <td></td>
+                        <td>آدرس: {{$request->customer ? ($request->customer->address ?? '') : ''}}</td>
                     </tr>
                     </tbody>
                 </table>
                 
                 <!-- Items Table -->
-                <style>
-                    @media print {
-                        @page {
-                            size: landscape;
-                        }
-                    }
-                    .factortable {
-                        border: 2px solid #000 !important;
-                    }
-                    .factortable th,
-                    .factortable td {
-                        border: 2px solid #000 !important;
-                    }
-                    .factortable thead tr {
-                        height: auto;
-                        white-space: nowrap;
-                    }
-                    .factortable thead th {
-                        padding: 8px 4px;
-                        font-size: 12px;
-                        line-height: 1.2;
-                    }
-                </style>
                 <table class="factortable table table-bordered text-center">
                     <thead>
                     <tr class="table-secondary">
@@ -161,13 +274,13 @@
                             @endphp
                         @endforeach
                         <tr>
-                            <td colspan="4" rowspan="5" class="text-left" style="vertical-align: top">
-                                <div class="d-flex justify-content-between">
+                            <td colspan="4" rowspan="5" class="text-left" style="vertical-align: top; padding: 3px !important;">
+                                <div class="d-flex justify-content-between" style="margin-bottom: 2px;">
                                     <span>شرایط و نحوه تسویه: </span>
-                                    <span>نقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
-                                    <span>غیرنقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
+                                    <span>نقدی <span class="border" style="display:inline-block;width:10px;height:10px"></span></span>
+                                    <span>غیرنقدی <span class="border" style="display:inline-block;width:10px;height:10px"></span></span>
                                 </div>
-                                <p>توضیحات:</p>
+                                <p style="margin-bottom: 1px;">توضیحات:</p>
                             </td>
                             <td colspan="4" class="text-left">جمع کل : {{ number_format($totalAmount) }}</td>
                         </tr>
@@ -190,8 +303,8 @@
                             <td colspan="4"></td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="text-left" style="height: 120px">مهر و امضای فروشنده:</td>
-                            <td colspan="4" class="text-left">مهر و امضای خریدار:</td>
+                            <td colspan="4" class="text-right" style="height: 45px; padding: 3px !important;">مهر و امضای فروشنده:</td>
+                            <td colspan="4" class="text-right" style="height: 45px; padding: 3px !important;">مهر و امضای خریدار:</td>
                         </tr>
                     </tbody>
                 </table>
