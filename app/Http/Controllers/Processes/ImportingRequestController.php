@@ -78,7 +78,7 @@ class ImportingRequestController extends Controller
      */
     public function create()
     {
-        $commodities = Commodity::query()->where('type', 'material')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get();
+        $commodities = Commodity::query()->where('type', 'material')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->orderBy('title')->get();
         $sellers = Seller::all();
         
         if (count($commodities) < 1) {
@@ -173,7 +173,7 @@ class ImportingRequestController extends Controller
         
         return view('dashboard.processes.importing-request.edit', [
             'request' => $importingRequest,
-            'commodities' => Commodity::query()->where('type', 'material')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get(),
+            'commodities' => Commodity::query()->where('type', 'material')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->orderBy('title')->get(),
             'sellers' => Seller::all(),
         ]);
     }
@@ -296,7 +296,7 @@ class ImportingRequestController extends Controller
      */
     public function createReport()
     {
-        $commodities = Commodity::query()->where('type', 'material')->whereHas('importingRequests')->get();
+        $commodities = Commodity::query()->where('type', 'material')->whereHas('importingRequests')->orderBy('title')->get();
         if ($commodities->count() < 1) {
             return redirect()->back()->withErrors('ابتدا حداقل یک کالا و درخواست خرید ثبت کنید .');
         }

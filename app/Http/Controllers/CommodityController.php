@@ -278,6 +278,7 @@ class CommodityController extends Controller
         // Optimize: Load materials with their units and conversions in one query
         $materials = Commodity::where('type', 'material')
             ->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])
+            ->orderBy('title')
             ->get();
         
         // Pre-calculate selectable units to avoid N+1 queries
