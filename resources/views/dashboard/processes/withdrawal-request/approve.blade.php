@@ -23,18 +23,38 @@
                                     <input type="text" name="driver_phone" class="form-control" value="{{ old('driver_phone', $request->driver_phone) }}" required>
                                 </div>
                                 <div class="form-group col-md-4">
+                                    <label>کد ملی راننده</label>
+                                    <input type="text" name="driver_national_id" class="form-control" placeholder="کد ملی راننده" value="{{ old('driver_national_id', $request->driver_national_id) }}">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
                                     <label>نوع وسیله نقلیه</label>
                                     <input type="text" name="vehicle_type" class="form-control" placeholder="مثلاً: وانت، نیسان، کامیون ، تریلی" value="{{ old('vehicle_type', $request->vehicle_type) }}">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>سری پلاک</label>
+                                    <input type="text" name="plate_serial" class="form-control" placeholder="بخش سری (مثلاً: ایران 22)" value="{{ old('plate_serial', $request->plate_serial) }}">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label> (از راست به چپ)شماره پلاک</label>
+                                    <input type="text" name="plate_number" class="form-control" placeholder="شماره پلاک (مثلاً: 123 ب 12)" value="{{ old('plate_number', $request->plate_number) }}">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <label>شماره بارنامه</label>
+                                    <input type="text" name="bill_of_lading_number" class="form-control" placeholder="شماره بارنامه" value="{{ old('bill_of_lading_number', $request->bill_of_lading_number) }}">
                                 </div>
                             </div>
                             <div class="form-row">
                                 <div class="form-group col-md-6">
-                                    <label>سری پلاک</label>
-                                    <input type="text" name="plate_serial" class="form-control" placeholder="بخش سری (مثلاً: ایران 22)" value="{{ old('plate_serial', $request->plate_serial) }}">
+                                    <label>استان مقصد</label>
+                                    <input type="text" name="shipping_province" class="form-control" placeholder="استان مقصد" value="{{ old('shipping_province', $request->shipping_province) }}">
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label> (از راست به چپ)شماره پلاک</label>
-                                    <input type="text" name="plate_number" class="form-control" placeholder="شماره پلاک (مثلاً: 123 ب 12)" value="{{ old('plate_number', $request->plate_number) }}">
+                                    <label>شهر مقصد</label>
+                                    <input type="text" name="shipping_city" class="form-control" placeholder="شهر مقصد" value="{{ old('shipping_city', $request->shipping_city) }}">
                                 </div>
                             </div>
 

@@ -19,9 +19,13 @@ class WithdrawalRequest extends Model
         'number',
         'driver_name',
         'driver_phone',
+        'driver_national_id',
         'vehicle_type',
         'plate_serial',
         'plate_number',
+        'bill_of_lading_number',
+        'shipping_city',
+        'shipping_province',
     ];
     
     public function commodities()

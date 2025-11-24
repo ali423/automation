@@ -33,7 +33,7 @@ class UnitConversionController extends Controller
     public function index(Request $request)
     {
         $commodityId = $request->get('commodity_id');
-        $commodities = Commodity::orderBy('id', 'DESC')->get();
+        $commodities = Commodity::orderBy('title')->get();
         $units = Unit::all();
 
         // Build query with eager loading to fix N+1 query problem
@@ -75,7 +75,7 @@ class UnitConversionController extends Controller
      */
     public function create(Request $request)
     {
-        $commodities = Commodity::orderBy('id', 'DESC')->get();
+        $commodities = Commodity::orderBy('title')->get();
         $units = Unit::all();
         return view('dashboard.unit-conversion.create', [
             'commodities' => $commodities,
@@ -123,7 +123,7 @@ class UnitConversionController extends Controller
      */
     public function edit(UnitConversion $unitConversion)
     {
-        $commodities = Commodity::orderBy('id', 'DESC')->get();
+        $commodities = Commodity::orderBy('title')->get();
         $units = Unit::all();
         return view('dashboard.unit-conversion.edit', [
             'unitConversion' => $unitConversion,

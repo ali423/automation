@@ -81,7 +81,7 @@ class WithdrawalRequestController extends Controller
      */
     public function create()
     {
-        $commodities = Commodity::query()->where('type', 'product')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get();
+        $commodities = Commodity::query()->where('type', 'product')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->orderBy('title')->get();
         $customers = Customer::query()->get();
         
         if (count($commodities) < 1) {
@@ -204,7 +204,7 @@ class WithdrawalRequestController extends Controller
         
         return view('dashboard.processes.withdrawal-request.edit', [
             'request' => $withdrawalRequest,
-            'commodities' => Commodity::query()->where('type', 'product')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->get(),
+            'commodities' => Commodity::query()->where('type', 'product')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->orderBy('title')->get(),
             'customers' => Customer::query()->get(),
         ]);
     }
@@ -347,9 +347,13 @@ class WithdrawalRequestController extends Controller
         $validated = $request->validate([
             'driver_name' => ['required','string','max:255'],
             'driver_phone' => ['required','string','max:50'],
+            'driver_national_id' => ['nullable','string','max:20'],
             'vehicle_type' => ['nullable','string','max:100'],
             'plate_serial' => ['nullable','string','max:50'],
             'plate_number' => ['nullable','string','max:50'],
+            'bill_of_lading_number' => ['nullable','string','max:255'],
+            'shipping_city' => ['nullable','string','max:255'],
+            'shipping_province' => ['nullable','string','max:255'],
         ], [
             'driver_name.required' => 'نام راننده الزامی است.',
             'driver_phone.required' => 'تلفن راننده الزامی است.',
