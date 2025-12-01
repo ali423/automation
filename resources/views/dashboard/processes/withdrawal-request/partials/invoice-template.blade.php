@@ -125,9 +125,6 @@
                             <col span="1" style="width: 35%;">
                             <col span="1" style="width: 10%;">
                             <col span="1" style="width: 10%;">
-                            @if($invoiceType === 'warehouse')
-                                <col span="1" style="width: 10%;">
-                            @endif
                             @if($invoiceType !== 'documentation')
                                 <col span="1" style="width: 10%;">
                             @endif
@@ -215,6 +212,17 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <div class="mb-4 mt-3">
+                    اینجانب <span style="display:inline-block;width: 120px;border-bottom:1px dashed #000"></span>
+                    به عنوان راننده/نماینده خریدار، محموله فوق را
+                    به صورت کامل و صحیح و سالم تحویل گرفتم.
+                </div>
+
+                <div class="d-flex justify-content-around align-items-center mb-3">
+                    <h6>امضاء و اثر انگشت تحویل گیرنده کالا</h6>
+                    <h6>امضاء متصدی/مسئول انبار</h6>
                 </div>
             </div>
         </div>
