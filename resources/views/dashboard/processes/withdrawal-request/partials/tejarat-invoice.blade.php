@@ -271,7 +271,13 @@
                                 <td>{{ number_format($commodity->pivot->amount, 0, '.', '') }}</td>
                                 <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
                                 <td>{{ $totalLitrage !== null ? number_format($totalLitrage, 2) : '-' }}</td>
-                                <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
+                                <td>
+                                    @if(isset($commodity->pivot->price) && $commodity->litrage > 0)
+                                        {{ number_format($commodity->pivot->price / $commodity->litrage) }}
+                                    @else
+                                        {{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}
+                                    @endif
+                                </td>
                                 <td>{{ isset($commodity->pivot->price) ? number_format(round($commodityVatAmount)) : '-' }}</td>
                                 <td>{{ isset($commodity->pivot->price) ? number_format(round($commodity->pivot->amount * $commodity->pivot->price * (1 + vat_rate()))) : '-' }}</td>
                             </tr>
