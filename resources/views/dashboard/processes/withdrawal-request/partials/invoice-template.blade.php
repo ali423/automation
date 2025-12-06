@@ -193,7 +193,7 @@
                                     @if($invoiceType === 'documentation')
                                         <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
                                         <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price) : '-' }}</td>
-                                        <td>{{ isset($commodity->pivot->price) ? number_format($vatAmount, 0, '.', '') : '0' }}</td>
+                                        <td>{{ isset($commodity->pivot->price) ? number_format($vatAmount, 0, '.', ',') : '0' }}</td>
                                     @endif
                                 </tr>
                                 @php
