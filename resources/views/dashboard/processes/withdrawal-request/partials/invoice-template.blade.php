@@ -184,10 +184,10 @@
                                     <td scope="row">{{ $i }}</td>
                                     <td>{{ $commodity->title }}</td>
                                     <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
-                                    <td>{{ number_format($commodity->pivot->amount, 0, '.', '') }}</td>
+                                    <td>{{ number_format($commodity->pivot->amount, 0, '.', ',') }}</td>
                                     @if($invoiceType !== 'documentation')
                                         <td>
-                                            {{ $packagingQuantity !== '-' ? number_format($packagingQuantity, 0, '.', '') : '-' }}
+                                            {{ $packagingQuantity !== '-' ? number_format($packagingQuantity, 0, '.', ',') : '-' }}
                                         </td>
                                     @endif
                                     @if($invoiceType === 'documentation')
@@ -203,7 +203,7 @@
                             <tr>
                                 <td colspan="{{ $invoiceType === 'documentation' ? '7' : '5' }}">
                                     @if($invoiceType !== 'documentation')
-                                        کل بسته‌بندی: {{ number_format($totalPackaging, 0, '.', '') }}
+                                        کل بسته‌بندی: {{ number_format($totalPackaging, 0, '.', ',') }}
                                     @endif
                                     @if($invoiceType === 'documentation')
                                         مجموع: {{ isset($totalPrice) && isset($totalPrice['number']) ? number_format($totalPrice['number']) : '0' }}
