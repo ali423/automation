@@ -250,7 +250,7 @@
                             <tr>
                                 <td scope="row">{{ $i }}</td>
                                 <td>{{ $commodity->title }}</td>
-                                <td>{{ number_format($commodity->pivot->amount, 0, '.', '') }}</td>
+                                <td>{{ number_format($commodity->pivot->amount, 0, '.', ',') }}</td>
                                 <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
                                 <td>
                                     @if(isset($request->box_quantities[$commodity->id]) && $request->box_quantities[$commodity->id]['can_calculate'])

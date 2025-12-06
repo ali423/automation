@@ -268,9 +268,9 @@
                                 <td>{{ $commodity->number }}</td>
                                 <td>{{ $commodity->product_identifier ?? default_product_identifier() }}</td>
                                 <td>{{ $commodity->title }}</td>
-                                <td>{{ number_format($commodity->pivot->amount, 0, '.', '') }}</td>
+                                <td>{{ number_format($commodity->pivot->amount, 0, '.', ',') }}</td>
                                 <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
-                                <td>{{ $totalLitrage !== null ? number_format($totalLitrage, 2) : '-' }}</td>
+                                <td>{{ $totalLitrage !== null ? number_format($totalLitrage, 0, '.', ',') : '-' }}</td>
                                 <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
                                 <td>{{ isset($commodity->pivot->price) ? number_format(round($commodityVatAmount)) : '-' }}</td>
                                 <td>{{ isset($commodity->pivot->price) ? number_format(round($commodity->pivot->amount * $commodity->pivot->price * (1 + vat_rate()))) : '-' }}</td>
