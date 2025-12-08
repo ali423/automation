@@ -15,7 +15,7 @@
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <form method="post" action="{{ route('order.update', $order) }}" class="needs-validation"
-                            novalidate="">
+                            novalidate="" id="orderEditForm">
                             @method('PUT')
                             @csrf
                             <div class="form-row m-3">
@@ -237,12 +237,24 @@
                     </div>
                 </div>`;
                 $('#newRow').append(html);
+                renumberFormIndices(); // Renumber indices after adding
             });
             // Remove row
             $(document).on('click', '.remove-row', function () {
                 $(this).closest('.form-row').remove();
+                renumberFormIndices(); // Renumber indices after removal
                 updateTotalWeight(); // Update total weight when row is removed
             });
+            
+            // Renumber form field indices sequentially
+            function renumberFormIndices() {
+                $('#order_formul .form-row').each(function(index) {
+                    $(this).find('select[name^="commodity_id"]').attr('name', 'commodity_id[' + index + ']');
+                    $(this).find('select[name^="unit_id"]').attr('name', 'unit_id[' + index + ']');
+                    $(this).find('input[name^="commodity_amount"]').attr('name', 'commodity_amount[' + index + ']');
+                    $(this).find('input[name^="price"]').attr('name', 'price[' + index + ']');
+                });
+            }
             
             // Function to calculate weight for a specific row - optimized
             function calculateWeightForRow($row) {
@@ -299,7 +311,7 @@
                 clearTimeout(totalWeightUpdateTimeout);
                 totalWeightUpdateTimeout = setTimeout(function() {
                     var totalWeight = 0;
-                    $('.form-row').each(function() {
+                    $('#order_formul .form-row').each(function() {
                         var weightValue = $(this).find('#weight').data('weight-value');
                         if (weightValue && !isNaN(weightValue)) {
                             totalWeight += parseFloat(weightValue);
@@ -308,14 +320,32 @@
                     $('#totalWeight').text(totalWeight.toFixed(3) + ' کیلوگرم');
                 }, 100); // Small debounce for total weight updates
             }
+            
+            // Renumber indices before form submission to ensure all items are included
+            $('#orderEditForm').on('submit', function(e) {
+                renumberFormIndices();
+            });
         });
     </script>
     <script>
         $(function() {
+            // Renumber form field indices sequentially (define here for use in this script block)
+            function renumberFormIndices() {
+                $('#order_formul .form-row').each(function(index) {
+                    $(this).find('select[name^="commodity_id"]').attr('name', 'commodity_id[' + index + ']');
+                    $(this).find('select[name^="unit_id"]').attr('name', 'unit_id[' + index + ']');
+                    $(this).find('input[name^="commodity_amount"]').attr('name', 'commodity_amount[' + index + ']');
+                    $(this).find('input[name^="price"]').attr('name', 'price[' + index + ']');
+                });
+            }
+            
             $('.usage').first().persianDatepicker();
             
+            // Renumber form indices on page load to ensure sequential indices
+            renumberFormIndices();
+            
             // Populate unit dropdowns for existing order items when page loads
-            $('.form-row').each(function() {
+            $('#order_formul .form-row').each(function() {
                 var $row = $(this);
                 var commoditySelect = $row.find('select[name^="commodity_id"]');
                 var unitSelect = $row.find('select[name^="unit_id"]');
