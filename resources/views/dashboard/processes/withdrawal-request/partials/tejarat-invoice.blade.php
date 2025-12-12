@@ -179,18 +179,17 @@
                     <tbody>
                     <tr>
                         <td>راننده: {{ $request->driver_name ?? 'نامشخص' }}</td>
-                        <td>کد ملی راننده: {{ $request->driver_national_id ?? '-' }}</td>
                         <td>تلفن راننده: {{ $request->driver_phone ?? '-' }}</td>
+                        <td>وسیله نقلیه: {{ $request->vehicle_type ?? '-' }}</td>
                     </tr>
                     <tr>
-                        <td>وسیله نقلیه: {{ $request->vehicle_type ?? '-' }}</td>
-                        <td>پلاک: {{ trim(($request->plate_serial ?? '') . ' ' . ($request->plate_number ?? '')) ?: '-' }}</td>
+                        <td>کد ملی راننده: {{ $request->driver_national_id ?? '-' }}</td>
                         <td>شماره بارنامه: {{ $request->bill_of_lading_number ?? '-' }}</td>
+                        <td>پلاک: {{ trim(($request->plate_serial ?? '') . ' ' . ($request->plate_number ?? '')) ?: '-' }}</td>
                     </tr>
                     <tr>
                         <td>استان: {{ $request->shipping_province ?? ($request->customer ? ($request->customer->province ?? '') : '-') }}</td>
-                        <td>شهر: {{ $request->shipping_city ?? ($request->customer ? ($request->customer->city ?? '') : '-') }}</td>
-                        <td></td>
+                        <td colspan="2">شهر: {{ $request->shipping_city ?? ($request->customer ? ($request->customer->city ?? '') : '-') }}</td>
                     </tr>
                     </tbody>
                 </table>
