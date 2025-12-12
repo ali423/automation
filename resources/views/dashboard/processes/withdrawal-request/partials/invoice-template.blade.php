@@ -161,6 +161,14 @@
                                 $totalPackaging = 0;
                                 $totalWeight = 0;
                                 $hasValidWeight = false;
+                                // Calculate VAT totals for documentation invoice
+                                $totalVatAmount = 0;
+                                $totalWithVat = 0;
+                                if ($invoiceType === 'documentation') {
+                                    $totalAmount = isset($totalPrice) && isset($totalPrice['number']) ? $totalPrice['number'] : 0;
+                                    $totalVatAmount = $totalAmount * vat_rate();
+                                    $totalWithVat = $totalAmount + $totalVatAmount;
+                                }
                             @endphp
                             @foreach($request->commodities as $commodity)
                                 @php
@@ -221,7 +229,9 @@
                                         وزن کل: {{ $hasValidWeight ? number_format($totalWeight, 2, '.', ',') . ' کیلوگرم' : 'نامشخص' }}
                                     @endif
                                     @if($invoiceType === 'documentation')
-                                        مجموع: {{ isset($totalPrice) && isset($totalPrice['number']) ? number_format($totalPrice['number']) : '0' }}
+                                        مجموع: {{ isset($totalPrice) && isset($totalPrice['number']) ? number_format($totalPrice['number']) : '0' }} | 
+                                        مالیات بر ارزش افزوده (%{{ number_format(vat_percentage(), 0) }}): {{ number_format($totalVatAmount) }} | 
+                                        جمع کل با مالیات: {{ number_format($totalWithVat) }}
                                     @endif
                                 </td>
                             </tr>
