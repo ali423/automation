@@ -678,18 +678,29 @@ class OrderController extends Controller
             $totalValue = $order->orderItems->sum(function ($item) {
                 return $item->price ? ($item->price * $item->commodity_amount) : 0;
             });
-            $inventory = 0;
+            
+            // Check inventory for each order item - order is deliverable only if ALL items have sufficient inventory
+            $canDeliver = false; // Default to false for orders without items
+            $totalInventory = 0;
             if ($order->orderItems->isNotEmpty()) {
-                $firstItem = $order->orderItems->first();
-                $inventory = Inventory::where('commodity_id', $firstItem->commodity_id)
-                    ->where('unit_id', $firstItem->unit_id)
-                    ->where('amount', '>', 0)
-                    ->sum('amount');
+                $canDeliver = true; // Start with true, will be set to false if any item lacks inventory
+                foreach ($order->orderItems as $item) {
+                    $inventory = Inventory::where('commodity_id', $item->commodity_id)
+                        ->where('unit_id', $item->unit_id)
+                        ->where('amount', '>', 0)
+                        ->sum('amount');
+                    $totalInventory += $inventory;
+                    if ($inventory < $item->commodity_amount) {
+                        $canDeliver = false;
+                        // Don't break - continue to calculate totalInventory for display
+                    }
+                }
             }
+            
             $order->total_amount = $totalAmount;
             $order->total_value = $totalValue;
-            $order->inventory_available = $inventory;
-            $order->can_deliver = $inventory >= $totalAmount;
+            $order->inventory_available = $totalInventory;
+            $order->can_deliver = $canDeliver;
         }
 
         // Apply deliverability status filter (قابل تحویل / غیر قابل تحویل)
@@ -724,18 +735,29 @@ class OrderController extends Controller
             $totalValue = $order->orderItems->sum(function ($item) {
                 return $item->price ? ($item->price * $item->commodity_amount) : 0;
             });
-            $inventory = 0;
+            
+            // Check inventory for each order item - order is deliverable only if ALL items have sufficient inventory
+            $canDeliver = false; // Default to false for orders without items
+            $totalInventory = 0;
             if ($order->orderItems->isNotEmpty()) {
-                $firstItem = $order->orderItems->first();
-                $inventory = Inventory::where('commodity_id', $firstItem->commodity_id)
-                    ->where('unit_id', $firstItem->unit_id)
-                    ->where('amount', '>', 0)
-                    ->sum('amount');
+                $canDeliver = true; // Start with true, will be set to false if any item lacks inventory
+                foreach ($order->orderItems as $item) {
+                    $inventory = Inventory::where('commodity_id', $item->commodity_id)
+                        ->where('unit_id', $item->unit_id)
+                        ->where('amount', '>', 0)
+                        ->sum('amount');
+                    $totalInventory += $inventory;
+                    if ($inventory < $item->commodity_amount) {
+                        $canDeliver = false;
+                        // Don't break - continue to calculate totalInventory for display
+                    }
+                }
             }
+            
             $order->total_amount = $totalAmount;
             $order->total_value = $totalValue;
-            $order->inventory_available = $inventory;
-            $order->can_deliver = $inventory >= $totalAmount;
+            $order->inventory_available = $totalInventory;
+            $order->can_deliver = $canDeliver;
         }
         $summaryStats = [
             'totalOrders' => $allOrders->count(),
