@@ -55,10 +55,9 @@ class CommodityController extends Controller
         // Pre-calc for current page
         $commodities->getCollection()->transform(function ($c) {
             $c->base_price = $this->calculateBasePrice($c);
+            // Final unit price (without VAT) comes directly from commodity sales_price
             $c->sales_price = $this->getSalesPrice($c);
-            // Calculate sales price with VAT (10%)
-            $c->sales_price_with_vat = $this->calculateSalesPriceWithVAT($c);
-            // Calculate carton price if applicable
+            // Calculate carton price based on sales price without VAT (if applicable)
             $c->carton_price = $this->calculateCartonPrice($c);
             return $c;
         });
@@ -374,13 +373,14 @@ class CommodityController extends Controller
             return null;
         }
 
-        $salesPriceWithVAT = $this->calculateSalesPriceWithVAT($commodity);
-        if ($salesPriceWithVAT === null) {
+        // Use sales price without VAT for carton price
+        $salesPrice = $this->getSalesPrice($commodity);
+        if ($salesPrice === null) {
             return null;
         }
 
-        // Calculate carton price: sales price with VAT * pieces per box
-        return $salesPriceWithVAT * $commodity->pieces_per_box;
+        // Calculate carton price: sales price (without VAT) * pieces per box
+        return $salesPrice * $commodity->pieces_per_box;
     }
     public function commodityType($id)
     {

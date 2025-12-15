@@ -115,7 +115,7 @@
                                             <td>{{ $i }}</td>
                                             <td>{{ $c->title }}</td>
                                             <td>{{ number_format($c->base_price ?? 0) }}</td>
-                                            <td>{{ $c->sales_price_with_vat !== null ? number_format($c->sales_price_with_vat) : '-' }}</td>
+                                            <td>{{ $c->sales_price !== null ? number_format($c->sales_price) : '-' }}</td>
                                             <td>{{ $c->unit ? $c->unit->name : '-' }}</td>
                                         </tr>
                                         @php($i++)
