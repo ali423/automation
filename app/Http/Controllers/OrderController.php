@@ -600,7 +600,8 @@ class OrderController extends Controller
                     $weightFormatted = 'خطا در محاسبه';
                 }
             } else {
-                $weightFormatted = number_format($weight, 3) . ' کیلوگرم';
+                // Display weight in kilograms without decimal places (problem #70)
+                $weightFormatted = number_format($weight, 0) . ' کیلوگرم';
             }
             
             return response()->json([
