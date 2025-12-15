@@ -26,6 +26,52 @@ class CommodityController extends Controller
     }
 
     /**
+     * Lightweight search endpoint for commodities (for order autocomplete).
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function search(Request $request)
+    {
+        $this->authorize('viewAny', Commodity::class);
+
+        $search = trim((string) $request->get('search', ''));
+
+        $query = Commodity::query()
+            ->where('type', 'product');
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%");
+            });
+        }
+
+        $commodities = $query
+            ->orderBy('title')
+            ->limit(20)
+            ->get(['id', 'title', 'number', 'product_identifier']);
+
+        $results = $commodities->map(function ($commodity) {
+            $parts = [$commodity->title];
+
+            if (!empty($commodity->number)) {
+                $parts[] = 'شماره: ' . $commodity->number;
+            }
+
+            if (!empty($commodity->product_identifier)) {
+                $parts[] = 'شناسه: ' . $commodity->product_identifier;
+            }
+
+            return [
+                'id' => $commodity->id,
+                'text' => implode(' - ', $parts),
+            ];
+        });
+
+        return response()->json($results);
+    }
+
+    /**
      * Prices tab page (client-side rendering and export)
      *
      * @param Request $request
