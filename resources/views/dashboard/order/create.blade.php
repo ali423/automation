@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="{{ asset('css/imexport-print.css')}}">
     <link rel="stylesheet" href="{{ asset('css/bootstrap-datepicker.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/default-assets/daterange-picker.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
 @endsection
 
 @section('content')
@@ -52,10 +53,113 @@
     <script>
         $(function () {
             var price = null;
+
+            // Commodity search triggered only on button click
+            $(document).on('click', '.btn-commodity-search', function () {
+                var $row = $(this).closest('.form-row');
+                var term = $row.find('.commodity-search-input').val().trim();
+                var $select = $row.find('#commodity_id');
+                var $help = $row.find('.commodity-help-text');
+
+                // If search term is empty, restore original full list (if stored) and return
+                if (!term) {
+                    var original = $select.data('original-options');
+                    if (original) {
+                        $select.html(original);
+                        $select.prop('disabled', false);
+                    }
+                    if ($help.length) {
+                        $help.removeClass('text-danger')
+                            .text('ابتدا نام کالا را جستجو کرده و سپس از لیست بالا انتخاب کنید.');
+                    }
+                    return;
+                }
+
+                if ($help.length) {
+                    $help.removeClass('text-danger')
+                        .text('در حال جستجوی کالا...');
+                }
+
+                // Store original options once so we can restore later
+                if (!$select.data('original-options')) {
+                    $select.data('original-options', $select.html());
+                }
+
+                $select.prop('disabled', true)
+                    .empty()
+                    .append('<option value="">در حال جستجو...</option>');
+
+                $.ajax({
+                    url: '{{ route('commodity.search') }}',
+                    type: 'get',
+                    dataType: 'json',
+                    data: { search: term },
+                    success: function (data) {
+                        $select.empty();
+                        if (!data.length) {
+                            $select.append('<option value="">موردی یافت نشد</option>');
+                            if ($help.length) {
+                                $help.text('کالایی با این نام یافت نشد.');
+                            }
+                        } else {
+                            $select.append('<option value="">انتخاب کنید...</option>');
+                            data.forEach(function (item) {
+                                $select.append('<option value="' + item.id + '">' + item.text + '</option>');
+                            });
+                            if ($help.length) {
+                                $help.text('لطفاً از لیست بالا یک کالا را انتخاب کنید.');
+                            }
+                        }
+                        $select.prop('disabled', false);
+                    },
+                    error: function () {
+                        $select.empty()
+                            .append('<option value="">خطا در جستجو</option>')
+                            .prop('disabled', false);
+                        if ($help.length) {
+                            $help.addClass('text-danger')
+                                .text('خطا در جستجو. دوباره تلاش کنید.');
+                        }
+                    }
+                });
+            });
+
+            // When user clears the search box, restore original full list (if any)
+            $(document).on('input', '.commodity-search-input', function () {
+                var $row = $(this).closest('.form-row');
+                var term = $(this).val().trim();
+                var $select = $row.find('#commodity_id');
+                var $help = $row.find('.commodity-help-text');
+
+                if (!term) {
+                    var original = $select.data('original-options');
+                    if (original) {
+                        $select.html(original);
+                        $select.prop('disabled', false);
+                    }
+                    if ($help.length) {
+                        $help.removeClass('text-danger')
+                            .text('ابتدا نام کالا را جستجو کرده و سپس از لیست بالا انتخاب کنید.');
+                    }
+                }
+            });
+
             $(document).on('change', '#commodity_id', function () {
                 var commodity_id = $(this).val();
                 var priceInput = $(this).closest('.form-row').find('#price');
                 var unitSelect = $(this).closest('.form-row').find('#unit_id');
+                var helpText = $(this).closest('.form-group').find('.commodity-help-text');
+
+                if (helpText.length) {
+                    if (commodity_id) {
+                        var selectedText = $(this).find('option:selected').text();
+                        helpText.removeClass('text-danger')
+                            .text('کالای انتخاب شده: ' + selectedText);
+                    } else {
+                        helpText.removeClass('text-danger')
+                            .text('ابتدا نام کالا را جستجو کرده و سپس از لیست بالا انتخاب کنید.');
+                    }
+                }
                 
                 // Set loading states
                 unitSelect.prop('disabled', true).empty().append('<option value="">در حال بارگذاری...</option>');
@@ -190,12 +294,28 @@
             $('#addRow').click(function () {
                 var index = $('#order_formul .form-row').length;
                 var html = `<div id="inputFormRow" class="form-row shadow p-4 mb-3">
+                    <div class="col-12 mb-2">
+                        <div class="d-flex align-items-center">
+                            <input type="text"
+                                   class="form-control form-control-sm flex-grow-1 commodity-search-input"
+                                   placeholder="جستجو در نام کالا (مثلاً روغن موتور)">
+                            <button type="button"
+                                    class="btn btn-primary btn-sm btn-commodity-search ml-2">
+                                جستجو
+                            </button>
+                        </div>
+                        <small class="form-text text-muted commodity-help-text mt-1">
+                            ابتدا نام کالا را جستجو کرده و سپس از لیست بالا انتخاب کنید.
+                        </small>
+                    </div>
                     <div class="form-group col-md-3">
                         <label for="commodity_id">{{ __('fields.commodity.name')}}</label>
-                        <select id="commodity_id" class="form-control" name="commodity_id[${index}]" required>
-                            <option value="">انتخاب کنید</option>
+                        <select id="commodity_id" class="form-control form-control-sm"
+                                style="max-height: 150px; overflow-y: auto;"
+                                name="commodity_id[${index}]" required>
+                            <option value="">انتخاب کنید...</option>
                             @foreach ($commodities as $commodity)
-                                <option value="{{ $commodity->id }}">{{$commodity->title}}</option>
+                                <option value="{{ $commodity->id }}">{{ $commodity->title }}</option>
                             @endforeach
                         </select>
                         <div class="invalid-feedback">

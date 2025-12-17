@@ -1,13 +1,40 @@
 <div id="inputFormRow" class="form-row shadow p-4 mb-3">
+    {{-- Row 1: search box (full width) --}}
+    <div class="col-12 mb-2">
+        <div class="d-flex align-items-center">
+            <input type="text"
+                   class="form-control form-control-sm flex-grow-1 commodity-search-input"
+                   placeholder="جستجو در نام کالا (مثلاً روغن موتور)">
+            <button type="button"
+                    class="btn btn-primary btn-sm btn-commodity-search ml-2">
+                جستجو
+            </button>
+        </div>
+        <small class="form-text text-muted commodity-help-text mt-1">
+            @if(isset($item) && $item->commodity)
+                کالای انتخاب شده: {{ $item->commodity->title }}
+            @else
+                ابتدا نام کالا را جستجو کرده و سپس از لیست بالا انتخاب کنید.
+            @endif
+        </small>
+    </div>
+
+    {{-- Row 2: commodity + other fields --}}
     <div class="form-group col-md-3">
         <label for="commodity_id">{{ __('fields.commodity.name')}}</label>
-        <select id="commodity_id" class="form-control" name="commodity_id[{{ $index ?? 0 }}]" required>
-            <option value="">انتخاب کنید</option>
-            @foreach ($commodities as $commodity)
-                <option value="{{ $commodity->id }}"
-                    @if(isset($item) && $item->commodity_id == $commodity->id) selected @endif
-                >{{$commodity->title}}</option>
-            @endforeach
+        <select id="commodity_id" class="form-control form-control-sm"
+                style="max-height: 150px; overflow-y: auto;"
+                name="commodity_id[{{ $index ?? 0 }}]" required>
+            @if(isset($item) && $item->commodity)
+                <option value="{{ $item->commodity_id }}" selected>{{ $item->commodity->title }}</option>
+            @else
+                <option value="">انتخاب کنید...</option>
+                @foreach ($commodities as $commodity)
+                    <option value="{{ $commodity->id }}">
+                        {{ $commodity->title }}
+                    </option>
+                @endforeach
+            @endif
         </select>
         <div class="invalid-feedback">
             {{ __('fields.commodity.name')}} را انتخاب کنید
