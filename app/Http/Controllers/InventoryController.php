@@ -33,8 +33,8 @@ class InventoryController extends Controller
     public function index(Request $request)
     {
         // Build query with eager loading to fix N+1 query problem
-        $query = Inventory::with(['commodity', 'unit'])
-            ->where('amount', '>', 0);
+        // Removed amount > 0 filter to include zero inventory items (issue #76)
+        $query = Inventory::with(['commodity', 'unit']);
         
         // Apply type filter on related commodity if provided
         if ($request->filled('filters')) {
