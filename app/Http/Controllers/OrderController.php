@@ -857,20 +857,33 @@ class OrderController extends Controller
     }
 
     /**
-     * Display customer details page with all orders for a specific customer.
+     * Display customer details page with orders for a specific customer.
+     * If order_id is provided, shows only that specific order's items.
      *
-     * @param int $id
+     * @param int $id Customer ID
+     * @param Request $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
-    public function customerDetails($id)
+    public function customerDetails($id, Request $request)
     {
         // Get real customer data
         $customer = Customer::findOrFail($id);
         
-        // Get real orders for this customer with related data
-        $customerOrders = Order::where('customer_id', $id)
-            ->with(['orderItems.commodity', 'orderItems.unit'])
-            ->get()
+        // Check if filtering by specific order
+        $orderId = $request->query('order_id');
+        
+        // Build query for PENDING orders for this customer
+        $ordersQuery = Order::where('customer_id', $id)
+            ->where('status', 'pending')  // Only show pending orders
+            ->with(['orderItems.commodity', 'orderItems.unit']);
+        
+        // Filter by specific order if provided
+        if ($orderId) {
+            $ordersQuery->where('id', (int)$orderId);
+        }
+        
+        // Get orders and flatten to items
+        $customerOrders = $ordersQuery->get()
             ->flatMap(function ($order) {
                 return $order->orderItems->map(function ($item) use ($order) {
                     // Get inventory for this commodity
@@ -908,6 +921,7 @@ class OrderController extends Controller
             'customer' => $customer,
             'orders' => $customerOrders,
             'summaryStats' => $summaryStats,
+            'orderId' => $orderId,  // Pass to view to show appropriate message
         ]);
     }
 

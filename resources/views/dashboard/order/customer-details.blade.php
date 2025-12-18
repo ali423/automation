@@ -117,7 +117,13 @@
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-2">لیست سفارشات {{ $customer->name }}</h4>
+                    @if(isset($orderId) && $orderId)
+                        <h4 class="card-title mb-2">جزئیات سفارش #{{ $orderId }} - {{ $customer->name }}</h4>
+                        <p class="text-muted mb-3"><small>نمایش اقلام سفارش شماره {{ $orderId }}</small></p>
+                    @else
+                        <h4 class="card-title mb-2">سفارشات معلق {{ $customer->name }}</h4>
+                        <p class="text-muted mb-3"><small>این صفحه فقط سفارشات با وضعیت "معلق" را نمایش می‌دهد</small></p>
+                    @endif
                     
                     <!-- Orders Summary -->
                     @include('dashboard.order.partials.order-summary-stats', ['summaryStats' => $summaryStats])
@@ -128,10 +134,11 @@
                                 <th>ردیف</th>
                                 <th>شماره سفارش</th>
                                 <th>نام کالا</th>
-                                <th>مقدار</th>
+                                <th>مقدار سفارش</th>
                                 <th>واحد</th>
+                                <th>موجودی انبار</th>
                                 <th>مهلت تحویل</th>
-                                <th>موجودی فرآورده</th>
+                                <th>وضعیت تحویل</th>
                                 <th>مبلغ کل</th>
                             </tr>
                         </thead>
@@ -141,19 +148,28 @@
                                 @foreach ($orders as $order)
                                     <tr class="@if($order->can_deliver) table-success @else table-danger @endif">
                                         <td>{{ $i }}</td>
-                                        <td>{{ $order->order_number }}</td>
+                                        <td><strong>#{{ $order->order_number }}</strong></td>
                                         <td>{{ $order->commodity_title }}</td>
-                                        <td>{{ number_format($order->amount) }}</td>
+                                        <td>{{ number_format($order->amount) }} {{ $order->unit_symbol }}</td>
                                         <td>{{ $order->unit }}</td>
+                                        <td>{{ number_format($order->inventory) }} {{ $order->unit_symbol }}</td>
                                         <td>{{ $order->deadline }}</td>
-                                        <td>{{ number_format($order->inventory) }}</td>
+                                        <td>
+                                            <span class="badge @if($order->can_deliver) bg-success @else bg-danger @endif">
+                                                @if($order->can_deliver)
+                                                    قابل تحویل
+                                                @else
+                                                    غیر قابل تحویل
+                                                @endif
+                                            </span>
+                                        </td>
                                         <td>{{ number_format($order->total_value) }} ریال</td>
                                     </tr>
                                     @php($i++)
                                 @endforeach
                             @else
                                 <tr>
-                                    <td colspan="8" class="text-center">هیچ سفارشی برای این مشتری یافت نشد.</td>
+                                    <td colspan="9" class="text-center">هیچ سفارش معلقی برای این مشتری یافت نشد.</td>
                                 </tr>
                             @endif
                         </tbody>
@@ -201,7 +217,7 @@
                         text: "کپی",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [7, 6, 5, 4, 3, 2, 1, 0],
+                            columns: [8, 7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
@@ -213,7 +229,7 @@
                         text: 'pdf',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [7, 6, 5, 4, 3, 2, 1, 0],
+                            columns: [8, 7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
@@ -221,7 +237,7 @@
                         },
                         customize: function(doc) {
                             doc.defaultStyle.font = "IRANSansWeb";
-                            doc.content[1].table.widths = ['12%','12%', '12%', '12%', '12%', '12%', '12%', '16%'];
+                            doc.content[1].table.widths = ['8%','10%', '14%', '10%', '8%', '10%', '10%', '12%', '18%'];
                             doc.styles.tableBodyEven.alignment = 'center';
                             doc.styles.tableBodyOdd.alignment = 'center';
                         }
@@ -251,7 +267,7 @@
                         text: "پرینت",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5, 6, 7],
+                            columns: [0, 1, 2, 3, 4, 5, 6, 7, 8],
                             modifier: {
                                 page: 'current'
                             },
