@@ -792,6 +792,7 @@ class OrderController extends Controller
 
     /**
      * Get individual orders chart data with real data.
+     * Aggregates data by commodity+unit combination to avoid duplicates.
      *
      * @return array
      */
@@ -799,30 +800,56 @@ class OrderController extends Controller
     {
         // Get real pending orders with inventory data
         $orders = Order::where('status', 'pending')
-            ->with(['orderItems.commodity', 'orderItems.unit'])
+            ->with(['orderItems.commodity', 'orderItems.unit', 'customer'])
             ->get();
 
-        $chartData = [];
+        // Aggregate by commodity_id + unit_id combination
+        $aggregatedData = [];
         
         foreach ($orders as $order) {
             foreach ($order->orderItems as $item) {
-                // Get inventory for this commodity
-                $inventory = Inventory::where('commodity_id', $item->commodity_id)
-                    ->where('unit_id', $item->unit_id)
-                    ->where('amount', '>', 0)
-                    ->sum('amount');
+                // Create a unique key for commodity+unit combination
+                $key = $item->commodity_id . '_' . $item->unit_id;
                 
-                $chartData[] = [
-                    'orderId' => $order->id,
-                    'customerName' => $order->customer->name ?? 'نامشخص',
-                    'productName' => $item->commodity->title ?? 'نامشخص',
-                    'orderedAmount' => $item->commodity_amount,
-                    'inventory' => $inventory,
-                    'unit' => $item->unit->name ?? 'نامشخص',
-                    'unitSymbol' => $item->unit->symbol ?? ''
-                ];
+                // Initialize aggregated entry if it doesn't exist
+                if (!isset($aggregatedData[$key])) {
+                    // Get inventory for this commodity+unit (only once per combination)
+                    $inventory = Inventory::where('commodity_id', $item->commodity_id)
+                        ->where('unit_id', $item->unit_id)
+                        ->where('amount', '>', 0)
+                        ->sum('amount');
+                    
+                    $aggregatedData[$key] = [
+                        'productName' => $item->commodity->title ?? 'نامشخص',
+                        'orderedAmount' => 0, // Total across all orders (for reference)
+                        'inventory' => $inventory,
+                        'unit' => $item->unit->name ?? 'نامشخص',
+                        'unitSymbol' => $item->unit->symbol ?? '',
+                        'commodityId' => $item->commodity_id,
+                        'unitId' => $item->unit_id,
+                        'orderIds' => [], // Track which orders contribute to this aggregate
+                        'orderAmounts' => [] // Track per-order amounts: orderId => amount
+                    ];
+                }
+                
+                // Sum the ordered amount for this commodity+unit combination
+                $aggregatedData[$key]['orderedAmount'] += $item->commodity_amount;
+                
+                // Track order IDs that contribute to this aggregate
+                if (!in_array($order->id, $aggregatedData[$key]['orderIds'])) {
+                    $aggregatedData[$key]['orderIds'][] = $order->id;
+                }
+                
+                // Track per-order amounts (sum if same order has multiple items of same commodity+unit)
+                if (!isset($aggregatedData[$key]['orderAmounts'][$order->id])) {
+                    $aggregatedData[$key]['orderAmounts'][$order->id] = 0;
+                }
+                $aggregatedData[$key]['orderAmounts'][$order->id] += $item->commodity_amount;
             }
         }
+
+        // Convert to array format (remove keys, keep values)
+        $chartData = array_values($aggregatedData);
 
         return [
             'orders' => $chartData
