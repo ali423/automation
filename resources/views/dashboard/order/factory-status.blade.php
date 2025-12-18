@@ -345,22 +345,62 @@
                     checkedRows = $('#datatable-buttons-factory tbody tr:visible');
                 }
 
-                // Get real data from selected rows
+                // Collect selected order IDs
+                var selectedOrderIds = [];
                 if (checkedRows.length > 0) {
                     checkedRows.each(function(index) {
                         var $row = $(this);
-                        var rowId = $row.data('order-id');
+                        var rowId = parseInt($row.data('order-id'));
+                        if (rowId && selectedOrderIds.indexOf(rowId) === -1) {
+                            selectedOrderIds.push(rowId);
+                        }
+                    });
+                }
+
+                // Filter aggregated data: include entries where orderIds array contains any selected order ID
+                // Calculate ordered amount only for selected orders using orderAmounts mapping
+                if (selectedOrderIds.length > 0 && factoryData.length > 0) {
+                    factoryData.forEach(function(item) {
+                        // Check if this aggregated entry's orderIds array intersects with selected order IDs
+                        var hasMatchingOrder = false;
+                        var selectedOrderedAmount = 0;
                         
-                        // Find the corresponding order data from the initial factory data
-                        var orderData = factoryData.find(function(item) {
-                            return item.orderId == rowId;
-                        });
+                        if (item.orderIds && Array.isArray(item.orderIds)) {
+                            // Check if any selected order contributes to this commodity+unit
+                            item.orderIds.forEach(function(orderId) {
+                                var orderIdInt = parseInt(orderId);
+                                if (selectedOrderIds.indexOf(orderIdInt) !== -1) {
+                                    hasMatchingOrder = true;
+                                    // Sum the ordered amount for this selected order
+                                    // Try both string and integer key (JSON may encode keys differently)
+                                    if (item.orderAmounts) {
+                                        var amount = item.orderAmounts[orderId] || item.orderAmounts[orderIdInt] || 0;
+                                        selectedOrderedAmount += parseFloat(amount) || 0;
+                                    }
+                                }
+                            });
+                        } else {
+                            // Fallback for old data structure (backward compatibility)
+                            if (item.orderId && selectedOrderIds.indexOf(parseInt(item.orderId)) !== -1) {
+                                hasMatchingOrder = true;
+                                selectedOrderedAmount = parseFloat(item.orderedAmount) || 0;
+                            }
+                        }
                         
-                        if (orderData) {
-                            data.names.push(orderData.productName);
-                            data.inventory.push(orderData.inventory);
-                            data.orders.push(orderData.orderedAmount);
-                            data.units.push(orderData.unitSymbol || orderData.unit);
+                        if (hasMatchingOrder && selectedOrderedAmount > 0) {
+                            // Avoid duplicates by checking if this commodity+unit already exists
+                            var existingIndex = data.names.indexOf(item.productName);
+                            if (existingIndex === -1) {
+                                // New commodity+unit combination
+                                data.names.push(item.productName);
+                                data.inventory.push(item.inventory);
+                                data.orders.push(selectedOrderedAmount);
+                                data.units.push(item.unitSymbol || item.unit);
+                            } else {
+                                // Same commodity+unit from different orders - sum the amounts
+                                // Note: This shouldn't happen with proper aggregation, but handle it just in case
+                                data.orders[existingIndex] = parseFloat(data.orders[existingIndex]) + selectedOrderedAmount;
+                            }
                         }
                     });
                 }
