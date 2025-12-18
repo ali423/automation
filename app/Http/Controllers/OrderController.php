@@ -814,10 +814,10 @@ class OrderController extends Controller
                 // Initialize aggregated entry if it doesn't exist
                 if (!isset($aggregatedData[$key])) {
                     // Get inventory for this commodity+unit (only once per combination)
+                    // Remove amount > 0 filter to ensure zero inventory products are included
                     $inventory = Inventory::where('commodity_id', $item->commodity_id)
                         ->where('unit_id', $item->unit_id)
-                        ->where('amount', '>', 0)
-                        ->sum('amount');
+                        ->sum('amount') ?? 0;
                     
                     $aggregatedData[$key] = [
                         'productName' => $item->commodity->title ?? 'نامشخص',
