@@ -179,18 +179,17 @@
                     <tbody>
                     <tr>
                         <td>راننده: {{ $request->driver_name ?? 'نامشخص' }}</td>
-                        <td>کد ملی راننده: {{ $request->driver_national_id ?? '-' }}</td>
                         <td>تلفن راننده: {{ $request->driver_phone ?? '-' }}</td>
+                        <td>وسیله نقلیه: {{ $request->vehicle_type ?? '-' }}</td>
                     </tr>
                     <tr>
-                        <td>وسیله نقلیه: {{ $request->vehicle_type ?? '-' }}</td>
-                        <td>پلاک: {{ trim(($request->plate_serial ?? '') . ' ' . ($request->plate_number ?? '')) ?: '-' }}</td>
+                        <td>کد ملی راننده: {{ $request->driver_national_id ?? '-' }}</td>
                         <td>شماره بارنامه: {{ $request->bill_of_lading_number ?? '-' }}</td>
+                        <td>پلاک: {{ trim(($request->plate_serial ?? '') . ' ' . ($request->plate_number ?? '')) ?: '-' }}</td>
                     </tr>
                     <tr>
                         <td>استان: {{ $request->shipping_province ?? ($request->customer ? ($request->customer->province ?? '') : '-') }}</td>
-                        <td>شهر: {{ $request->shipping_city ?? ($request->customer ? ($request->customer->city ?? '') : '-') }}</td>
-                        <td></td>
+                        <td colspan="2">شهر: {{ $request->shipping_city ?? ($request->customer ? ($request->customer->city ?? '') : '-') }}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -268,10 +267,16 @@
                                 <td>{{ $commodity->number }}</td>
                                 <td>{{ $commodity->product_identifier ?? default_product_identifier() }}</td>
                                 <td>{{ $commodity->title }}</td>
-                                <td>{{ number_format($commodity->pivot->amount, 0, '.', '') }}</td>
+                                <td>{{ number_format($commodity->pivot->amount, 0, '.', ',') }}</td>
                                 <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
-                                <td>{{ $totalLitrage !== null ? number_format($totalLitrage, 2) : '-' }}</td>
-                                <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
+                                <td>{{ $totalLitrage !== null ? number_format($totalLitrage, 0, '.', ',') : '-' }}</td>
+                                <td>
+                                    @if(isset($commodity->pivot->price) && $commodity->litrage > 0)
+                                        {{ number_format($commodity->pivot->price / $commodity->litrage) }}
+                                    @else
+                                        {{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}
+                                    @endif
+                                </td>
                                 <td>{{ isset($commodity->pivot->price) ? number_format(round($commodityVatAmount)) : '-' }}</td>
                                 <td>{{ isset($commodity->pivot->price) ? number_format(round($commodity->pivot->amount * $commodity->pivot->price * (1 + vat_rate()))) : '-' }}</td>
                             </tr>

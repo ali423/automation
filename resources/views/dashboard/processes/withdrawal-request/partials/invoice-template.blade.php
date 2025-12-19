@@ -122,13 +122,11 @@
                     <table class="factortable table table-bordered">
                         <colgroup>
                             <col span="1" style="width: 5%;">
-                            <col span="1" style="width: 35%;">
+                            <col span="1" style="width: 30%;">
                             <col span="1" style="width: 10%;">
                             <col span="1" style="width: 10%;">
-                            @if($invoiceType === 'warehouse')
-                                <col span="1" style="width: 10%;">
-                            @endif
                             @if($invoiceType !== 'documentation')
+                                <col span="1" style="width: 10%;">
                                 <col span="1" style="width: 10%;">
                             @endif
                             @if($invoiceType === 'documentation')
@@ -145,6 +143,7 @@
                                 <th scope="col">تعداد</th>
                                 @if($invoiceType !== 'documentation')
                                     <th scope="col">تعداد بسته‌بندی (کارتن)</th>
+                                    <th scope="col">وزن (کیلوگرم)</th>
                                 @endif
                                 @if($invoiceType === 'documentation')
                                     <th scope="col">فی(ریال)</th>
@@ -160,11 +159,22 @@
                                 $totalPrice = $request->total_price ?? null;
                                 $commodityUnitService = app(\App\Services\CommodityUnitService::class);
                                 $totalPackaging = 0;
+                                $totalWeight = 0;
+                                $hasValidWeight = false;
+                                // Calculate VAT totals for documentation invoice
+                                $totalVatAmount = 0;
+                                $totalWithVat = 0;
+                                if ($invoiceType === 'documentation') {
+                                    $totalAmount = isset($totalPrice) && isset($totalPrice['number']) ? $totalPrice['number'] : 0;
+                                    $totalVatAmount = $totalAmount * vat_rate();
+                                    $totalWithVat = $totalAmount + $totalVatAmount;
+                                }
                             @endphp
                             @foreach($request->commodities as $commodity)
                                 @php
                                     // Calculate packaging quantity only for non-documentation invoices
                                     $packagingQuantity = '-';
+                                    $weight = null;
                                     if ($invoiceType !== 'documentation') {
                                         $piecesPerBox = $commodity->pieces_per_box ?? 1;
                                         if ($piecesPerBox > 0) {
@@ -175,6 +185,12 @@
                                             if ($packagingQuantity !== '-') {
                                                 $totalPackaging += $packagingQuantity;
                                             }
+                                        }
+                                        // Calculate weight for customer and warehouse invoices
+                                        $weight = calculate_weight($commodity, $commodity->pivot->amount, $commodity->pivot->unit_id);
+                                        if ($weight !== null) {
+                                            $totalWeight += $weight;
+                                            $hasValidWeight = true;
                                         }
                                     }
                                     // Calculate VAT amount for documentation invoice
@@ -187,16 +203,19 @@
                                     <td scope="row">{{ $i }}</td>
                                     <td>{{ $commodity->title }}</td>
                                     <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
-                                    <td>{{ number_format($commodity->pivot->amount, 0, '.', '') }}</td>
+                                    <td>{{ number_format($commodity->pivot->amount, 0, '.', ',') }}</td>
                                     @if($invoiceType !== 'documentation')
                                         <td>
-                                            {{ $packagingQuantity !== '-' ? number_format($packagingQuantity, 0, '.', '') : '-' }}
+                                            {{ $packagingQuantity !== '-' ? number_format($packagingQuantity, 0, '.', ',') : '-' }}
+                                        </td>
+                                        <td>
+                                            {{ $weight !== null ? number_format($weight, 2, '.', ',') : 'نامشخص' }}
                                         </td>
                                     @endif
                                     @if($invoiceType === 'documentation')
                                         <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
                                         <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price) : '-' }}</td>
-                                        <td>{{ isset($commodity->pivot->price) ? number_format($vatAmount, 0, '.', '') : '0' }}</td>
+                                        <td>{{ isset($commodity->pivot->price) ? number_format($vatAmount, 0, '.', ',') : '0' }}</td>
                                     @endif
                                 </tr>
                                 @php
@@ -204,17 +223,31 @@
                                 @endphp
                             @endforeach
                             <tr>
-                                <td colspan="{{ $invoiceType === 'documentation' ? '7' : '5' }}">
+                                <td colspan="{{ $invoiceType === 'documentation' ? '7' : '6' }}">
                                     @if($invoiceType !== 'documentation')
-                                        کل بسته‌بندی: {{ number_format($totalPackaging, 0, '.', '') }}
+                                        کل بسته‌بندی: {{ number_format($totalPackaging, 0, '.', ',') }} | 
+                                        وزن کل: {{ $hasValidWeight ? number_format($totalWeight, 2, '.', ',') . ' کیلوگرم' : 'نامشخص' }}
                                     @endif
                                     @if($invoiceType === 'documentation')
-                                        مجموع: {{ isset($totalPrice) && isset($totalPrice['number']) ? number_format($totalPrice['number']) : '0' }}
+                                        مجموع: {{ isset($totalPrice) && isset($totalPrice['number']) ? number_format($totalPrice['number']) : '0' }} | 
+                                        مالیات بر ارزش افزوده (%{{ number_format(vat_percentage(), 0) }}): {{ number_format($totalVatAmount) }} | 
+                                        جمع کل با مالیات: {{ number_format($totalWithVat) }}
                                     @endif
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <div class="mb-4 mt-3">
+                    اینجانب <span style="display:inline-block;width: 120px;border-bottom:1px dashed #000"></span>
+                    به عنوان راننده/نماینده خریدار، محموله فوق را
+                    به صورت کامل و صحیح و سالم تحویل گرفتم.
+                </div>
+
+                <div class="d-flex justify-content-around align-items-center mb-3">
+                    <h6>امضاء و اثر انگشت تحویل گیرنده کالا</h6>
+                    <h6>امضاء متصدی/مسئول انبار</h6>
                 </div>
             </div>
         </div>

@@ -11,39 +11,6 @@
     <link rel="stylesheet" href="{{ asset('css/bootstrap-datepicker.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/default-assets/daterange-picker.css') }}">
     <style>
-        #factory-charts {
-            width: 100%;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-        }
-        .mini-factory-chart {
-            flex: 1 1 300px;
-            min-width: 240px;
-            max-width: 350px;
-            height: 260px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-            padding: 12px;
-            margin-bottom: 0;
-            box-sizing: border-box;
-        }
-        @media (max-width: 900px) {
-            .mini-factory-chart {
-                flex-basis: 48%;
-                min-width: 180px;
-                max-width: 100%;
-            }
-        }
-        @media (max-width: 600px) {
-            .mini-factory-chart {
-                flex-basis: 100%;
-                min-width: 120px;
-                max-width: 100%;
-            }
-        }
         .summary-card {
             transition: transform 0.2s ease-in-out;
             margin-bottom: 15px;
@@ -80,9 +47,8 @@
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-2">نمودار وضعیت کارخانه</h4>
-                    <div id="factory-charts"></div>
-                    <div class="mt-3" id="factory-table-wrapper">
+                    <h4 class="card-title mb-2">وضعیت کارخانه</h4>
+                    <div id="factory-table-wrapper">
                         <div class="table-responsive">
                             <table id="factory-inventory-table" class="table table-sm table-striped table-bordered mb-0">
                                 <thead>
@@ -121,8 +87,8 @@
                                     <span style="margin-right: 5px;">همه</span>
                                 </th>
                                 <th>ردیف</th>
+                                <th>شماره سفارش</th>
                                 <th>خریدار</th>
-
                                 <th>تاریخ تحویل</th>
                                 <th>وضعیت تحویل</th>
                                 <th>جزئیات</th>
@@ -136,8 +102,8 @@
                                         class="@if($order->can_deliver) table-success @else table-danger @endif">
                                         <td><input type="checkbox" class="factory-checkbox" checked></td>
                                         <td>{{ $i }}</td>
+                                        <td><strong>#{{ $order->id }}</strong></td>
                                         <td>{{ $order->customer->name ?? 'نامشخص' }}</td>
-
                                         <td>{{ $order->deadline ?? 'نامشخص' }}</td>
                                         <td>
                                             <span class="badge @if($order->can_deliver) bg-success @else bg-danger @endif">
@@ -149,7 +115,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <a href="{{ route('order.factory-status.customer', $order->customer->id ?? 0) }}" class="btn btn-sm btn-outline-primary">
+                                            <a href="{{ route('order.factory-status.customer', ['id' => $order->customer->id ?? 0, 'order_id' => $order->id]) }}" class="btn btn-sm btn-outline-primary">
                                                 <i class="ti-more-alt"></i> جزئیات
                                             </a>
                                         </td>
@@ -158,7 +124,7 @@
                                 @endforeach
                             @else
                                 <tr>
-                                    <td colspan="6" class="text-center">هیچ سفارش معلقی یافت نشد.</td>
+                                    <td colspan="7" class="text-center">هیچ سفارش معلقی یافت نشد.</td>
                                 </tr>
                             @endif
                         </tbody>
@@ -186,7 +152,6 @@
     <script src="{{ asset('js/default-assets/pdfmake/vfs_fonts.js') }}"></script>
     <script src="{{ asset('js/default-assets/button.print.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/dataTables.sorting.persian.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <script>
         $(document).ready(function() {
@@ -205,7 +170,7 @@
                 }
             };
 
-            $('#datatable-buttons-factory').DataTable({
+            var factoryDataTable = $('#datatable-buttons-factory').DataTable({
                 dom: 'Bfrtip',
                 paging: false,
                 searching: false,
@@ -215,7 +180,7 @@
                         text: "کپی",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [6, 5, 4, 3, 2, 1, 0],
+                            columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
@@ -227,7 +192,7 @@
                         text: 'pdf',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [6, 5, 4, 3, 2, 1, 0],
+                            columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
@@ -235,7 +200,7 @@
                         },
                         customize: function(doc) {
                             doc.defaultStyle.font = "IRANSansWeb";
-                            doc.content[1].table.widths = ['14%','14%', '14%', '14%', '14%', '14%', '16%'];
+                            doc.content[1].table.widths = ['12%','12%', '12%', '12%', '12%', '12%', '14%', '14%'];
                             doc.styles.tableBodyEven.alignment = 'center';
                             doc.styles.tableBodyOdd.alignment = 'center';
                         }
@@ -265,7 +230,7 @@
                         text: "پرینت",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5, 6],
+                            columns: [0, 1, 2, 3, 4, 5, 6, 7],
                             modifier: {
                                 page: 'current'
                             },
@@ -290,33 +255,26 @@
                 }
             });
 
-            $('#select-all-factory').prop('checked', true);
-            $('.factory-checkbox').prop('checked', false);
-
             // Load full dataset from backend, but render based on current visible/selected rows
             var factoryData = @json($warehouseChartData['orders']);
+            
+            // Initialize checkbox states - all should be checked by default to match HTML
+            $('#select-all-factory').prop('checked', true);
+            var allRows = factoryDataTable.rows().nodes().to$();
+            allRows.find('.factory-checkbox').prop('checked', true);
+            
+            // Initial render
             updateCharts();
 
             // No client-side date filtering in factory view; server-side filters via shared controls
 
-            // Function to update charts based on current filters
+            // Function to update table based on current filters
             function updateCharts() {
                 var selectedData = getSelectedFactoryData();
                 
                 if (selectedData.names.length === 0) {
-                    var message = 'هیچ سفارشی انتخاب نشده است.';
-                    if ($('#date_from').val() || $('#date_to').val()) {
-                        message += ' (ممکن است فیلتر تاریخ باعث شده باشد هیچ ردیفی نمایش داده نشود)';
-                    }
-                    $('#factory-charts').html('<div class="alert alert-warning text-center">' + message + '</div>');
                     renderFactoryTable({ names: [], orders: [], inventory: [], units: [] });
                 } else {
-                    renderFactoryCharts({
-                        names: selectedData.names,
-                        inventory: selectedData.inventory,
-                        orders: selectedData.orders,
-                        units: selectedData.units
-                    });
                     renderFactoryTable({
                         names: selectedData.names,
                         orders: selectedData.orders,
@@ -334,33 +292,73 @@
                     units: []
                 };
 
-                // Get checked rows from visible (filtered) rows
-                var checkedRows = $('#datatable-buttons-factory tbody tr:visible').filter(function() {
+                // Get all rows from DataTable
+                var allRows = factoryDataTable.rows().nodes().to$();
+                
+                // Get checked rows by filtering for checked checkboxes
+                var checkedRows = allRows.filter(function() {
                     var checkbox = $(this).find('.factory-checkbox');
-                    return checkbox.length && checkbox.is(':checked');
+                    return checkbox.length && checkbox.prop('checked');
                 });
 
-                // If no row is checked but 'select all' is checked, include all visible rows
-                if (checkedRows.length === 0 && $('#select-all-factory').is(':checked')) {
-                    checkedRows = $('#datatable-buttons-factory tbody tr:visible');
-                }
-
-                // Get real data from selected rows
+                // Collect selected order IDs from checked rows
+                var selectedOrderIds = [];
                 if (checkedRows.length > 0) {
                     checkedRows.each(function(index) {
                         var $row = $(this);
-                        var rowId = $row.data('order-id');
+                        var rowId = parseInt($row.data('order-id'));
+                        if (rowId && selectedOrderIds.indexOf(rowId) === -1) {
+                            selectedOrderIds.push(rowId);
+                        }
+                    });
+                }
+                
+                console.log('Selected order IDs:', selectedOrderIds);
+
+                // Filter aggregated data: include entries where orderIds array contains any selected order ID
+                // Calculate ordered amount only for selected orders using orderAmounts mapping
+                if (selectedOrderIds.length > 0 && factoryData.length > 0) {
+                    factoryData.forEach(function(item) {
+                        // Check if this aggregated entry's orderIds array intersects with selected order IDs
+                        var hasMatchingOrder = false;
+                        var selectedOrderedAmount = 0;
                         
-                        // Find the corresponding order data from the initial factory data
-                        var orderData = factoryData.find(function(item) {
-                            return item.orderId == rowId;
-                        });
+                        if (item.orderIds && Array.isArray(item.orderIds)) {
+                            // Check if any selected order contributes to this commodity+unit
+                            item.orderIds.forEach(function(orderId) {
+                                var orderIdInt = parseInt(orderId);
+                                if (selectedOrderIds.indexOf(orderIdInt) !== -1) {
+                                    hasMatchingOrder = true;
+                                    // Sum the ordered amount for this selected order
+                                    // Try both string and integer key (JSON may encode keys differently)
+                                    if (item.orderAmounts) {
+                                        var amount = item.orderAmounts[orderId] || item.orderAmounts[orderIdInt] || 0;
+                                        selectedOrderedAmount += parseFloat(amount) || 0;
+                                    }
+                                }
+                            });
+                        } else {
+                            // Fallback for old data structure (backward compatibility)
+                            if (item.orderId && selectedOrderIds.indexOf(parseInt(item.orderId)) !== -1) {
+                                hasMatchingOrder = true;
+                                selectedOrderedAmount = parseFloat(item.orderedAmount) || 0;
+                            }
+                        }
                         
-                        if (orderData) {
-                            data.names.push(orderData.productName);
-                            data.inventory.push(orderData.inventory);
-                            data.orders.push(orderData.orderedAmount);
-                            data.units.push(orderData.unitSymbol || orderData.unit);
+                        if (hasMatchingOrder && selectedOrderedAmount > 0) {
+                            // Avoid duplicates by checking if this commodity+unit already exists
+                            var existingIndex = data.names.indexOf(item.productName);
+                            if (existingIndex === -1) {
+                                // New commodity+unit combination
+                                data.names.push(item.productName);
+                                data.inventory.push(item.inventory);
+                                data.orders.push(selectedOrderedAmount);
+                                data.units.push(item.unitSymbol || item.unit);
+                            } else {
+                                // Same commodity+unit from different orders - sum the amounts
+                                // Note: This shouldn't happen with proper aggregation, but handle it just in case
+                                data.orders[existingIndex] = parseFloat(data.orders[existingIndex]) + selectedOrderedAmount;
+                            }
                         }
                     });
                 }
@@ -377,68 +375,52 @@
             // Select all functionality for factory checkboxes
             $('#select-all-factory').on('change', function() {
                 var checked = $(this).is(':checked');
-                // Only check visible rows (filtered by date)
-                $('.factory-checkbox:visible').prop('checked', checked);
-                // Update chart automatically when select all changes
+                // Check/uncheck all checkboxes in the DataTable
+                var allRows = factoryDataTable.rows().nodes().to$();
+                allRows.find('.factory-checkbox').prop('checked', checked);
+                // Update table automatically when select all changes
                 updateCharts();
             });
             
             $(document).on('change', '.factory-checkbox', function() {
-                var visibleCheckboxes = $('.factory-checkbox:visible');
-                var checkedVisibleCheckboxes = visibleCheckboxes.filter(':checked');
-                $('#select-all-factory').prop('checked', visibleCheckboxes.length > 0 && checkedVisibleCheckboxes.length === visibleCheckboxes.length);
-                // Update chart automatically when individual checkboxes change
+                // Get all checkboxes from DataTable rows
+                var allRows = factoryDataTable.rows().nodes().to$();
+                var allCheckboxes = allRows.find('.factory-checkbox');
+                var checkedCheckboxes = allCheckboxes.filter(':checked');
+                $('#select-all-factory').prop('checked', allCheckboxes.length > 0 && checkedCheckboxes.length === allCheckboxes.length);
+                // Update table automatically when individual checkboxes change
                 updateCharts();
             });
         });
 
-        function renderFactoryCharts(data) {
-            $('#factory-charts').empty();
-            if (data.names.length === 0) {
-                $('#factory-charts').append('<div class="alert alert-info text-center">هیچ داده‌ای موجود نیست.</div>');
-                return;
-            }
-            data.names.forEach(function(name, idx) {
-                var chartId = 'factory-chart-' + idx;
-                $('#factory-charts').append('<div id="'+chartId+'" class="mini-factory-chart"></div>');
-                var factoryData = {
-                    chart: { height: 220, type: "bar" },
-                    plotOptions: { bar: { horizontal: false, columnWidth: "55%", endingShape: "rounded" } },
-                    dataLabels: { enabled: false },
-                    stroke: { show: true, width: 2, colors: ["transparent"] },
-                    series: [
-                        { name: "موجودی انبار", data: [data.inventory[idx]] },
-                        { name: "سفارشات", data: [data.orders[idx]] }
-                    ],
-                    colors: ["#007bff", "#dc3545"],
-                    xaxis: { categories: [name] },
-                    yaxis: { title: { text: data.units[idx] } },
-                    fill: { opacity: 1 },
-                    tooltip: {
-                        y: {
-                            formatter: function (e) {
-                                return e + ' ' + data.units[idx];
-                            },
-                        },
-                    },
-                };
-                var chart = new ApexCharts(document.getElementById(chartId), factoryData);
-                chart.render();
-            });
-        }
-
+        var inventoryDataTable = null;
+        
         function renderFactoryTable(data) {
+            console.log('Rendering factory table with data:', data);
+            
             var $table = $('#factory-inventory-table');
             var $tbody = $table.find('tbody');
 
+            // Properly destroy existing DataTable if it exists
             if ($.fn.DataTable && $.fn.DataTable.isDataTable($table)) {
-                $table.DataTable().destroy();
+                try {
+                    if (inventoryDataTable !== null) {
+                        inventoryDataTable.destroy();
+                    } else {
+                        $table.DataTable().destroy();
+                    }
+                    inventoryDataTable = null;
+                } catch(e) {
+                    console.log('Error destroying table:', e);
+                    inventoryDataTable = null;
+                }
             }
 
+            // Clear table body
             $tbody.empty();
 
             if (!data.names || data.names.length === 0) {
-                $tbody.append('<tr><td colspan="5" class="text-center text-muted">داده‌ای برای نمایش وجود ندارد</td></tr>');
+                $tbody.append('<tr><td colspan="6" class="text-center text-muted">هیچ داده‌ای برای نمایش وجود ندارد</td></tr>');
             } else {
                 data.names.forEach(function(name, idx) {
                     var orders = (data.orders && data.orders[idx] !== undefined) ? parseFloat(data.orders[idx]) : 0;
@@ -463,13 +445,19 @@
                 });
             }
 
+            // Reinitialize DataTable with destroy option to allow reinitialization
             if ($.fn.DataTable) {
-                $table.DataTable({
-                    paging: false,
-                    searching: false,
-                    info: false,
-                    order: [[1, 'desc']]
-                });
+                try {
+                    inventoryDataTable = $table.DataTable({
+                        destroy: true,  // Allow reinitialization
+                        paging: false,
+                        searching: false,
+                        info: false,
+                        order: [[1, 'desc']]
+                    });
+                } catch(e) {
+                    console.log('Error initializing table:', e);
+                }
             }
         }
     </script>

@@ -59,6 +59,11 @@ trait PaginationTrait
         
         if (in_array($sortField, $options['sortable_fields'] ?? ['id'])) {
             $query->orderBy($sortField, $sortDirection);
+            // Add secondary sort by id to ensure deterministic ordering
+            // This prevents non-deterministic pagination when multiple records have the same value for the primary sort field
+            if ($sortField !== 'id') {
+                $query->orderBy('id', $sortDirection);
+            }
         }
         
         return $query->paginate($perPage, ['*'], 'page', $page);
