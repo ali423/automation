@@ -33,7 +33,7 @@
                                 @if(isset($showWeight) && $showWeight)
                                     <td>
                                         @if($item->weight_kg !== null)
-                                            {{ number_format($item->weight_kg, 3) }}
+                                            {{ number_format($item->weight_kg, 0) }}
                                         @else
                                             -
                                         @endif
@@ -50,7 +50,7 @@
                             <th>{{ number_format($order->total_price_with_vat) }} ریال</th>
                             @if(isset($showWeight) && $showWeight)
                                 <th>
-                                    {{ $order->total_weight_kg !== null ? number_format($order->total_weight_kg, 3) . ' کیلوگرم' : 'نامشخص' }}
+                                    {{ $order->total_weight_kg !== null ? number_format($order->total_weight_kg, 0) . ' کیلوگرم' : 'نامشخص' }}
                                 </th>
                             @endif
                         </tr>

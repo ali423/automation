@@ -86,7 +86,7 @@
                                     <td>{{ $item->unit_symbol }}</td>
                                     <td>
                                         @if($item->weight_kg !== null)
-                                            {{ number_format($item->weight_kg, 3) }}
+                                            {{ number_format($item->weight_kg, 0) }}
                                         @else
                                             -
                                         @endif
@@ -130,7 +130,7 @@
                                     <td colspan="11" class="text-left">
                                         <div class="d-flex justify-content-between">
                                             <span>جمع کل : {{ number_format($order->total_price_with_vat) }}</span>
-                                            <span>وزن کل : {{ $order->total_weight_kg !== null ? number_format($order->total_weight_kg, 3) . ' کیلوگرم' : 'نامشخص' }}</span>
+                                            <span>وزن کل : {{ $order->total_weight_kg !== null ? number_format($order->total_weight_kg, 0) . ' کیلوگرم' : 'نامشخص' }}</span>
                                         </div>
                                     </td>
                                 </tr>
