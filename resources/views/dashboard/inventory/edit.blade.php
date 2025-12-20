@@ -35,15 +35,27 @@
                                     <label for="unit_id">واحد</label>
                                     <select id="unit_id" class="form-control @error('unit_id') is-invalid @enderror" name="unit_id" required>
                                         <option value="">انتخاب کنید...</option>
-                                        @foreach($formData['units'] as $unit)
-                                            <option value="{{ $unit->id }}" {{ (old('unit_id', $inventory->unit_id) == $unit->id) ? 'selected' : '' }}>
-                                                {{ $unit->name }}
-                                            </option>
-                                        @endforeach
+                                        @if(isset($selectableUnits) && $selectableUnits->count() > 0)
+                                            @foreach($selectableUnits as $unit)
+                                                <option value="{{ $unit->id }}" {{ (old('unit_id', $inventory->unit_id) == $unit->id) ? 'selected' : '' }}>
+                                                    {{ $unit->name }} @if($unit->symbol)({{ $unit->symbol }})@endif
+                                                </option>
+                                            @endforeach
+                                        @else
+                                            {{-- Fallback: show all units if selectable units not available --}}
+                                            @foreach($formData['units'] as $unit)
+                                                <option value="{{ $unit->id }}" {{ (old('unit_id', $inventory->unit_id) == $unit->id) ? 'selected' : '' }}>
+                                                    {{ $unit->name }}
+                                                </option>
+                                            @endforeach
+                                        @endif
                                     </select>
                                     <div class="invalid-feedback">
                                         لطفاً واحد را انتخاب کنید.
                                     </div>
+                                    <small class="form-text text-muted">
+                                        فقط واحدهای معتبر برای این کالا نمایش داده می‌شوند.
+                                    </small>
                                 </div>
                             </div>
                             <div class="form-row">
