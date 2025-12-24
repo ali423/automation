@@ -18,18 +18,26 @@ class InventoryService extends BaseService
         // Validate that the unit is valid for this commodity
         $this->validateCommodityUnit($commodityId, $unitId);
 
-        $inventory = Inventory::where('commodity_id', $commodityId)
+        $inventories = Inventory::where('commodity_id', $commodityId)
             ->where('unit_id', $unitId)
-            ->first();
+            ->get();
 
-        if ($inventory) {
-            // Update existing inventory
-            $newAmount = $inventory->amount + $amount;
+        if ($inventories->isNotEmpty()) {
+            // Merge all existing inventories into the first one
+            $firstInventory = $inventories->first();
+            $totalAmount = $inventories->sum('amount') + $amount;
             
-            $inventory->update([
-                'amount' => $newAmount,
-                'purchase_price' => $purchasePrice ?? $inventory->purchase_price,
+            $firstInventory->update([
+                'amount' => $totalAmount,
+                'purchase_price' => $purchasePrice ?? $firstInventory->purchase_price,
             ]);
+
+            // Delete the rest
+            $inventories->skip(1)->each(function ($inventory) {
+                $inventory->delete();
+            });
+
+            $inventory = $firstInventory;
         } else {
             // Create new inventory record
             $inventory = Inventory::create([
