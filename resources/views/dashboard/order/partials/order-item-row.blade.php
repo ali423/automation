@@ -67,7 +67,7 @@
         <label for="weight">وزن (کیلوگرم)</label>
         <input type="text" id="weight" class="form-control" readonly
                placeholder="وزن محاسبه می‌شود..." 
-               value="{{ isset($item) && $item->weight_kg !== null ? number_format($item->weight_kg, 3) . ' کیلوگرم' : (isset($item) ? 'وزن تعریف نشده' : '') }}">
+               value="{{ isset($item) && $item->weight_kg !== null ? number_format($item->weight_kg, 0) . ' کیلوگرم' : (isset($item) ? 'وزن تعریف نشده' : '') }}">
     </div>
     @if(isset($showRemove) && $showRemove)
         <div class="form-group col-md-1">

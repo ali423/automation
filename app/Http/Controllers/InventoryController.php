@@ -124,7 +124,10 @@ class InventoryController extends Controller
         // Get optimized data for form
         $formData = $this->service->getFormData();
         
-        return view('dashboard.inventory.edit', compact('inventory', 'formData'));
+        // Get selectable units for the current commodity to prevent wrong unit selection
+        $selectableUnits = $inventory->commodity ? $inventory->commodity->selectable_units : collect();
+        
+        return view('dashboard.inventory.edit', compact('inventory', 'formData', 'selectableUnits'));
     }
 
     /**
