@@ -39,13 +39,13 @@
 <div class="form-row">
     <div id="weight_per_unit_group" class="form-group col-md-3" style="display: {{ (old('type', $commodity->type ?? '') == 'product') ? 'block' : 'none' }};">
         <label for="weight_per_unit">وزن هر واحد (کیلوگرم)</label>
-        <input type="number" step="0.001" name="weight_per_unit" value="{{ old('weight_per_unit', $commodity->weight_per_unit ?? '') }}" class="form-control"
-               id="weight_per_unit" placeholder="مثال: 0.5" min="0.001" required>
+        <input type="number" step="1" name="weight_per_unit" value="{{ old('weight_per_unit', $commodity->weight_per_unit ? number_format($commodity->weight_per_unit, 0, '.', '') : '') }}" class="form-control"
+               id="weight_per_unit" placeholder="مثال: 5" min="1" required>
         <div class="invalid-feedback">لطفاً وزن هر واحد را وارد کنید</div>
     </div>
     <div id="litrage_group" class="form-group col-md-3" style="display: {{ (old('type', $commodity->type ?? '') == 'product') ? 'block' : 'none' }};">
         <label for="litrage">حجم هر واحد (لیتر)</label>
-        <input type="number" step="0.01" name="litrage" value="{{ old('litrage', $commodity->litrage ?? '') }}" class="form-control"
+        <input type="number" step="1" name="litrage" value="{{ old('litrage', $commodity->litrage ? number_format($commodity->litrage, 0, '.', '') : '') }}" class="form-control"
                id="litrage" placeholder="لیتراژ" min="0">
         <div class="invalid-feedback">لطفاً حجم هر واحد را وارد کنید</div>
     </div>
@@ -58,8 +58,8 @@
     </div>
     <div id="sales_price" class="form-group col-md-3" style="display: {{ (old('type', $commodity->type ?? '') == 'product') ? 'block' : 'none' }};">
         <label for="sales_price">{{ __('fields.sales_price') }} (ریال)</label>
-        <input type="number" step="0.01" min="0" name="sales_price"
-               value="{{ old('sales_price', $commodity->sales_price ?? '') }}"
+        <input type="number" step="1" min="0" name="sales_price"
+               value="{{ old('sales_price', $commodity->sales_price ? number_format($commodity->sales_price, 0, '.', '') : '') }}"
                class="form-control" placeholder="{{ __('fields.sales_price') }}">
         <div class="invalid-feedback">{{ __('fields.sales_price') }} را وارد کنید</div>
     </div>
@@ -72,7 +72,7 @@
     </div>
 </div>
 
-{{-- Row 3: Product-specific fields --}}
+{{-- Row 3: Product-specific fields and Discount --}}
 <div class="form-row">
     <div class="form-group col-md-3" id="pieces_per_box_group" style="display: {{ (old('type', $commodity->type ?? '') == 'product') ? 'block' : 'none' }};">
         <label for="pieces_per_box">تعداد در کارتن</label>
@@ -85,5 +85,12 @@
         <input type="text" name="product_identifier" value="{{ old('product_identifier', $commodity->product_identifier ?? '') }}" class="form-control"
                id="product_identifier" placeholder="شناسه کالا" required="">
         <div class="invalid-feedback">لطفاً شناسه کالا را وارد کنید</div>
+    </div>
+    <div id="discount_percentage_group" class="form-group col-md-4" style="display: {{ (old('type', $commodity->type ?? '') == 'product') ? 'block' : 'none' }};">
+        <label for="discount_percentage">درصد تخفیف پیش‌فرض</label>
+        <input type="number" step="1" min="0" max="100" name="discount_percentage"
+               value="{{ old('discount_percentage', $commodity->discount_percentage ?? '') }}"
+               class="form-control" placeholder="مثال: 10 برای 10%">
+        <div class="invalid-feedback">درصد تخفیف باید بین 0 تا 100 باشد</div>
     </div>
 </div>

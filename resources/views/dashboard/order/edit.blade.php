@@ -5,6 +5,29 @@
     <link rel="stylesheet" href="{{ asset('css/imexport-print.css')}}">
     <link rel="stylesheet" href="{{ asset('css/bootstrap-datepicker.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/default-assets/daterange-picker.css') }}">
+    <style>
+        .weight-calculating {
+            position: relative;
+            padding-right: 30px;
+        }
+        .weight-calculating::after {
+            content: '';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: translateY(-50%) rotate(0deg); }
+            100% { transform: translateY(-50%) rotate(360deg); }
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -59,6 +82,7 @@
                                                         @if($item->commodity_id == $commodity->id )
                                                         selected
                                                     @endif
+                                                        @if($commodity->discount_percentage !== null) data-discount="{{ $commodity->discount_percentage }}" @endif
                                                 >{{$commodity->title}}</option>
                                             @endforeach
                                         </select>
@@ -84,8 +108,15 @@
                                     </div>
                                     <div class="form-group col-md-2">
                                         <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
-                                        <input type="text" id="price" name="price[{{ $index }}]" value="{{ $item->price }}" class="form-control"
+                                        <input type="text" id="price" name="price[{{ $index }}]" value="{{ $item->price ? number_format($item->price, 0) : '' }}" class="form-control"
                                                autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}">
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        <label for="discount_percentage">درصد تخفیف</label>
+                                        <input type="number" id="discount_percentage" name="discount_percentage[{{ $index }}]" 
+                                               value="{{ $item->discount_percentage }}" 
+                                               class="form-control discount-input" min="0" max="100" step="1"
+                                               autocomplete="off" placeholder="مثال: 10">
                                     </div>
                                     <div class="form-group col-md-2">
                                         <label for="weight">وزن (کیلوگرم)</label>
@@ -132,10 +163,36 @@
     <script>
         $(function () {
             var price = null;
+            // Store commodity data per row for caching
+            var commodityDataCache = {};
+            
+            // Initialize commodity data cache from existing rows (if any)
+            $('.form-row').each(function() {
+                var $row = $(this);
+                var rowId = $row.attr('data-row-id') || 'row_' + Date.now();
+                $row.attr('data-row-id', rowId);
+                
+                // Check if row has initial commodity data
+                var commodityUnitId = $row.attr('data-commodity-unit-id');
+                var commodityWeightPerUnit = $row.attr('data-commodity-weight-per-unit');
+                if (commodityUnitId && commodityWeightPerUnit) {
+                    commodityDataCache[rowId] = {
+                        unit_id: parseInt(commodityUnitId),
+                        weight_per_unit: parseFloat(commodityWeightPerUnit)
+                    };
+                }
+            });
+            
             $(document).on('change', '#commodity_id', function () {
+                var $row = $(this).closest('.form-row');
                 var commodity_id = $(this).val();
-                var priceInput = $(this).closest('.form-row').find('#price');
-                var unitSelect = $(this).closest('.form-row').find('#unit_id');
+                var priceInput = $row.find('#price');
+                var unitSelect = $row.find('#unit_id');
+                var weightInput = $row.find('#weight');
+                
+                // Clear weight and commodity cache when commodity changes
+                weightInput.val('').removeClass('weight-calculating').data('weight-value', 0);
+                delete commodityDataCache[$row.attr('data-row-id')];
                 
                 // Get commodity units
                 $.ajax({
@@ -149,6 +206,14 @@
                             response.units.forEach(function(unit) {
                                 unitSelect.append('<option value="' + unit.id + '">' + unit.name + ' (' + unit.symbol + ')</option>');
                             });
+                            
+                            // Cache commodity data for weight calculation
+                            var rowId = $row.attr('data-row-id') || 'row_' + Date.now();
+                            $row.attr('data-row-id', rowId);
+                            commodityDataCache[rowId] = {
+                                unit_id: response.commodity.unit_id,
+                                weight_per_unit: response.commodity.weight_per_unit
+                            };
                         }
                     }
                 });
@@ -160,35 +225,55 @@
                     dataType: 'json',
                     success: function (response) {
                         price = response['price'];
-                        priceInput.val(price);
+                        var formattedPrice = price ? Math.round(parseFloat(price)).toString() : '';
+                        priceInput.val(formattedPrice);
                     }
                 });
                 
-                // Calculate weight when commodity changes
-                calculateWeightForRow($(this).closest('.form-row'));
+                // Pre-fill discount from commodity
+                var $discountInput = $row.find('#discount_percentage');
+                var commodityDiscount = $(this).find('option:selected').data('discount');
+                if (!$discountInput.val() && commodityDiscount !== null && commodityDiscount !== undefined) {
+                    $discountInput.val(commodityDiscount);
+                }
+                
+                // Calculate weight when commodity changes - with debouncing
+                var rowId = $row.attr('data-row-id') || 'row_' + Date.now();
+                $row.attr('data-row-id', rowId);
+                clearTimeout($row.data('weight-debounce-timeout'));
+                var timeout = setTimeout(function() {
+                    calculateWeightForRow($row);
+                }, 300);
+                $row.data('weight-debounce-timeout', timeout);
             });
             $(document).on('change', '#unit_id', function () {
-                var new_price = $(this).closest('.form-row').find('#price').val();
+                var $row = $(this).closest('.form-row');
+                var new_price = $row.find('#price').val();
                 if (price == new_price && price != null ){
                     var unit = $(this).val();
-                    var priceInput = $(this).closest('.form-row').find('#price');
+                    var priceInput = $row.find('#price');
                     // Price will be handled by the backend based on unit conversions
-                    priceInput.val(price);
+                    var formattedPrice = price ? Math.round(parseFloat(price)).toString() : '';
+                    priceInput.val(formattedPrice);
                 }
-                // Calculate weight when unit changes
-                calculateWeightForRow($(this).closest('.form-row'));
+                // Calculate weight when unit changes - with debouncing
+                clearTimeout($row.data('weight-debounce-timeout'));
+                var timeout = setTimeout(function() {
+                    calculateWeightForRow($row);
+                }, 300);
+                $row.data('weight-debounce-timeout', timeout);
             });
             
             // Calculate weight when amount changes - with debouncing
-            var weightCalculationTimeout;
             $(document).on('input', '#amount', function () {
                 var $row = $(this).closest('.form-row');
                 // Update the original amount when user changes it
                 $row.data('original-amount', $(this).val());
-                clearTimeout(weightCalculationTimeout);
-                weightCalculationTimeout = setTimeout(function() {
+                clearTimeout($row.data('weight-debounce-timeout'));
+                var timeout = setTimeout(function() {
                     calculateWeightForRow($row);
-                }, 300); // 300ms debounce
+                }, 300);
+                $row.data('weight-debounce-timeout', timeout);
             });
             // Add row
             $('#addRow').click(function () {
@@ -199,7 +284,10 @@
                         <select id="commodity_id" class="form-control" name="commodity_id[${index}]" required>
                             <option value="">انتخاب کنید</option>
                             @foreach ($commodities as $commodity)
-                                <option value="{{ $commodity->id }}">{{$commodity->title}}</option>
+                                <option value="{{ $commodity->id }}"
+                                        @if($commodity->discount_percentage !== null) data-discount="{{ $commodity->discount_percentage }}" @endif>
+                                    {{$commodity->title}}
+                                </option>
                             @endforeach
                         </select>
                         <div class="invalid-feedback">
@@ -226,6 +314,12 @@
                         <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
                         <input type="text" id="price" name="price[${index}]" value="" class="form-control"
                                autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="discount_percentage">درصد تخفیف</label>
+                        <input type="number" id="discount_percentage" name="discount_percentage[${index}]" 
+                               class="form-control discount-input" min="0" max="100" step="1"
+                               autocomplete="off" placeholder="مثال: 10">
                     </div>
                     <div class="form-group col-md-2">
                         <label for="weight">وزن (کیلوگرم)</label>
@@ -256,6 +350,7 @@
                     $(this).find('select[name^="unit_id"]').attr('name', 'unit_id[' + index + ']');
                     $(this).find('input[name^="commodity_amount"]').attr('name', 'commodity_amount[' + index + ']');
                     $(this).find('input[name^="price"]').attr('name', 'price[' + index + ']');
+                    $(this).find('input[name^="discount_percentage"]').attr('name', 'discount_percentage[' + index + ']');
                 });
             }
             
@@ -263,75 +358,125 @@
             function calculateWeightForRow($row) {
                 var commodityId = $row.find('#commodity_id').val();
                 var unitId = $row.find('#unit_id').val();
-                var amount = $row.find('#amount').val();
+                var amount = parseFloat($row.find('#amount').val());
                 var weightInput = $row.find('#weight');
                 
-                // Clear previous timeout for this row
+                // Get or create row ID
                 var rowId = $row.attr('data-row-id') || 'row_' + Date.now();
                 $row.attr('data-row-id', rowId);
                 
-                if (commodityId && unitId && amount && amount > 0) {
-                    // Additional validation: check if unitId actually exists in dropdown
-                    var unitOption = $row.find('#unit_id option[value="' + unitId + '"]');
-                    if (unitOption.length === 0) {
-                        // Unit doesn't exist in dropdown - don't make AJAX call
-                        weightInput.val('واحد نامعتبر');
-                        weightInput.data('weight-value', 0);
-                        updateTotalWeight();
-                        return;
+                // Cancel previous AJAX request if exists
+                var previousRequest = $row.data('weight-ajax-request');
+                if (previousRequest && previousRequest.readyState !== 4) {
+                    previousRequest.abort();
+                }
+                
+                // Clear loading timeout if exists
+                var loadingTimeout = $row.data('weight-loading-timeout');
+                if (loadingTimeout) {
+                    clearTimeout(loadingTimeout);
+                    $row.removeData('weight-loading-timeout');
+                }
+                
+                // Validate inputs before calculation
+                if (!commodityId || !unitId || !amount || amount <= 0 || isNaN(amount)) {
+                    weightInput.val('').removeClass('weight-calculating').data('weight-value', 0);
+                    updateTotalWeight();
+                    return;
+                }
+                
+                // Additional validation: check if unitId actually exists in dropdown
+                var unitOption = $row.find('#unit_id option[value="' + unitId + '"]');
+                if (unitOption.length === 0) {
+                    // Unit doesn't exist in dropdown - don't make AJAX call
+                    weightInput.val('واحد نامعتبر').removeClass('weight-calculating').data('weight-value', 0);
+                    updateTotalWeight();
+                    return;
+                }
+                
+                // Get cached commodity data
+                var commodityData = commodityDataCache[rowId];
+                
+                // Try client-side calculation for simple cases (main unit with weight_per_unit)
+                if (commodityData && commodityData.unit_id == unitId && commodityData.weight_per_unit) {
+                    var calculatedWeight = amount * commodityData.weight_per_unit;
+                    var formattedWeight = Math.round(calculatedWeight).toLocaleString('fa-IR') + ' کیلوگرم';
+                    weightInput.val(formattedWeight).removeClass('weight-calculating').data('weight-value', calculatedWeight);
+                    updateTotalWeight();
+                    return; // Skip AJAX call
+                }
+                
+                // For cases requiring unit conversion, use AJAX
+                // Show loading state only after delay (200ms)
+                var loadingTimeoutId = setTimeout(function() {
+                    if ($row.attr('data-row-id') === rowId && weightInput.val() !== '') {
+                        // Keep previous value visible, just add loading indicator
+                        weightInput.addClass('weight-calculating');
+                    } else if ($row.attr('data-row-id') === rowId) {
+                        weightInput.val('در حال محاسبه...').addClass('weight-calculating');
                     }
-                    
-                    // Show loading state
-                    weightInput.val('در حال محاسبه...');
-                    
-                    $.ajax({
-                        url: '/order/calculate-weight/' + commodityId + '/' + amount + '/' + unitId,
-                        type: 'get',
-                        dataType: 'json',
-                        timeout: 10000, // 10 second timeout (increased to handle slower connections)
-                        success: function (response) {
-                            // Only update if this is still the current row
-                            if ($row.attr('data-row-id') === rowId) {
-                                if (response.success) {
-                                    // Backend always returns success: true, but weight_formatted may contain error message
-                                    if (response.weight !== null && response.weight !== undefined) {
-                                        // Valid weight calculated
-                                        weightInput.val(response.weight_formatted);
-                                        weightInput.data('weight-value', response.weight);
-                                    } else {
-                                        // Weight calculation failed - show the formatted message from backend
-                                        // This could be "وزن تعریف نشده" or "خطا در محاسبه"
-                                        weightInput.val(response.weight_formatted || 'خطا در محاسبه');
-                                        weightInput.data('weight-value', 0);
-                                    }
+                }, 200);
+                $row.data('weight-loading-timeout', loadingTimeoutId);
+                
+                // Make AJAX request
+                var ajaxRequest = $.ajax({
+                    url: '/order/calculate-weight/' + commodityId + '/' + amount + '/' + unitId,
+                    type: 'get',
+                    dataType: 'json',
+                    timeout: 10000,
+                    success: function (response) {
+                        // Clear loading timeout
+                        if (loadingTimeoutId) clearTimeout(loadingTimeoutId);
+                        
+                        // Only update if this is still the current row
+                        if ($row.attr('data-row-id') === rowId) {
+                            weightInput.removeClass('weight-calculating');
+                            if (response.success) {
+                                // Backend always returns success: true, but weight_formatted may contain error message
+                                if (response.weight !== null && response.weight !== undefined) {
+                                    // Valid weight calculated
+                                    weightInput.val(response.weight_formatted);
+                                    weightInput.data('weight-value', response.weight);
                                 } else {
-                                    // Backend returned success: false (exception occurred)
-                                    var errorMsg = response.message || 'خطا در محاسبه';
+                                    // Weight calculation failed - show the formatted message from backend
+                                    var errorMsg = response.weight_formatted || 'خطا در محاسبه';
                                     weightInput.val(errorMsg);
                                     weightInput.data('weight-value', 0);
                                 }
-                                updateTotalWeight();
-                            }
-                        },
-                        error: function (xhr, status, error) {
-                            // Only update if this is still the current row
-                            if ($row.attr('data-row-id') === rowId) {
-                                // Network error or timeout
-                                if (status === 'timeout') {
-                                    weightInput.val('خطا: زمان محاسبه به پایان رسید');
-                                } else {
-                                    weightInput.val('خطا در اتصال به سرور');
-                                }
+                            } else {
+                                // Backend returned success: false (exception occurred)
+                                var errorMsg = response.message || 'خطا در محاسبه';
+                                weightInput.val(errorMsg);
                                 weightInput.data('weight-value', 0);
-                                updateTotalWeight();
                             }
+                            updateTotalWeight();
                         }
-                    });
-                } else {
-                    weightInput.val('');
-                    weightInput.data('weight-value', 0);
-                    updateTotalWeight();
-                }
+                    },
+                    error: function (xhr, status, error) {
+                        // Clear loading timeout
+                        if (loadingTimeoutId) clearTimeout(loadingTimeoutId);
+                        
+                        // Only update if this is still the current row
+                        if ($row.attr('data-row-id') === rowId) {
+                            weightInput.removeClass('weight-calculating');
+                            if (status === 'abort') {
+                                // Request was cancelled, don't show error
+                                return;
+                            }
+                            // Network error or timeout
+                            if (status === 'timeout') {
+                                weightInput.val('خطا: زمان محاسبه به پایان رسید');
+                            } else {
+                                weightInput.val('خطا در اتصال به سرور');
+                            }
+                            weightInput.data('weight-value', 0);
+                            updateTotalWeight();
+                        }
+                    }
+                });
+                
+                // Store request reference for cancellation
+                $row.data('weight-ajax-request', ajaxRequest);
             }
             
             // Function to update total weight display - optimized

@@ -1,4 +1,8 @@
-<div id="inputFormRow" class="form-row shadow p-4 mb-3">
+<div id="inputFormRow" class="form-row shadow p-4 mb-3"
+     @if(isset($item) && $item->commodity)
+         data-commodity-unit-id="{{ $item->commodity->unit_id }}"
+         data-commodity-weight-per-unit="{{ $item->commodity->weight_per_unit ?? '' }}"
+     @endif>
     {{-- Row 1: search box (full width) --}}
     <div class="col-12 mb-2">
         <div class="d-flex align-items-center">
@@ -26,11 +30,19 @@
                 style="max-height: 150px; overflow-y: auto;"
                 name="commodity_id[{{ $index ?? 0 }}]" required>
             @if(isset($item) && $item->commodity)
-                <option value="{{ $item->commodity_id }}" selected>{{ $item->commodity->title }}</option>
+                <option value="{{ $item->commodity_id }}" selected 
+                        @if($item->commodity->discount_percentage !== null) data-discount="{{ $item->commodity->discount_percentage }}" @endif
+                        data-unit-id="{{ $item->commodity->unit_id }}"
+                        data-weight-per-unit="{{ $item->commodity->weight_per_unit ?? '' }}">
+                    {{ $item->commodity->title }}
+                </option>
             @else
                 <option value="">انتخاب کنید...</option>
                 @foreach ($commodities as $commodity)
-                    <option value="{{ $commodity->id }}">
+                    <option value="{{ $commodity->id }}"
+                            @if($commodity->discount_percentage !== null) data-discount="{{ $commodity->discount_percentage }}" @endif
+                            data-unit-id="{{ $commodity->unit_id }}"
+                            data-weight-per-unit="{{ $commodity->weight_per_unit ?? '' }}">
                         {{ $commodity->title }}
                     </option>
                 @endforeach
@@ -60,8 +72,15 @@
     <div class="form-group col-md-2">
         <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
         <input type="text" id="price" name="price[{{ $index ?? 0 }}]" 
-               value="{{ isset($item) ? $item->price : '' }}" class="form-control"
+               value="{{ isset($item) && $item->price ? number_format($item->price, 0) : '' }}" class="form-control"
                autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}">
+    </div>
+    <div class="form-group col-md-2">
+        <label for="discount_percentage">درصد تخفیف</label>
+        <input type="number" id="discount_percentage" name="discount_percentage[{{ $index ?? 0 }}]" 
+               value="{{ isset($item) ? $item->discount_percentage : '' }}" 
+               class="form-control discount-input" min="0" max="100" step="1"
+               autocomplete="off" placeholder="مثال: 10">
     </div>
     <div class="form-group col-md-2">
         <label for="weight">وزن (کیلوگرم)</label>

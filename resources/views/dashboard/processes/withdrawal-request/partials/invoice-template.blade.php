@@ -209,12 +209,12 @@
                                             {{ $packagingQuantity !== '-' ? number_format($packagingQuantity, 0, '.', ',') : '-' }}
                                         </td>
                                         <td>
-                                            {{ $weight !== null ? number_format($weight, 2, '.', ',') : 'نامشخص' }}
+                                            {{ $weight !== null ? number_format($weight, 0, '.', ',') : 'نامشخص' }}
                                         </td>
                                     @endif
                                     @if($invoiceType === 'documentation')
-                                        <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
-                                        <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price) : '-' }}</td>
+                                        <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price, 0) : '-' }}</td>
+                                        <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price, 0) : '-' }}</td>
                                         <td>{{ isset($commodity->pivot->price) ? number_format($vatAmount, 0, '.', ',') : '0' }}</td>
                                     @endif
                                 </tr>
@@ -226,12 +226,12 @@
                                 <td colspan="{{ $invoiceType === 'documentation' ? '7' : '6' }}">
                                     @if($invoiceType !== 'documentation')
                                         کل بسته‌بندی: {{ number_format($totalPackaging, 0, '.', ',') }} | 
-                                        وزن کل: {{ $hasValidWeight ? number_format($totalWeight, 2, '.', ',') . ' کیلوگرم' : 'نامشخص' }}
+                                        وزن کل: {{ $hasValidWeight ? number_format($totalWeight, 0, '.', ',') . ' کیلوگرم' : 'نامشخص' }}
                                     @endif
                                     @if($invoiceType === 'documentation')
-                                        مجموع: {{ isset($totalPrice) && isset($totalPrice['number']) ? number_format($totalPrice['number']) : '0' }} | 
-                                        مالیات بر ارزش افزوده (%{{ number_format(vat_percentage(), 0) }}): {{ number_format($totalVatAmount) }} | 
-                                        جمع کل با مالیات: {{ number_format($totalWithVat) }}
+                                        مجموع: {{ isset($totalPrice) && isset($totalPrice['number']) ? number_format($totalPrice['number'], 0) : '0' }} | 
+                                        مالیات بر ارزش افزوده (%{{ number_format(vat_percentage(), 0) }}): {{ number_format($totalVatAmount, 0) }} | 
+                                        جمع کل با مالیات: {{ number_format($totalWithVat, 0) }}
                                     @endif
                                 </td>
                             </tr>

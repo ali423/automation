@@ -42,7 +42,7 @@
                                     <td>{{__('fields.withdrawal-request.status')[$request->status]  }}</td>
                                     <td>{{$request->number }}</td>
                                     <td>{{$request->customer->name }}</td>
-                                    <td>{{ number_format($request->total_price['number']) }}</td>
+                                    <td>{{ number_format($request->total_price['number'], 0) }}</td>
                                     <td>{{ \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime($request->created_at)) }}
                                     </td>
                                     <td>سیستم</td>

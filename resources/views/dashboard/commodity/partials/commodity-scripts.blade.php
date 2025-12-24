@@ -55,6 +55,7 @@
             $('#weight_per_unit_group').show();
             $('#litrage_group').show();
             $('#sales_price').show();
+            $('#discount_percentage_group').show();
             $('#purchase_price').hide();
         } else if (selectedType === 'material') {
             $('input[name="purchase_price"]').attr('required', 'required');
@@ -66,6 +67,8 @@
             $('#weight_per_unit_group').hide();
             $('#litrage_group').hide();
             $('#sales_price').hide();
+            $('#discount_percentage_group').hide();
+            $('input[name="discount_percentage"]').val(''); // Clear discount when switching to material
             $('#purchase_price').show();
         } else {
             $('input[name="purchase_price"]').removeAttr('required');
@@ -77,6 +80,7 @@
             $('#weight_per_unit_group').hide();
             $('#litrage_group').hide();
             $('#sales_price').hide();
+            $('#discount_percentage_group').hide();
             $('#purchase_price').hide();
         }
     });
@@ -219,7 +223,7 @@
                 materialsOptions += '<option value="{{ $material->id }}">{{ $material->title }}</option>';
             @endforeach
         @endif
-        var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"><div class="form-group col-md-5"><label for="materials"> {{ __("fields.commodity.material_type") }}</label><select id="materials" class="form-control material-select" name="materials[1]" onchange="loadMaterialUnits(this)" ' + requiredAttr + '><option value="">انتخاب کنید...</option>' + materialsOptions + '</select><div class="invalid-feedback">{{ __("fields.commodity.material_type") }} را انتخاب کنید</div></div><div class="form-group col-md-3"><label for="material_amount">{{ __("fields.commodity.material_amount") }}</label><input type="number" step="0.00001" name="material_amount[0]" class="form-control"id="material_amount"placeholder="{{ __("fields.commodity.material_amount") }}" min="0.00001" ' + requiredAttr + '><div class="invalid-feedback">لطفاً {{ __("fields.commodity.material_amount") }} را وارد کنید</div></div><div class="form-group col-md-2"><label for="material_unit">{{ __("fields.unit") }}</label><select name="material_units[0]" class="form-control material-unit-select" ' + requiredAttr + '><option value="">انتخاب کنید...</option></select><div class="invalid-feedback">واحد را انتخاب کنید</div></div><div class="form-group col-sm-auto"><label for="" class="d-none d-md-block">&nbsp;</label><button type="button" class="btn btn-danger btn-block py-2 remove-row-btn">حذف</button></div></div>';
+        var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"><div class="form-group col-md-5"><label for="materials"> {{ __("fields.commodity.material_type") }}</label><select id="materials" class="form-control material-select" name="materials[1]" onchange="loadMaterialUnits(this)" ' + requiredAttr + '><option value="">انتخاب کنید...</option>' + materialsOptions + '</select><div class="invalid-feedback">{{ __("fields.commodity.material_type") }} را انتخاب کنید</div></div><div class="form-group col-md-3"><label for="material_amount">{{ __("fields.commodity.material_amount") }}</label><input type="number" step="1" name="material_amount[0]" class="form-control"id="material_amount"placeholder="{{ __("fields.commodity.material_amount") }}" min="1" ' + requiredAttr + '><div class="invalid-feedback">لطفاً {{ __("fields.commodity.material_amount") }} را وارد کنید</div></div><div class="form-group col-md-2"><label for="material_unit">{{ __("fields.unit") }}</label><select name="material_units[0]" class="form-control material-unit-select" ' + requiredAttr + '><option value="">انتخاب کنید...</option></select><div class="invalid-feedback">واحد را انتخاب کنید</div></div><div class="form-group col-sm-auto"><label for="" class="d-none d-md-block">&nbsp;</label><button type="button" class="btn btn-danger btn-block py-2 remove-row-btn">حذف</button></div></div>';
 
         $('#newRow').append(html);
 

@@ -28,7 +28,7 @@
             <td>{{ $commodity->number }}</td>
             <td>{{ $commodity->type == 'product' ? ($commodity->product_identifier ?? '-') : '-' }}</td>
             <td>{{ number_format($commodity->base_price ?? 0) }}</td>
-            <td>{{ $commodity->sales_price !== null ? number_format($commodity->sales_price) : '-' }}</td>
+            <td>{{ $commodity->sales_price !== null ? number_format($commodity->sales_price, 0) : '-' }}</td>
             <td>{{ __('fields.commodity.types')[$commodity->type] }}</td>
             <td>{{ $commodity->unit ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : '-' }}</td>
             <td><a href="{{ route('commodity.show', $commodity) }}" class=""><i

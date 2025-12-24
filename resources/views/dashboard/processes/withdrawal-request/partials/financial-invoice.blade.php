@@ -266,8 +266,8 @@
                                         -
                                     @endif
                                 </td>
-                                <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}</td>
-                                <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price) : '-' }}</td>
+                                <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price, 0) : '-' }}</td>
+                                <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price, 0) : '-' }}</td>
                             </tr>
                             @php
                                 $i++;
@@ -282,13 +282,13 @@
                                 </div>
                                 <p style="margin-bottom: 1px;">توضیحات:</p>
                             </td>
-                            <td colspan="4" class="text-left">جمع کل : {{ number_format($totalAmount) }}</td>
+                            <td colspan="4" class="text-left">جمع کل : {{ number_format($totalAmount, 0) }}</td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="text-left"> مالیات بر ارزش افزوده (%{{ number_format(vat_percentage(), 0) }}) : {{ number_format($vatAmount) }}</td>
+                            <td colspan="4" class="text-left"> مالیات بر ارزش افزوده (%{{ number_format(vat_percentage(), 0) }}) : {{ number_format($vatAmount, 0) }}</td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="text-left">جمع کل با مالیات : {{ number_format($totalWithVat) }}</td>
+                            <td colspan="4" class="text-left">جمع کل با مالیات : {{ number_format($totalWithVat, 0) }}</td>
                         </tr>
                         <tr>
                             <td colspan="4" class="text-left">جمع کل به حروف: 

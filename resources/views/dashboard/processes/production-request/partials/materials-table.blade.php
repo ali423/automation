@@ -23,7 +23,7 @@
                             </td>
                             <td>
                                 <span class="font-weight-bold text-success">
-                                    {{ number_format($material->pivot->required_amount, 4) }}
+                                    {{ number_format($material->pivot->required_amount, 0) }}
                                 </span>
                                 <small class="text-muted d-block">
                                     {{ $material->unit ? $material->unit->symbol : '' }}
@@ -83,7 +83,7 @@
                         </td>
                         <td>
                             <span class="font-weight-bold text-primary">
-                                {{ number_format($material->pivot->required_amount, 4) }}
+                                {{ number_format($material->pivot->required_amount, 0) }}
                             </span>
                             <small class="text-muted d-block">
                                 {{ $material->unit ? $material->unit->symbol : '' }}
@@ -91,7 +91,7 @@
                         </td>
                         <td>
                             <span class="font-weight-bold text-{{ $stockStatus }}">
-                                {{ number_format($availableStock, 4) }}
+                                {{ number_format($availableStock, 0) }}
                             </span>
                             <small class="text-muted d-block">
                                 {{ $material->unit ? $material->unit->symbol : '' }}
@@ -116,7 +116,7 @@
                                 }
                             @endphp
                             <span class="font-weight-bold text-{{ $differenceColor }}">
-                                {{ $differenceIcon == 'fa-minus' ? '-' : ($differenceIcon == 'fa-plus' ? '+' : '') }}{{ number_format($difference, 4) }}
+                                {{ $differenceIcon == 'fa-minus' ? '-' : ($differenceIcon == 'fa-plus' ? '+' : '') }}{{ number_format($difference, 0) }}
                             </span>
                             <small class="text-muted d-block">
                                 {{ $differenceText }}

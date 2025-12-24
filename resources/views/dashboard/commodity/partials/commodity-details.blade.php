@@ -25,12 +25,12 @@
 <div class="form-row">
     <div class="form-group col-md-6">
         <label>وزن هر واحد (کیلوگرم)</label>
-        <input type="text" value="{{ $commodity->weight_per_unit ? number_format($commodity->weight_per_unit, 3) . ' کیلوگرم' : 'تعریف نشده' }}" class="form-control" disabled>
+        <input type="text" value="{{ $commodity->weight_per_unit ? number_format($commodity->weight_per_unit, 0) . ' کیلوگرم' : 'تعریف نشده' }}" class="form-control" disabled>
     </div>
     @if($commodity->type == 'product')
     <div class="form-group col-md-6">
         <label>حجم هر واحد (لیتر)</label>
-        <input type="text" value="{{ $commodity->litrage ? number_format($commodity->litrage, 2) . ' لیتر' : 'تعریف نشده' }}" class="form-control" disabled>
+        <input type="text" value="{{ $commodity->litrage ? number_format($commodity->litrage, 0) . ' لیتر' : 'تعریف نشده' }}" class="form-control" disabled>
     </div>
     @else
     <div class="form-group col-md-6">
@@ -77,7 +77,11 @@
     @if($commodity->type == 'product')
     <div class="form-group col-md-6">
         <label>{{ __('fields.sales_price') }} (ریال)</label>
-        <input type="text" value="{{ $commodity->sales_price ? number_format($commodity->sales_price) : 'تعریف نشده' }}" class="form-control" disabled>
+        <input type="text" value="{{ $commodity->sales_price ? number_format($commodity->sales_price, 0) : 'تعریف نشده' }}" class="form-control" disabled>
+    </div>
+    <div class="form-group col-md-6">
+        <label>درصد تخفیف پیش‌فرض</label>
+        <input type="text" value="{{ $commodity->discount_percentage ? $commodity->discount_percentage . '%' : 'تعریف نشده' }}" class="form-control" disabled>
     </div>
     @else
     <div class="form-group col-md-6">
@@ -98,7 +102,7 @@
                 </div>
                 <div class="form-group col-md-3">
                     <label>{{ __('fields.commodity.material_amount') }}</label>
-                    <input type="number" step="0.01" value="{{ $material->pivot->amount }}" class="form-control" disabled>
+                    <input type="text" value="{{ number_format($material->pivot->amount, 0) }}" class="form-control" disabled>
                 </div>
                 <div class="form-group col-md-2">
                     <label>{{ __('fields.unit') }}</label>
