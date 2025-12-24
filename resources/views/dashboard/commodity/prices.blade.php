@@ -102,6 +102,7 @@
                                     <th>{{ __('fields.title') }}</th>
                                     <th>{{ __('fields.base_price') }}</th>
                                     <th>قیمت نهایی</th>
+                                    <th>درصد تخفیف</th>
                                     <th>{{ __('fields.unit') }}</th>
                                 </tr>
                             </thead>
@@ -115,7 +116,8 @@
                                             <td>{{ $i }}</td>
                                             <td>{{ $c->title }}</td>
                                             <td>{{ number_format($c->base_price ?? 0) }}</td>
-                                            <td>{{ $c->sales_price !== null ? number_format($c->sales_price) : '-' }}</td>
+                                            <td>{{ $c->sales_price !== null ? number_format($c->sales_price, 0) : '-' }}</td>
+                                            <td>{{ $c->discount_percentage !== null ? $c->discount_percentage . '%' : '-' }}</td>
                                             <td>{{ $c->unit ? $c->unit->name : '-' }}</td>
                                         </tr>
                                         @php($i++)
@@ -281,8 +283,8 @@
                             filteredData.forEach(function(row, index) {
                                 var rowData = [];
                                 
-                                // Get unit (column 6 in new table) - first column
-                                var unit = row[6] || '-';
+                                // Get unit (column 7 in new table) - first column
+                                var unit = row[7] || '-';
                                 if (unit && unit.includes('(')) {
                                     unit = unit.split('(')[0].trim(); // Remove symbol part
                                 }
@@ -385,8 +387,8 @@
                         title: 'لیست قیمت محصولات',
                         exportOptions: {
                             // Exclude checkbox (0), drag handle (1), and base price (4) when exporting with profit
-                            // Use columns: [6,5,3,2] to include unit, sales price, title, and row number
-                            columns: [6,5,3,2],
+                            // Use columns: [7,5,3,2] to include unit, sales price, title, and row number
+                            columns: [7,5,3,2],
                             format: {
                                 body: function (data, row, column, node) {
                                     // Inject carton price coming from server into the exported data for PDF
@@ -554,8 +556,8 @@
                             filteredData.forEach(function(row, index) {
                                 var rowData = [];
                                 
-                                // Get unit (column 6 in new table) - first column
-                                var unit = row[6] || '-';
+                                // Get unit (column 7 in new table) - first column
+                                var unit = row[7] || '-';
                                 if (unit && unit.includes('(')) {
                                     unit = unit.split('(')[0].trim(); // Remove symbol part
                                 }
@@ -650,8 +652,8 @@
                         title: 'جدول قیمت های تمام شده محصولات',
                         exportOptions: {
                             // Exclude checkbox (0), drag handle (1), and sales price (5) when exporting without profit
-                            // Use columns: [6,4,3,2] to exclude sales price
-                            columns: [6,4,3,2],
+                            // Use columns: [7,4,3,2] to exclude sales price
+                            columns: [7,4,3,2],
                             rows: function (idx, data, node) {
                                 return $(node).find('.row-select').prop('checked');
                             },
@@ -659,8 +661,8 @@
                             orthogonal: 'rtlexport',
                             format: {
                                 body: function (data, row, column, node) {
-                                    // Column 6 is the unit column in the source table
-                                    if (column === 6 && typeof data === 'string') {
+                                    // Column 7 is the unit column in the source table
+                                    if (column === 7 && typeof data === 'string') {
                                         // Remove symbol e.g., "نام واحد (SYM)" -> "نام واحد"
                                         return data.split('(')[0].trim();
                                     }

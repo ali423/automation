@@ -272,13 +272,13 @@
                                 <td>{{ $totalLitrage !== null ? number_format($totalLitrage, 0, '.', ',') : '-' }}</td>
                                 <td>
                                     @if(isset($commodity->pivot->price) && $commodity->litrage > 0)
-                                        {{ number_format($commodity->pivot->price / $commodity->litrage) }}
+                                        {{ number_format($commodity->pivot->price / $commodity->litrage, 0) }}
                                     @else
-                                        {{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price) : '-' }}
+                                        {{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price, 0) : '-' }}
                                     @endif
                                 </td>
-                                <td>{{ isset($commodity->pivot->price) ? number_format(round($commodityVatAmount)) : '-' }}</td>
-                                <td>{{ isset($commodity->pivot->price) ? number_format(round($commodity->pivot->amount * $commodity->pivot->price * (1 + vat_rate()))) : '-' }}</td>
+                                <td>{{ isset($commodity->pivot->price) ? number_format(round($commodityVatAmount), 0) : '-' }}</td>
+                                <td>{{ isset($commodity->pivot->price) ? number_format(round($commodity->pivot->amount * $commodity->pivot->price * (1 + vat_rate())), 0) : '-' }}</td>
                             </tr>
                             @php
                                 $i++;
@@ -308,13 +308,13 @@
                                 </div>
                                 <p style="margin-bottom: 1px;">توضیحات:</p>
                             </td>
-                            <td colspan="3" class="text-left">جمع کل : {{ number_format($totalAmount) }}</td>
+                            <td colspan="3" class="text-left">جمع کل : {{ number_format($totalAmount, 0) }}</td>
                         </tr>
                         <tr>
-                            <td colspan="3" class="text-left"> مالیات بر ارزش افزوده (%{{ number_format(vat_percentage(), 0) }}) : {{ number_format($vatAmount) }}</td>
+                            <td colspan="3" class="text-left"> مالیات بر ارزش افزوده (%{{ number_format(vat_percentage(), 0) }}) : {{ number_format($vatAmount, 0) }}</td>
                         </tr>
                         <tr>
-                            <td colspan="3" class="text-left">جمع کل با مالیات : {{ number_format($totalWithVat) }}</td>
+                            <td colspan="3" class="text-left">جمع کل با مالیات : {{ number_format($totalWithVat, 0) }}</td>
                         </tr>
                         <tr>
                             <td colspan="3" class="text-left">جمع کل به حروف: {{ $totalInWords }} ریال</td>

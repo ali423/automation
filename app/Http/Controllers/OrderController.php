@@ -572,7 +572,9 @@ class OrderController extends Controller
             'commodity' => [
                 'id' => $commodity->id,
                 'title' => $commodity->title,
-                'unit' => $commodity->unit ? $commodity->unit->name : null
+                'unit' => $commodity->unit ? $commodity->unit->name : null,
+                'unit_id' => $commodity->unit_id,
+                'weight_per_unit' => $commodity->weight_per_unit
             ]
         ]);
     }

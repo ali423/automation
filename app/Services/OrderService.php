@@ -45,16 +45,44 @@ class OrderService extends BaseService
                     }
                 }
                 
-                // Determine price: prefer provided price; fallback to commodity sales_price
+                // Determine base price: prefer provided price; fallback to commodity sales_price
                 $providedPrice = $data['price'][$index] ?? null;
-                $fallbackPrice = optional(Commodity::find($commodityId))->sales_price ?? 0;
+                $commodity = Commodity::find($commodityId);
+                $fallbackPrice = $commodity ? ($commodity->sales_price ?? 0) : 0;
+                $basePrice = ($providedPrice !== null && $providedPrice !== '') ? $providedPrice : $fallbackPrice;
+                
+                // Get discount from request (user override) or fall back to commodity discount
+                $itemDiscount = $data['discount_percentage'][$index] ?? null;
+                
+                // Normalize empty string to null and cast to integer if numeric
+                if ($itemDiscount === '' || $itemDiscount === null) {
+                    $itemDiscount = null;
+                } else {
+                    $itemDiscount = (int) $itemDiscount;
+                }
+                
+                // If no discount provided, use commodity discount (only for products)
+                if ($itemDiscount === null) {
+                    if ($commodity && $commodity->type === 'product') {
+                        $itemDiscount = $commodity->discount_percentage ?? null;
+                    } else {
+                        $itemDiscount = null;
+                    }
+                }
+                
+                // Apply discount if set (only for products)
+                $finalPrice = $basePrice;
+                if ($itemDiscount !== null && $itemDiscount > 0 && $commodity && $commodity->type === 'product') {
+                    $finalPrice = $basePrice * (1 - $itemDiscount / 100);
+                }
 
                 OrderItem::create([
                     'order_id' => $order->id,
                     'commodity_id' => $commodityId,
                     'commodity_amount' => $data['commodity_amount'][$index] ?? 0,
                     'unit_id' => $unitId,
-                    'price' => ($providedPrice !== null && $providedPrice !== '') ? $providedPrice : $fallbackPrice,
+                    'price' => $finalPrice,
+                    'discount_percentage' => $itemDiscount,
                 ]);
             }
         }
@@ -107,16 +135,44 @@ class OrderService extends BaseService
                     }
                 }
                 
-                // Determine price: prefer provided price; fallback to commodity sales_price
+                // Determine base price: prefer provided price; fallback to commodity sales_price
                 $providedPrice = $data['price'][$index] ?? null;
-                $fallbackPrice = optional(Commodity::find($commodityId))->sales_price ?? 0;
+                $commodity = Commodity::find($commodityId);
+                $fallbackPrice = $commodity ? ($commodity->sales_price ?? 0) : 0;
+                $basePrice = ($providedPrice !== null && $providedPrice !== '') ? $providedPrice : $fallbackPrice;
+                
+                // Get discount from request (user override) or fall back to commodity discount
+                $itemDiscount = $data['discount_percentage'][$index] ?? null;
+                
+                // Normalize empty string to null and cast to integer if numeric
+                if ($itemDiscount === '' || $itemDiscount === null) {
+                    $itemDiscount = null;
+                } else {
+                    $itemDiscount = (int) $itemDiscount;
+                }
+                
+                // If no discount provided, use commodity discount (only for products)
+                if ($itemDiscount === null) {
+                    if ($commodity && $commodity->type === 'product') {
+                        $itemDiscount = $commodity->discount_percentage ?? null;
+                    } else {
+                        $itemDiscount = null;
+                    }
+                }
+                
+                // Apply discount if set (only for products)
+                $finalPrice = $basePrice;
+                if ($itemDiscount !== null && $itemDiscount > 0 && $commodity && $commodity->type === 'product') {
+                    $finalPrice = $basePrice * (1 - $itemDiscount / 100);
+                }
 
                 OrderItem::create([
                     'order_id' => $order->id,
                     'commodity_id' => $commodityId,
                     'commodity_amount' => $data['commodity_amount'][$index] ?? 0,
                     'unit_id' => $unitId,
-                    'price' => ($providedPrice !== null && $providedPrice !== '') ? $providedPrice : $fallbackPrice,
+                    'price' => $finalPrice,
+                    'discount_percentage' => $itemDiscount,
                 ]);
             }
         }

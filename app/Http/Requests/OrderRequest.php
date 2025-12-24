@@ -33,10 +33,12 @@ class OrderRequest extends FormRequest
             'deadline' => ['required', 'shamsi_date'],
             'price' => ['nullable', 'array'],
             'commodity_amount' => ['required', 'array', 'min:1'],
+            'discount_percentage' => ['nullable', 'array'],
             'commodity_id.*' => ['required', 'exists:commodities,id', 'distinct', Rule::exists('commodities', 'id')->where('type', 'product')],
             'unit_id.*' => ['required', 'exists:units,id'],
             'price.*' => ['nullable', 'numeric'],
             'commodity_amount.*' => ['required', 'integer', 'min:1'],
+            'discount_percentage.*' => ['nullable', 'integer', 'min:0', 'max:100'],
             'file' => ['nullable', 'mimes:jpg,svg,png,jpeg,pdf,txt,zip,rar', 'max:5120'],
             'comment' => ['nullable', 'string'],
         ];

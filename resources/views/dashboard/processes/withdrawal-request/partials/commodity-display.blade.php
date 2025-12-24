@@ -9,7 +9,7 @@
             @endphp
             <span>
                 @if($commodityMainUnit && isset($commodityMainUnit['main_unit_amount']))
-                    {{ number_format($commodityMainUnit['main_unit_amount'], 2) }} {{ $commodityMainUnit['main_unit_name'] . ' (' . $commodityMainUnit['main_unit_symbol'] . ')' }}
+                    {{ number_format($commodityMainUnit['main_unit_amount'], 0) }} {{ $commodityMainUnit['main_unit_name'] . ' (' . $commodityMainUnit['main_unit_symbol'] . ')' }}
                 @else
                     -
                 @endif
@@ -31,7 +31,7 @@
 
     <div class="form-group col-md-4">
         <label for="amount"> {{ __('fields.commodity.amount') }}</label>
-        <input type="text" value="{{ $commodity->pivot->amount }}" class="form-control" disabled>
+        <input type="text" value="{{ number_format($commodity->pivot->amount, 0) }}" class="form-control" disabled>
     </div>
     
     <div class="form-group col-md-4">
@@ -39,7 +39,7 @@
         @php
             $weight = calculate_weight($commodity, $commodity->pivot->amount, $commodity->pivot->unit_id);
         @endphp
-        <input type="text" value="{{ $weight !== null ? number_format($weight, 3) : 'نامشخص' }}" class="form-control" disabled>
+        <input type="text" value="{{ $weight !== null ? number_format($weight, 0) : 'نامشخص' }}" class="form-control" disabled>
     </div>
     
     <div class="form-group col-md-4">
@@ -50,7 +50,7 @@
     @if(isset($commodity->pivot->price))
         <div class="form-group col-md-4">
             <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
-            <input type="text" value="{{ $commodity->pivot->price ?? '-' }}" class="form-control" disabled>
+            <input type="text" value="{{ $commodity->pivot->price ? number_format($commodity->pivot->price, 0) : '-' }}" class="form-control" disabled>
         </div>
     @endif
 </div>
