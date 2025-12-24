@@ -20,7 +20,6 @@ class InventoryService extends BaseService
 
         $inventory = Inventory::where('commodity_id', $commodityId)
             ->where('unit_id', $unitId)
-            ->where('amount', '>', 0)
             ->first();
 
         if ($inventory) {
