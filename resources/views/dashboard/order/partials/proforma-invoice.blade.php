@@ -60,6 +60,11 @@
                             </tr>
                             </tbody>
                         </table>
+                        @php
+                            $hasDiscount = $order->orderItems->contains(function($item) {
+                                return $item->discount_percentage !== null && $item->discount_percentage > 0;
+                            });
+                        @endphp
                         <table class="factortable table table-bordered text-center mt-3" style="font-size: 11px; margin-bottom: 5px;">
                             <thead>
                             <tr class="table-secondary">
@@ -73,6 +78,9 @@
                                 <th scope="col">تعداد در کارتن</th>
                                 <th scope="col">مقدار اضافی</th>
                                 <th scope="col">فی</th>
+                                @if($hasDiscount)
+                                    <th scope="col">تخفیف</th>
+                                @endif
                                 <th scope="col">جمع کل</th>
                             </tr>
                             </thead>
@@ -113,11 +121,20 @@
                                         @endif
                                     </td>
                                     <td>{{ number_format($item->price_with_vat) }}</td>
+                                    @if($hasDiscount)
+                                        <td>
+                                            @if($item->discount_percentage)
+                                                {{ $item->discount_percentage }}%
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+                                    @endif
                                     <td>{{ number_format($item->total_price_with_vat) }}</td>
                                 </tr>
                                 @endforeach
                                 <tr>
-                                    <td colspan="11" class="text-left" style="vertical-align: top">
+                                    <td colspan="{{ $hasDiscount ? '12' : '11' }}" class="text-left" style="vertical-align: top">
                                         <div class="d-flex justify-content-between">
                                             <span>شرایط و نحوه تسویه: </span>
                                             <span>نقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
@@ -127,7 +144,7 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td colspan="11" class="text-left">
+                                    <td colspan="{{ $hasDiscount ? '12' : '11' }}" class="text-left">
                                         <div class="d-flex justify-content-between">
                                             <span>جمع کل : {{ number_format($order->total_price_with_vat) }}</span>
                                             <span>وزن کل : {{ $order->total_weight_kg !== null ? number_format($order->total_weight_kg, 0) . ' کیلوگرم' : 'نامشخص' }}</span>
@@ -135,13 +152,19 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td colspan="11" class="text-left">جمع کل به حروف: {{ $order->total_price_with_vat }}</td>
+                                    <td colspan="{{ $hasDiscount ? '12' : '11' }}" class="text-left">جمع کل به حروف: 
+                                        @php
+                                            use NumberToWords\NumberToWords;
+                                            $numberToWords = NumberToWords::transformNumber('fa', $order->total_price_with_vat);
+                                        @endphp
+                                        {{ $numberToWords }} ریال
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td colspan="11" class="text-left" style="height: 80px">مهر و امضای فروشنده:</td>
+                                    <td colspan="{{ $hasDiscount ? '12' : '11' }}" class="text-left" style="height: 80px">مهر و امضای فروشنده:</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="11" class="text-left" style="height: 80px">مهر و امضای خریدار:</td>
+                                    <td colspan="{{ $hasDiscount ? '12' : '11' }}" class="text-left" style="height: 80px">مهر و امضای خریدار:</td>
                                 </tr>
                             </tbody>
                         </table>
