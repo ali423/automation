@@ -9,41 +9,6 @@
     <link rel="stylesheet" href="{{ asset('css/datatables-td.css') }}">
     <link rel="stylesheet" href="{{ asset('css/bootstrap-datepicker.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/default-assets/daterange-picker.css') }}">
-    <style>
-        #order-inventory-charts {
-            width: 100%;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-        }
-        .mini-order-chart {
-            flex: 1 1 300px;
-            min-width: 240px;
-            max-width: 350px;
-            height: 260px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-            padding: 12px;
-            margin-bottom: 0;
-            box-sizing: border-box;
-        }
-        @media (max-width: 900px) {
-            .mini-order-chart {
-                flex-basis: 48%;
-                min-width: 180px;
-                max-width: 100%;
-            }
-        }
-        @media (max-width: 600px) {
-            .mini-order-chart {
-                flex-basis: 100%;
-                min-width: 120px;
-                max-width: 100%;
-            }
-        }
-    </style>
 @endsection
 
 @section('content')
@@ -51,10 +16,9 @@
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                                         <h4 class="card-title mb-2">نمودار مواد اولیه مورد نیاز (سفارشات در حال پردازش) و موجودی</h4>
-                     <p class="text-muted small mb-3">نمودار بر اساس فیلترهای انتخاب شده در لیست سفارشات به‌روزرسانی می‌شود. فقط سفارشات با وضعیت "در حال پردازش" در محاسبات نمودار لحاظ می‌شوند.</p>
-                    <div id="order-inventory-charts"></div>
-                    <div class="mt-3" id="order-inventory-table-wrapper">
+                    <h4 class="card-title mb-2">مواد اولیه مورد نیاز (سفارشات در حال پردازش) و موجودی</h4>
+                    <p class="text-muted small mb-3">جدول بر اساس فیلترهای انتخاب شده در لیست سفارشات به‌روزرسانی می‌شود. فقط سفارشات با وضعیت "در حال پردازش" در محاسبات لحاظ می‌شوند.</p>
+                    <div id="order-inventory-table-wrapper">
                         <div class="table-responsive">
                             <table id="order-inventory-table" class="table table-sm table-striped table-bordered mb-0">
                                 <thead>
@@ -139,7 +103,6 @@
     <script src="{{ asset('js/default-assets/buttons.html5.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/button.print.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/dataTables.sorting.persian.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <script>
         $(document).ready(function() {
@@ -308,45 +271,6 @@
                 return data;
             }
 
-            function renderCharts(data) {
-                $('#order-inventory-charts').empty();
-                if (data.names.length === 0) {
-                    $('#order-inventory-charts').append('<div class="alert alert-info text-center">هیچ سفارش در حال پردازشی انتخاب نشده است یا محصولات انتخاب شده فرمول مواد اولیه ندارند.</div>');
-                    return;
-                }
-                data.names.forEach(function(name, idx) {
-                    var chartId = 'order-inventory-chart-' + idx;
-                    $('#order-inventory-charts').append('<div id="'+chartId+'" class="mini-order-chart"></div>');
-                    
-                    // Use real inventory data if available, otherwise use 0
-                    var inventoryAmount = data.inventory && data.inventory[idx] !== undefined ? data.inventory[idx] : 0;
-                    
-                    var orderData = {
-                        chart: { height: 220, type: "bar" },
-                        plotOptions: { bar: { horizontal: false, columnWidth: "55%", endingShape: "rounded" } },
-                        dataLabels: { enabled: false },
-                        stroke: { show: true, width: 2, colors: ["transparent"] },
-                        series: [
-                            { name: "مواد اولیه مورد نیاز", data: [data.amounts[idx]] },
-                            { name: "موجودی مواد اولیه", data: [inventoryAmount] }
-                        ],
-                        colors: [ "#1976d2","#e53935"],
-                        xaxis: { categories: [name] },
-                        yaxis: { title: { text: data.units[idx] } },
-                        fill: { opacity: 1 },
-                        tooltip: {
-                            y: {
-                                formatter: function (e) {
-                                    return e + ' ' + data.units[idx];
-                                },
-                            },
-                        },
-                    };
-                    var chart = new ApexCharts(document.getElementById(chartId), orderData);
-                    chart.render();
-                });
-            }
-
             function renderTable(data) {
                 var $table = $('#order-inventory-table');
                 var $tbody = $table.find('tbody');
@@ -358,7 +282,7 @@
                 $tbody.empty();
 
                 if (!data.names || data.names.length === 0) {
-                    $tbody.append('<tr><td colspan="5" class="text-center text-muted">داده‌ای برای نمایش وجود ندارد</td></tr>');
+                    $tbody.append('<tr><td colspan="6" class="text-center text-muted">داده‌ای برای نمایش وجود ندارد</td></tr>');
                     return;
                 }
 
@@ -394,11 +318,11 @@
                 }
             }
 
-            // Initial chart rendering with all orders (since 'select all' is checked and no date filter)
-            updateChart();
+            // Initial table rendering with all orders (since 'select all' is checked and no date filter)
+            updateTable();
 
-            // Function to update chart based on current filters
-            function updateChart() {
+            // Function to update table based on current filters
+            function updateTable() {
                 var selectedData = getSelectedOrderData();
 
                 // Use real data from the backend
@@ -412,12 +336,6 @@
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
-                        renderCharts({
-                            names: response.names,
-                            amounts: response.amounts,
-                            units: response.units,
-                            inventory: response.inventory
-                        });
                         renderTable({
                             names: response.names,
                             amounts: response.amounts,
@@ -426,12 +344,12 @@
                         });
                     },
                     error: function(xhr, status, error) {
-                        console.error('Error fetching chart data:', xhr);
+                        console.error('Error fetching table data:', xhr);
                         console.error('Status:', status);
                         console.error('Error:', error);
                         console.error('Response Text:', xhr.responseText);
                         // Show error message if AJAX fails
-                        $('#order-inventory-charts').empty().append('<div class="alert alert-danger text-center">خطا در دریافت اطلاعات نمودار<br><small>Status: ' + status + '<br>Error: ' + error + '</small></div>');
+                        $('#order-inventory-table tbody').html('<tr><td colspan="6" class="text-center text-danger">خطا در دریافت اطلاعات<br><small>Status: ' + status + '<br>Error: ' + error + '</small></td></tr>');
                     }
                 });
             }
@@ -461,26 +379,26 @@
                 var checked = $(this).is(':checked');
                 // Only check visible rows (filtered by date)
                 $('.order-checkbox:visible').prop('checked', checked);
-                // Update chart automatically when select all changes
-                updateChart();
+                // Update table automatically when select all changes
+                updateTable();
             });
             
             $(document).on('change', '.order-checkbox', function() {
                 var visibleCheckboxes = $('.order-checkbox:visible');
                 var checkedVisibleCheckboxes = visibleCheckboxes.filter(':checked');
                 $('#select-all-orders').prop('checked', visibleCheckboxes.length > 0 && checkedVisibleCheckboxes.length === visibleCheckboxes.length);
-                // Update chart automatically when individual checkboxes change
-                updateChart();
+                // Update table automatically when individual checkboxes change
+                updateTable();
             });
 
             // Remove client-side row filtering; server returns filtered rows now
             
-            // Update chart when date filters change (with debounce) without client-side row filtering
+            // Update table when date filters change (with debounce) without client-side row filtering
             var dateUpdateTimeout;
             $('#date_from, #date_to').on('change', function() {
                 clearTimeout(dateUpdateTimeout);
                 dateUpdateTimeout = setTimeout(function() {
-                    updateChart();
+                    updateTable();
                 }, 500);
             });
         });
