@@ -26,6 +26,7 @@ class OrderItem extends Model
         'commodity_amount',
         'unit_id',
         'price',
+        'discount_percentage',
     ];
 
     /**
@@ -150,5 +151,29 @@ class OrderItem extends Model
     public function getWeightKgAttribute()
     {
         return calculate_weight($this->commodity, $this->commodity_amount, $this->unit_id);
+    }
+
+    /**
+     * Get the original price before discount
+     */
+    public function getOriginalPriceAttribute()
+    {
+        $discount = $this->discount_percentage ?? 0;
+        if ($discount > 0) {
+            return $this->price / (1 - $discount / 100);
+        }
+        return $this->price;
+    }
+
+    /**
+     * Calculate the discount amount in currency
+     */
+    public function getDiscountAmountAttribute()
+    {
+        $discount = $this->discount_percentage ?? 0;
+        if ($discount > 0) {
+            return $this->original_price - $this->price;
+        }
+        return 0;
     }
 } 

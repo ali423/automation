@@ -49,7 +49,7 @@ class CommodityController extends Controller
         $commodities = $query
             ->orderBy('title')
             ->limit(20)
-            ->get(['id', 'title', 'number', 'product_identifier']);
+            ->get(['id', 'title', 'number', 'product_identifier', 'discount_percentage']);
 
         $results = $commodities->map(function ($commodity) {
             $parts = [$commodity->title];
@@ -65,6 +65,7 @@ class CommodityController extends Controller
             return [
                 'id' => $commodity->id,
                 'text' => implode(' - ', $parts),
+                'discount_percentage' => $commodity->discount_percentage,
             ];
         });
 

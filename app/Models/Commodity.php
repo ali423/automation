@@ -24,6 +24,7 @@ class Commodity extends Model
         'pieces_per_box',
         'weight_per_unit',
         'litrage',
+        'discount_percentage',
     ];
 
     public function unit(){

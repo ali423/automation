@@ -135,7 +135,13 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td colspan="11" class="text-left">جمع کل به حروف: {{ $order->total_price_with_vat }}</td>
+                                    <td colspan="11" class="text-left">جمع کل به حروف: 
+                                        @php
+                                            use NumberToWords\NumberToWords;
+                                            $numberToWords = NumberToWords::transformNumber('fa', $order->total_price_with_vat);
+                                        @endphp
+                                        {{ $numberToWords }} ریال
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td colspan="11" class="text-left" style="height: 80px">مهر و امضای فروشنده:</td>
