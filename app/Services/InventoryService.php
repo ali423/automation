@@ -18,39 +18,43 @@ class InventoryService extends BaseService
         // Validate that the unit is valid for this commodity
         $this->validateCommodityUnit($commodityId, $unitId);
 
-        $inventories = Inventory::where('commodity_id', $commodityId)
-            ->where('unit_id', $unitId)
-            ->get();
+        // Use DB transaction to prevent race conditions
+        return DB::transaction(function () use ($commodityId, $unitId, $amount, $purchasePrice) {
+            // Lock the row to prevent concurrent updates creating duplicates
+            $inventory = Inventory::where('commodity_id', $commodityId)
+                ->where('unit_id', $unitId)
+                ->lockForUpdate()
+                ->first();
 
-        if ($inventories->isNotEmpty()) {
-            // Merge all existing inventories into the first one
-            $firstInventory = $inventories->first();
-            $totalAmount = $inventories->sum('amount') + $amount;
-            
-            $firstInventory->update([
-                'amount' => $totalAmount,
-                'purchase_price' => $purchasePrice ?? $firstInventory->purchase_price,
-            ]);
+            if ($inventory) {
+                // Update existing inventory
+                $newAmount = $inventory->amount + $amount;
+                
+                // Calculate weighted average purchase price if both exist
+                if ($purchasePrice !== null && $inventory->purchase_price !== null && $inventory->amount > 0) {
+                    $totalValue = ($inventory->amount * $inventory->purchase_price) + ($amount * $purchasePrice);
+                    $totalAmount = $inventory->amount + $amount;
+                    $avgPurchasePrice = $totalValue / $totalAmount;
+                } else {
+                    $avgPurchasePrice = $purchasePrice ?? $inventory->purchase_price;
+                }
+                
+                $inventory->update([
+                    'amount' => $newAmount,
+                    'purchase_price' => $avgPurchasePrice,
+                ]);
+            } else {
+                // Create new inventory record with unique constraint protection
+                $inventory = Inventory::create([
+                    'commodity_id' => $commodityId,
+                    'unit_id' => $unitId,
+                    'amount' => $amount,
+                    'purchase_price' => $purchasePrice,
+                ]);
+            }
 
-            // Delete the rest
-            $inventories->skip(1)->each(function ($inventory) {
-                $inventory->delete();
-            });
-
-            $inventory = $firstInventory;
-        } else {
-            // Create new inventory record
-            $inventory = Inventory::create([
-                'commodity_id' => $commodityId,
-                'unit_id' => $unitId,
-                'amount' => $amount,
-                'purchase_price' => $purchasePrice,
-            ]);
-        }
-
-        // No cache clearing needed since we removed caching mechanisms
-        
-        return $inventory;
+            return $inventory;
+        });
     }
 
     /**
