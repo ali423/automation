@@ -40,7 +40,8 @@
                 text: "کپی",
                 className: 'btn btn-outline-primary',
                 exportOptions: {
-                    columns: [4, 3, 2, 1, 0],
+                    // Export without price; hide price from non-Excel exports
+                    columns: [5, 3, 2, 1, 0],
                     modifier: {
                         page: 'current'
                     },
@@ -52,7 +53,8 @@
                     text: 'pdf',
                     className: 'btn btn-outline-primary',
                 exportOptions: {
-                    columns: [4, 3, 2, 1, 0],
+                    // Export without price
+                    columns: [5, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         },
@@ -69,7 +71,8 @@
                     extend: 'excel',
                     className: 'btn btn-outline-primary',
                 exportOptions: {
-                    columns: [4, 3, 2, 1, 0],
+                    // Excel includes price column (hidden in UI)
+                    columns: [5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         }
@@ -79,7 +82,8 @@
                     extend: 'csv',
                     className: 'btn btn-outline-primary',
                 exportOptions: {
-                    columns: [4, 3, 2, 1, 0],
+                    // CSV without price
+                    columns: [5, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         }
@@ -90,7 +94,8 @@
                     text: "پرینت",
                     className: 'btn btn-outline-primary',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4],
+                    // Print without price and without details
+                    columns: [0, 1, 2, 3, 5],
                         modifier: {
                             page: 'current'
                         },
