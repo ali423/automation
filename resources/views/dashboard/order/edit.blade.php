@@ -83,6 +83,9 @@
                                                         selected
                                                     @endif
                                                         @if($commodity->discount_percentage !== null) data-discount="{{ $commodity->discount_percentage }}" @endif
+                                                        data-unit-id="{{ $commodity->unit_id }}"
+                                                        data-weight-per-unit="{{ $commodity->weight_per_unit ?? '' }}"
+                                                        data-pieces-per-box="{{ $commodity->pieces_per_box ?? '' }}"
                                                 >{{$commodity->title}}</option>
                                             @endforeach
                                         </select>
@@ -97,6 +100,29 @@
                                         </select>
                                         <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
                                     </div>
+                                    <div class="form-group col-md-2" id="packaging_count_group_{{ $index }}" style="display: none;">
+                                        <label for="packaging_count">تعداد بسته</label>
+                                        <input type="number" id="packaging_count" 
+                                               name="packaging_count[{{ $index }}]" 
+                                               class="form-control packaging-count-input" 
+                                               min="1" step="1"
+                                               autocomplete="off" 
+                                               placeholder="مثال: 5"
+                                               value="{{ $item->packaging_count ?? '' }}">
+                                        <small class="form-text text-muted mt-1">
+                                            هنگام تغییر این مقدار، تعداد واحد خودکار محاسبه می‌شود.
+                                        </small>
+                                    </div>
+                                    <div class="form-group col-md-2" id="pieces_per_box_group_{{ $index }}" style="display: none;">
+                                        <label for="pieces_per_box_display">تعداد در کارتن</label>
+                                        <input type="text" id="pieces_per_box_display" 
+                                               class="form-control pieces-per-box-display" 
+                                               readonly
+                                               placeholder="-">
+                                        <small class="form-text text-muted mt-1">
+                                            از طرف کالا تعریف شده است.
+                                        </small>
+                                    </div>
                                     <div class="form-group col-md-2">
                                         <label for="amount"> {{  __('fields.commodity.amount') }}</label>
                                         <input type="number" id="amount" min="1" name="commodity_amount[{{ $index }}]" class="form-control"
@@ -108,7 +134,7 @@
                                     </div>
                                     <div class="form-group col-md-2">
                                         <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
-                                        <input type="text" id="price" name="price[{{ $index }}]" value="{{ $item->price ? number_format($item->price, 0) : '' }}" class="form-control"
+                                        <input type="text" id="price" name="price[{{ $index }}]" value="{{ $item->price ?? '' }}" class="form-control"
                                                autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}">
                                     </div>
                                     <div class="form-group col-md-2">
@@ -166,20 +192,29 @@
             // Store commodity data per row for caching
             var commodityDataCache = {};
             
-            // Initialize commodity data cache from existing rows (if any)
+            // Initialize commodity data cache from existing rows (if any) and show packaging info
             $('.form-row').each(function() {
                 var $row = $(this);
                 var rowId = $row.attr('data-row-id') || 'row_' + Date.now();
                 $row.attr('data-row-id', rowId);
                 
-                // Check if row has initial commodity data
-                var commodityUnitId = $row.attr('data-commodity-unit-id');
-                var commodityWeightPerUnit = $row.attr('data-commodity-weight-per-unit');
-                if (commodityUnitId && commodityWeightPerUnit) {
+                var selectedOption = $row.find('#commodity_id option:selected');
+                var commodityUnitId = selectedOption.data('unit-id');
+                var commodityWeightPerUnit = selectedOption.data('weight-per-unit');
+                var piecesPerBox = selectedOption.data('pieces-per-box');
+
+                if (commodityUnitId) {
                     commodityDataCache[rowId] = {
                         unit_id: parseInt(commodityUnitId),
-                        weight_per_unit: parseFloat(commodityWeightPerUnit)
+                        weight_per_unit: commodityWeightPerUnit ? parseFloat(commodityWeightPerUnit) : null,
+                        pieces_per_box: piecesPerBox || null
                     };
+                }
+
+                if (piecesPerBox && Number(piecesPerBox) > 0) {
+                    $row.find('#pieces_per_box_display').val(piecesPerBox);
+                    $row.find('[id^="packaging_count_group_"]').show();
+                    $row.find('[id^="pieces_per_box_group_"]').show();
                 }
             });
             
@@ -189,10 +224,32 @@
                 var priceInput = $row.find('#price');
                 var unitSelect = $row.find('#unit_id');
                 var weightInput = $row.find('#weight');
+                var packagingInput = $row.find('#packaging_count');
+                var packagingGroup = $row.find('[id^="packaging_count_group_"]');
+                var piecesDisplay = $row.find('#pieces_per_box_display');
+                var piecesGroup = $row.find('[id^="pieces_per_box_group_"]');
                 
                 // Clear weight and commodity cache when commodity changes
                 weightInput.val('').removeClass('weight-calculating').data('weight-value', 0);
+                packagingInput.val('');
+                piecesDisplay.val('-');
+                packagingGroup.hide();
+                piecesGroup.hide();
                 delete commodityDataCache[$row.attr('data-row-id')];
+
+                // Get commodity meta from selected option
+                var selectedOption = $(this).find('option:selected');
+                var piecesPerBox = selectedOption.data('pieces-per-box');
+                var mainUnitId = selectedOption.data('unit-id');
+
+                // Show packaging info if pieces_per_box is defined and > 0
+                var rowId = $row.attr('data-row-id') || 'row_' + Date.now();
+                $row.attr('data-row-id', rowId);
+                if (piecesPerBox && Number(piecesPerBox) > 0) {
+                    piecesDisplay.val(piecesPerBox);
+                    packagingGroup.show();
+                    piecesGroup.show();
+                }
                 
                 // Get commodity units
                 $.ajax({
@@ -207,12 +264,11 @@
                                 unitSelect.append('<option value="' + unit.id + '">' + unit.name + ' (' + unit.symbol + ')</option>');
                             });
                             
-                            // Cache commodity data for weight calculation
-                            var rowId = $row.attr('data-row-id') || 'row_' + Date.now();
-                            $row.attr('data-row-id', rowId);
+                            // Cache commodity data for weight calculation and packaging sync
                             commodityDataCache[rowId] = {
                                 unit_id: response.commodity.unit_id,
-                                weight_per_unit: response.commodity.weight_per_unit
+                                weight_per_unit: response.commodity.weight_per_unit,
+                                pieces_per_box: piecesPerBox || response.commodity.pieces_per_box || null
                             };
                         }
                     }
@@ -256,6 +312,8 @@
                     var formattedPrice = price ? Math.round(parseFloat(price)).toString() : '';
                     priceInput.val(formattedPrice);
                 }
+                // Sync amount based on packaging if possible
+                syncAmountFromPackaging($row);
                 // Calculate weight when unit changes - with debouncing
                 clearTimeout($row.data('weight-debounce-timeout'));
                 var timeout = setTimeout(function() {
@@ -264,11 +322,24 @@
                 $row.data('weight-debounce-timeout', timeout);
             });
             
-            // Calculate weight when amount changes - with debouncing
+            // Calculate weight when amount changes - with debouncing and sync packaging
             $(document).on('input', '#amount', function () {
                 var $row = $(this).closest('.form-row');
                 // Update the original amount when user changes it
                 $row.data('original-amount', $(this).val());
+                // Sync packaging from amount when unit is main
+                syncPackagingFromAmount($row);
+                clearTimeout($row.data('weight-debounce-timeout'));
+                var timeout = setTimeout(function() {
+                    calculateWeightForRow($row);
+                }, 300);
+                $row.data('weight-debounce-timeout', timeout);
+            });
+
+            // Packaging count change -> sync amount
+            $(document).on('input', '#packaging_count', function () {
+                var $row = $(this).closest('.form-row');
+                syncAmountFromPackaging($row);
                 clearTimeout($row.data('weight-debounce-timeout'));
                 var timeout = setTimeout(function() {
                     calculateWeightForRow($row);
@@ -285,7 +356,10 @@
                             <option value="">انتخاب کنید</option>
                             @foreach ($commodities as $commodity)
                                 <option value="{{ $commodity->id }}"
-                                        @if($commodity->discount_percentage !== null) data-discount="{{ $commodity->discount_percentage }}" @endif>
+                                        @if($commodity->discount_percentage !== null) data-discount="{{ $commodity->discount_percentage }}" @endif
+                                        data-unit-id="{{ $commodity->unit_id }}"
+                                        data-weight-per-unit="{{ $commodity->weight_per_unit ?? '' }}"
+                                        data-pieces-per-box="{{ $commodity->pieces_per_box ?? '' }}">
                                     {{$commodity->title}}
                                 </option>
                             @endforeach
@@ -300,6 +374,28 @@
                             <option value="">انتخاب کنید...</option>
                         </select>
                         <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
+                    </div>
+                    <div class="form-group col-md-2" id="packaging_count_group_${index}" style="display: none;">
+                        <label for="packaging_count">تعداد بسته</label>
+                        <input type="number" id="packaging_count" 
+                               name="packaging_count[${index}]" 
+                               class="form-control packaging-count-input" 
+                               min="1" step="1"
+                               autocomplete="off" 
+                               placeholder="مثال: 5">
+                        <small class="form-text text-muted mt-1">
+                            هنگام تغییر این مقدار، تعداد واحد خودکار محاسبه می‌شود.
+                        </small>
+                    </div>
+                    <div class="form-group col-md-2" id="pieces_per_box_group_${index}" style="display: none;">
+                        <label for="pieces_per_box_display">تعداد در کارتن</label>
+                        <input type="text" id="pieces_per_box_display" 
+                               class="form-control pieces-per-box-display" 
+                               readonly
+                               placeholder="-">
+                        <small class="form-text text-muted mt-1">
+                            از طرف کالا تعریف شده است.
+                        </small>
                     </div>
                     <div class="form-group col-md-2">
                         <label for="amount"> {{  __('fields.commodity.amount') }}</label>
@@ -348,12 +444,101 @@
                 $('#order_formul .form-row').each(function(index) {
                     $(this).find('select[name^="commodity_id"]').attr('name', 'commodity_id[' + index + ']');
                     $(this).find('select[name^="unit_id"]').attr('name', 'unit_id[' + index + ']');
+                    $(this).find('input[name^="packaging_count"]').attr('name', 'packaging_count[' + index + ']');
                     $(this).find('input[name^="commodity_amount"]').attr('name', 'commodity_amount[' + index + ']');
                     $(this).find('input[name^="price"]').attr('name', 'price[' + index + ']');
                     $(this).find('input[name^="discount_percentage"]').attr('name', 'discount_percentage[' + index + ']');
                 });
             }
             
+            // --- Packaging / Amount sync helpers ---
+            function getRowCommodityMeta($row) {
+                var rowId = $row.attr('data-row-id');
+                var cache = commodityDataCache[rowId] || {};
+                return {
+                    piecesPerBox: cache.pieces_per_box ? Number(cache.pieces_per_box) : null,
+                    mainUnitId: cache.unit_id ? Number(cache.unit_id) : null
+                };
+            }
+
+            function syncAmountFromPackaging($row) {
+                var packagingInput = $row.find('#packaging_count');
+                var amountInput = $row.find('#amount');
+                var unitSelect = $row.find('#unit_id');
+                var meta = getRowCommodityMeta($row);
+
+                var piecesPerBox = meta.piecesPerBox;
+                var mainUnitId = meta.mainUnitId;
+                if (!piecesPerBox || piecesPerBox <= 0) {
+                    return;
+                }
+
+                var packagingVal = Number(packagingInput.val());
+                var selectedUnit = Number(unitSelect.val());
+                if (!packagingVal || packagingVal <= 0 || !selectedUnit) {
+                    return;
+                }
+
+                // Calculate total amount in main unit
+                var mainAmount = packagingVal * piecesPerBox;
+
+                // If selected unit is main unit, we can safely set the amount
+                if (selectedUnit === mainUnitId) {
+                    amountInput.val(mainAmount);
+                } else {
+                    // Need to convert from main unit to selected unit via AJAX
+                    var commodityId = $row.find('#commodity_id').val();
+                    if (!commodityId) {
+                        return;
+                    }
+                    
+                    $.ajax({
+                        url: '/order/convert-amount/' + commodityId + '/' + mainAmount + '/' + mainUnitId + '/' + selectedUnit,
+                        type: 'get',
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success && response.converted_amount !== null) {
+                                amountInput.val(response.converted_amount_rounded);
+                            } else {
+                                // Conversion failed, fallback to main amount
+                                amountInput.val(mainAmount);
+                            }
+                        },
+                        error: function() {
+                            // On error, fallback to main amount
+                            amountInput.val(mainAmount);
+                        }
+                    });
+                }
+            }
+
+            function syncPackagingFromAmount($row) {
+                var packagingInput = $row.find('#packaging_count');
+                var amountInput = $row.find('#amount');
+                var unitSelect = $row.find('#unit_id');
+                var meta = getRowCommodityMeta($row);
+
+                var piecesPerBox = meta.piecesPerBox;
+                var mainUnitId = meta.mainUnitId;
+                if (!piecesPerBox || piecesPerBox <= 0) {
+                    return;
+                }
+
+                var amountVal = Number(amountInput.val());
+                var selectedUnit = Number(unitSelect.val());
+                if (!amountVal || amountVal <= 0 || !selectedUnit) {
+                    return;
+                }
+
+                // Only sync packaging when we are in the main unit (no client-side conversion)
+                if (selectedUnit === mainUnitId) {
+                    var packagingVal = Math.floor(amountVal / piecesPerBox);
+                    if (packagingVal > 0) {
+                        packagingInput.val(packagingVal);
+                    }
+                }
+            }
+
             // Function to calculate weight for a specific row - optimized
             function calculateWeightForRow($row) {
                 var commodityId = $row.find('#commodity_id').val();
