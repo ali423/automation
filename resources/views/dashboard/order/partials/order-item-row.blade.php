@@ -33,7 +33,8 @@
                 <option value="{{ $item->commodity_id }}" selected 
                         @if($item->commodity->discount_percentage !== null) data-discount="{{ $item->commodity->discount_percentage }}" @endif
                         data-unit-id="{{ $item->commodity->unit_id }}"
-                        data-weight-per-unit="{{ $item->commodity->weight_per_unit ?? '' }}">
+                        data-weight-per-unit="{{ $item->commodity->weight_per_unit ?? '' }}"
+                        data-pieces-per-box="{{ $item->commodity->pieces_per_box ?? '' }}">
                     {{ $item->commodity->title }}
                 </option>
             @else
@@ -42,7 +43,8 @@
                     <option value="{{ $commodity->id }}"
                             @if($commodity->discount_percentage !== null) data-discount="{{ $commodity->discount_percentage }}" @endif
                             data-unit-id="{{ $commodity->unit_id }}"
-                            data-weight-per-unit="{{ $commodity->weight_per_unit ?? '' }}">
+                            data-weight-per-unit="{{ $commodity->weight_per_unit ?? '' }}"
+                            data-pieces-per-box="{{ $commodity->pieces_per_box ?? '' }}">
                         {{ $commodity->title }}
                     </option>
                 @endforeach
@@ -59,6 +61,31 @@
             <option value="">انتخاب کنید...</option>
         </select>
         <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
+    </div>
+    {{-- Packaging Count Field --}}
+    <div class="form-group col-md-2" id="packaging_count_group_{{ $index ?? 0 }}" style="display: none;">
+        <label for="packaging_count">تعداد بسته</label>
+        <input type="number" id="packaging_count" 
+               name="packaging_count[{{ $index ?? 0 }}]" 
+               class="form-control packaging-count-input" 
+               min="1" step="1"
+               autocomplete="off" 
+               placeholder="مثال: 5"
+               value="{{ isset($item) && isset($item->packaging_count) ? $item->packaging_count : '' }}">
+        <small class="form-text text-muted mt-1">
+            هنگام تغییر این مقدار، تعداد واحد خودکار محاسبه می‌شود.
+        </small>
+    </div>
+    {{-- Pieces Per Box Display Field --}}
+    <div class="form-group col-md-2" id="pieces_per_box_group_{{ $index ?? 0 }}" style="display: none;">
+        <label for="pieces_per_box_display">تعداد در کارتن</label>
+        <input type="text" id="pieces_per_box_display" 
+               class="form-control pieces-per-box-display" 
+               readonly
+               placeholder="-">
+        <small class="form-text text-muted mt-1">
+            از طرف کالا تعریف شده است.
+        </small>
     </div>
     <div class="form-group col-md-2">
         <label for="amount"> {{  __('fields.commodity.amount') }}</label>

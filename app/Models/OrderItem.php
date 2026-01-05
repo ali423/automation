@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $order_id
  * @property int $commodity_id
  * @property float $commodity_amount
+ * @property int|null $packaging_count
  * @property int $unit_id
  * @property float|null $price
  * @property \Carbon\Carbon $created_at
@@ -24,6 +25,7 @@ class OrderItem extends Model
         'order_id',
         'commodity_id',
         'commodity_amount',
+        'packaging_count',
         'unit_id',
         'price',
         'discount_percentage',
