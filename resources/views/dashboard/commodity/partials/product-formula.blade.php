@@ -1,7 +1,7 @@
 {{-- Product formula partial for material selection --}}
-@if((isset($commodity) && $commodity->type == 'product') || !isset($commodity))
+@if(!$commodity->id || $commodity->type == 'product')
 <div id="product_formul" class="col-lg-12">
-    <p>فرمول ساخت محصول (مقادیر بر اساس واحد: <span id="product_unit_display" class="text-white font-weight-bold">{{ isset($commodity) && $commodity->unit ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : '' }}</span>)</p>
+    <p>فرمول ساخت محصول (مقادیر بر اساس واحد: <span id="product_unit_display" class="text-white font-weight-bold">{{ $commodity->unit?->name && $commodity->unit?->symbol ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : '' }}</span>)</p>
     <div class="alert alert-info">
         <i class="ti-info-alt"></i>
         <strong>راهنما:</strong> فرمول ساخت برای هر واحد از محصول نهایی تعریف می‌شود.
