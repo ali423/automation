@@ -1,23 +1,35 @@
 if (document.getElementById("type").value == 'product') {
 
-    document.querySelector("#sales_price").classList.remove('d-none');
-    document.querySelector("#product_formul").classList.remove('d-none');
-    document.querySelector("#purchase_price").classList.add('d-none');
+    document.querySelector("#sales_price").style.display = 'block';
+    document.querySelector("#discount_percentage_group").style.display = 'block';
+    document.querySelector("#product_formul").style.display = 'block';
+    document.querySelector("#purchase_price").style.display = 'none';
     document.querySelector("#weight_per_unit_group").style.display = 'block';
+    document.querySelector("#litrage_group").style.display = 'block';
+    document.querySelector("#pieces_per_box_group").style.display = 'block';
+    document.querySelector("#product_identifier_group").style.display = 'block';
 
 } else if (document.getElementById("type").value == 'material') {
 
-    document.querySelector("#purchase_price").classList.remove('d-none');
-    document.querySelector("#sales_price").classList.add('d-none');
-    document.querySelector("#product_formul").classList.add('d-none');
+    document.querySelector("#purchase_price").style.display = 'block';
+    document.querySelector("#sales_price").style.display = 'none';
+    document.querySelector("#product_formul").style.display = 'none';
     document.querySelector("#weight_per_unit_group").style.display = 'none';
+    document.querySelector("#litrage_group").style.display = 'none';
+    document.querySelector("#discount_percentage_group").style.display = 'none';
+    document.querySelector("#pieces_per_box_group").style.display = 'none';
+    document.querySelector("#product_identifier_group").style.display = 'none';
 
 } else {
 
-    document.querySelector("#sales_price").classList.add('d-none');
-    document.querySelector("#purchase_price").classList.add('d-none');
-    document.querySelector("#product_formul").classList.add('d-none');
+    document.querySelector("#sales_price").style.display = 'none';
+    document.querySelector("#purchase_price").style.display = 'none';
+    document.querySelector("#product_formul").style.display = 'none';
     document.querySelector("#weight_per_unit_group").style.display = 'none';
+    document.querySelector("#litrage_group").style.display = 'none';
+    document.querySelector("#discount_percentage_group").style.display = 'none';
+    document.querySelector("#pieces_per_box_group").style.display = 'none';
+    document.querySelector("#product_identifier_group").style.display = 'none';
 
 }
 
@@ -26,10 +38,14 @@ document.getElementById("type").onchange = function () {
 
     if (value == 'product') {
 
-        document.querySelector("#sales_price").classList.remove('d-none');
-        document.querySelector("#product_formul").classList.remove('d-none');
-        document.querySelector("#purchase_price").classList.add('d-none');
+        document.querySelector("#sales_price").style.display = 'block';
+        document.querySelector("#discount_percentage_group").style.display = 'block';
+        document.querySelector("#product_formul").style.display = 'block';
+        document.querySelector("#purchase_price").style.display = 'none';
         document.querySelector("#weight_per_unit_group").style.display = 'block';
+        document.querySelector("#litrage_group").style.display = 'block';
+        document.querySelector("#pieces_per_box_group").style.display = 'block';
+        document.querySelector("#product_identifier_group").style.display = 'block';
 
         document.querySelector("#purchase_price input").setAttribute('disabled', '');
         document.querySelector("#sales_price input").removeAttribute('disabled');
@@ -39,10 +55,14 @@ document.getElementById("type").onchange = function () {
 
     } else if (value == 'material') {
 
-        document.querySelector("#purchase_price").classList.remove('d-none');
-        document.querySelector("#sales_price").classList.add('d-none');
-        document.querySelector("#product_formul").classList.add('d-none');
+        document.querySelector("#purchase_price").style.display = 'block';
+        document.querySelector("#sales_price").style.display = 'none';
+        document.querySelector("#product_formul").style.display = 'none';
         document.querySelector("#weight_per_unit_group").style.display = 'none';
+        document.querySelector("#litrage_group").style.display = 'none';
+        document.querySelector("#discount_percentage_group").style.display = 'none';
+        document.querySelector("#pieces_per_box_group").style.display = 'none';
+        document.querySelector("#product_identifier_group").style.display = 'none';
 
         document.querySelector("#purchase_price input").removeAttribute('disabled');
         document.querySelector("#sales_price input").setAttribute('disabled', '');
@@ -54,10 +74,14 @@ document.getElementById("type").onchange = function () {
 
     } else {
 
-        document.querySelector("#sales_price").classList.add('d-none');
-        document.querySelector("#purchase_price").classList.add('d-none');
-        document.querySelector("#product_formul").classList.add('d-none');
+        document.querySelector("#sales_price").style.display = 'none';
+        document.querySelector("#purchase_price").style.display = 'none';
+        document.querySelector("#product_formul").style.display = 'none';
         document.querySelector("#weight_per_unit_group").style.display = 'none';
+        document.querySelector("#litrage_group").style.display = 'none';
+        document.querySelector("#discount_percentage_group").style.display = 'none';
+        document.querySelector("#pieces_per_box_group").style.display = 'none';
+        document.querySelector("#product_identifier_group").style.display = 'none';
 
         document.querySelector("#purchase_price input").setAttribute('disabled', '');
         document.querySelector("#sales_price input").setAttribute('disabled', '');

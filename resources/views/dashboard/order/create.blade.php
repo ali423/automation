@@ -421,7 +421,8 @@
                             totalWeight += parseFloat(weightValue);
                         }
                     });
-                    $('#totalWeight').text(totalWeight.toFixed(3) + ' کیلوگرم');
+                    // Align total weight display rounding with server-side formatting (0 decimals)
+                    $('#totalWeight').text(totalWeight.toFixed(0) + ' کیلوگرم');
                 }, 100); // Small debounce for total weight updates
             }
             // Add row - optimized version without AJAX

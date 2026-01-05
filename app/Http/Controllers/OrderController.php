@@ -400,6 +400,7 @@ class OrderController extends Controller
     public function getChartData(Request $request)
     {
         $orderIds = $request->input('order_ids', []);
+        $selectAll = $request->input('select_all', false);
         $dateFrom = $request->input('date_from');
         $dateTo = $request->input('date_to');
         
@@ -415,24 +416,60 @@ class OrderController extends Controller
             $normalizedDateTo = $this->normalizePersianDate($dateTo);
         }
         
+        // Parse additional filters/search passed from the frontend (so select_all can respect them)
+        $search = $request->input('search', null);
+        $filtersParam = $request->input('filters', []);
+        $filters = [];
+        if (is_string($filtersParam)) {
+            $decoded = json_decode($filtersParam, true);
+            if (is_array($decoded)) { $filters = $decoded; }
+        } elseif (is_array($filtersParam)) {
+            $filters = $filtersParam;
+        }
+
         // Start with base query
-        $ordersQuery = Order::with(['orderItems.commodity.materials.unit', 'orderItems.unit'])
-            ->where('status', 'pending'); // Only include pending orders
-        
+        $ordersQuery = Order::with(['orderItems.commodity.materials.unit', 'orderItems.unit']);
+
+        // If no explicit status filter provided, default to pending orders only
+        if (empty($filters['status'])) {
+            $ordersQuery->where('status', 'pending');
+        }
+
         // Apply date filtering if provided
         if ($normalizedDateFrom) {
             $ordersQuery->whereDate('deadline', '>=', $normalizedDateFrom);
         }
-        
+
         if ($normalizedDateTo) {
             $ordersQuery->whereDate('deadline', '<=', $normalizedDateTo);
         }
-        
-        // Apply order ID filtering if provided
-        if (!empty($orderIds)) {
+
+        // Apply search if provided (matches customer name/company or deadline)
+        if (!empty($search)) {
+            $ordersQuery->where(function($q) use ($search) {
+                $q->whereHas('customer', function($cq) use ($search) {
+                    $cq->where('name', 'like', "%{$search}%")
+                       ->orWhere('comp_name', 'like', "%{$search}%");
+                })
+                ->orWhere('deadline', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply simple filters if provided
+        if (!empty($filters)) {
+            if (!empty($filters['status'])) {
+                $ordersQuery->where('status', $filters['status']);
+            }
+            if (!empty($filters['customer_id'])) {
+                $ordersQuery->where('customer_id', (int)$filters['customer_id']);
+            }
+        }
+
+        // Apply order ID filtering if provided and select_all is not requested
+        if (!$selectAll && !empty($orderIds)) {
             $ordersQuery->whereIn('id', $orderIds);
         }
-        
+
         $orders = $ordersQuery->get();
         
 

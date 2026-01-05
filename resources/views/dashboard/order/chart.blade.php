@@ -250,15 +250,15 @@
                 // If both date fields are empty, ignore date filtering (show all rows)
                 var filterByDate = !!(fromNum || toNumVal);
 
-                // Get checked rows that are currently visible (filtered by date)
-                var checkedRows = $('#datatable-buttons-customer tbody tr:visible').filter(function() {
+                // Get checked rows from ALL rows (not just visible)
+                var checkedRows = $('#datatable-buttons-customer tbody tr').filter(function() {
                     var checkbox = $(this).find('.order-checkbox');
                     return checkbox.length && checkbox.is(':checked');
                 });
                 
-                // If no row is checked but 'select all' is checked, include all visible rows
+                // If no row is checked but 'select all' is checked, include ALL rows (not only visible)
                 if (checkedRows.length === 0 && $('#select-all-orders').is(':checked')) {
-                    checkedRows = $('#datatable-buttons-customer tbody tr:visible');
+                    checkedRows = $('#datatable-buttons-customer tbody tr');
                 }
                 
                 // Collect all filtered order_ids for backend use
@@ -325,16 +325,32 @@
             function updateTable() {
                 var selectedData = getSelectedOrderData();
 
-                // Use real data from the backend
+                // Use real data from the backend. Include current URL query params so server respects all filters.
+                var payload = {
+                    order_ids: selectedData.orderIds,
+                    select_all: $('#select-all-orders').is(':checked'),
+                    date_from: $('#date_from').val(),
+                    date_to: $('#date_to').val(),
+                    _token: '{{ csrf_token() }}'
+                };
+
+                // Merge any existing query params from the URL (search, filters, per_page, etc.)
+                try {
+                    var urlParams = new URLSearchParams(window.location.search);
+                    urlParams.forEach(function(value, key) {
+                        // Don't overwrite explicit payload keys (like date_from/date_to)
+                        if (payload[key] === undefined) {
+                            payload[key] = value;
+                        }
+                    });
+                } catch (e) {
+                    // ignore if URLSearchParams not supported
+                }
+
                 $.ajax({
                     url: '{{ route("order.chart.data") }}',
                     method: 'POST',
-                    data: {
-                        order_ids: selectedData.orderIds,
-                        date_from: $('#date_from').val(),
-                        date_to: $('#date_to').val(),
-                        _token: '{{ csrf_token() }}'
-                    },
+                    data: payload,
                     success: function(response) {
                         renderTable({
                             names: response.names,
@@ -365,28 +381,33 @@
                 window.location.href = url.toString();
             });
             
-            // Clear filters button click handler: remove dates and reload
+            // Clear filters button click handler: remove ALL filters and reload
             $('#clear-filters').on('click', function() {
                 const url = new URL(window.location);
+                // Remove all filter-related query params
                 url.searchParams.delete('date_from');
                 url.searchParams.delete('date_to');
+                url.searchParams.delete('search');
+                url.searchParams.delete('filters');
                 url.searchParams.delete('page');
+                url.searchParams.delete('per_page');
                 window.location.href = url.toString();
             });
 
             // Select all functionality for order checkboxes
             $('#select-all-orders').on('change', function() {
                 var checked = $(this).is(':checked');
-                // Only check visible rows (filtered by date)
-                $('.order-checkbox:visible').prop('checked', checked);
+                // Check/unchecked ALL order checkboxes (not only visible ones)
+                $('.order-checkbox').prop('checked', checked);
                 // Update table automatically when select all changes
                 updateTable();
             });
             
             $(document).on('change', '.order-checkbox', function() {
-                var visibleCheckboxes = $('.order-checkbox:visible');
-                var checkedVisibleCheckboxes = visibleCheckboxes.filter(':checked');
-                $('#select-all-orders').prop('checked', visibleCheckboxes.length > 0 && checkedVisibleCheckboxes.length === visibleCheckboxes.length);
+                // Maintain select-all state based on ALL checkboxes
+                var allCheckboxes = $('.order-checkbox');
+                var checkedAll = allCheckboxes.length > 0 && allCheckboxes.filter(':checked').length === allCheckboxes.length;
+                $('#select-all-orders').prop('checked', checkedAll);
                 // Update table automatically when individual checkboxes change
                 updateTable();
             });

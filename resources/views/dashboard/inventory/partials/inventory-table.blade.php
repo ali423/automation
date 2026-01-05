@@ -5,6 +5,7 @@
         <th>کالا</th>
         <th>واحد</th>
         <th>مقدار موجودی</th>
+        <th class="d-none">قیمت (ریال)</th>
         <th>تعداد بسته بندی</th>
         <th>{{ __('fields.details') }}</th>
     </tr>
@@ -25,12 +26,20 @@
                     $amountInMainUnit = $commodityUnitService->convertToMainUnit($inventory->commodity, $inventory->amount, $inventory->unit_id);
                     $packagingQuantity = $amountInMainUnit !== null ? floor($amountInMainUnit / $piecesPerBox) : '-';
                 }
+                // Determine unit price: products use sales price, others fall back to purchase price
+                $unitPrice = null;
+                if (($inventory->commodity->type ?? null) === 'product' && !is_null($inventory->commodity->sales_price)) {
+                    $unitPrice = $inventory->commodity->sales_price;
+                } elseif (!is_null($inventory->purchase_price)) {
+                    $unitPrice = $inventory->purchase_price;
+                }
             @endphp
             <tr>
                 <td>{{ $inventories->firstItem() + $loop->index }}</td>
                 <td>{{ $inventory->commodity->title ?? 'نامشخص' }}</td>
                 <td>{{ $inventory->unit->name ?? 'نامشخص' }}</td>
                 <td>{{ number_format($inventory->amount, 2) }}</td>
+                <td class="d-none">{{ !is_null($unitPrice) ? number_format($unitPrice, 0, '.', ',') : '-' }}</td>
                 <td>{{ $packagingQuantity !== '-' ? number_format($packagingQuantity, 0, '.', ',') : '-' }}</td>
                 <td><a href="{{ route('inventory.show', $inventory) }}" class=""><i
                             class="ti-more-alt font-24"></i></a>
@@ -39,7 +48,7 @@
         @endforeach
     @else
         <tr>
-            <td colspan="6" class="text-center">
+            <td colspan="7" class="text-center">
                 <div class="alert alert-info">
                     <i class="ti-info-alt"></i>
                     @if(request('search') || request('filters'))
