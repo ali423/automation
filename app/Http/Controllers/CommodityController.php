@@ -264,6 +264,7 @@ class CommodityController extends Controller
         });
         
         return view('dashboard.commodity.create', [
+            'commodity' => new Commodity(),
             'materials' => $materialsWithUnits,
             'units' => Unit::all()
         ]);

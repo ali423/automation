@@ -11,12 +11,12 @@
     </div>
     <div class="form-group col-md-3">
         <label for="type"> {{ __('fields.type') }}</label>
-        <select id="type" class="form-control" name="type" {{ isset($commodity) ? 'disabled' : 'required' }}>
+        <select id="type" class="form-control" name="type" {{ $commodity->id ? 'disabled' : 'required' }}>
             <option value="">انتخاب کنید...</option>
             <option value="material" {{ old('type', $commodity->type ?? '') == 'material' ? 'selected' : '' }}>ماده اولیه</option>
             <option value="product" {{ old('type', $commodity->type ?? '') == 'product' ? 'selected' : '' }}>فرآورده</option>
         </select>
-        @if(isset($commodity))
+        @if($commodity->id)
             <input type="hidden" name="type" value="{{ $commodity->type }}">
         @endif
         <div class="invalid-feedback">نوع کالا را انتخاب کنید</div>
@@ -50,7 +50,7 @@
         <div class="invalid-feedback">لطفاً حجم هر واحد را وارد کنید</div>
     </div>
     <div class="form-group col-md-3">
-        <label for="warning_limit"> {{ __('fields.warning_limit') }} <span class="unit_label">({{ $commodity->unit->symbol ?? 'واحد' }})</span></label>
+        <label for="warning_limit"> {{ __('fields.warning_limit') }} <span class="unit_label">({{ $commodity->unit?->symbol ?? 'واحد' }})</span></label>
         <input type="number" step="0.01" name="warning_limit"
                value="{{ old('warning_limit', $commodity->warning_limit ?? '') }}"
                class="form-control" placeholder="{{ __('fields.warning_limit') }}" required>
@@ -64,7 +64,7 @@
         <div class="invalid-feedback">{{ __('fields.sales_price') }} را وارد کنید</div>
     </div>
     <div id="purchase_price" class="form-group col-md-3" style="display: {{ (old('type', $commodity->type ?? '') == 'material') ? 'block' : 'none' }};">
-        <label for="purchase_price"> {{ __('fields.purchase_price') }} هر <span class="unit_label2">{{ $commodity->unit->symbol ?? 'واحد' }}</span> (ریال)</label>
+        <label for="purchase_price"> {{ __('fields.purchase_price') }} هر <span class="unit_label2">{{ $commodity->unit?->symbol ?? 'واحد' }}</span> (ریال)</label>
         <input type="number" step="0.01" min="100" name="purchase_price"
                value="{{ old('purchase_price', $commodity->purchase_price ?? '') }}" class="form-control"
                placeholder="{{ __('fields.purchase_price') }}" required>
