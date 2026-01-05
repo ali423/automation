@@ -18,39 +18,35 @@ class InventoryService extends BaseService
         // Validate that the unit is valid for this commodity
         $this->validateCommodityUnit($commodityId, $unitId);
 
-        $inventories = Inventory::where('commodity_id', $commodityId)
-            ->where('unit_id', $unitId)
-            ->get();
+        return DB::transaction(function () use ($commodityId, $unitId, $amount, $purchasePrice) {
+            // Lock the row for this commodity+unit to avoid race-condition duplicates
+            $inventory = Inventory::where('commodity_id', $commodityId)
+                ->where('unit_id', $unitId)
+                ->lockForUpdate()
+                ->first();
 
-        if ($inventories->isNotEmpty()) {
-            // Merge all existing inventories into the first one
-            $firstInventory = $inventories->first();
-            $totalAmount = $inventories->sum('amount') + $amount;
-            
-            $firstInventory->update([
-                'amount' => $totalAmount,
-                'purchase_price' => $purchasePrice ?? $firstInventory->purchase_price,
-            ]);
+            if ($inventory) {
+                $newAmount = $inventory->amount + $amount;
 
-            // Delete the rest
-            $inventories->skip(1)->each(function ($inventory) {
-                $inventory->delete();
-            });
+                // Always keep the latest provided purchase price when adding stock
+                $newPurchasePrice = $purchasePrice ?? $inventory->purchase_price;
 
-            $inventory = $firstInventory;
-        } else {
-            // Create new inventory record
-            $inventory = Inventory::create([
-                'commodity_id' => $commodityId,
-                'unit_id' => $unitId,
-                'amount' => $amount,
-                'purchase_price' => $purchasePrice,
-            ]);
-        }
+                $inventory->update([
+                    'amount' => $newAmount,
+                    'purchase_price' => $newPurchasePrice,
+                ]);
+            } else {
+                // Create new inventory record (unique constraint protects against duplicates)
+                $inventory = Inventory::create([
+                    'commodity_id' => $commodityId,
+                    'unit_id' => $unitId,
+                    'amount' => $amount,
+                    'purchase_price' => $purchasePrice,
+                ]);
+            }
 
-        // No cache clearing needed since we removed caching mechanisms
-        
-        return $inventory;
+            return $inventory;
+        });
     }
 
     /**
@@ -86,45 +82,43 @@ class InventoryService extends BaseService
      */
     public function removeStock($commodityId, $unitId, $amount)
     {
-        // Get total available stock for this commodity and unit
-        $totalStock = $this->getStockLevel($commodityId, $unitId);
-        
-        if ($totalStock < $amount) {
-            throw new \Exception('موجودی کافی برای کالای مورد نظر وجود ندارد');
-        }
+        return DB::transaction(function () use ($commodityId, $unitId, $amount) {
+            // Lock all rows for this commodity+unit to avoid race conditions
+            $inventories = Inventory::where('commodity_id', $commodityId)
+                ->where('unit_id', $unitId)
+                ->where('amount', '>', 0)
+                ->orderBy('created_at', 'asc')
+                ->lockForUpdate()
+                ->get();
 
-        // Get all inventory records for this commodity and unit, ordered by creation date (FIFO)
-        $inventories = Inventory::where('commodity_id', $commodityId)
-            ->where('unit_id', $unitId)
-            ->where('amount', '>', 0)
-            ->orderBy('created_at', 'asc')
-            ->get();
-
-        $remainingAmount = $amount;
-
-        foreach ($inventories as $inventory) {
-            if ($remainingAmount <= 0) {
-                break;
+            $totalStock = $inventories->sum('amount');
+            if ($totalStock < $amount) {
+                throw new \\Exception('موجودی کافی برای کالای مورد نظر وجود ندارد');
             }
 
-            $availableInThisRecord = $inventory->amount;
-            $amountToRemove = min($remainingAmount, $availableInThisRecord);
+            $remainingAmount = $amount;
+
+            foreach ($inventories as $inventory) {
+                if ($remainingAmount <= 0) {
+                    break;
+                }
+
+                $availableInThisRecord = $inventory->amount;
+                $amountToRemove = min($remainingAmount, $availableInThisRecord);
+                
+                $newAmount = $availableInThisRecord - $amountToRemove;
+                $remainingAmount -= $amountToRemove;
             
-            $newAmount = $availableInThisRecord - $amountToRemove;
-            $remainingAmount -= $amountToRemove;
-        
-        if ($newAmount == 0) {
-            // When amount becomes 0, we can delete the record or keep it with 0 amount
-            // For now, we'll keep it with 0 amount for audit purposes
-            $inventory->update(['amount' => $newAmount]);
-        } else {
-            $inventory->update(['amount' => $newAmount]);
-        }
-        }
+                if ($newAmount == 0) {
+                    // Delete empty rows instead of keeping zero-amount records
+                    $inventory->delete();
+                } else {
+                    $inventory->update(['amount' => $newAmount]);
+                }
+            }
 
-        // No cache clearing needed since we removed caching mechanisms
-
-        return true;
+            return true;
+        });
     }
 
     /**
@@ -322,10 +316,7 @@ class InventoryService extends BaseService
      */
     public function delete($inventory)
     {
-        $inventory->update(['amount' => 0]);
-        
-        // No cache clearing needed since we removed caching mechanisms
-        
+        $inventory->delete();
         return $inventory;
     }
 
@@ -347,9 +338,13 @@ class InventoryService extends BaseService
             }
         }
 
-        $inventory->update([
-            'amount' => $newAmount
-        ]);
+        if ($newAmount == 0) {
+            $inventory->delete();
+        } else {
+            $inventory->update([
+                'amount' => $newAmount
+            ]);
+        }
 
         // No cache clearing needed since we removed caching mechanisms
 
