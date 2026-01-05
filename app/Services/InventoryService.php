@@ -93,7 +93,7 @@ class InventoryService extends BaseService
 
             $totalStock = $inventories->sum('amount');
             if ($totalStock < $amount) {
-                throw new \\Exception('موجودی کافی برای کالای مورد نظر وجود ندارد');
+                throw new \Exception('موجودی کافی برای کالای مورد نظر وجود ندارد');
             }
 
             $remainingAmount = $amount;
