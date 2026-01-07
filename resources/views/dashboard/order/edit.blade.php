@@ -683,16 +683,6 @@
             // Renumber indices before form submission to ensure all items are included
             $('#orderEditForm').on('submit', function(e) {
                 renumberFormIndices();
-                
-                // Remove commas from price fields to prevent validation errors
-                $('#order_formul input[name^="price"]').each(function() {
-                    var value = $(this).val();
-                    if (value) {
-                        // Remove all commas and spaces from the price value
-                        var cleanValue = value.replace(/[,\s]/g, '');
-                        $(this).val(cleanValue);
-                    }
-                });
             });
             
             // Initialize page: renumber form indices and populate units for existing items
