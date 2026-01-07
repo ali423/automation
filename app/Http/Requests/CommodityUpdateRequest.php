@@ -43,7 +43,7 @@ class CommodityUpdateRequest extends FormRequest
             $rules['materials']=['required','array','min:1'];
             $rules['materials.*']=['required',Rule::exists('commodities', 'id')->where('type','material'),'distinct'];
             $rules['material_amount']=['required','array','min:1'];
-            $rules['material_amount.*']=['required','numeric','min:0.01'];
+            $rules['material_amount.*']=['required','integer','min:1'];
             $rules['material_units']=['required','array','min:1'];
             $rules['material_units.*']=['required','exists:units,id']; // Allow any unit for materials
             $rules['sales_price']=['required','integer','min:0'];
@@ -76,27 +76,6 @@ class CommodityUpdateRequest extends FormRequest
         }
 
         return $rules;
-    }
-
-    /**
-     * Normalize numeric inputs (e.g., convert Persian/European commas to dots).
-     */
-    protected function prepareForValidation()
-    {
-        if ($this->has('material_amount')) {
-            $normalized = [];
-            foreach ((array) $this->input('material_amount') as $key => $value) {
-                if ($value === null || $value === '') {
-                    $normalized[$key] = $value;
-                    continue;
-                }
-                // Replace comma/Arabic comma and spaces with dot/empty, to keep decimals like 0,500 => 0.500
-                $clean = str_replace(['٬', ',', ' '], ['.', '.', ''], $value);
-                $normalized[$key] = $clean;
-            }
-
-            $this->merge(['material_amount' => $normalized]);
-        }
     }
 
     /**
