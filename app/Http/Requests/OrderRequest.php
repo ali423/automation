@@ -53,15 +53,13 @@ class OrderRequest extends FormRequest
      */
     protected function prepareForValidation()
     {
-        // Normalize prices - remove thousand separators (commas) only, keep decimal points as-is
+        // Normalize comma-separated and Arabic comma numbers to decimals
         $prices = $this->input('price', []);
         if (is_array($prices)) {
             foreach ($prices as $key => $price) {
                 if ($price !== null && $price !== '') {
-                    // Remove thousand separators (commas and Arabic commas) and spaces
-                    // This is already handled by JavaScript before form submission
-                    // Just ensure we remove any remaining formatting
-                    $normalized = str_replace(['٬', ',', ' '], '', $price);
+                    // Replace Arabic comma (٬) and regular comma with decimal point
+                    $normalized = str_replace(['٬', ',', ' '], '.', $price);
                     $prices[$key] = $normalized;
                 }
             }
@@ -72,8 +70,8 @@ class OrderRequest extends FormRequest
         if (is_array($amounts)) {
             foreach ($amounts as $key => $amount) {
                 if ($amount !== null && $amount !== '') {
-                    // Remove thousand separators (commas and Arabic commas) and spaces
-                    $normalized = str_replace(['٬', ',', ' '], '', $amount);
+                    // Replace Arabic comma (٬) and regular comma with decimal point
+                    $normalized = str_replace(['٬', ',', ' '], '.', $amount);
                     $amounts[$key] = $normalized;
                 }
             }

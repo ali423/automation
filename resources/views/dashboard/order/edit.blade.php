@@ -236,9 +236,6 @@
                 packagingGroup.hide();
                 piecesGroup.hide();
                 delete commodityDataCache[$row.attr('data-row-id')];
-                
-                // Reset manually-edited flag when commodity changes (allow new price to load)
-                priceInput.data('manually-edited', false);
 
                 // Get commodity meta from selected option
                 var selectedOption = $(this).find('option:selected');
@@ -277,7 +274,7 @@
                     }
                 });
                 
-                // Get commodity price - only update if user hasn't manually changed it
+                // Get commodity price
                 $.ajax({
                     url: '/inventory-ajax/' + commodity_id,
                     type: 'get',
@@ -285,10 +282,7 @@
                     success: function (response) {
                         price = response['price'];
                         var formattedPrice = price ? Math.round(parseFloat(price)).toString() : '';
-                        // Only update price if user hasn't manually edited it
-                        if (!priceInput.data('manually-edited')) {
-                            priceInput.val(formattedPrice);
-                        }
+                        priceInput.val(formattedPrice);
                     }
                 });
                 
@@ -311,9 +305,9 @@
             $(document).on('change', '#unit_id', function () {
                 var $row = $(this).closest('.form-row');
                 var new_price = $row.find('#price').val();
-                var priceInput = $row.find('#price');
-                if (price == new_price && price != null && !priceInput.data('manually-edited')){
+                if (price == new_price && price != null ){
                     var unit = $(this).val();
+                    var priceInput = $row.find('#price');
                     // Price will be handled by the backend based on unit conversions
                     var formattedPrice = price ? Math.round(parseFloat(price)).toString() : '';
                     priceInput.val(formattedPrice);
@@ -340,11 +334,6 @@
                     calculateWeightForRow($row);
                 }, 300);
                 $row.data('weight-debounce-timeout', timeout);
-            });
-            
-            // Mark price as manually edited when user changes it
-            $(document).on('input', '#price', function () {
-                $(this).data('manually-edited', true);
             });
 
             // Packaging count change -> sync amount
@@ -695,37 +684,12 @@
             $('#orderEditForm').on('submit', function(e) {
                 renumberFormIndices();
                 
-                // Helper function to convert Persian digits to English digits
-                function convertPersianToEnglish(str) {
-                    var persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-                    var englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-                    var result = str;
-                    for (var i = 0; i < 10; i++) {
-                        result = result.replace(new RegExp(persianDigits[i], 'g'), englishDigits[i]);
-                    }
-                    return result;
-                }
-                
-                // Clean and normalize price fields
+                // Remove commas and Arabic commas from price fields to prevent validation errors
                 $('#order_formul input[name^="price"]').each(function() {
                     var value = $(this).val();
                     if (value) {
-                        // Convert Persian digits to English
-                        var converted = convertPersianToEnglish(value);
                         // Remove all commas (regular and Arabic) and spaces from the price value
-                        var cleanValue = converted.replace(/[,٬\s]/g, '');
-                        $(this).val(cleanValue);
-                    }
-                });
-                
-                // Clean and normalize amount fields
-                $('#order_formul input[name^="commodity_amount"]').each(function() {
-                    var value = $(this).val();
-                    if (value) {
-                        // Convert Persian digits to English
-                        var converted = convertPersianToEnglish(value);
-                        // Remove all commas (regular and Arabic) and spaces from the amount value
-                        var cleanValue = converted.replace(/[,٬\s]/g, '');
+                        var cleanValue = value.replace(/[,٬\s]/g, '');
                         $(this).val(cleanValue);
                     }
                 });
