@@ -102,7 +102,10 @@
                 </div>
                 <div class="form-group col-md-3">
                     <label>{{ __('fields.commodity.material_amount') }}</label>
-                    <input type="text" value="{{ number_format($material->pivot->amount, 0) }}" class="form-control" disabled>
+                    @php
+                        $formattedAmount = rtrim(rtrim(number_format($material->pivot->amount, 4, '.', ''), '0'), '.');
+                    @endphp
+                    <input type="text" value="{{ $formattedAmount }}" class="form-control" disabled>
                 </div>
                 <div class="form-group col-md-2">
                     <label>{{ __('fields.unit') }}</label>
