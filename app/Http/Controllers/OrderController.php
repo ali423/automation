@@ -218,6 +218,7 @@ class OrderController extends Controller
             'unit_id' => $request->input('unit_id'),
             'deadline' => $request->input('deadline'),
             'price' => $request->input('price'),
+            'discount_percentage' => $request->input('discount_percentage'),
             'packaging_count' => $request->input('packaging_count'),
             'commodity_amount' => $request->input('commodity_amount'),
         ];
@@ -309,6 +310,7 @@ class OrderController extends Controller
             'unit_id' => $request->input('unit_id'),
             'deadline' => $request->input('deadline'),
             'price' => $request->input('price'),
+            'discount_percentage' => $request->input('discount_percentage'),
             'packaging_count' => $request->input('packaging_count'),
             'commodity_amount' => $request->input('commodity_amount'),
         ];
