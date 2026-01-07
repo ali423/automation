@@ -43,7 +43,7 @@ class CommodityRequest extends FormRequest
             $rules['materials']=['required','array','min:1'];
             $rules['materials.*']=['required',Rule::exists('commodities', 'id')->where('type','material'),'distinct'];
             $rules['material_amount']=['required','array','min:1'];
-            $rules['material_amount.*']=['required','numeric','min:0.01'];
+            $rules['material_amount.*']=['required','numeric','min:0'];
             $rules['material_units']=['required','array','min:1'];
             $rules['material_units.*']=['required','exists:units,id']; // Allow any unit for materials
             $rules['sales_price']=['required','integer','min:0'];
