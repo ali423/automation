@@ -38,12 +38,45 @@ class OrderRequest extends FormRequest
             'commodity_id.*' => ['required', 'exists:commodities,id', 'distinct', Rule::exists('commodities', 'id')->where('type', 'product')],
             'unit_id.*' => ['required', 'exists:units,id'],
             'price.*' => ['nullable', 'numeric'],
-            'commodity_amount.*' => ['required', 'integer', 'min:1'],
+            'commodity_amount.*' => ['required', 'numeric', 'min:0.01'],
             'discount_percentage.*' => ['nullable', 'integer', 'min:0', 'max:100'],
             'packaging_count.*' => ['nullable', 'integer', 'min:1'],
             'file' => ['nullable', 'mimes:jpg,svg,png,jpeg,pdf,txt,zip,rar', 'max:5120'],
             'comment' => ['nullable', 'string'],
         ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     *
+     * @return void
+     */
+    protected function prepareForValidation()
+    {
+        // Normalize comma-separated and Arabic comma numbers to decimals
+        $prices = $this->input('price', []);
+        if (is_array($prices)) {
+            foreach ($prices as $key => $price) {
+                if ($price !== null && $price !== '') {
+                    // Replace Arabic comma (٬) and regular comma with decimal point
+                    $normalized = str_replace(['٬', ',', ' '], '.', $price);
+                    $prices[$key] = $normalized;
+                }
+            }
+            $this->merge(['price' => $prices]);
+        }
+
+        $amounts = $this->input('commodity_amount', []);
+        if (is_array($amounts)) {
+            foreach ($amounts as $key => $amount) {
+                if ($amount !== null && $amount !== '') {
+                    // Replace Arabic comma (٬) and regular comma with decimal point
+                    $normalized = str_replace(['٬', ',', ' '], '.', $amount);
+                    $amounts[$key] = $normalized;
+                }
+            }
+            $this->merge(['commodity_amount' => $amounts]);
+        }
     }
 
     /**
@@ -125,7 +158,7 @@ class OrderRequest extends FormRequest
             'commodity_amount.array' => 'فرمت مقادیر صحیح نیست.',
             'commodity_amount.min' => 'حداقل یک مقدار باید وارد شود.',
             'commodity_amount.*.required' => 'مقدار کالا الزامی است.',
-            'commodity_amount.*.integer' => 'مقدار کالا باید عدد صحیح باشد.',
+            'commodity_amount.*.numeric' => 'مقدار کالا باید عدد باشد.',
             'commodity_amount.*.min' => 'مقدار کالا باید بیشتر از صفر باشد.',
             'packaging_count.array' => 'فرمت تعداد بسته‌ها صحیح نیست.',
             'packaging_count.*.integer' => 'تعداد بسته باید عدد صحیح باشد.',
