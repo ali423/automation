@@ -27,9 +27,9 @@
                 </div>
                 <div class="form-group col-md-3">
                     <label for="material_amount">{{ __('fields.commodity.material_amount') }}</label>
-                    <input type="number" step="0.01" name="material_amount[]" class="form-control"
+                    <input type="number" step="any" name="material_amount[]" class="form-control"
                            id="material_amount" value="{{ $used_material->pivot->amount ? number_format($used_material->pivot->amount, 4, '.', '') : '' }}"
-                           placeholder="{{ __('fields.commodity.material_amount') }}" min="0.01" required>
+                           placeholder="{{ __('fields.commodity.material_amount') }}" required>
                     <div class="invalid-feedback">
                         لطفاً {{ __('fields.commodity.material_amount') }} را وارد کنید
                     </div>
@@ -64,8 +64,8 @@
             </div>
             <div class="form-group col-md-3">
                 <label for="material_amount">{{ __('fields.commodity.material_amount') }}</label>
-                <input type="number" step="0.01" name="material_amount[0]" class="form-control"
-                       id="material_amount" placeholder="{{ __('fields.commodity.material_amount') }}" min="0.01">
+                <input type="number" step="any" name="material_amount[0]" class="form-control"
+                       id="material_amount" placeholder="{{ __('fields.commodity.material_amount') }}" required>
                 <div class="invalid-feedback">
                     لطفاً {{ __('fields.commodity.material_amount') }} را وارد کنید
                 </div>
