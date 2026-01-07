@@ -134,7 +134,7 @@
                                     </div>
                                     <div class="form-group col-md-2">
                                         <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
-                                        <input type="text" id="price" name="price[{{ $index }}]" value="{{ $item->price ?? '' }}" class="form-control"
+                                        <input type="text" id="price" name="price[{{ $index }}]" value="{{ $item->price ?? '' }}" class="form-control price-input"
                                                autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}">
                                     </div>
                                     <div class="form-group col-md-2">
@@ -786,6 +786,29 @@
             if (rowsToProcess === 0) {
                 updateTotalWeight();
             }
+            
+            // Format price input with thousand separators
+            $(document).on('input', '.price-input', function() {
+                let value = $(this).val();
+                // Remove all commas
+                value = value.replace(/,/g, '');
+                // Keep only digits
+                value = value.replace(/[^\d]/g, '');
+                if (value) {
+                    // Add thousand separators
+                    value = parseInt(value).toLocaleString('en-US');
+                }
+                $(this).val(value);
+            });
+            
+            // Remove commas before form submission
+            $('#orderEditForm').on('submit', function() {
+                $('.price-input').each(function() {
+                    let value = $(this).val();
+                    value = value.replace(/,/g, '');
+                    $(this).val(value);
+                });
+            });
         });
     </script>
     <!-- These plugins only need for the run this page -->
