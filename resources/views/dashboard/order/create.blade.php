@@ -687,23 +687,39 @@
                 updateTotalWeight(); // Update total weight when row is removed
             });
 
+            // Helper function to convert Persian digits to English digits
+            function convertPersianToEnglish(str) {
+                var persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+                var englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                var result = str;
+                for (var i = 0; i < 10; i++) {
+                    result = result.replace(new RegExp(persianDigits[i], 'g'), englishDigits[i]);
+                }
+                return result;
+            }
+
             // Normalize price and amount values on form submission
             $('form').on('submit', function(e) {
-                // Remove commas and Arabic commas from price and amount fields
+                // Clean and normalize price fields
                 $('#order_formul input[name^="price"]').each(function() {
                     var value = $(this).val();
                     if (value) {
+                        // Convert Persian digits to English
+                        var converted = convertPersianToEnglish(value);
                         // Remove all commas (regular and Arabic) and spaces from the price value
-                        var cleanValue = value.replace(/[,٬\s]/g, '');
+                        var cleanValue = converted.replace(/[,٬\s]/g, '');
                         $(this).val(cleanValue);
                     }
                 });
                 
+                // Clean and normalize amount fields
                 $('#order_formul input[name^="commodity_amount"]').each(function() {
                     var value = $(this).val();
                     if (value) {
+                        // Convert Persian digits to English
+                        var converted = convertPersianToEnglish(value);
                         // Remove all commas (regular and Arabic) and spaces from the amount value
-                        var cleanValue = value.replace(/[,٬\s]/g, '');
+                        var cleanValue = converted.replace(/[,٬\s]/g, '');
                         $(this).val(cleanValue);
                     }
                 });
