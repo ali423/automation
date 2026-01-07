@@ -292,13 +292,21 @@ class CommodityController extends Controller
      */
     public function show(Commodity $commodity)
     {
-        // Optimize: Load commodity with all necessary relationships
-        $commodity->load(['unit', 'materials.unit']);
+        // Optimize: Load commodity with all necessary relationships including pivot unit
+        $commodity->load(['unit', 'materials' => function($query) {
+            $query->with('unit');
+        }]);
         
         // Pre-calculate base price to avoid N+1 queries
         $commodity->base_price = $this->calculateBasePrice($commodity);
         
-        $materials = $commodity->materials;
+        $materials = $commodity->materials->map(function($material) {
+            // Load the unit from pivot if exists
+            if ($material->pivot->unit_id) {
+                $material->pivot_unit = \App\Models\Unit::find($material->pivot->unit_id);
+            }
+            return $material;
+        });
         
         return view('dashboard.commodity.show', [
             'commodity' => $commodity,

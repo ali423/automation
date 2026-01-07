@@ -218,6 +218,7 @@ class OrderController extends Controller
             'unit_id' => $request->input('unit_id'),
             'deadline' => $request->input('deadline'),
             'price' => $request->input('price'),
+            'packaging_count' => $request->input('packaging_count'),
             'commodity_amount' => $request->input('commodity_amount'),
         ];
 
@@ -308,6 +309,7 @@ class OrderController extends Controller
             'unit_id' => $request->input('unit_id'),
             'deadline' => $request->input('deadline'),
             'price' => $request->input('price'),
+            'packaging_count' => $request->input('packaging_count'),
             'commodity_amount' => $request->input('commodity_amount'),
         ];
         
@@ -652,6 +654,61 @@ class OrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'خطا در محاسبه وزن: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Convert amount from one unit to another for a specific commodity
+     *
+     * @param int $commodityId
+     * @param float $amount
+     * @param int $fromUnitId
+     * @param int $toUnitId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function convertAmount($commodityId, $amount, $fromUnitId, $toUnitId)
+    {
+        try {
+            $commodity = Commodity::findOrFail($commodityId);
+            
+            // Validate that both units are valid for this commodity
+            $selectableUnits = $this->commodityUnitService->getSelectableUnits($commodity);
+            $fromUnitValid = $selectableUnits->contains('id', (int)$fromUnitId);
+            $toUnitValid = $selectableUnits->contains('id', (int)$toUnitId);
+            
+            if (!$fromUnitValid || !$toUnitValid) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'واحد انتخاب شده برای این کالا معتبر نیست.'
+                ]);
+            }
+            
+            // Use UnitConversionService to convert
+            $unitConversionService = app(\App\Services\UnitConversionService::class);
+            $convertedAmount = $unitConversionService->convert(
+                (float)$amount,
+                (int)$fromUnitId,
+                (int)$toUnitId,
+                $commodity->id
+            );
+            
+            if ($convertedAmount === null) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'تبدیل واحد امکان‌پذیر نیست. لطفاً نرخ تبدیل را تعریف کنید.'
+                ]);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'converted_amount' => $convertedAmount,
+                'converted_amount_rounded' => round($convertedAmount, 2)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در تبدیل واحد: ' . $e->getMessage()
             ]);
         }
     }

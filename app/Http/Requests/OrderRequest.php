@@ -34,11 +34,13 @@ class OrderRequest extends FormRequest
             'price' => ['nullable', 'array'],
             'commodity_amount' => ['required', 'array', 'min:1'],
             'discount_percentage' => ['nullable', 'array'],
+            'packaging_count' => ['nullable', 'array'],
             'commodity_id.*' => ['required', 'exists:commodities,id', 'distinct', Rule::exists('commodities', 'id')->where('type', 'product')],
             'unit_id.*' => ['required', 'exists:units,id'],
             'price.*' => ['nullable', 'numeric'],
             'commodity_amount.*' => ['required', 'integer', 'min:1'],
             'discount_percentage.*' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'packaging_count.*' => ['nullable', 'integer', 'min:1'],
             'file' => ['nullable', 'mimes:jpg,svg,png,jpeg,pdf,txt,zip,rar', 'max:5120'],
             'comment' => ['nullable', 'string'],
         ];
@@ -55,9 +57,16 @@ class OrderRequest extends FormRequest
         $validator->after(function ($validator) {
             $commodityIds = $this->input('commodity_id', []);
             $unitIds = $this->input('unit_id', []);
+            $packagingCounts = $this->input('packaging_count', []);
             
             if (count($commodityIds) !== count($unitIds)) {
                 return;
+            }
+
+            // If packaging counts are provided, ensure alignment with commodities
+            if (!empty(array_filter($packagingCounts, function ($v) { return $v !== null && $v !== ''; }))
+                && count($packagingCounts) !== count($commodityIds)) {
+                $validator->errors()->add('packaging_count', 'تعداد بسته با تعداد اقلام سفارش هم‌تراز نیست.');
             }
             
             $commodityUnitService = app(CommodityUnitService::class);
@@ -118,6 +127,9 @@ class OrderRequest extends FormRequest
             'commodity_amount.*.required' => 'مقدار کالا الزامی است.',
             'commodity_amount.*.integer' => 'مقدار کالا باید عدد صحیح باشد.',
             'commodity_amount.*.min' => 'مقدار کالا باید بیشتر از صفر باشد.',
+            'packaging_count.array' => 'فرمت تعداد بسته‌ها صحیح نیست.',
+            'packaging_count.*.integer' => 'تعداد بسته باید عدد صحیح باشد.',
+            'packaging_count.*.min' => 'تعداد بسته باید حداقل یک باشد.',
             'file.mimes' => 'فرمت فایل مجاز نیست.',
             'file.max' => 'حجم فایل نباید بیشتر از 5 مگابایت باشد.',
         ];

@@ -102,11 +102,15 @@
                 </div>
                 <div class="form-group col-md-3">
                     <label>{{ __('fields.commodity.material_amount') }}</label>
-                    <input type="text" value="{{ number_format($material->pivot->amount, 0) }}" class="form-control" disabled>
+                    <input type="text" value="{{ rtrim(rtrim(number_format($material->pivot->amount, 4, '.', ','), '0'), '.') }}" class="form-control" disabled>
                 </div>
                 <div class="form-group col-md-2">
                     <label>{{ __('fields.unit') }}</label>
-                    <input type="text" value="{{ $material->unit ? $material->unit->name . ' (' . $material->unit->symbol . ')' : ($commodity->unit ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : 'نامشخص') }}" class="form-control" disabled>
+                    @php
+                        $pivotUnit = $material->pivot->unit_id ? \App\Models\Unit::find($material->pivot->unit_id) : null;
+                        $unitDisplay = $pivotUnit ? $pivotUnit->name . ' (' . $pivotUnit->symbol . ')' : ($material->unit ? $material->unit->name . ' (' . $material->unit->symbol . ')' : 'نامشخص');
+                    @endphp
+                    <input type="text" value="{{ $unitDisplay }}" class="form-control" disabled>
                 </div>
             @endforeach
         </div>
