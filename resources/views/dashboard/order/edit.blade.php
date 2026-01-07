@@ -684,12 +684,12 @@
             $('#orderEditForm').on('submit', function(e) {
                 renumberFormIndices();
                 
-                // Remove commas and Arabic commas from price fields to prevent validation errors
+                // Remove commas from price fields to prevent validation errors
                 $('#order_formul input[name^="price"]').each(function() {
                     var value = $(this).val();
                     if (value) {
-                        // Remove all commas (regular and Arabic) and spaces from the price value
-                        var cleanValue = value.replace(/[,٬\s]/g, '');
+                        // Remove all commas and spaces from the price value
+                        var cleanValue = value.replace(/[,\s]/g, '');
                         $(this).val(cleanValue);
                     }
                 });
