@@ -28,7 +28,7 @@
                 <div class="form-group col-md-3">
                     <label for="material_amount">{{ __('fields.commodity.material_amount') }}</label>
                     <input type="number" step="any" name="material_amount[]" class="form-control"
-                           id="material_amount" value="{{ $used_material->pivot->amount ? number_format($used_material->pivot->amount, 4, '.', '') : '' }}"
+                           id="material_amount" value="{{ $used_material->pivot->amount ?? '' }}"
                            placeholder="{{ __('fields.commodity.material_amount') }}" required>
                     <div class="invalid-feedback">
                         لطفاً {{ __('fields.commodity.material_amount') }} را وارد کنید
