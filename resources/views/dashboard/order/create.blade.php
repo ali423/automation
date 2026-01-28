@@ -101,8 +101,14 @@
                 var $select = $row.find('#commodity_id');
                 var $help = $row.find('.commodity-help-text');
 
+                // Get selected attribute filters
+                var selectedAttributes = [];
+                $('.attribute-filter-checkbox:checked').each(function() {
+                    selectedAttributes.push($(this).val());
+                });
+
                 // If search term is empty, restore original full list (if stored) and return
-                if (!term) {
+                if (!term && selectedAttributes.length === 0) {
                     var original = $select.data('original-options');
                     if (original) {
                         $select.html(original);
@@ -133,7 +139,10 @@
                     url: '{{ route('commodity.search') }}',
                     type: 'get',
                     dataType: 'json',
-                    data: { search: term },
+                    data: { 
+                        search: term,
+                        attributes: selectedAttributes
+                    },
                     success: function (data) {
                         $select.empty();
                         if (!data.length) {
@@ -188,6 +197,23 @@
                             .text('ابتدا نام کالا را جستجو کرده و سپس از لیست بالا انتخاب کنید.');
                     }
                 }
+            });
+
+            // Clear attribute filters
+            $(document).on('click', '#clear-attribute-filters', function() {
+                $('.attribute-filter-checkbox').prop('checked', false);
+            });
+
+            // Auto-trigger search when attribute filters change
+            $(document).on('change', '.attribute-filter-checkbox', function() {
+                // Trigger search on all rows that have a search term
+                $('.form-row').each(function() {
+                    var $row = $(this);
+                    var term = $row.find('.commodity-search-input').val().trim();
+                    if (term) {
+                        $row.find('.btn-commodity-search').trigger('click');
+                    }
+                });
             });
 
             // Store commodity data per row for caching

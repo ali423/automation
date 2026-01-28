@@ -3,6 +3,48 @@
          data-commodity-unit-id="{{ $item->commodity->unit_id }}"
          data-commodity-weight-per-unit="{{ $item->commodity->weight_per_unit ?? '' }}"
      @endif>
+    
+    {{-- Attribute Filters (only show on first row) --}}
+    @if(!isset($index) || $index == 0)
+    <div class="col-12 mb-3" id="attribute-filters-container">
+        <div class="card" style="background-color: #f8f9fa;">
+            <div class="card-body p-3">
+                <h6 class="mb-2">فیلتر بر اساس ویژگی‌ها:</h6>
+                <div class="row" id="attribute-filters">
+                    @if(isset($attributes) && $attributes->count() > 0)
+                        @foreach($attributes as $attribute)
+                            <div class="col-md-3 col-sm-4 col-xs-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input attribute-filter-checkbox" 
+                                           type="checkbox" 
+                                           value="{{ $attribute->id }}" 
+                                           id="attr_filter_{{ $attribute->id }}">
+                                    <label class="form-check-label" for="attr_filter_{{ $attribute->id }}">
+                                        {{ $attribute->name }}
+                                    </label>
+                                </div>
+                            </div>
+                        @endforeach
+                        <div class="col-12 mt-2">
+                            <button type="button" class="btn btn-sm btn-secondary" id="clear-attribute-filters">
+                                پاک کردن فیلترها
+                            </button>
+                            <small class="text-muted ml-3">
+                                <i class="fas fa-info-circle"></i> 
+                                فیلترها بر روی همه ردیف‌های جستجو اعمال می‌شوند
+                            </small>
+                        </div>
+                    @else
+                        <div class="col-12">
+                            <small class="text-muted">هیچ ویژگی‌ای تعریف نشده است.</small>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+    
     {{-- Row 1: search box (full width) --}}
     <div class="col-12 mb-2">
         <div class="d-flex align-items-center">

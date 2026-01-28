@@ -2,6 +2,60 @@
 <script>
     $(document).ready(function() {
         let currentProductData = null;
+        
+        // Store original product options for filtering
+        const originalOptions = $('#product_id').html();
+
+        // Clear production attribute filters
+        $('#clear-production-filters').click(function() {
+            $('.production-attribute-filter').prop('checked', false);
+            filterProducts();
+        });
+
+        // Filter products when attributes change
+        $('.production-attribute-filter').change(function() {
+            filterProducts();
+        });
+
+        function filterProducts() {
+            // Get selected attribute IDs
+            const selectedAttributes = [];
+            $('.production-attribute-filter:checked').each(function() {
+                selectedAttributes.push($(this).val());
+            });
+
+            // Restore all options first
+            $('#product_id').html(originalOptions);
+
+            // If no filters selected, we're done
+            if (selectedAttributes.length === 0) {
+                return;
+            }
+
+            // Filter options based on attributes
+            const $productSelect = $('#product_id');
+            $productSelect.find('option').each(function() {
+                const $option = $(this);
+                const optionValue = $option.val();
+                
+                // Skip the default "انتخاب کنید" option
+                if (!optionValue) {
+                    return;
+                }
+
+                const productAttributes = ($option.data('attributes') || '').toString().split(',').filter(Boolean);
+                
+                // Check if product has ALL selected attributes (AND logic)
+                const hasAllAttributes = selectedAttributes.every(attrId => 
+                    productAttributes.includes(attrId.toString())
+                );
+
+                // Hide option if it doesn't match
+                if (!hasAllAttributes) {
+                    $option.remove();
+                }
+            });
+        }
 
         // Initialize with current values for edit form
         const currentProductId = $('#product_id').val();

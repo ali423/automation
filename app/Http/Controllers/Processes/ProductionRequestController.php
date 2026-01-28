@@ -88,7 +88,7 @@ class ProductionRequestController extends Controller
         $products = Commodity::query()
             ->where('type', 'product')
             ->whereHas('materials') // Only products with formulas
-            ->with(['unit', 'materials.unit'])
+            ->with(['unit', 'materials.unit', 'attributes'])
             ->orderBy('title')
             ->get();
         
