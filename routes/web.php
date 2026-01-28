@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\CommodityController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
@@ -100,6 +101,8 @@ Route::middleware('auth')->group(function () {
     Route::get('commodity-type-ajax/{id}',[CommodityController::class,'commodityType']);
 
     Route::resource('unit', UnitController::class);
+
+    Route::resource('attribute', AttributeController::class);
 
     Route::get('unit-conversion/select-commodity', [UnitConversionController::class, 'index'])->name('unit-conversion.select-commodity');
 
