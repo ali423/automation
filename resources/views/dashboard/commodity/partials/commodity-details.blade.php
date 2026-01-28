@@ -25,12 +25,12 @@
 <div class="form-row">
     <div class="form-group col-md-6">
         <label>وزن هر واحد (کیلوگرم)</label>
-        <input type="text" value="{{ $commodity->weight_per_unit ? number_format($commodity->weight_per_unit, 0) . ' کیلوگرم' : 'تعریف نشده' }}" class="form-control" disabled>
+        <input type="text" value="{{ $commodity->weight_per_unit ? rtrim(rtrim(number_format($commodity->weight_per_unit, 5, '.', ''), '0'), '.') . ' کیلوگرم' : 'تعریف نشده' }}" class="form-control" disabled>
     </div>
     @if($commodity->type == 'product')
     <div class="form-group col-md-6">
         <label>حجم هر واحد (لیتر)</label>
-        <input type="text" value="{{ $commodity->litrage ? number_format($commodity->litrage, 0) . ' لیتر' : 'تعریف نشده' }}" class="form-control" disabled>
+        <input type="text" value="{{ $commodity->litrage ? rtrim(rtrim(number_format($commodity->litrage, 5, '.', ''), '0'), '.') . ' لیتر' : 'تعریف نشده' }}" class="form-control" disabled>
     </div>
     @else
     <div class="form-group col-md-6">
@@ -102,7 +102,7 @@
                 </div>
                 <div class="form-group col-md-3">
                     <label>{{ __('fields.commodity.material_amount') }}</label>
-                    <input type="text" value="{{ number_format($material->pivot->amount, 4, '.', '') }}" class="form-control" disabled>
+                    <input type="text" value="{{ rtrim(rtrim(number_format($material->pivot->amount, 5, '.', ''), '0'), '.') }}" class="form-control" disabled>
                 </div>
                 <div class="form-group col-md-2">
                     <label>{{ __('fields.unit') }}</label>
