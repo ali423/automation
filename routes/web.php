@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
     // Prices tab and data (client-side export support) - keep BEFORE resource to avoid route shadowing
     Route::get('commodity/prices', [CommodityController::class, 'prices'])->name('commodity.prices');
     Route::get('commodity/search', [CommodityController::class, 'search'])->name('commodity.search');
+    Route::get('commodity/attributes', [CommodityController::class, 'getAttributes'])->name('commodity.attributes');
     Route::resource('commodity',CommodityController::class);
     Route::resource('customer',CustomerController::class);
     Route::resource('seller',SellerController::class);

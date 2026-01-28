@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Processes;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Processes\CreateProductionRequest;
+use App\Models\Attribute;
 use App\Models\Commodity;
 use App\Models\ProductionRequest;
 use App\Services\Processes\ProductionRequestService;
@@ -97,6 +98,7 @@ class ProductionRequestController extends Controller
         
         return view('dashboard.processes.production-request.create', [
             'products' => $products,
+            'attributes' => Attribute::orderBy('name')->get(),
         ]);
     }
 

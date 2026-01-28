@@ -94,3 +94,33 @@
         <div class="invalid-feedback">درصد تخفیف باید بین 0 تا 100 باشد</div>
     </div>
 </div>
+{{-- Row 4: Attributes --}}
+<div class="form-row">
+    <div class="form-group col-md-12">
+        <label>ویژگی‌ها</label>
+        <div class="attribute-checkboxes" style="border: 1px solid #ddd; border-radius: 4px; padding: 15px; background-color: #f9f9f9;">
+            @if($attributes && $attributes->count() > 0)
+                <div class="row">
+                    @foreach($attributes as $attribute)
+                        <div class="col-md-4 col-sm-6 col-xs-12 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="attributes[]" 
+                                       value="{{ $attribute->id }}" 
+                                       id="attribute_{{ $attribute->id }}"
+                                       {{ (old('attributes') && in_array($attribute->id, old('attributes'))) || ($commodity->id && $commodity->attributes->contains('id', $attribute->id)) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="attribute_{{ $attribute->id }}">
+                                    <strong>{{ $attribute->name }}</strong>
+                                    @if($attribute->description)
+                                        <br><small class="text-muted">{{ $attribute->description }}</small>
+                                    @endif
+                                </label>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-muted">هیچ ویژگی‌ای تعریف نشده است. <a href="{{ route('attribute.create') }}">یک ویژگی جدید ایجاد کنید</a></p>
+            @endif
+        </div>
+    </div>
+</div>
