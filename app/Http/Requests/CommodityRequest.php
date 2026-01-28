@@ -37,7 +37,7 @@ class CommodityRequest extends FormRequest
             $rules['pieces_per_box'] = ['required','integer','min:1'];
             $rules['unit_id'] = ['required', 'exists:units,id'];
             $rules['product_identifier'] = ['required','string','max:255','unique:commodities,product_identifier'];
-            $rules['weight_per_unit'] = ['required','numeric','min:0.001'];
+            $rules['weight_per_unit'] = ['required','numeric','min:0'];
             $rules['litrage'] = ['nullable','numeric','min:0'];
 
             $rules['materials']=['required','array','min:1'];
