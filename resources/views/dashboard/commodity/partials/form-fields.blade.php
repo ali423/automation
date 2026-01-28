@@ -39,14 +39,14 @@
 <div class="form-row">
     <div id="weight_per_unit_group" class="form-group col-md-3" style="display: {{ (old('type', $commodity->type ?? '') == 'product') ? 'block' : 'none' }};">
         <label for="weight_per_unit">وزن هر واحد (کیلوگرم)</label>
-        <input type="number" step="1" name="weight_per_unit" value="{{ old('weight_per_unit', $commodity->weight_per_unit ? number_format($commodity->weight_per_unit, 0, '.', '') : '') }}" class="form-control"
-               id="weight_per_unit" placeholder="مثال: 5" min="1" required>
+        <input type="number" step="any" name="weight_per_unit" value="{{ old('weight_per_unit', $commodity->weight_per_unit ?? '') }}" class="form-control"
+               id="weight_per_unit" placeholder="مثال: 5.5" min="0.001" required>
         <div class="invalid-feedback">لطفاً وزن هر واحد را وارد کنید</div>
     </div>
     <div id="litrage_group" class="form-group col-md-3" style="display: {{ (old('type', $commodity->type ?? '') == 'product') ? 'block' : 'none' }};">
         <label for="litrage">حجم هر واحد (لیتر)</label>
-        <input type="number" step="1" name="litrage" value="{{ old('litrage', $commodity->litrage ? number_format($commodity->litrage, 0, '.', '') : '') }}" class="form-control"
-               id="litrage" placeholder="لیتراژ" min="0">
+        <input type="number" step="any" name="litrage" value="{{ old('litrage', $commodity->litrage ?? '') }}" class="form-control"
+               id="litrage" placeholder="مثال: 1.5" min="0">
         <div class="invalid-feedback">لطفاً حجم هر واحد را وارد کنید</div>
     </div>
     <div class="form-group col-md-3">
