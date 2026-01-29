@@ -8,20 +8,48 @@
 
         // Clear production attribute filters
         $('#clear-production-filters').click(function() {
-            $('.production-attribute-filter').prop('checked', false);
+            $('.production-attribute-filter').removeClass('btn-primary').addClass('btn-outline-primary');
             filterProducts();
+            updateFilterIndicator();
         });
 
-        // Filter products when attributes change
-        $('.production-attribute-filter').change(function() {
+        // Filter products when attribute button clicked
+        $(document).on('click', '.production-attribute-filter', function() {
+            const $btn = $(this);
+            if ($btn.hasClass('btn-primary')) {
+                $btn.removeClass('btn-primary').addClass('btn-outline-primary');
+            } else {
+                $btn.removeClass('btn-outline-primary').addClass('btn-primary');
+            }
             filterProducts();
+            updateFilterIndicator();
         });
+
+        // Search in attributes
+        $('#production-attribute-search').on('input', function() {
+            const q = $(this).val().toString().trim().toLowerCase();
+            $('.production-attribute-filter').each(function() {
+                const name = $(this).data('name').toString().toLowerCase();
+                $(this).toggle(name.includes(q));
+            });
+        });
+
+        // Update filter indicator (icon color)
+        function updateFilterIndicator() {
+            const count = $('.production-attribute-filter.btn-primary').length;
+            const $icon = $('.attribute-filter-container .toggle-row-filter');
+            if (count > 0) {
+                $icon.css('color', '#007bff');
+            } else {
+                $icon.css('color', '#666');
+            }
+        }
 
         function filterProducts() {
             // Get selected attribute IDs
             const selectedAttributes = [];
-            $('.production-attribute-filter:checked').each(function() {
-                selectedAttributes.push($(this).val());
+            $('.production-attribute-filter.btn-primary').each(function() {
+                selectedAttributes.push($(this).data('attribute-id').toString());
             });
 
             // Restore all options first

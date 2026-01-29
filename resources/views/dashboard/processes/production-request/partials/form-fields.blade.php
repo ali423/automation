@@ -3,32 +3,24 @@
 {{-- Attribute Filters --}}
 @if(isset($attributes) && $attributes->count() > 0)
 <div class="form-row m-3">
-    <div class="col-12">
-        <div class="card" style="background-color: #f8f9fa;">
-            <div class="card-body p-3">
-                <h6 class="mb-2">فیلتر بر اساس ویژگی‌ها:</h6>
-                <div class="row" id="production-attribute-filters">
-                    @foreach($attributes as $attribute)
-                        <div class="col-md-3 col-sm-4 col-xs-6 mb-2">
-                            <div class="form-check">
-                                <input class="form-check-input production-attribute-filter" 
-                                       type="checkbox" 
-                                       value="{{ $attribute->id }}" 
-                                       id="prod_attr_{{ $attribute->id }}">
-                                <label class="form-check-label" for="prod_attr_{{ $attribute->id }}">
-                                    {{ $attribute->name }}
-                                </label>
-                            </div>
-                        </div>
-                    @endforeach
-                    <div class="col-12 mt-2">
-                        <button type="button" class="btn btn-sm btn-secondary" id="clear-production-filters">
-                            پاک کردن فیلترها
-                        </button>
-                        <small class="text-muted ml-3">
-                            <i class="fas fa-info-circle"></i> 
-                            فقط محصولاتی با ویژگی‌های انتخاب شده نمایش داده می‌شوند
-                        </small>
+    <div class="col-12 mb-2 attribute-filter-container">
+        <div class="d-inline-flex align-items-center" style="cursor: pointer;" onclick="$(this).closest('.attribute-filter-container').find('.filter-panel').slideToggle(200);">
+            <i class="ti-filter toggle-row-filter" style="font-size: 12px; color: #666;"></i>
+            <small style="margin-right: 6px; font-size: 11px; color: #333;">فیلتر ویژگی</small>
+        </div>
+        <div class="filter-panel mt-2" style="display: none;">
+            <div class="card" style="background-color: #f8f9fa; border: 1px solid #e0e0e0;">
+                <div class="card-body p-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <input type="text" class="form-control form-control-sm" id="production-attribute-search" placeholder="جستجو..." style="font-size: 12px; width: 150px;">
+                        <button type="button" class="btn btn-xs btn-secondary" id="clear-production-filters" style="font-size: 11px; padding: 2px 8px;">پاک کردن</button>
+                    </div>
+                    <div class="d-flex flex-wrap gap-1" id="production-attribute-filters" style="max-height: 120px; overflow-y: auto;">
+                        @foreach($attributes as $attribute)
+                            <button type="button" class="btn btn-xs btn-outline-primary production-attribute-filter" data-attribute-id="{{ $attribute->id }}" data-name="{{ $attribute->name }}" style="font-size: 11px; padding: 2px 8px; margin: 2px;">
+                                {{ $attribute->name }}
+                            </button>
+                        @endforeach
                     </div>
                 </div>
             </div>

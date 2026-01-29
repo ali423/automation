@@ -39,13 +39,38 @@
                                 <p>اطلاعات خرید کالا</p>
                                 @foreach($request->commodities as $request_commodity)
                                     <div id="inputFormRow" class="form-row shadow p-4 mb-3">
+                                        @if(isset($attributes) && $attributes->count() > 0)
+                                        <div class="col-12 mb-2 attribute-filter-container">
+                                            <div class="d-inline-flex align-items-center" style="cursor: pointer;" onclick="$(this).closest('.attribute-filter-container').find('.filter-panel').slideToggle(200);">
+                                                <i class="ti-filter toggle-row-filter" style="font-size: 12px; color: #666;"></i>
+                                                <small style="margin-right: 6px; font-size: 11px; color: #333;">فیلتر ویژگی</small>
+                                            </div>
+                                            <div class="filter-panel mt-2" style="display: none;">
+                                                <div class="card" style="background-color: #f8f9fa; border: 1px solid #e0e0e0;">
+                                                    <div class="card-body p-2">
+                                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                                            <input type="text" class="form-control form-control-sm row-attribute-search" placeholder="جستجو..." style="font-size: 12px; width: 150px;">
+                                                            <button type="button" class="btn btn-xs btn-secondary clear-row-filters" style="font-size: 11px; padding: 2px 8px;">پاک کردن</button>
+                                                        </div>
+                                                        <div class="d-flex flex-wrap gap-1 row-attribute-filters" style="max-height: 120px; overflow-y: auto;">
+                                                            @foreach($attributes as $attribute)
+                                                                <button type="button" class="btn btn-xs btn-outline-primary row-attribute-filter" data-attribute-id="{{ $attribute->id }}" data-name="{{ $attribute->name }}" style="font-size: 11px; padding: 2px 8px; margin: 2px;">
+                                                                    {{ $attribute->name }}
+                                                                </button>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endif
                                         <div class="form-group col-md-6">
                                             <label for="commodity_id"> {{ __('fields.commodity.name') }}</label>
-                                            <select id="commodity_id" class="form-control" name="commodity_id[]"
+                                            <select id="commodity_id" class="form-control commodity-select" name="commodity_id[]"
                                                     onchange="pricefunc(this)" required>
                                                 <option value="">انتخاب کنید</option>
                                                 @foreach ($commodities as $commodity)
-                                                    <option value="{{ $commodity->id }}"
+                                                    <option value="{{ $commodity->id }}" data-attributes="{{ $commodity->attributes->pluck('id')->join(',') }}"
                                                             @if($request_commodity->id ==$commodity->id )
                                                             selected
                                                         @endif
@@ -169,9 +194,19 @@
 
 @section('page_scripts')
     <script type="text/javascript">
+        // Store original commodity options HTML
+        var originalCommodityOptionsHtml = '@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}" data-attributes="{{ $commodity->attributes->pluck('id')->join(',') }}">{{ $commodity->title }}</option>@endforeach';
+
+        // Store attribute filter HTML template (collapsible version)
+        @if(isset($attributes) && $attributes->count() > 0)
+        var attributeFilterHtml = '<div class="col-12 mb-2 attribute-filter-container"><div class="d-inline-flex align-items-center" style="cursor: pointer;" onclick="$(this).closest(\'.attribute-filter-container\').find(\'.filter-panel\').slideToggle(200);"><i class="ti-filter toggle-row-filter" style="font-size: 12px; color: #666;"></i><small style="margin-right: 6px; font-size: 11px; color: #333;">فیلتر ویژگی</small></div><div class="filter-panel mt-2" style="display: none;"><div class="card" style="background-color: #f8f9fa; border: 1px solid #e0e0e0;"><div class="card-body p-2"><div class="d-flex justify-content-between align-items-center mb-2"><input type="text" class="form-control form-control-sm row-attribute-search" placeholder="جستجو..." style="font-size: 12px; width: 150px;"><button type="button" class="btn btn-xs btn-secondary clear-row-filters" style="font-size: 11px; padding: 2px 8px;">پاک کردن</button></div><div class="d-flex flex-wrap gap-1 row-attribute-filters" style="max-height: 120px; overflow-y: auto;">@foreach($attributes as $attribute)<button type="button" class="btn btn-xs btn-outline-primary row-attribute-filter" data-attribute-id="{{ $attribute->id }}" data-name="{{ $attribute->name }}" style="font-size: 11px; padding: 2px 8px; margin: 2px;">{{ $attribute->name }}</button>@endforeach</div></div></div></div></div>';
+        @else
+        var attributeFilterHtml = '';
+        @endif
+
         // add row
         $("#addRow").click(function () {
-            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3"> <div class="form-group col-md-6"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control" name="commodity_id[]"  onchange="pricefunc(this)" required> <option value="">انتخاب کنید</option>@foreach ($commodities as $commodity)<option value="{{ $commodity->id }}">{{ $commodity->title }}</option>@endforeach</select><img class="d-none" src onerror="priceload(this)"> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div> <div class="form-group col-md-6"> <label for="unit"> {{ __('fields.unit') }}</label> <select id="unit" class="form-control" name="unit[]" required> <option value="">انتخاب کنید...</option></select> <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div> </div> <div class="form-group col-md-3"> <label for="amount"> {{  __('fields.commodity.amount') }}</label> <input type="number" min="1" name="amount[]" class="form-control"id="amount" autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]"  required=""> <div class="invalid-feedback">لطفاً {{  __('fields.commodity.amount') }} را وارد کنید. </div></div> <div id="priceholder" class="form-group col-md-3 d-none"><label for="price"> قیمت خرید</label><input type="number" id="price" min="1" name="purchase_price[]" class="form-control"autocomplete="off" placeholder="قیمت خرید" pattern="[0-9 .]"  ><div class="invalid-feedback">لطفاً قیمت خرید را وارد کنید.</div></div> <i id="removeRow" type="submit" class="ti-close"></i></div></div>';
+            var html = '<div id="inputFormRow" class="form-row shadow p-4 mb-3">' + attributeFilterHtml + '<div class="form-group col-md-6"> <label for="commodity_id"> {{ __('fields.commodity.name') }}</label> <select id="commodity_id" class="form-control commodity-select" name="commodity_id[]"  onchange="pricefunc(this)" required> <option value="">انتخاب کنید</option>' + originalCommodityOptionsHtml + '</select><img class="d-none" src onerror="priceload(this)"> <div class="invalid-feedback">{{ __('fields.commodity.name') }} را انتخاب کنید.</div> </div> <div class="form-group col-md-6"> <label for="unit"> {{ __('fields.unit') }}</label> <select id="unit" class="form-control" name="unit[]" required> <option value="">انتخاب کنید...</option></select> <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div> </div> <div class="form-group col-md-3"> <label for="amount"> {{  __('fields.commodity.amount') }}</label> <input type="number" min="1" name="amount[]" class="form-control"id="amount" autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}" pattern="[0-9 .]"  required=""> <div class="invalid-feedback">لطفاً {{  __('fields.commodity.amount') }} را وارد کنید. </div></div> <div id="priceholder" class="form-group col-md-3 d-none"><label for="price"> قیمت خرید</label><input type="number" id="price" min="1" name="purchase_price[]" class="form-control"autocomplete="off" placeholder="قیمت خرید" pattern="[0-9 .]"  ><div class="invalid-feedback">لطفاً قیمت خرید را وارد کنید.</div></div> <i id="removeRow" type="submit" class="ti-close"></i></div></div>';
             $('#newRow').append(html);
             document.querySelectorAll('#inputFormRow').forEach((element, index) => {
                 element.querySelector('#commodity_id').setAttribute('name', 'commodity_id[' + index + ']');
@@ -269,8 +304,100 @@
                     }
                 }
             });
+        }
 
+        // Per-row attribute filter click handler
+        $(document).on('click', '.row-attribute-filter', function() {
+            const $btn = $(this);
+            const $row = $btn.closest('#inputFormRow');
 
+            // Toggle button state
+            if ($btn.hasClass('btn-primary')) {
+                $btn.removeClass('btn-primary').addClass('btn-outline-primary');
+            } else {
+                $btn.removeClass('btn-outline-primary').addClass('btn-primary');
+            }
+
+            // Apply filter to this row's commodity select
+            applyRowFilter($row);
+            updateFilterBadge($row);
+        });
+
+        // Per-row clear filters button
+        $(document).on('click', '.clear-row-filters', function() {
+            const $row = $(this).closest('#inputFormRow');
+            $row.find('.row-attribute-filter').removeClass('btn-primary').addClass('btn-outline-primary');
+            applyRowFilter($row);
+            updateFilterBadge($row);
+        });
+
+        // Per-row search in attributes
+        $(document).on('input', '.row-attribute-search', function() {
+            const $row = $(this).closest('#inputFormRow');
+            const q = $(this).val().toString().trim().toLowerCase();
+            $row.find('.row-attribute-filter').each(function() {
+                const name = $(this).data('name').toString().toLowerCase();
+                $(this).toggle(name.includes(q));
+            });
+        });
+
+        // Update filter indicator
+        function updateFilterBadge($row) {
+            const count = $row.find('.row-attribute-filter.btn-primary').length;
+            const $icon = $row.find('.toggle-row-filter');
+            if (count > 0) {
+                $icon.css('color', '#007bff');
+            } else {
+                $icon.css('color', '#666');
+            }
+        }
+
+        // Apply filter to a specific row's commodity select
+        function applyRowFilter($row) {
+            const $select = $row.find('.commodity-select');
+            const currentValue = $select.val();
+
+            // Store original options if not already stored
+            if (!$select.data('original-options')) {
+                $select.data('original-options', $select.html());
+            }
+
+            // Restore original options
+            $select.html($select.data('original-options'));
+
+            // Get selected attributes for this row
+            const selectedAttributes = [];
+            $row.find('.row-attribute-filter.btn-primary').each(function() {
+                selectedAttributes.push($(this).data('attribute-id').toString());
+            });
+
+            // If no filters selected, keep all options
+            if (selectedAttributes.length === 0) {
+                return;
+            }
+
+            // Filter options based on selected attributes
+            $select.find('option').each(function() {
+                const $option = $(this);
+                const optionValue = $option.val();
+
+                if (!optionValue) {
+                    return; // Keep the empty "انتخاب کنید" option
+                }
+
+                const attrs = ($option.data('attributes') || '').toString().split(',').filter(Boolean);
+                const hasAll = selectedAttributes.every(attrId => attrs.includes(attrId));
+
+                if (!hasAll) {
+                    $option.remove();
+                }
+            });
+
+            // If current selection is no longer available, reset it
+            if (currentValue && $select.find('option[value="' + currentValue + '"]').length === 0) {
+                $select.val('');
+                pricefunc($select[0]);
+            }
         }
 
         // Initialize price fields on page load for existing commodities
