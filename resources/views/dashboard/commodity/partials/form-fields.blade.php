@@ -1,4 +1,10 @@
 {{-- Form fields partial for commodity create/edit --}}
+@php
+    // Ensure $commodity is a valid object
+    if (!is_object($commodity)) {
+        $commodity = new \App\Models\Commodity();
+    }
+@endphp
 {{-- Row 1: Basic Information --}}
 <div class="form-row">
     <div class="form-group col-md-4">
@@ -97,30 +103,25 @@
 {{-- Row 4: Attributes --}}
 <div class="form-row">
     <div class="form-group col-md-12">
-        <label>ویژگی‌ها</label>
-        <div class="attribute-checkboxes" style="border: 1px solid #ddd; border-radius: 4px; padding: 15px; background-color: #f9f9f9;">
-            @if($attributes && $attributes->count() > 0)
-                <div class="row">
-                    @foreach($attributes as $attribute)
-                        <div class="col-md-4 col-sm-6 col-xs-12 mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="attributes[]" 
-                                       value="{{ $attribute->id }}" 
-                                       id="attribute_{{ $attribute->id }}"
-                                       {{ (old('attributes') && in_array($attribute->id, old('attributes'))) || ($commodity->id && $commodity->attributes->contains('id', $attribute->id)) ? 'checked' : '' }}>
-                                <label class="form-check-label" for="attribute_{{ $attribute->id }}">
-                                    <strong>{{ $attribute->name }}</strong>
-                                    @if($attribute->description)
-                                        <br><small class="text-muted">{{ $attribute->description }}</small>
-                                    @endif
-                                </label>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @else
-                <p class="text-muted">هیچ ویژگی‌ای تعریف نشده است. <a href="{{ route('attribute.create') }}">یک ویژگی جدید ایجاد کنید</a></p>
-            @endif
-        </div>
+        <label for="attributes">ویژگی‌ها</label>
+        @if($attributes && $attributes->count() > 0)
+            <select class="form-control select2-multiple" name="attributes[]" id="attributes" multiple="multiple" data-placeholder="انتخاب ویژگی‌ها...">
+                @foreach($attributes as $attribute)
+                    <option value="{{ $attribute->id }}" 
+                            {{ (old('attributes') && in_array($attribute->id, old('attributes'))) || (isset($commodity) && $commodity->id && $commodity->relationLoaded('attributes') && $commodity->attributes->contains('id', $attribute->id)) ? 'selected' : '' }}
+                            data-description="{{ $attribute->description }}">
+                        {{ $attribute->name }}{{ $attribute->description ? ' - ' . $attribute->description : '' }}
+                    </option>
+                @endforeach
+            </select>
+            <small class="form-text text-muted">می‌توانید چندین ویژگی را انتخاب کنید</small>
+        @else
+            <div class="alert alert-info">
+                هیچ ویژگی‌ای تعریف نشده است. 
+                @can('create_attribute', App\Models\Attribute::class)
+                    <a href="{{ route('attribute.create') }}" target="_blank">یک ویژگی جدید ایجاد کنید</a>
+                @endcan
+            </div>
+        @endif
     </div>
 </div>

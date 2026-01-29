@@ -23,7 +23,7 @@ class AttributeController extends Controller
      */
     public function index()
     {
-        $query = Attribute::query();
+        $query = Attribute::query()->with('creator');
         
         // Search functionality
         if (request('search')) {
@@ -39,7 +39,7 @@ class AttributeController extends Controller
         
         // Pagination
         $perPage = request('per_page', 10);
-        $attributes = $query->paginate($perPage);
+        $attributes = $query->paginate($perPage)->appends(request()->query());
         
         return view('dashboard.attribute.index', [
             'attributes' => $attributes,

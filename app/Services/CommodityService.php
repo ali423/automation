@@ -69,7 +69,7 @@ class CommodityService extends BaseService
             // Clear the products cache to ensure new products appear in production requests
             $this->clearProductsCache();
             
-            return true;
+            return $product;
         }
     }
 

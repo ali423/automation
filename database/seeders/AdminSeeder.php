@@ -16,24 +16,26 @@ class AdminSeeder extends Seeder
      */
     public function run()
     {
-        $admin_role = Role::query()
-            ->create([
-                'name' => 'مدیر',
-                'title' => 'admin',
-            ]);
-        $admin_role->Permissions()->attach(Permission::all());
+        $admin_role = Role::query()->firstOrCreate(
+            ['name' => 'مدیر'],
+            ['title' => 'admin']
+        );
 
-        User::query()
-            ->create([
+        $admin_role->update(['title' => 'admin']);
+        $admin_role->Permissions()->syncWithoutDetaching(Permission::pluck('id'));
+
+        User::query()->firstOrCreate(
+            ['user_name' => 'admin'],
+            [
                 'role_id' => $admin_role->id,
                 'name' => 'نوید',
-                'user_name' => 'admin',
                 'status' => 'active',
                 'lastname' => 'طهماسبی',
                 'email' => 'ali_mokhtari72@yahoo.com',
                 'password' => bcrypt('a13760406'),
                 'mobile'=>'09121307723',
                 'warning_message'=>true,
-            ]);
+            ]
+        );
     }
 }
