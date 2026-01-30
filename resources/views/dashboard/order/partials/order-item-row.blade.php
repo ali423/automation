@@ -4,41 +4,27 @@
          data-commodity-weight-per-unit="{{ $item->commodity->weight_per_unit ?? '' }}"
      @endif>
     
-    {{-- Attribute Filters (only show on first row) --}}
-    @if(!isset($index) || $index == 0)
-    <div class="col-12 mb-3" id="attribute-filters-container">
-        <div class="card" style="background-color: #f8f9fa;">
-            <div class="card-body p-3">
-                <h6 class="mb-2">فیلتر بر اساس ویژگی‌ها:</h6>
-                <div class="row" id="attribute-filters">
-                    @if(isset($attributes) && $attributes->count() > 0)
+    {{-- Attribute Filters (per row) --}}
+    @if(isset($attributes) && $attributes->count() > 0)
+    <div class="col-12 mb-2 attribute-filter-container">
+        <div class="d-inline-flex align-items-center" style="cursor: pointer;" onclick="$(this).closest('.attribute-filter-container').find('.filter-panel').slideToggle(200);">
+            <i class="ti-filter toggle-row-filter" style="font-size: 12px; color: #666;"></i>
+            <small style="margin-right: 6px; font-size: 11px; color: #333;">فیلتر ویژگی</small>
+        </div>
+        <div class="filter-panel mt-2" style="display: none;">
+            <div class="card" style="background-color: #f8f9fa; border: 1px solid #e0e0e0;">
+                <div class="card-body p-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <input type="text" class="form-control form-control-sm row-attribute-search" placeholder="جستجو..." style="font-size: 12px; width: 150px;">
+                        <button type="button" class="btn btn-xs btn-secondary clear-row-filters" style="font-size: 11px; padding: 2px 8px;">پاک کردن</button>
+                    </div>
+                    <div class="d-flex flex-wrap gap-1 row-attribute-filters" style="max-height: 150px; overflow-y: auto; scrollbar-width: thin;">
                         @foreach($attributes as $attribute)
-                            <div class="col-md-3 col-sm-4 col-xs-6 mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input attribute-filter-checkbox" 
-                                           type="checkbox" 
-                                           value="{{ $attribute->id }}" 
-                                           id="attr_filter_{{ $attribute->id }}">
-                                    <label class="form-check-label" for="attr_filter_{{ $attribute->id }}">
-                                        {{ $attribute->name }}
-                                    </label>
-                                </div>
-                            </div>
-                        @endforeach
-                        <div class="col-12 mt-2">
-                            <button type="button" class="btn btn-sm btn-secondary" id="clear-attribute-filters">
-                                پاک کردن فیلترها
+                            <button type="button" class="btn btn-xs btn-outline-primary row-attribute-filter" data-attribute-id="{{ $attribute->id }}" data-name="{{ $attribute->name }}" style="font-size: 11px; padding: 2px 8px; margin: 2px;">
+                                {{ $attribute->name }}
                             </button>
-                            <small class="text-muted ml-3">
-                                <i class="fas fa-info-circle"></i> 
-                                فیلترها بر روی همه ردیف‌های جستجو اعمال می‌شوند
-                            </small>
-                        </div>
-                    @else
-                        <div class="col-12">
-                            <small class="text-muted">هیچ ویژگی‌ای تعریف نشده است.</small>
-                        </div>
-                    @endif
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </div>
@@ -68,7 +54,7 @@
     {{-- Row 2: commodity + other fields --}}
     <div class="form-group col-md-3">
         <label for="commodity_id">{{ __('fields.commodity.name')}}</label>
-        <select id="commodity_id" class="form-control form-control-sm"
+        <select id="commodity_id" class="form-control form-control-sm commodity-select"
                 style="max-height: 150px; overflow-y: auto;"
                 name="commodity_id[{{ $index ?? 0 }}]" required>
             @if(isset($item) && $item->commodity)
@@ -76,7 +62,8 @@
                         @if($item->commodity->discount_percentage !== null) data-discount="{{ $item->commodity->discount_percentage }}" @endif
                         data-unit-id="{{ $item->commodity->unit_id }}"
                         data-weight-per-unit="{{ $item->commodity->weight_per_unit ?? '' }}"
-                        data-pieces-per-box="{{ $item->commodity->pieces_per_box ?? '' }}">
+                        data-pieces-per-box="{{ $item->commodity->pieces_per_box ?? '' }}"
+                        data-attributes="{{ $item->commodity->attributes->pluck('id')->join(',') }}">
                     {{ $item->commodity->title }}
                 </option>
             @else
@@ -86,7 +73,8 @@
                             @if($commodity->discount_percentage !== null) data-discount="{{ $commodity->discount_percentage }}" @endif
                             data-unit-id="{{ $commodity->unit_id }}"
                             data-weight-per-unit="{{ $commodity->weight_per_unit ?? '' }}"
-                            data-pieces-per-box="{{ $commodity->pieces_per_box ?? '' }}">
+                            data-pieces-per-box="{{ $commodity->pieces_per_box ?? '' }}"
+                            data-attributes="{{ $commodity->attributes->pluck('id')->join(',') }}">
                         {{ $commodity->title }}
                     </option>
                 @endforeach

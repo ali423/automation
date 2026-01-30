@@ -181,7 +181,7 @@ class OrderController extends Controller
      */
     public function create()
     {
-        $commodities = Commodity::query()->where('type', 'product')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->orderBy('title')->get();
+        $commodities = Commodity::query()->where('type', 'product')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit', 'attributes'])->orderBy('title')->get();
         $customers = Customer::query()->get();
         
         if (count($commodities) < 1) {
