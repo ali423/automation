@@ -164,6 +164,29 @@
                     </ul>
                 </li>
                 @endif
+                @if(Gate::check('read_attribute') || Gate::check('create_attribute'))
+                <li
+                    @if($first_url_part=='attribute' )
+                    class="treeview active"
+                    @else
+                    class="treeview"
+                    @endif>
+                    <a href="javascript:void(0)"><i class="ti-tag"></i> <span>ویژگی‌های کالا</span> <i
+                            class="fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        @can('read_attribute', App\Models\Attribute::class)
+                        <li @if($first_url_part=='attribute' && $second_url_part=='index' ) class="active" @endif>
+                            <a href="{{ route('attribute.index') }}">لیست ویژگی‌ها</a>
+                        </li>
+                        @endcan
+                        @can('create_attribute', App\Models\Attribute::class)
+                        <li @if($first_url_part=='attribute' && $second_url_part=='create' ) class="active" @endif>
+                            <a href="{{ route('attribute.create') }}">افزودن ویژگی جدید</a>
+                        </li>
+                        @endcan
+                    </ul>
+                </li>
+                @endif
                 @if(Gate::check('read_unit_conversion') || Gate::check('create_unit_conversion'))
                 <li
                     @if($first_url_part=='unit-conversion' )

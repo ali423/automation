@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Processes;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\importingReportRequest;
 use App\Http\Requests\Processes\CreateImportingRequest;
+use App\Models\Attribute;
 use App\Models\Commodity;
 use App\Models\ImportingRequest;
 use App\Models\Seller;
@@ -78,7 +79,10 @@ class ImportingRequestController extends Controller
      */
     public function create()
     {
-        $commodities = Commodity::query()->where('type', 'material')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->orderBy('title')->get();
+        $commodities = Commodity::query()->where('type', 'material')
+            ->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit', 'attributes'])
+            ->orderBy('title')
+            ->get();
         $sellers = Seller::all();
         
         if (count($commodities) < 1) {
@@ -98,6 +102,7 @@ class ImportingRequestController extends Controller
         return view('dashboard.processes.importing-request.create', [
             'commodities' => $commoditiesWithUnits,
             'sellers' => $sellers,
+            'attributes' => Attribute::orderBy('name')->get(),
         ]);
     }
 
@@ -173,8 +178,12 @@ class ImportingRequestController extends Controller
         
         return view('dashboard.processes.importing-request.edit', [
             'request' => $importingRequest,
-            'commodities' => Commodity::query()->where('type', 'material')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->orderBy('title')->get(),
+            'commodities' => Commodity::query()->where('type', 'material')
+                ->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit', 'attributes'])
+                ->orderBy('title')
+                ->get(),
             'sellers' => Seller::all(),
+            'attributes' => Attribute::orderBy('name')->get(),
         ]);
     }
 

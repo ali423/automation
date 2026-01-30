@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateWithdrawalRequest;
 use App\Http\Requests\OrderRequest;
+use App\Models\Attribute;
 use App\Models\Commodity;
 use App\Models\Customer;
 use App\Models\Order;
@@ -201,6 +202,7 @@ class OrderController extends Controller
             [
                 'commodities' => $commoditiesWithUnits,
                 'customers' => $customers,
+                'attributes' => Attribute::orderBy('name')->get(),
             ]);
     }
 

@@ -45,6 +45,12 @@ class PermissionsSeeder extends Seeder
             ['title'=>'edit_commodity', 'name'=>'ویرایش کالا '],
             ['title'=>'delete_commodity', 'name'=>'حذف کالا '],
 
+            //attribute permissions
+            ['title'=>'create_attribute', 'name'=>'اضافه کردن ویژگی '],
+            ['title'=>'read_attribute', 'name'=>'دیدن ویژگی'],
+            ['title'=>'edit_attribute', 'name'=>'ویرایش ویژگی '],
+            ['title'=>'delete_attribute', 'name'=>'حذف ویژگی '],
+
             //importing permissions
             ['title'=>'create_importing', 'name'=>'اضافه کردن ورود کالا '],
             ['title'=>'read_importing', 'name'=>'دیدن ورود کالا'],

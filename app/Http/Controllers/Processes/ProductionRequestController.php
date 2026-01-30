@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Processes;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Processes\CreateProductionRequest;
+use App\Models\Attribute;
 use App\Models\Commodity;
 use App\Models\ProductionRequest;
 use App\Services\Processes\ProductionRequestService;
@@ -87,7 +88,7 @@ class ProductionRequestController extends Controller
         $products = Commodity::query()
             ->where('type', 'product')
             ->whereHas('materials') // Only products with formulas
-            ->with(['unit', 'materials.unit'])
+            ->with(['unit', 'materials.unit', 'attributes'])
             ->orderBy('title')
             ->get();
         
@@ -97,6 +98,7 @@ class ProductionRequestController extends Controller
         
         return view('dashboard.processes.production-request.create', [
             'products' => $products,
+            'attributes' => Attribute::orderBy('name')->get(),
         ]);
     }
 
@@ -172,7 +174,7 @@ class ProductionRequestController extends Controller
         $products = Commodity::query()
             ->where('type', 'product')
             ->whereHas('materials') // Only products with formulas
-            ->with(['unit', 'materials.unit'])
+            ->with(['unit', 'materials.unit', 'attributes'])
             ->orderBy('title')
             ->get();
         
@@ -183,6 +185,7 @@ class ProductionRequestController extends Controller
         return view('dashboard.processes.production-request.edit', [
             'request' => $productionRequest,
             'products' => $products,
+            'attributes' => Attribute::orderBy('name')->get(),
         ]);
     }
 
