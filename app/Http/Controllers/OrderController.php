@@ -45,7 +45,7 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         // Build query with eager loading to fix N+1 query problem
-        $query = Order::with(['customer', 'orderItems.commodity', 'orderItems.unit'])
+        $query = Order::with(['customer', 'orderItems.commodity', 'orderItems.unit', 'activities.user'])
             ->whereHas('customer')
             ->whereHas('orderItems.commodity');
         
@@ -96,7 +96,7 @@ class OrderController extends Controller
      */
     public function chart(Request $request)
     {
-        $ordersQuery = Order::query()->with(['customer', 'orderItems.commodity', 'orderItems.unit'])
+        $ordersQuery = Order::query()->with(['customer', 'orderItems.commodity', 'orderItems.unit', 'activities.user'])
             ->whereHas('customer')
             ->whereHas('orderItems.commodity')
             ->orderByRaw("FIELD(status, 'pending', 'done')")
@@ -243,7 +243,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         // Load the order with all necessary relationships
-        $order->load(['customer', 'orderItems.commodity', 'orderItems.unit', 'comments.user', 'files.user']);
+        $order->load(['customer', 'orderItems.commodity', 'orderItems.unit', 'comments.user', 'files.user', 'activities.user']);
         
         // Add calculated properties
         $order->items_count = $order->orderItems->count();

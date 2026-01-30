@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\BaseService;
+use App\Traits\ActivityTrait;
 use App\Traits\CommentTrait;
 use App\Traits\FileTrait;
 use Carbon\Carbon;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
 {
-    use HasFactory, CommentTrait, FileTrait, SoftDeletes;
+    use HasFactory, ActivityTrait, CommentTrait, FileTrait, SoftDeletes;
 
     protected $fillable = [
         'customer_id',
