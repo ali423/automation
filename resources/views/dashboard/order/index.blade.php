@@ -26,7 +26,7 @@
                                 <th>ردیف</th>
                                 <th> {{ __('fields.customer') }}</th>
                                 <th>تعداد کالا</th>
-                                <th>{{ __('fields.deadline') }}</th>
+                                <th>{{ __('fields.created_at') }}</th>
                                 <th>{{ __('fields.status') }}</th>
                                 <th>{{ __('fields.creator') }}</th>
                                 <th>{{ __('fields.details') }}</th>
@@ -40,7 +40,7 @@
                                     <td>{{ $i }}</td>
                                     <td>{{ $order->customer ? $order->customer->name : 'مشتری حذف شده' }}</td>
                                     <td>{{ $order->items_count }} کالا</td>
-                                    <td>{{ $order->deadline }}</td>
+                                    <td>{{ jdate($order->created_at)->format('Y/m/d') }}</td>
                                     <td>{{ __('fields.order.status.' . $order->status) }}</td>
                                     @if(isset($order->creator_user))
                                         <td>{{ $order->creator_user->full_name }}</td>

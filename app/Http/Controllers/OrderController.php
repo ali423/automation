@@ -51,7 +51,7 @@ class OrderController extends Controller
         
         // Use advanced pagination with search and filter capabilities
         $orders = $this->getPaginatedResults($query, $request, 10, [
-            'searchable_fields' => ['customer.name', 'customer.comp_name', 'deadline'],
+            'searchable_fields' => ['customer.name', 'customer.comp_name', 'created_at'],
             'filterable_fields' => ['status', 'customer_id'],
             'sortable_fields' => ['id', 'status', 'deadline', 'created_at', 'updated_at'],
             'default_sort_field' => 'status',
@@ -67,10 +67,10 @@ class OrderController extends Controller
         
         // Prepare options for the pagination components
         $paginationOptions = [
-            'searchable_fields' => ['customer.name', 'customer.comp_name', 'deadline'],
+            'searchable_fields' => ['customer.name', 'customer.comp_name', 'created_at'],
             'filterable_fields' => ['status', 'customer_id'],
             'per_page_options' => [5, 10, 25, 50, 100],
-            'search_placeholder' => 'جستجو در نام مشتری، نام شرکت یا تاریخ مهلت...',
+            'search_placeholder' => 'جستجو در نام مشتری، نام شرکت یا تاریخ ایجاد...',
             'status_options' => [
                 'pending' => __('fields.order.status.pending'),
                 'done' => __('fields.order.status.done'),
