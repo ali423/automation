@@ -406,7 +406,8 @@ class OrderController extends Controller
     public function getChartData(Request $request)
     {
         $orderIds = $request->input('order_ids', []);
-        $selectAll = $request->input('select_all', false);
+        $selectAll = filter_var($request->input('select_all', false), FILTER_VALIDATE_BOOLEAN);
+        $excludedIds = $request->input('excluded_ids', []);
         $dateFrom = $request->input('date_from');
         $dateTo = $request->input('date_to');
         
@@ -471,9 +472,29 @@ class OrderController extends Controller
             }
         }
 
-        // Apply order ID filtering if provided and select_all is not requested
-        if (!$selectAll && !empty($orderIds)) {
-            $ordersQuery->whereIn('id', $orderIds);
+        // Handle order selection:
+        // - If select_all is true: get ALL filtered orders, optionally excluding specific IDs
+        // - If select_all is false: get only the specific order_ids provided
+        if ($selectAll) {
+            // Get ALL orders matching the filters (date, search, status, etc.)
+            // Exclude any specifically excluded IDs
+            if (!empty($excludedIds)) {
+                $ordersQuery->whereNotIn('id', $excludedIds);
+            }
+            // No whereIn filter - gets all filtered orders
+        } else {
+            // Only get specific orders by ID
+            if (!empty($orderIds)) {
+                $ordersQuery->whereIn('id', $orderIds);
+            } else {
+                // No orders selected and not select_all - return empty
+                return response()->json([
+                    'names' => [],
+                    'amounts' => [],
+                    'units' => [],
+                    'inventory' => []
+                ]);
+            }
         }
 
         $orders = $ordersQuery->get();
@@ -823,8 +844,8 @@ class OrderController extends Controller
             'query' => $request->query(),
         ]);
 
-        // Get real warehouse chart data
-        $warehouseChartData = $this->getWarehouseChartData();
+        // Get real warehouse chart data - pass filters so "همه" respects current filters
+        $warehouseChartData = $this->getWarehouseChartData($search, $filters, $normalizedDateFrom, $normalizedDateTo);
 
         // Calculate summary statistics
         // Summary cards should IGNORE filters and pagination – compute over ALL pending orders
@@ -893,15 +914,53 @@ class OrderController extends Controller
     /**
      * Get individual orders chart data with real data.
      * Aggregates data by commodity+unit combination to avoid duplicates.
+     * Respects filters when provided so "همه" checkbox shows filtered results.
      *
+     * @param string|null $search Search term for customer name/company or deadline
+     * @param array $filters Array of filters (customer_id, status)
+     * @param string|null $dateFrom Normalized date from (Y-m-d format)
+     * @param string|null $dateTo Normalized date to (Y-m-d format)
      * @return array
      */
-    private function getWarehouseChartData()
+    private function getWarehouseChartData($search = null, $filters = [], $dateFrom = null, $dateTo = null)
     {
-        // Get real pending orders with inventory data
-        $orders = Order::where('status', 'pending')
-            ->with(['orderItems.commodity', 'orderItems.unit', 'customer'])
-            ->get();
+        // Build query with filters - same as factoryStatus() pagination query
+        $ordersQuery = Order::where('status', 'pending')
+            ->with(['orderItems.commodity', 'orderItems.unit', 'customer']);
+
+        // Apply search filter
+        if (!empty($search)) {
+            $ordersQuery->where(function($q) use ($search) {
+                $q->whereHas('customer', function($cq) use ($search) {
+                    $cq->where('name', 'like', "%{$search}%")
+                       ->orWhere('comp_name', 'like', "%{$search}%");
+                })
+                ->orWhere('deadline', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply customer_id filter
+        if (!empty($filters['customer_id'])) {
+            $ordersQuery->where('customer_id', (int)$filters['customer_id']);
+        }
+
+        // Apply date filtering
+        if ($dateFrom || $dateTo) {
+            $deadlineExpr = "COALESCE(STR_TO_DATE(deadline, '%Y-%m-%d'), STR_TO_DATE(deadline, '%Y/%m/%d'), STR_TO_DATE(deadline, '%Y-%m-%d %H:%i:%s'), STR_TO_DATE(deadline, '%Y/%m/%d %H:%i:%s'))";
+            if ($dateFrom) {
+                $ordersQuery->whereRaw("$deadlineExpr >= ?", [$dateFrom]);
+            }
+            if ($dateTo) {
+                $ordersQuery->whereRaw("$deadlineExpr <= ?", [$dateTo]);
+            }
+        }
+
+        // Get filtered orders
+        $orders = $ordersQuery->get();
+
+        // Note: deliverability status filter ('deliverable'/'undeliverable') is NOT applied here
+        // because it requires computing can_deliver first (expensive), and the chart shows
+        // aggregated commodity/inventory data, not order-level deliverability.
 
         // Aggregate by commodity_id + unit_id combination
         $aggregatedData = [];
