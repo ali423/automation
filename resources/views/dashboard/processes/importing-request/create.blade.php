@@ -45,7 +45,7 @@
                                                         <input type="text" class="form-control form-control-sm row-attribute-search" placeholder="جستجو..." style="font-size: 12px; width: 150px;">
                                                         <button type="button" class="btn btn-xs btn-secondary clear-row-filters" style="font-size: 11px; padding: 2px 8px;">پاک کردن</button>
                                                     </div>
-                                                    <div class="d-flex flex-wrap gap-1 row-attribute-filters" style="max-height: 120px; overflow-y: auto;">
+                                                    <div class="d-flex flex-wrap gap-1 row-attribute-filters" style="max-height: 150px; overflow-y: auto; scrollbar-width: thin;">
                                                         @foreach($attributes as $attribute)
                                                             <button type="button" class="btn btn-xs btn-outline-primary row-attribute-filter" data-attribute-id="{{ $attribute->id }}" data-name="{{ $attribute->name }}" style="font-size: 11px; padding: 2px 8px; margin: 2px;">
                                                                 {{ $attribute->name }}
