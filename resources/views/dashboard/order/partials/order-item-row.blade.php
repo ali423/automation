@@ -3,6 +3,34 @@
          data-commodity-unit-id="{{ $item->commodity->unit_id }}"
          data-commodity-weight-per-unit="{{ $item->commodity->weight_per_unit ?? '' }}"
      @endif>
+    
+    {{-- Attribute Filters (per row) --}}
+    @if(isset($attributes) && $attributes->count() > 0)
+    <div class="col-12 mb-2 attribute-filter-container">
+        <div class="d-inline-flex align-items-center" style="cursor: pointer;" onclick="$(this).closest('.attribute-filter-container').find('.filter-panel').slideToggle(200);">
+            <i class="ti-filter toggle-row-filter" style="font-size: 12px; color: #666;"></i>
+            <small style="margin-right: 6px; font-size: 11px; color: #333;">فیلتر ویژگی</small>
+        </div>
+        <div class="filter-panel mt-2" style="display: none;">
+            <div class="card" style="background-color: #f8f9fa; border: 1px solid #e0e0e0;">
+                <div class="card-body p-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <input type="text" class="form-control form-control-sm row-attribute-search" placeholder="جستجو..." style="font-size: 12px; width: 150px;">
+                        <button type="button" class="btn btn-xs btn-secondary clear-row-filters" style="font-size: 11px; padding: 2px 8px;">پاک کردن</button>
+                    </div>
+                    <div class="d-flex flex-wrap gap-1 row-attribute-filters" style="max-height: 150px; overflow-y: auto; scrollbar-width: thin;">
+                        @foreach($attributes as $attribute)
+                            <button type="button" class="btn btn-xs btn-outline-primary row-attribute-filter" data-attribute-id="{{ $attribute->id }}" data-name="{{ $attribute->name }}" style="font-size: 11px; padding: 2px 8px; margin: 2px;">
+                                {{ $attribute->name }}
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+    
     {{-- Row 1: search box (full width) --}}
     <div class="col-12 mb-2">
         <div class="d-flex align-items-center">
@@ -26,7 +54,7 @@
     {{-- Row 2: commodity + other fields --}}
     <div class="form-group col-md-3">
         <label for="commodity_id">{{ __('fields.commodity.name')}}</label>
-        <select id="commodity_id" class="form-control form-control-sm"
+        <select id="commodity_id" class="form-control form-control-sm commodity-select"
                 style="max-height: 150px; overflow-y: auto;"
                 name="commodity_id[{{ $index ?? 0 }}]" required>
             @if(isset($item) && $item->commodity)
@@ -34,7 +62,8 @@
                         @if($item->commodity->discount_percentage !== null) data-discount="{{ $item->commodity->discount_percentage }}" @endif
                         data-unit-id="{{ $item->commodity->unit_id }}"
                         data-weight-per-unit="{{ $item->commodity->weight_per_unit ?? '' }}"
-                        data-pieces-per-box="{{ $item->commodity->pieces_per_box ?? '' }}">
+                        data-pieces-per-box="{{ $item->commodity->pieces_per_box ?? '' }}"
+                        data-attributes="{{ $item->commodity->attributes->pluck('id')->join(',') }}">
                     {{ $item->commodity->title }}
                 </option>
             @else
@@ -44,7 +73,8 @@
                             @if($commodity->discount_percentage !== null) data-discount="{{ $commodity->discount_percentage }}" @endif
                             data-unit-id="{{ $commodity->unit_id }}"
                             data-weight-per-unit="{{ $commodity->weight_per_unit ?? '' }}"
-                            data-pieces-per-box="{{ $commodity->pieces_per_box ?? '' }}">
+                            data-pieces-per-box="{{ $commodity->pieces_per_box ?? '' }}"
+                            data-attributes="{{ $commodity->attributes->pluck('id')->join(',') }}">
                         {{ $commodity->title }}
                     </option>
                 @endforeach

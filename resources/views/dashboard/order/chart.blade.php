@@ -71,8 +71,12 @@
                                     <td>{{ $order->customer ? $order->customer->name : 'مشتری حذف شده' }}</td>
                                     <td>{{ number_format($order->total_amount) }}</td>
                                     <td>{{ date('Y/m/d', strtotime($order->deadline)) }}</td>
-                                                                            <td>{{ __('fields.order.status.' . $order->status) }}</td>
-                                    <td>سیستم</td>
+                                    <td>{{ __('fields.order.status.' . $order->status) }}</td>
+                                    @if(isset($order->creator_user))
+                                        <td>{{ $order->creator_user->full_name }}</td>
+                                    @else
+                                        <td>سیستم</td>
+                                    @endif
                                     <td><a href="{{ route('order.show', $order) }}" class=""><i class="ti-more-alt font-24"></i></a></td>
                                 </tr>
                                 @php($i++)
@@ -208,6 +212,8 @@
 
             // Keep filter group static to preserve alignment
 
+            // Default state: "همه" is checked, individual checkboxes unchecked
+            // When "همه" is checked, ALL orders across ALL pages are included
             $('#select-all-orders').prop('checked', true);
             $('.order-checkbox').prop('checked', false);
 
@@ -217,58 +223,51 @@
             var mockMode = false; // If true, generates mock data
 
             function getSelectedOrderData() {
-                // Convert Persian digits to English digits
-                function faToEn(str) {
-                    if (!str) return '';
-                    return str.replace(/[۰-۹]/g, function (d) {
-                        return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d);
+                var selectAllChecked = $('#select-all-orders').is(':checked');
+                
+                // When "همه" is checked: include ALL orders, track excluded ones
+                // When "همه" is unchecked: include only specifically checked orders
+                
+                if (selectAllChecked) {
+                    // Collect excluded order IDs (unchecked individual checkboxes on current page)
+                    var excludedIds = [];
+                    $('#datatable-buttons-customer tbody tr').each(function() {
+                        var $row = $(this);
+                        var checkbox = $row.find('.order-checkbox');
+                        // If checkbox exists and is NOT checked, this order is excluded
+                        if (checkbox.length && !checkbox.is(':checked')) {
+                            var orderId = $row.data('order-id');
+                            if (orderId) {
+                                excludedIds.push(orderId);
+                            }
+                        }
                     });
+                    
+                    return {
+                        selectAll: true,
+                        excludedIds: excludedIds,
+                        orderIds: [] // Not used when selectAll is true
+                    };
+                } else {
+                    // Collect only checked order IDs
+                    var orderIds = [];
+                    $('#datatable-buttons-customer tbody tr').each(function() {
+                        var $row = $(this);
+                        var checkbox = $row.find('.order-checkbox');
+                        if (checkbox.length && checkbox.is(':checked')) {
+                            var orderId = $row.data('order-id');
+                            if (orderId) {
+                                orderIds.push(orderId);
+                            }
+                        }
+                    });
+                    
+                    return {
+                        selectAll: false,
+                        excludedIds: [],
+                        orderIds: orderIds
+                    };
                 }
-                // Convert date string to number for comparison (YYYY/MM/DD -> YYYYMMDD), always pad month and day
-                function toNum(str) {
-                    if (!str) return null;
-                    str = faToEn(str);
-                    var parts = str.split('/');
-                    if (parts.length !== 3) return null;
-                    var y = parts[0];
-                    var m = parts[1].length === 1 ? '0' + parts[1] : parts[1];
-                    var d = parts[2].length === 1 ? '0' + parts[2] : parts[2];
-                    return parseInt(y + m + d);
-                }
-                
-                var data = {
-                    orderIds: []
-                };
-
-                // --- Date range filter ---
-                var dateFrom = $('#date_from').val();
-                var dateTo = $('#date_to').val();
-
-                var fromNum = toNum(dateFrom);
-                var toNumVal = toNum(dateTo);
-
-                // If both date fields are empty, ignore date filtering (show all rows)
-                var filterByDate = !!(fromNum || toNumVal);
-
-                // Get checked rows from ALL rows (not just visible)
-                var checkedRows = $('#datatable-buttons-customer tbody tr').filter(function() {
-                    var checkbox = $(this).find('.order-checkbox');
-                    return checkbox.length && checkbox.is(':checked');
-                });
-                
-                // If no row is checked but 'select all' is checked, include ALL rows (not only visible)
-                if (checkedRows.length === 0 && $('#select-all-orders').is(':checked')) {
-                    checkedRows = $('#datatable-buttons-customer tbody tr');
-                }
-                
-                // Collect all filtered order_ids for backend use
-                checkedRows.each(function() {
-                    var $row = $(this);
-                    var orderId = $row.data('order-id');
-                    data.orderIds.push(orderId);
-                });
-                
-                return data;
             }
 
             function renderTable(data) {
@@ -327,8 +326,9 @@
 
                 // Use real data from the backend. Include current URL query params so server respects all filters.
                 var payload = {
+                    select_all: selectedData.selectAll,
+                    excluded_ids: selectedData.excludedIds,
                     order_ids: selectedData.orderIds,
-                    select_all: $('#select-all-orders').is(':checked'),
                     date_from: $('#date_from').val(),
                     date_to: $('#date_to').val(),
                     _token: '{{ csrf_token() }}'
@@ -395,19 +395,36 @@
             });
 
             // Select all functionality for order checkboxes
+            // When "همه" is checked: ALL orders across ALL pages are included (backend handles this)
+            // When "همه" is unchecked: only individually checked orders on current page are included
             $('#select-all-orders').on('change', function() {
                 var checked = $(this).is(':checked');
-                // Check/unchecked ALL order checkboxes (not only visible ones)
-                $('.order-checkbox').prop('checked', checked);
+                if (checked) {
+                    // When "همه" is checked, uncheck all individual checkboxes
+                    // This means "include all orders" with no exclusions
+                    $('.order-checkbox').prop('checked', false);
+                } else {
+                    // When "همه" is unchecked, user must manually select orders
+                    $('.order-checkbox').prop('checked', false);
+                }
                 // Update table automatically when select all changes
                 updateTable();
             });
             
             $(document).on('change', '.order-checkbox', function() {
-                // Maintain select-all state based on ALL checkboxes
-                var allCheckboxes = $('.order-checkbox');
-                var checkedAll = allCheckboxes.length > 0 && allCheckboxes.filter(':checked').length === allCheckboxes.length;
-                $('#select-all-orders').prop('checked', checkedAll);
+                var selectAllChecked = $('#select-all-orders').is(':checked');
+                
+                if (selectAllChecked) {
+                    // When "همه" is checked and user checks/unchecks individual orders,
+                    // it means they want to exclude/include specific orders from "all"
+                    // Keep "همه" checked - the excluded_ids will handle the filtering
+                } else {
+                    // When "همه" is not checked, check if all visible are now checked
+                    var allCheckboxes = $('.order-checkbox');
+                    var checkedAll = allCheckboxes.length > 0 && allCheckboxes.filter(':checked').length === allCheckboxes.length;
+                    // Optionally auto-check "همه" if all visible are checked
+                    // (Disabled for now - user must explicitly check "همه" for cross-page selection)
+                }
                 // Update table automatically when individual checkboxes change
                 updateTable();
             });

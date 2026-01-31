@@ -1,5 +1,5 @@
 {{-- Product formula partial for material selection --}}
-@if(!$commodity->id || $commodity->type == 'product')
+@if(isset($commodity) && is_object($commodity) && (!$commodity->id || $commodity->type == 'product'))
 <div id="product_formul" class="col-lg-12">
     <p>فرمول ساخت محصول (مقادیر بر اساس واحد: <span id="product_unit_display" class="text-white font-weight-bold">{{ $commodity->unit?->name && $commodity->unit?->symbol ? $commodity->unit->name . ' (' . $commodity->unit->symbol . ')' : '' }}</span>)</p>
     <div class="alert alert-info">

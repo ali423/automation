@@ -36,7 +36,7 @@
                             <div class="form-group col-md-4">
                                 <label for="exampleInputEmail111"> {{ __('fields.creator') }}</label>
                                 <input type="text" name="name"
-                                       value="سیستم"
+                                       value="{{ isset($order->creator_user) ? $order->creator_user->full_name : 'سیستم' }}"
                                        class="form-control" id="exampleInputEmail111"
                                        placeholder="{{ __('fields.creator') }}" autocomplete="off" disabled>
                             </div>

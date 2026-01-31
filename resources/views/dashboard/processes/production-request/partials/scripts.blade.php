@@ -2,6 +2,88 @@
 <script>
     $(document).ready(function() {
         let currentProductData = null;
+        
+        // Store original product options for filtering
+        const originalOptions = $('#product_id').html();
+
+        // Clear production attribute filters
+        $('#clear-production-filters').click(function() {
+            $('.production-attribute-filter').removeClass('btn-primary').addClass('btn-outline-primary');
+            filterProducts();
+            updateFilterIndicator();
+        });
+
+        // Filter products when attribute button clicked
+        $(document).on('click', '.production-attribute-filter', function() {
+            const $btn = $(this);
+            if ($btn.hasClass('btn-primary')) {
+                $btn.removeClass('btn-primary').addClass('btn-outline-primary');
+            } else {
+                $btn.removeClass('btn-outline-primary').addClass('btn-primary');
+            }
+            filterProducts();
+            updateFilterIndicator();
+        });
+
+        // Search in attributes
+        $('#production-attribute-search').on('input', function() {
+            const q = $(this).val().toString().trim().toLowerCase();
+            $('.production-attribute-filter').each(function() {
+                const name = $(this).data('name').toString().toLowerCase();
+                $(this).toggle(name.includes(q));
+            });
+        });
+
+        // Update filter indicator (icon color)
+        function updateFilterIndicator() {
+            const count = $('.production-attribute-filter.btn-primary').length;
+            const $icon = $('.attribute-filter-container .toggle-row-filter');
+            if (count > 0) {
+                $icon.css('color', '#007bff');
+            } else {
+                $icon.css('color', '#666');
+            }
+        }
+
+        function filterProducts() {
+            // Get selected attribute IDs
+            const selectedAttributes = [];
+            $('.production-attribute-filter.btn-primary').each(function() {
+                selectedAttributes.push($(this).data('attribute-id').toString());
+            });
+
+            // Restore all options first
+            $('#product_id').html(originalOptions);
+
+            // If no filters selected, we're done
+            if (selectedAttributes.length === 0) {
+                return;
+            }
+
+            // Filter options based on attributes
+            const $productSelect = $('#product_id');
+            $productSelect.find('option').each(function() {
+                const $option = $(this);
+                const optionValue = $option.val();
+                
+                // Skip the default "انتخاب کنید" option
+                if (!optionValue) {
+                    return;
+                }
+
+                const productAttributes = ($option.data('attributes') || '').toString().split(',').filter(Boolean);
+                
+                // Check if product has ALL selected attributes (AND logic)
+                const hasAllAttributes = selectedAttributes.every(attrId => 
+                    productAttributes.includes(attrId.toString())
+                );
+
+                // Hide option if it doesn't match
+                if (!hasAllAttributes) {
+                    $option.remove();
+                }
+            });
+        }
 
         // Initialize with current values for edit form
         const currentProductId = $('#product_id').val();

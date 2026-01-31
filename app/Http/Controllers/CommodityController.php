@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CommodityRequest;
 use App\Http\Requests\CommodityUpdateRequest;
+use App\Models\Attribute;
 use App\Models\Commodity;
 use App\Models\Unit;
 use App\Services\CommodityService;
@@ -27,6 +28,7 @@ class CommodityController extends Controller
 
     /**
      * Lightweight search endpoint for commodities (for order autocomplete).
+     * Supports filtering by attributes via query parameter.
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -36,14 +38,28 @@ class CommodityController extends Controller
         $this->authorize('viewAny', Commodity::class);
 
         $search = trim((string) $request->get('search', ''));
+        $attributeIds = $request->get('attributes', []); // Array of attribute IDs to filter by
+        
+        // Ensure attributes is an array
+        if (is_string($attributeIds)) {
+            $attributeIds = array_filter(explode(',', $attributeIds));
+        }
 
         $query = Commodity::query()
             ->where('type', 'product');
 
+        // Text search
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%");
             });
+        }
+
+        // Attribute filtering - use AND logic (commodity must have ALL selected attributes)
+        if (!empty($attributeIds)) {
+            $query->whereHas('attributes', function ($q) use ($attributeIds) {
+                $q->whereIn('attributes.id', $attributeIds);
+            }, '=', count($attributeIds)); // Ensure ALL attributes match
         }
 
         $commodities = $query
@@ -70,6 +86,21 @@ class CommodityController extends Controller
         });
 
         return response()->json($results);
+    }
+
+    /**
+     * Get all attributes for commodity filtering
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAttributes()
+    {
+        $this->authorize('viewAny', Commodity::class);
+        
+        $attributes = Attribute::orderBy('name')
+            ->get(['id', 'name', 'description']);
+        
+        return response()->json($attributes);
     }
 
     /**
@@ -266,7 +297,8 @@ class CommodityController extends Controller
         return view('dashboard.commodity.create', [
             'commodity' => new Commodity(),
             'materials' => $materialsWithUnits,
-            'units' => Unit::all()
+            'units' => Unit::all(),
+            'attributes' => Attribute::orderBy('name')->get()
         ]);
     }
 
@@ -279,7 +311,13 @@ class CommodityController extends Controller
     public function store(CommodityRequest $request)
     {
         DB::transaction(function () use ($request) {
-            $this->service->create($request->validationData());
+            $commodity = $this->service->create($request->validationData());
+            
+            // Sync attributes if provided
+            if ($request->has('attributes')) {
+                $attributeIds = is_array($request->input('attributes')) ? $request->input('attributes') : [];
+                $commodity->attributes()->sync($attributeIds);
+            }
         });
         return redirect(route('commodity.index'))->with('successful', 'اطلاعات ثبت شد.');
     }
@@ -323,7 +361,7 @@ class CommodityController extends Controller
     public function edit(Commodity $commodity)
     {
         // Optimize: Load commodity with all necessary relationships
-        $commodity->load(['unit', 'materials.unit']);
+        $commodity->load(['unit', 'materials.unit', 'attributes']);
         
         // Pre-calculate base price to avoid N+1 queries
         $commodity->base_price = $this->calculateBasePrice($commodity);
@@ -349,6 +387,7 @@ class CommodityController extends Controller
             'units' => Unit::all(),
             'materials' => $materialsWithUnits,
             'used_materials' => $used_materials,
+            'attributes' => Attribute::orderBy('name')->get()
         ]);
     }
 
@@ -363,6 +402,12 @@ class CommodityController extends Controller
     {
         DB::transaction(function () use ($request, $commodity) {
             $this->service->update($commodity, $request->validationData());
+            
+            // Sync attributes if provided
+            if ($request->has('attributes')) {
+                $attributeIds = is_array($request->input('attributes')) ? $request->input('attributes') : [];
+                $commodity->attributes()->sync($attributeIds);
+            }
         });
         return redirect(route('commodity.show', $commodity))->with('successful', 'اطلاعات ویرایش شد.');
     }

@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Order;
 use App\Models\WithdrawalRequest;
 use App\Policies\ActivityPolicy;
+use App\Policies\AttributePolicy;
 use App\Policies\CommodityPolicy;
 use App\Policies\CustomerPolicy;
 use App\Policies\ImportingRequestPolicy;
@@ -54,7 +55,10 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('read_commodity',[CommodityPolicy::class,'viewAny']);
         Gate::define('create_commodity',[CommodityPolicy::class,'create']);
 
-
+        Gate::define('read_attribute',[AttributePolicy::class,'viewAny']);
+        Gate::define('create_attribute',[AttributePolicy::class,'create']);
+        Gate::define('edit_attribute',[AttributePolicy::class,'update']);
+        Gate::define('delete_attribute',[AttributePolicy::class,'delete']);
 
         Gate::define('read_importing',[ImportingRequestPolicy::class,'viewAny']);
         Gate::define('create_importing',[ImportingRequestPolicy::class,'create']);

@@ -101,8 +101,14 @@
                 var $select = $row.find('#commodity_id');
                 var $help = $row.find('.commodity-help-text');
 
+                // Get selected attribute filters for THIS ROW (toggle buttons)
+                var selectedAttributes = [];
+                $row.find('.row-attribute-filter.btn-primary').each(function() {
+                    selectedAttributes.push($(this).data('attribute-id').toString());
+                });
+
                 // If search term is empty, restore original full list (if stored) and return
-                if (!term) {
+                if (!term && selectedAttributes.length === 0) {
                     var original = $select.data('original-options');
                     if (original) {
                         $select.html(original);
@@ -133,7 +139,10 @@
                     url: '{{ route('commodity.search') }}',
                     type: 'get',
                     dataType: 'json',
-                    data: { search: term },
+                    data: { 
+                        search: term,
+                        attributes: selectedAttributes
+                    },
                     success: function (data) {
                         $select.empty();
                         if (!data.length) {
@@ -189,6 +198,102 @@
                     }
                 }
             });
+
+            // Per-row attribute filter click handler
+            $(document).on('click', '.row-attribute-filter', function() {
+                var $btn = $(this);
+                var $row = $btn.closest('#inputFormRow');
+
+                // Toggle button state
+                if ($btn.hasClass('btn-primary')) {
+                    $btn.removeClass('btn-primary').addClass('btn-outline-primary');
+                } else {
+                    $btn.removeClass('btn-outline-primary').addClass('btn-primary');
+                }
+
+                // Apply filter to this row's commodity select
+                applyRowFilter($row);
+                // Update filter indicator for this row
+                updateRowFilterIndicator($row);
+            });
+
+            // Per-row clear filters button
+            $(document).on('click', '.clear-row-filters', function() {
+                var $row = $(this).closest('#inputFormRow');
+                $row.find('.row-attribute-filter').removeClass('btn-primary').addClass('btn-outline-primary');
+                applyRowFilter($row);
+                updateRowFilterIndicator($row);
+            });
+
+            // Per-row search in attributes
+            $(document).on('input', '.row-attribute-search', function() {
+                var $row = $(this).closest('#inputFormRow');
+                var q = $(this).val().toString().trim().toLowerCase();
+                $row.find('.row-attribute-filter').each(function() {
+                    var name = $(this).data('name').toString().toLowerCase();
+                    $(this).toggle(name.includes(q));
+                });
+            });
+
+            // Update filter indicator (icon color) for a specific row
+            function updateRowFilterIndicator($row) {
+                var count = $row.find('.row-attribute-filter.btn-primary').length;
+                var $icon = $row.find('.toggle-row-filter');
+                if (count > 0) {
+                    $icon.css('color', '#007bff');
+                } else {
+                    $icon.css('color', '#666');
+                }
+            }
+
+            // Apply filter to a specific row's commodity select
+            function applyRowFilter($row) {
+                var $select = $row.find('.commodity-select');
+                var currentValue = $select.val();
+
+                // Store original options if not already stored
+                if (!$select.data('original-options')) {
+                    $select.data('original-options', $select.html());
+                }
+
+                // Restore original options
+                $select.html($select.data('original-options'));
+
+                // Get selected attributes for this row
+                var selectedAttributes = [];
+                $row.find('.row-attribute-filter.btn-primary').each(function() {
+                    selectedAttributes.push($(this).data('attribute-id').toString());
+                });
+
+                // If no filters selected, keep all options
+                if (selectedAttributes.length === 0) {
+                    return;
+                }
+
+                // Filter options based on selected attributes
+                $select.find('option').each(function() {
+                    var $option = $(this);
+                    var optionValue = $option.val();
+
+                    if (!optionValue) {
+                        return; // Keep the empty "انتخاب کنید" option
+                    }
+
+                    var attrs = ($option.data('attributes') || '').toString().split(',').filter(Boolean);
+                    var hasAll = selectedAttributes.every(function(attrId) {
+                        return attrs.includes(attrId);
+                    });
+
+                    if (!hasAll) {
+                        $option.remove();
+                    }
+                });
+
+                // If current selection is no longer available, reset it
+                if (currentValue && $select.find('option[value="' + currentValue + '"]').length === 0) {
+                    $select.val('');
+                }
+            }
 
             // Store commodity data per row for caching
             var commodityDataCache = {};
@@ -582,10 +687,39 @@
                     }
                 }
             }
+            
+            // Store attribute filter HTML template for new rows
+            @if(isset($attributes) && $attributes->count() > 0)
+            var attributeFilterHtml = `<div class="col-12 mb-2 attribute-filter-container">
+                <div class="d-inline-flex align-items-center" style="cursor: pointer;" onclick="$(this).closest('.attribute-filter-container').find('.filter-panel').slideToggle(200);">
+                    <i class="ti-filter toggle-row-filter" style="font-size: 12px; color: #666;"></i>
+                    <small style="margin-right: 6px; font-size: 11px; color: #333;">فیلتر ویژگی</small>
+                </div>
+                <div class="filter-panel mt-2" style="display: none;">
+                    <div class="card" style="background-color: #f8f9fa; border: 1px solid #e0e0e0;">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <input type="text" class="form-control form-control-sm row-attribute-search" placeholder="جستجو..." style="font-size: 12px; width: 150px;">
+                                <button type="button" class="btn btn-xs btn-secondary clear-row-filters" style="font-size: 11px; padding: 2px 8px;">پاک کردن</button>
+                            </div>
+                            <div class="d-flex flex-wrap gap-1 row-attribute-filters" style="max-height: 150px; overflow-y: auto; scrollbar-width: thin;">
+                                @foreach($attributes as $attribute)
+                                <button type="button" class="btn btn-xs btn-outline-primary row-attribute-filter" data-attribute-id="{{ $attribute->id }}" data-name="{{ $attribute->name }}" style="font-size: 11px; padding: 2px 8px; margin: 2px;">{{ $attribute->name }}</button>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            @else
+            var attributeFilterHtml = '';
+            @endif
+
             // Add row - optimized version without AJAX
             $('#addRow').click(function () {
                 var index = $('#order_formul .form-row').length;
                 var html = `<div id="inputFormRow" class="form-row shadow p-4 mb-3">
+                    ${attributeFilterHtml}
                     <div class="col-12 mb-2">
                         <div class="d-flex align-items-center">
                             <input type="text"
@@ -602,14 +736,15 @@
                     </div>
                     <div class="form-group col-md-3">
                         <label for="commodity_id">{{ __('fields.commodity.name')}}</label>
-                        <select id="commodity_id" class="form-control form-control-sm"
+                        <select id="commodity_id" class="form-control form-control-sm commodity-select"
                                 style="max-height: 150px; overflow-y: auto;"
                                 name="commodity_id[${index}]" required>
                             <option value="">انتخاب کنید...</option>
                             @foreach ($commodities as $commodity)
                                 <option value="{{ $commodity->id }}"
                                         @if($commodity->discount_percentage !== null) data-discount="{{ $commodity->discount_percentage }}" @endif
-                                        data-pieces-per-box="{{ $commodity->pieces_per_box ?? '' }}">
+                                        data-pieces-per-box="{{ $commodity->pieces_per_box ?? '' }}"
+                                        data-attributes="{{ $commodity->attributes->pluck('id')->join(',') }}">
                                     {{ $commodity->title }}
                                 </option>
                             @endforeach

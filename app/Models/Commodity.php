@@ -50,6 +50,12 @@ class Commodity extends Model
             ->withPivot('amount','unit_id','purchase_price');
     }
 
+    public function attributes()
+    {
+        return $this->belongsToMany(Attribute::class, 'commodity_attributes')
+            ->withTimestamps();
+    }
+
     public function getBasePriceAttribute()
     {
         if ($this->type == 'product') {

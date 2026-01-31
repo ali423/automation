@@ -1,4 +1,10 @@
 {{-- Form fields partial for commodity create/edit --}}
+@php
+    // Ensure $commodity is a valid object
+    if (!is_object($commodity)) {
+        $commodity = new \App\Models\Commodity();
+    }
+@endphp
 {{-- Row 1: Basic Information --}}
 <div class="form-row">
     <div class="form-group col-md-4">
@@ -92,5 +98,55 @@
                value="{{ old('discount_percentage', $commodity->discount_percentage ?? '') }}"
                class="form-control" placeholder="مثال: 10 برای 10%">
         <div class="invalid-feedback">درصد تخفیف باید بین 0 تا 100 باشد</div>
+    </div>
+</div>
+{{-- Row 4: Attributes --}}
+<div class="form-row">
+    <div class="form-group col-md-12">
+        <label>ویژگی‌ها</label>
+        @if($attributes && $attributes->count() > 0)
+            <div class="card" style="border: 1px solid #e0e0e0;">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <input type="text" class="form-control form-control-sm" id="attribute-search" placeholder="جستجو در ویژگی‌ها..." style="max-width: 250px;">
+                        <div>
+                            <span class="text-muted ml-2" id="selected-count">0 انتخاب شده</span>
+                            <button type="button" class="btn btn-xs btn-outline-secondary" id="clear-all-attributes">پاک کردن همه</button>
+                        </div>
+                    </div>
+                    <div class="attribute-tags-container" style="max-height: 250px; overflow-y: auto; scrollbar-width: thin;">
+                        @php
+                            $selectedAttributeIds = old('attributes', []);
+                            if (empty($selectedAttributeIds) && isset($commodity) && $commodity->id && $commodity->relationLoaded('attributes')) {
+                                $selectedAttributeIds = $commodity->attributes->pluck('id')->toArray();
+                            }
+                        @endphp
+                        @foreach($attributes as $attribute)
+                            <button type="button" 
+                                    class="btn btn-sm attribute-tag mb-2 mr-1 {{ in_array($attribute->id, $selectedAttributeIds) ? 'btn-primary' : 'btn-outline-secondary' }}"
+                                    data-attribute-id="{{ $attribute->id }}"
+                                    data-name="{{ $attribute->name }}"
+                                    title="{{ $attribute->description ?? '' }}">
+                                {{ $attribute->name }}
+                            </button>
+                        @endforeach
+                    </div>
+                    {{-- Hidden inputs container for selected attributes --}}
+                    <div id="selected-attributes-inputs">
+                        @foreach($selectedAttributeIds as $attrId)
+                            <input type="hidden" name="attributes[]" value="{{ $attrId }}">
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            <small class="form-text text-muted">روی ویژگی‌ها کلیک کنید تا انتخاب شوند</small>
+        @else
+            <div class="alert alert-info">
+                هیچ ویژگی‌ای تعریف نشده است. 
+                @can('create_attribute', App\Models\Attribute::class)
+                    <a href="{{ route('attribute.create') }}" target="_blank">یک ویژگی جدید ایجاد کنید</a>
+                @endcan
+            </div>
+        @endif
     </div>
 </div>

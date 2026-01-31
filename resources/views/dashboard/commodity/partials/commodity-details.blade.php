@@ -116,3 +116,24 @@
         </div>
     </div>
 @endif
+
+{{-- Attributes Section --}}
+@if($commodity->attributes && $commodity->attributes->count() > 0)
+<div class="form-row">
+    <div class="form-group col-md-12">
+        <label>ویژگی‌ها</label>
+        <div class="attribute-display" style="border: 1px solid #ddd; border-radius: 4px; padding: 15px; background-color: #f9f9f9;">
+            <div class="d-flex flex-wrap gap-2">
+                @foreach($commodity->attributes as $attribute)
+                    <span class="badge badge-primary" style="font-size: 14px; padding: 8px 12px; margin: 4px;" title="{{ $attribute->description }}">
+                        {{ $attribute->name }}
+                        @if($attribute->description)
+                            <i class="ti-info-alt ml-1" data-toggle="tooltip" title="{{ $attribute->description }}"></i>
+                        @endif
+                    </span>
+                @endforeach
+            </div>
+        </div>
+    </div>
+</div>
+@endif
