@@ -112,7 +112,7 @@
                                             -
                                         @endif
                                     </td>
-                                    <td>{{ number_format($item->price) }}</td>
+                                    <td>{{ number_format($item->price_with_vat) }}</td>
                                     <td>{{ number_format($item->total_price_with_vat) }}</td>
                                 </tr>
                                 @endforeach
