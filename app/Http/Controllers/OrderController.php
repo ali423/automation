@@ -585,6 +585,141 @@ class OrderController extends Controller
     }
 
     /**
+     * Get factory status data for orders (warehouse chart).
+     * Similar to getChartData but returns aggregated product/commodity inventory data.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getFactoryStatusData(Request $request)
+    {
+        $orderIds = $request->input('order_ids', []);
+        $selectAll = filter_var($request->input('select_all', false), FILTER_VALIDATE_BOOLEAN);
+        $excludedIds = $request->input('excluded_ids', []);
+        
+        // Parse additional filters/search passed from the frontend
+        $search = $request->input('search', null);
+        $filtersParam = $request->input('filters', []);
+        $filters = [];
+        if (is_string($filtersParam)) {
+            $decoded = json_decode($filtersParam, true);
+            if (is_array($decoded)) { $filters = $decoded; }
+        } elseif (is_array($filtersParam)) {
+            $filters = $filtersParam;
+        }
+
+        // Build query with filters - same as factoryStatus() pagination query
+        $ordersQuery = Order::where('status', 'pending')
+            ->with(['orderItems.commodity', 'orderItems.unit', 'customer']);
+
+        // Apply search filter
+        if (!empty($search)) {
+            $ordersQuery->where(function($q) use ($search) {
+                $q->whereHas('customer', function($cq) use ($search) {
+                    $cq->where('name', 'like', "%{$search}%")
+                       ->orWhere('comp_name', 'like', "%{$search}%");
+                })
+                ->orWhere('deadline', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply customer_id filter
+        if (!empty($filters['customer_id'])) {
+            $ordersQuery->where('customer_id', (int)$filters['customer_id']);
+        }
+
+        // Apply date filtering
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
+        $normalizedDateFrom = $dateFrom ? $this->normalizePersianDate($dateFrom) : null;
+        $normalizedDateTo = $dateTo ? $this->normalizePersianDate($dateTo) : null;
+        
+        if ($normalizedDateFrom || $normalizedDateTo) {
+            $deadlineExpr = "COALESCE(STR_TO_DATE(deadline, '%Y-%m-%d'), STR_TO_DATE(deadline, '%Y/%m/%d'), STR_TO_DATE(deadline, '%Y-%m-%d %H:%i:%s'), STR_TO_DATE(deadline, '%Y/%m/%d %H:%i:%s'))";
+            if ($normalizedDateFrom) {
+                $ordersQuery->whereRaw("$deadlineExpr >= ?", [$normalizedDateFrom]);
+            }
+            if ($normalizedDateTo) {
+                $ordersQuery->whereRaw("$deadlineExpr <= ?", [$normalizedDateTo]);
+            }
+        }
+
+        // Handle order selection:
+        // - If select_all is true: get ALL filtered orders, optionally excluding specific IDs
+        // - If select_all is false: get only the specific order_ids provided
+        if ($selectAll) {
+            // Get ALL orders matching the filters
+            // Exclude any specifically excluded IDs
+            if (!empty($excludedIds)) {
+                $ordersQuery->whereNotIn('id', $excludedIds);
+            }
+        } else {
+            // Only get specific orders by ID
+            if (!empty($orderIds)) {
+                $ordersQuery->whereIn('id', $orderIds);
+            } else {
+                // No orders selected and not select_all - return empty
+                return response()->json([
+                    'orders' => []
+                ]);
+            }
+        }
+
+        $orders = $ordersQuery->get();
+
+        // Aggregate by commodity_id + unit_id combination (same logic as getWarehouseChartData)
+        $aggregatedData = [];
+        
+        foreach ($orders as $order) {
+            foreach ($order->orderItems as $item) {
+                // Create a unique key for commodity+unit combination
+                $key = $item->commodity_id . '_' . $item->unit_id;
+                
+                // Initialize aggregated entry if it doesn't exist
+                if (!isset($aggregatedData[$key])) {
+                    // Get inventory for this commodity+unit
+                    $inventory = Inventory::where('commodity_id', $item->commodity_id)
+                        ->where('unit_id', $item->unit_id)
+                        ->sum('amount') ?? 0;
+                    
+                    $aggregatedData[$key] = [
+                        'productName' => $item->commodity->title ?? 'نامشخص',
+                        'orderedAmount' => 0,
+                        'inventory' => $inventory,
+                        'unit' => $item->unit->name ?? 'نامشخص',
+                        'unitSymbol' => $item->unit->symbol ?? '',
+                        'commodityId' => $item->commodity_id,
+                        'unitId' => $item->unit_id,
+                        'orderIds' => [],
+                        'orderAmounts' => []
+                    ];
+                }
+                
+                // Sum the ordered amount for this commodity+unit combination
+                $aggregatedData[$key]['orderedAmount'] += $item->commodity_amount;
+                
+                // Track order IDs that contribute to this aggregate
+                if (!in_array($order->id, $aggregatedData[$key]['orderIds'])) {
+                    $aggregatedData[$key]['orderIds'][] = $order->id;
+                }
+                
+                // Track per-order amounts
+                if (!isset($aggregatedData[$key]['orderAmounts'][$order->id])) {
+                    $aggregatedData[$key]['orderAmounts'][$order->id] = 0;
+                }
+                $aggregatedData[$key]['orderAmounts'][$order->id] += $item->commodity_amount;
+            }
+        }
+
+        // Convert to array format
+        $chartData = array_values($aggregatedData);
+
+        return response()->json([
+            'orders' => $chartData
+        ]);
+    }
+
+    /**
      * Normalize Persian date string by converting Persian digits to English digits
      *
      * @param string $persianDate Date in format YYYY/MM/DD (Persian digits)
