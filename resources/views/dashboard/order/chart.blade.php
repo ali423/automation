@@ -298,9 +298,9 @@
                     $tbody.append(
                         '<tr>' +
                             '<td>' + name + '</td>' +
-                            '<td data-order="' + need + '">' + need + ' ' + unit + '</td>' +
-                            '<td data-order="' + inv + '">' + inv + ' ' + unit + '</td>' +
-                            '<td data-order="' + diff + '">' + diff + ' ' + unit + '</td>' +
+                            '<td data-order="' + need + '">' + need + '</td>' +
+                            '<td data-order="' + inv + '">' + inv + '</td>' +
+                            '<td data-order="' + diff + '">' + diff + '</td>' +
                             '<td>' + unit + '</td>' +
                             '<td>' + statusBadge + '</td>' +
                         '</tr>'
