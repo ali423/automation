@@ -94,6 +94,7 @@ Route::middleware('auth')->group(function () {
     Route::get('order/chart', [OrderController::class, 'chart'])->name('order.chart');
     Route::post('order/chart-data', [OrderController::class, 'getChartData'])->name('order.chart.data');
     Route::get('order/factory-status', [OrderController::class, 'factoryStatus'])->name('order.factory-status');
+    Route::post('order/factory-status-data', [OrderController::class, 'getFactoryStatusData'])->name('order.factory-status.data');
     Route::get('order/factory-status/customer/{id}', [OrderController::class, 'customerDetails'])->name('order.factory-status.customer');
     Route::resource('order',OrderController::class);
 
