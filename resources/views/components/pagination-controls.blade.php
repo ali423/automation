@@ -10,6 +10,21 @@
             $currentFilters = request('filters');
         }
     }
+   // Normalize attribute filters (comma-separated string or array)
+    $attributeFilterIds = [];
+    if (isset($currentFilters['attributes'])) {
+        $attrValue = $currentFilters['attributes'];
+        if (is_string($attrValue)) {
+            $attributeFilterIds = array_filter(array_map('trim', explode(',', $attrValue)));
+        } elseif (is_array($attrValue)) {
+            $attributeFilterIds = array_filter($attrValue);
+        }
+        if (empty($attributeFilterIds)) {
+            unset($currentFilters['attributes']);
+        } else {
+            $currentFilters['attributes'] = $attributeFilterIds;
+        }
+    }
     // Include date range in current filters display if present
     if (request('date_from')) {
         $currentFilters['date_from'] = request('date_from');
@@ -17,6 +32,9 @@
     if (request('date_to')) {
         $currentFilters['date_to'] = request('date_to');
     }
+
+    $showAttributeFilter = !empty($options['attribute_filter']);
+    $attributeFilterLayout = $options['attribute_filter_layout'] ?? 'inline';
 @endphp
 
 {{-- Compact search and filter controls --}}
@@ -121,6 +139,17 @@
                     @if($product)
                         <span class="badge bg-info text-white ms-1">محصول: {{ $product->title }}</span>
                     @endif
+                @endif
+                @if(!empty($attributeFilterIds))
+                    @php
+                        $attributeNames = \App\Models\Attribute::whereIn('id', $attributeFilterIds)
+                            ->orderBy('name')
+                            ->pluck('name')
+                            ->toArray();
+                    @endphp
+                    @foreach($attributeNames as $attrName)
+                        <span class="badge bg-info text-white ms-1">ویژگی: {{ $attrName }}</span>
+                    @endforeach
                 @endif
             </small>
         </div>
@@ -307,6 +336,33 @@
                     </select>
                 @endif
             @endforeach
+
+            @if($showAttributeFilter && $attributeFilterLayout === 'inline')
+                <div class="attribute-filter-container">
+                    <div class="d-inline-flex align-items-center" style="cursor: pointer;" onclick="$(this).closest('.attribute-filter-container').find('.filter-panel').slideToggle(200);">
+                        <i class="ti-filter toggle-row-filter" style="font-size: 12px; color: #666;"></i>
+                        <small style="margin-right: 6px; font-size: 11px; color: #333;">فیلتر ویژگی</small>
+                    </div>
+                    <div class="filter-panel mt-2" style="display: none;">
+                        <div class="card" style="background-color: #f8f9fa; border: 1px solid #e0e0e0;">
+                            <div class="card-body p-2">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <input type="text" class="form-control form-control-sm" id="attribute-filter-search" placeholder="جستجو..." style="font-size: 12px; width: 150px;">
+                                    <button type="button" class="btn btn-xs btn-secondary" id="attribute-filter-clear" style="font-size: 11px; padding: 2px 8px;">پاک کردن</button>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1" id="attribute-filter-list" style="max-height: 150px; overflow-y: auto; scrollbar-width: thin;">
+                                    @foreach(\App\Models\Attribute::orderBy('name')->get() as $attribute)
+                                        <button type="button" class="btn btn-xs {{ in_array($attribute->id, $attributeFilterIds) ? 'btn-primary' : 'btn-outline-primary' }} attribute-filter-btn" data-attribute-id="{{ $attribute->id }}" data-name="{{ $attribute->name }}" style="font-size: 11px; padding: 2px 8px; margin: 2px;">
+                                            {{ $attribute->name }}
+                                        </button>
+                                    @endforeach
+                                </div>
+                                <input type="hidden" id="attribute-filter-input" data-filter="attributes" value="{{ implode(',', $attributeFilterIds) }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
             
             <button class="btn btn-success btn-sm" id="apply-filters" type="button">
                 <i class="ti-check"></i> {{ __('pagination.apply_filters') }}
@@ -321,6 +377,37 @@
             @endif
         </div>
     </div>
+
+    @if($showAttributeFilter && $attributeFilterLayout === 'stacked')
+        <div class="row mt-2">
+            <div class="col-12">
+                <div class="attribute-filter-container">
+                    <div class="d-inline-flex align-items-center" style="cursor: pointer;" onclick="$(this).closest('.attribute-filter-container').find('.filter-panel').slideToggle(200);">
+                        <i class="ti-filter toggle-row-filter" style="font-size: 12px; color: #666;"></i>
+                        <small style="margin-right: 6px; font-size: 11px; color: #333;">فیلتر ویژگی</small>
+                    </div>
+                    <div class="filter-panel mt-2" style="display: none;">
+                        <div class="card" style="background-color: #f8f9fa; border: 1px solid #e0e0e0;">
+                            <div class="card-body p-2">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <input type="text" class="form-control form-control-sm" id="attribute-filter-search" placeholder="جستجو..." style="font-size: 12px; width: 150px;">
+                                    <button type="button" class="btn btn-xs btn-secondary" id="attribute-filter-clear" style="font-size: 11px; padding: 2px 8px;">پاک کردن</button>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1" id="attribute-filter-list" style="max-height: 150px; overflow-y: auto; scrollbar-width: thin;">
+                                    @foreach(\App\Models\Attribute::orderBy('name')->get() as $attribute)
+                                        <button type="button" class="btn btn-xs {{ in_array($attribute->id, $attributeFilterIds) ? 'btn-primary' : 'btn-outline-primary' }} attribute-filter-btn" data-attribute-id="{{ $attribute->id }}" data-name="{{ $attribute->name }}" style="font-size: 11px; padding: 2px 8px; margin: 2px;">
+                                            {{ $attribute->name }}
+                                        </button>
+                                    @endforeach
+                                </div>
+                                <input type="hidden" id="attribute-filter-input" data-filter="attributes" value="{{ implode(',', $attributeFilterIds) }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 
 
@@ -383,6 +470,61 @@ document.addEventListener('DOMContentLoaded', function() {
     // Filter handlers
     const applyFiltersBtn = document.getElementById('apply-filters');
     const clearFiltersBtn = document.getElementById('clear-filters');
+
+    // Attribute filter handlers
+    const attributeFilterInput = document.getElementById('attribute-filter-input');
+    const attributeFilterSearch = document.getElementById('attribute-filter-search');
+    const attributeFilterClear = document.getElementById('attribute-filter-clear');
+
+    function updateAttributeFilterInput() {
+        if (!attributeFilterInput) {
+            return;
+        }
+        const selected = [];
+        document.querySelectorAll('.attribute-filter-btn.btn-primary').forEach(function(btn) {
+            selected.push(btn.getAttribute('data-attribute-id'));
+        });
+        attributeFilterInput.value = selected.join(',');
+        const icon = document.querySelector('.attribute-filter-container .toggle-row-filter');
+        if (icon) {
+            icon.style.color = selected.length > 0 ? '#007bff' : '#666';
+        }
+    }
+
+    document.querySelectorAll('.attribute-filter-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            if (btn.classList.contains('btn-primary')) {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-primary');
+            } else {
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-primary');
+            }
+            updateAttributeFilterInput();
+        });
+    });
+
+    if (attributeFilterSearch) {
+        attributeFilterSearch.addEventListener('input', function() {
+            const q = attributeFilterSearch.value.trim().toLowerCase();
+            document.querySelectorAll('.attribute-filter-btn').forEach(function(btn) {
+                const name = (btn.getAttribute('data-name') || '').toLowerCase();
+                btn.style.display = name.includes(q) ? '' : 'none';
+            });
+        });
+    }
+
+    if (attributeFilterClear) {
+        attributeFilterClear.addEventListener('click', function() {
+            document.querySelectorAll('.attribute-filter-btn').forEach(function(btn) {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-primary');
+            });
+            updateAttributeFilterInput();
+        });
+    }
+
+    updateAttributeFilterInput();
     
     if (applyFiltersBtn) {
         applyFiltersBtn.addEventListener('click', function() {
