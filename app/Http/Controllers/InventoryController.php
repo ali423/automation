@@ -36,7 +36,15 @@ class InventoryController extends Controller
         // Removed amount > 0 filter to include zero inventory items (issue #76)
         $query = Inventory::with(['commodity', 'unit']);
         
-        // Apply type/attribute filters on related commodity if provided
+        /**
+         * Apply filters in proper order for correct AND logic:
+         * 1. Type filter (on commodity)
+         * 2. Attribute filter (on commodity) - uses AND logic (must have ALL selected attributes)
+         * 3. Search filter (applied by PaginationTrait on commodity.title, number, identifier, unit.name)
+         * 4. Unit ID filter (applied by PaginationTrait on inventory.unit_id)
+         * 
+         * All filters combine with AND logic - inventory must match ALL active filters
+         */
         if ($request->filled('filters')) {
             $filters = $request->get('filters');
             if (is_string($filters)) {
@@ -45,6 +53,8 @@ class InventoryController extends Controller
                     $filters = [];
                 }
             }
+            
+            // Filter by commodity type (product or material)
             if (is_array($filters) && !empty($filters['type'])) {
                 $type = $filters['type'];
                 $query->whereHas('commodity', function ($q) use ($type) {
@@ -52,6 +62,7 @@ class InventoryController extends Controller
                 });
             }
 
+            // Filter by attributes (AND logic: commodity must have ALL selected attributes)
             if (is_array($filters) && !empty($filters['attributes'])) {
                 $attributeIds = $filters['attributes'];
                 if (is_string($attributeIds)) {
@@ -61,6 +72,7 @@ class InventoryController extends Controller
                     $attributeIds = array_values(array_filter($attributeIds));
                 }
                 if (!empty($attributeIds)) {
+                    // Using whereHas with count ensures commodity has ALL selected attributes (AND logic)
                     $query->whereHas('commodity.attributes', function ($q) use ($attributeIds) {
                         $q->whereIn('attributes.id', $attributeIds);
                     }, '=', count($attributeIds));
@@ -68,7 +80,10 @@ class InventoryController extends Controller
             }
         }
         
-        // Use advanced pagination with search and filter capabilities
+        // Apply remaining filters via PaginationTrait:
+        // - Search: commodity.title, commodity.number, commodity.product_identifier, unit.name
+        // - Unit filter: unit_id
+        // - Sorting: by any sortable field
         $inventories = $this->getPaginatedResults($query, $request, 10, [
             'searchable_fields' => ['commodity.title', 'commodity.number', 'commodity.product_identifier', 'unit.name'],
             'filterable_fields' => ['unit_id'],
