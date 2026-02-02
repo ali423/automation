@@ -688,6 +688,7 @@ class OrderController extends Controller
                         'inventory' => $inventory,
                         'unit' => $item->unit->name ?? 'نامشخص',
                         'unitSymbol' => $item->unit->symbol ?? '',
+                        'piecesPerBox' => $item->commodity->pieces_per_box ?? 0,
                         'commodityId' => $item->commodity_id,
                         'unitId' => $item->unit_id,
                         'orderIds' => [],

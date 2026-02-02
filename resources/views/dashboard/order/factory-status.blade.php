@@ -63,6 +63,7 @@
                                         <th>نیاز</th>
                                         <th>موجودی</th>
                                         <th>اختلاف</th>
+                                        <th>اختلاف بر اساس بسته بندی</th>
                                         <th>واحد</th>
                                         <th>وضعیت</th>
                                     </tr>
@@ -506,7 +507,7 @@
             $tbody.empty();
 
             if (!data || data.length === 0) {
-                $tbody.append('<tr><td colspan="6" class="text-center text-muted">هیچ داده‌ای برای نمایش وجود ندارد</td></tr>');
+                $tbody.append('<tr><td colspan="7" class="text-center text-muted">هیچ داده‌ای برای نمایش وجود ندارد</td></tr>');
             } else {
                 // Process the orders array from the backend
                 data.forEach(function(item) {
@@ -515,6 +516,8 @@
                     var unit = item.unitSymbol || item.unit || '';
                     var name = item.productName || 'نامشخص';
                     var diff = inv - orders;
+                    var piecesPerBox = parseFloat(item.piecesPerBox) || 0;
+                    var packagingDiff = piecesPerBox > 0 ? Math.floor(diff / piecesPerBox) : 0;
                     var statusOk = inv >= orders;
                     var statusBadge = statusOk
                         ? '<span class="badge badge-success">کافی</span>'
@@ -526,6 +529,7 @@
                             '<td data-order="' + orders + '">' + orders + '</td>' +
                             '<td data-order="' + inv + '">' + inv + '</td>' +
                             '<td data-order="' + diff + '">' + diff + '</td>' +
+                            '<td data-order="' + packagingDiff + '">' + packagingDiff + '</td>' +
                             '<td>' + unit + '</td>' +
                             '<td>' + statusBadge + '</td>' +
                         '</tr>'
@@ -541,7 +545,10 @@
                         paging: false,
                         searching: false,
                         info: false,
-                        order: [[1, 'desc']]
+                        order: [[1, 'desc']],
+                        columnDefs: [
+                            { targets: 4, className: 'dt-body-center' }
+                        ]
                     });
                 } catch(e) {
                     console.log('Error initializing table:', e);
