@@ -90,6 +90,7 @@ return [
             'rejected' => 'رد شده',
             'expired' => 'منقضی شده',
             'done' => 'کامل شده',
+            'cancelled' => 'لغو شده',
         ]
     ],
     'production-request' => [

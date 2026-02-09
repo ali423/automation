@@ -161,17 +161,14 @@
                                 $totalPackaging = 0;
                                 $totalWeight = 0;
                                 $hasValidWeight = false;
-                                // Calculate VAT totals for documentation invoice
+                                // Calculate VAT totals for documentation invoice using net amounts
+                                $totalAmountNet = 0;
                                 $totalVatAmount = 0;
                                 $totalWithVat = 0;
-                                if ($invoiceType === 'documentation') {
-                                    $totalAmount = isset($totalPrice) && isset($totalPrice['number']) ? $totalPrice['number'] : 0;
-                                    $totalVatAmount = $totalAmount * vat_rate();
-                                    $totalWithVat = $totalAmount + $totalVatAmount;
-                                }
                             @endphp
                             @foreach($request->commodities as $commodity)
                                 @php
+                                    $displayAmount = isset($commodity->net_amount) ? $commodity->net_amount : $commodity->pivot->amount;
                                     // Calculate packaging quantity only for non-documentation invoices
                                     $packagingQuantity = '-';
                                     $weight = null;
@@ -179,7 +176,7 @@
                                         $piecesPerBox = $commodity->pieces_per_box ?? 1;
                                         if ($piecesPerBox > 0) {
                                             // Convert to main unit (pieces) first, then divide by pieces per box
-                                            $amountInMainUnit = $commodityUnitService->convertToMainUnit($commodity, $commodity->pivot->amount, $commodity->pivot->unit_id);
+                                            $amountInMainUnit = $commodityUnitService->convertToMainUnit($commodity, $displayAmount, $commodity->pivot->unit_id);
                                             // Packaging Quantity = Quantity (in pieces) ÷ Quantity per Package (pieces_per_box)
                                             $packagingQuantity = $amountInMainUnit !== null ? floor($amountInMainUnit / $piecesPerBox) : '-';
                                             if ($packagingQuantity !== '-') {
@@ -187,7 +184,7 @@
                                             }
                                         }
                                         // Calculate weight for customer and warehouse invoices
-                                        $weight = calculate_weight($commodity, $commodity->pivot->amount, $commodity->pivot->unit_id);
+                                        $weight = calculate_weight($commodity, $displayAmount, $commodity->pivot->unit_id);
                                         if ($weight !== null) {
                                             $totalWeight += $weight;
                                             $hasValidWeight = true;
@@ -196,14 +193,17 @@
                                     // Calculate VAT amount for documentation invoice
                                     $vatAmount = 0;
                                     if ($invoiceType === 'documentation' && isset($commodity->pivot->price)) {
-                                        $vatAmount = ($commodity->pivot->amount * $commodity->pivot->price) * vat_rate();
+                                        $lineTotal = $displayAmount * $commodity->pivot->price;
+                                        $vatAmount = $lineTotal * vat_rate();
+                                        $totalAmountNet += $lineTotal;
+                                        $totalVatAmount += $vatAmount;
                                     }
                                 @endphp
                                 <tr>
                                     <td scope="row">{{ $i }}</td>
                                     <td>{{ $commodity->title }}</td>
                                     <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
-                                    <td>{{ number_format($commodity->pivot->amount, 0, '.', ',') }}</td>
+                                    <td>{{ number_format($displayAmount, 0, '.', ',') }}</td>
                                     @if($invoiceType !== 'documentation')
                                         <td>
                                             {{ $packagingQuantity !== '-' ? number_format($packagingQuantity, 0, '.', ',') : '-' }}
@@ -214,7 +214,7 @@
                                     @endif
                                     @if($invoiceType === 'documentation')
                                         <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price, 0) : '-' }}</td>
-                                        <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price, 0) : '-' }}</td>
+                                        <td>{{ isset($commodity->pivot->price) ? number_format($displayAmount * $commodity->pivot->price, 0) : '-' }}</td>
                                         <td>{{ isset($commodity->pivot->price) ? number_format($vatAmount, 0, '.', ',') : '0' }}</td>
                                     @endif
                                 </tr>
@@ -229,7 +229,10 @@
                                         وزن کل: {{ $hasValidWeight ? number_format($totalWeight, 0, '.', ',') . ' کیلوگرم' : 'نامشخص' }}
                                     @endif
                                     @if($invoiceType === 'documentation')
-                                        مجموع: {{ isset($totalPrice) && isset($totalPrice['number']) ? number_format($totalPrice['number'], 0) : '0' }} | 
+                                        @php
+                                            $totalWithVat = $totalAmountNet + $totalVatAmount;
+                                        @endphp
+                                        مجموع: {{ number_format($totalAmountNet, 0) }} | 
                                         مالیات بر ارزش افزوده (%{{ number_format(vat_percentage(), 0) }}): {{ number_format($totalVatAmount, 0) }} | 
                                         جمع کل با مالیات: {{ number_format($totalWithVat, 0) }}
                                     @endif

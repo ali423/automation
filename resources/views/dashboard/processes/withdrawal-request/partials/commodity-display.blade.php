@@ -30,9 +30,20 @@
     </div>
 
     <div class="form-group col-md-4">
-        <label for="amount"> {{ __('fields.commodity.amount') }}</label>
+        <label for="amount"> {{ __('fields.commodity.amount') }} (اصلی)</label>
         <input type="text" value="{{ number_format($commodity->pivot->amount, 0) }}" class="form-control" disabled>
     </div>
+    
+    @if(isset($commodity->returned_amount) && $commodity->returned_amount > 0)
+        <div class="form-group col-md-4">
+            <label for="returned_amount" class="text-info">برگشتی از فروش</label>
+            <input type="text" value="{{ number_format($commodity->returned_amount, 0) }}" class="form-control bg-info text-white" disabled>
+        </div>
+        <div class="form-group col-md-4">
+            <label for="net_amount" class="text-success font-weight-bold">خالص فروش</label>
+            <input type="text" value="{{ number_format($commodity->net_amount, 0) }}" class="form-control bg-success text-white font-weight-bold" disabled>
+        </div>
+    @endif
     
     <div class="form-group col-md-4">
         <label for="weight">وزن (کیلوگرم)</label>
@@ -52,5 +63,19 @@
             <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
             <input type="text" value="{{ $commodity->pivot->price ? number_format($commodity->pivot->price, 0) : '-' }}" class="form-control" disabled>
         </div>
+        @if(isset($commodity->returned_amount) && $commodity->returned_amount > 0)
+            <div class="form-group col-md-4">
+                <label for="original_total" class="text-muted">مبلغ کل اصلی</label>
+                <input type="text" value="{{ number_format($commodity->pivot->amount * $commodity->pivot->price, 0) }}" class="form-control" disabled>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="return_total" class="text-info">مبلغ برگشتی</label>
+                <input type="text" value="{{ number_format($commodity->returned_amount * $commodity->pivot->price, 0) }}" class="form-control bg-light" disabled>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="net_total" class="text-success font-weight-bold">مبلغ خالص</label>
+                <input type="text" value="{{ number_format($commodity->net_amount * $commodity->pivot->price, 0) }}" class="form-control bg-success text-white font-weight-bold" disabled>
+            </div>
+        @endif
     @endif
 </div>

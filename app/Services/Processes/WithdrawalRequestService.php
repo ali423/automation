@@ -203,11 +203,14 @@ class WithdrawalRequestService extends BaseService
                 $commodity->pivot->unit_id
             );
             
-            // Remove stock from inventory using the main unit
-            $this->inventoryService->removeStock(
+            // Remove stock from inventory and create adjustment record
+            $this->inventoryService->removeStockWithAdjustment(
                 $commodity->id,
                 $commodity->unit_id, // Use commodity's main unit
-                $amountInMainUnit
+                $amountInMainUnit,
+                'withdrawal_approval',
+                $withdrawalRequest->number, // Use withdrawal number as reason
+                $withdrawalRequest
             );
         }
         
@@ -276,5 +279,123 @@ class WithdrawalRequestService extends BaseService
         }
         $data['success'] = true;
         return $data;
+    }
+
+    /**
+     * Cancel a withdrawal request and restore inventory
+     *
+     * @param WithdrawalRequest $withdrawalRequest
+     * @param string|null $cancelReason
+     * @return bool
+     * @throws \Exception
+     */
+    public function cancelWithdrawal($withdrawalRequest, $cancelReason = null)
+    {
+        // Check if withdrawal can be cancelled (only approvaled or done status)
+        if (!in_array($withdrawalRequest->status, ['approvaled', 'done', 'completed'])) {
+            throw new \Exception('تنها درخواست‌های تایید شده یا تکمیل شده را می‌توان لغو کرد.');
+        }
+
+        return DB::transaction(function () use ($withdrawalRequest, $cancelReason) {
+            // Get all adjustments for this withdrawal
+            $adjustments = \App\Models\InventoryAdjustment::forWithdrawal($withdrawalRequest->id)
+                ->removals() // Only get the removal adjustments
+                ->get();
+
+            // Reverse each removal adjustment by adding back the stock
+            foreach ($adjustments as $adjustment) {
+                $this->inventoryService->addStockWithAdjustment(
+                    $adjustment->commodity_id,
+                    $adjustment->unit_id,
+                    abs($adjustment->amount), // Convert negative to positive
+                    'withdrawal_cancellation',
+                    $cancelReason ?? 'لغو درخواست شماره ' . $withdrawalRequest->number,
+                    $withdrawalRequest
+                );
+            }
+
+            // Update withdrawal status
+            $withdrawalRequest->update([
+                'status' => 'cancelled',
+            ]);
+
+            return true;
+        });
+    }
+
+    /**
+     * Process a sales return (partial or full) for a withdrawal request
+     *
+     * @param WithdrawalRequest $withdrawalRequest
+     * @param array $returnData Format: ['commodity_id' => ['amount' => X, 'unit_id' => Y, 'reason' => 'optional']]
+     * @return bool
+     * @throws \Exception
+     */
+    public function processSalesReturn($withdrawalRequest, $returnData)
+    {
+        // Check if withdrawal was approved (can't return from unapproved/cancelled requests)
+        if (!in_array($withdrawalRequest->status, ['approvaled', 'done', 'completed'])) {
+            throw new \Exception('امکان برگشت از فروش تنها برای درخواست‌های تایید شده وجود دارد.');
+        }
+
+        return DB::transaction(function () use ($withdrawalRequest, $returnData) {
+            foreach ($returnData as $commodityId => $data) {
+                $returnAmount = $data['amount'];
+                $unitId = $data['unit_id'];
+                $reason = $data['reason'] ?? null;
+
+                // Get the commodity for conversion
+                $commodity = \App\Models\Commodity::find($commodityId);
+                if (!$commodity) {
+                    throw new \Exception("کالا با شناسه {$commodityId} یافت نشد.");
+                }
+
+                // Check if this commodity was part of the original withdrawal
+                $originalCommodity = $withdrawalRequest->commodities->where('id', $commodityId)->first();
+                if (!$originalCommodity) {
+                    throw new \Exception("کالای {$commodity->title} در درخواست اصلی وجود نداشت.");
+                }
+
+                // Convert return amount to main unit for processing
+                $returnAmountInMainUnit = $this->commodityUnitService->convertToMainUnit(
+                    $commodity,
+                    $returnAmount,
+                    $unitId
+                );
+
+                // Get original withdrawal amount in main unit for validation
+                $originalAmountInMainUnit = $this->commodityUnitService->convertToMainUnit(
+                    $originalCommodity,
+                    $originalCommodity->pivot->amount,
+                    $originalCommodity->pivot->unit_id
+                );
+
+                // Calculate total already returned for this commodity
+                $alreadyReturned = \App\Models\InventoryAdjustment::forWithdrawal($withdrawalRequest->id)
+                    ->byType('sales_return')
+                    ->where('commodity_id', $commodityId)
+                    ->sum('amount'); // Already positive
+
+                // Validate return amount doesn't exceed original
+                if (($alreadyReturned + $returnAmountInMainUnit) > $originalAmountInMainUnit) {
+                    throw new \Exception(
+                        "مقدار برگشتی {$commodity->title} بیش از مقدار اصلی است. " .
+                        "مقدار اصلی: {$originalAmountInMainUnit}, قبلاً برگشت داده شده: {$alreadyReturned}"
+                    );
+                }
+
+                // Add stock back to inventory with sales_return adjustment
+                $this->inventoryService->addStockWithAdjustment(
+                    $commodityId,
+                    $commodity->unit_id, // Use commodity's main unit
+                    $returnAmountInMainUnit,
+                    'sales_return',
+                    $reason ?? 'برگشت از فروش - درخواست شماره ' . $withdrawalRequest->number,
+                    $withdrawalRequest
+                );
+            }
+
+            return true;
+        });
     }
 }

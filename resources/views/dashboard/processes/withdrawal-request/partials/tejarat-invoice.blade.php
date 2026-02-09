@@ -237,17 +237,20 @@
                     <tbody>
                         @php
                             $i = 1;
-                            // Pre-calculate total price once to avoid multiple attribute calls
-                            $totalPrice = $request->total_price ?? null;
+                            // Calculate totals based on net (returned-adjusted) amounts
+                            $totalAmountNet = 0;
+                            $vatAmount = 0;
+                            $totalWithVat = 0;
                             $commodityUnitService = app(\App\Services\CommodityUnitService::class);
                         @endphp
                         @foreach($request->commodities as $commodity)
                             @php
+                                $displayAmount = isset($commodity->net_amount) ? $commodity->net_amount : $commodity->pivot->amount;
                                 // Calculate litrage: Convert amount to main unit, then multiply by litrage per unit
                                 // Litrage = Amount (in main unit) × Volume per unit (litrage field)
                                 $amountInMainUnit = $commodityUnitService->convertToMainUnit(
                                     $commodity,
-                                    $commodity->pivot->amount,
+                                    $displayAmount,
                                     $commodity->pivot->unit_id
                                 );
                                 $volumePerUnit = $commodity->litrage ?? 0;
@@ -258,8 +261,9 @@
                                 // Calculate VAT amount for this commodity
                                 $commodityVatAmount = 0;
                                 if (isset($commodity->pivot->price)) {
-                                    $commodityTotal = $commodity->pivot->amount * $commodity->pivot->price;
+                                    $commodityTotal = $displayAmount * $commodity->pivot->price;
                                     $commodityVatAmount = $commodityTotal * vat_rate();
+                                    $totalAmountNet += $commodityTotal;
                                 }
                             @endphp
                             <tr>
@@ -267,7 +271,7 @@
                                 <td>{{ $commodity->number }}</td>
                                 <td>{{ $commodity->product_identifier ?? default_product_identifier() }}</td>
                                 <td>{{ $commodity->title }}</td>
-                                <td>{{ number_format($commodity->pivot->amount, 0, '.', ',') }}</td>
+                                <td>{{ number_format($displayAmount, 0, '.', ',') }}</td>
                                 <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
                                 <td>{{ $totalLitrage !== null ? number_format($totalLitrage, 0, '.', ',') : '-' }}</td>
                                 <td>
@@ -278,7 +282,7 @@
                                     @endif
                                 </td>
                                 <td>{{ isset($commodity->pivot->price) ? number_format(round($commodityVatAmount), 0) : '-' }}</td>
-                                <td>{{ isset($commodity->pivot->price) ? number_format(round($commodity->pivot->amount * $commodity->pivot->price * (1 + vat_rate())), 0) : '-' }}</td>
+                                <td>{{ isset($commodity->pivot->price) ? number_format(round($displayAmount * $commodity->pivot->price * (1 + vat_rate())), 0) : '-' }}</td>
                             </tr>
                             @php
                                 $i++;
@@ -287,17 +291,12 @@
                         @php
                             use NumberToWords\NumberToWords;
                             // Calculate VAT amount
-                            $totalAmount = isset($totalPrice) && isset($totalPrice['number']) ? $totalPrice['number'] : 0;
-                            $vatAmount = $totalAmount * vat_rate();
-                            $totalWithVat = $totalAmount + $vatAmount;
+                            $vatAmount = $totalAmountNet * vat_rate();
+                            $totalWithVat = $totalAmountNet + $vatAmount;
                             // Calculate total in words
                             $totalInWords = '';
-                            if(isset($totalPrice) && isset($totalPrice['world'])) {
-                                $totalInWords = $totalPrice['world'];
-                            } else {
-                                $numberToWords = NumberToWords::transformNumber('fa', $totalWithVat);
-                                $totalInWords = $numberToWords;
-                            }
+                            $numberToWords = NumberToWords::transformNumber('fa', $totalWithVat);
+                            $totalInWords = $numberToWords;
                         @endphp
                         <tr>
                             <td colspan="7" rowspan="5" class="text-left" style="vertical-align: top; padding: 3px !important;">
@@ -308,7 +307,7 @@
                                 </div>
                                 <p style="margin-bottom: 1px;">توضیحات:</p>
                             </td>
-                            <td colspan="3" class="text-left">جمع کل : {{ number_format($totalAmount, 0) }}</td>
+                            <td colspan="3" class="text-left">جمع کل : {{ number_format($totalAmountNet, 0) }}</td>
                         </tr>
                         <tr>
                             <td colspan="3" class="text-left"> مالیات بر ارزش افزوده (%{{ number_format(vat_percentage(), 0) }}) : {{ number_format($vatAmount, 0) }}</td>

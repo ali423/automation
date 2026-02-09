@@ -239,18 +239,21 @@
                     <tbody>
                         @php
                             $i = 1;
-                            // Pre-calculate total price once to avoid multiple attribute calls
-                            $totalPrice = $request->total_price ?? null;
-                            // Calculate VAT amount
-                            $totalAmount = isset($totalPrice) && isset($totalPrice['number']) ? $totalPrice['number'] : 0;
-                            $vatAmount = $totalAmount * vat_rate();
-                            $totalWithVat = $totalAmount + $vatAmount;
+                            // Calculate totals based on net (returned-adjusted) amounts
+                            $totalAmountNet = 0;
+                            $vatAmount = 0;
+                            $totalWithVat = 0;
                         @endphp
                         @foreach($request->commodities as $commodity)
+                            @php
+                                $displayAmount = isset($commodity->net_amount) ? $commodity->net_amount : $commodity->pivot->amount;
+                                $lineTotal = isset($commodity->pivot->price) ? $displayAmount * $commodity->pivot->price : 0;
+                                $totalAmountNet += $lineTotal;
+                            @endphp
                             <tr>
                                 <td scope="row">{{ $i }}</td>
                                 <td>{{ $commodity->title }}</td>
-                                <td>{{ number_format($commodity->pivot->amount, 0, '.', ',') }}</td>
+                                <td>{{ number_format($displayAmount, 0, '.', ',') }}</td>
                                 <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
                                 <td>
                                     @if(isset($request->box_quantities[$commodity->id]) && $request->box_quantities[$commodity->id]['can_calculate'])
@@ -267,12 +270,16 @@
                                     @endif
                                 </td>
                                 <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price, 0) : '-' }}</td>
-                                <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->amount * $commodity->pivot->price, 0) : '-' }}</td>
+                                <td>{{ isset($commodity->pivot->price) ? number_format($lineTotal, 0) : '-' }}</td>
                             </tr>
                             @php
                                 $i++;
                             @endphp
                         @endforeach
+                        @php
+                            $vatAmount = $totalAmountNet * vat_rate();
+                            $totalWithVat = $totalAmountNet + $vatAmount;
+                        @endphp
                         <tr>
                             <td colspan="4" rowspan="5" class="text-left" style="vertical-align: top; padding: 3px !important;">
                                 <div class="d-flex justify-content-between" style="margin-bottom: 2px;">
@@ -282,7 +289,7 @@
                                 </div>
                                 <p style="margin-bottom: 1px;">توضیحات:</p>
                             </td>
-                            <td colspan="4" class="text-left">جمع کل : {{ number_format($totalAmount, 0) }}</td>
+                            <td colspan="4" class="text-left">جمع کل : {{ number_format($totalAmountNet, 0) }}</td>
                         </tr>
                         <tr>
                             <td colspan="4" class="text-left"> مالیات بر ارزش افزوده (%{{ number_format(vat_percentage(), 0) }}) : {{ number_format($vatAmount, 0) }}</td>
