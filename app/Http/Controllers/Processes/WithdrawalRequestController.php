@@ -61,6 +61,7 @@ class WithdrawalRequestController extends Controller
                 'rejected' => __('fields.withdrawal-request.status.rejected'),
                 'expired' => __('fields.withdrawal-request.status.expired'),
                 'done' => __('fields.withdrawal-request.status.done'),
+                'cancelled' => __('fields.withdrawal-request.status.cancelled'),
             ]
         ];
         
@@ -153,11 +154,27 @@ class WithdrawalRequestController extends Controller
         $pivotUnitIds = $withdrawalRequest->commodities->pluck('pivot.unit_id')->filter()->unique();
         $pivotUnits = \App\Models\Unit::whereIn('id', $pivotUnitIds)->get()->keyBy('id');
         
-        // Attach pivot units to commodities
+        // Calculate returned amounts for each commodity
+        $returnedAmounts = [];
+        if (in_array($withdrawalRequest->status, ['approvaled', 'done', 'cancelled'])) {
+            foreach ($withdrawalRequest->commodities as $commodity) {
+                $returned = \App\Models\InventoryAdjustment::forWithdrawal($withdrawalRequest->id)
+                    ->byType('sales_return')
+                    ->where('commodity_id', $commodity->id)
+                    ->sum('amount');
+                $returnedAmounts[$commodity->id] = $returned;
+            }
+        }
+        
+        // Attach pivot units and return data to commodities
         foreach ($withdrawalRequest->commodities as $commodity) {
             if ($commodity->pivot->unit_id && isset($pivotUnits[$commodity->pivot->unit_id])) {
                 $commodity->pivot->unit = $pivotUnits[$commodity->pivot->unit_id];
             }
+            // Attach returned amount
+            $commodity->returned_amount = $returnedAmounts[$commodity->id] ?? 0;
+            // Calculate net amount (original - returned)
+            $commodity->net_amount = $commodity->pivot->amount - $commodity->returned_amount;
         }
         
         return view('dashboard.processes.withdrawal-request.show', [
@@ -404,6 +421,155 @@ class WithdrawalRequestController extends Controller
         
         $this->service->rejectWithdrawal($withdrawalRequest);
         return redirect(route('withdrawal-request.show', $withdrawalRequest))->with('successful', 'درخواست با موفقیت رد شد.');
+    }
+
+    /**
+     * Show cancel form for a withdrawal request
+     *
+     * @param int $id
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
+     */
+    public function cancelForm($id)
+    {
+        if (!auth()->user()->role->havePermission('cancel_withdrawal')) {
+            return redirect()->back()->withErrors('شما این دسترسی را ندارید.');
+        }
+
+        $withdrawalRequest = WithdrawalRequest::query()->findOrFail($id);
+        if (!in_array($withdrawalRequest->status, ['approvaled', 'done', 'completed'])) {
+            return redirect()->back()->withErrors('در این مرحله امکان لغو وجود ندارد.');
+        }
+
+        return view('dashboard.processes.withdrawal-request.cancel', [
+            'request' => $withdrawalRequest,
+        ]);
+    }
+
+    /**
+     * Cancel a withdrawal request and restore inventory
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function cancelSubmit(\Illuminate\Http\Request $request, $id)
+    {
+        if (!auth()->user()->role->havePermission('cancel_withdrawal')) {
+            return redirect()->back()->withErrors('شما این دسترسی را ندارید.');
+        }
+
+        $withdrawalRequest = WithdrawalRequest::query()->findOrFail($id);
+
+        $validated = $request->validate([
+            'reason' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        try {
+            DB::transaction(function () use ($withdrawalRequest, $validated) {
+                $this->service->cancelWithdrawal($withdrawalRequest, $validated['reason'] ?? null);
+            });
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors($e->getMessage());
+        }
+
+        return redirect(route('withdrawal-request.show', $withdrawalRequest))->with('successful', 'درخواست با موفقیت لغو و موجودی بازگردانده شد.');
+    }
+
+    /**
+     * Show sales return form for a withdrawal request
+     *
+     * @param int $id
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
+     */
+    public function salesReturnForm($id)
+    {
+        if (!auth()->user()->role->havePermission('cancel_withdrawal')) {
+            return redirect()->back()->withErrors('شما این دسترسی را ندارید.');
+        }
+
+        $withdrawalRequest = WithdrawalRequest::query()->findOrFail($id);
+        if (!in_array($withdrawalRequest->status, ['approvaled', 'done', 'completed'])) {
+            return redirect()->back()->withErrors('امکان برگشت از فروش تنها برای درخواست‌های تایید شده وجود دارد.');
+        }
+
+        // Load commodities with their units for the form
+        $withdrawalRequest->load(['commodities' => function ($query) {
+            $query->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit']);
+        }]);
+
+        // Eager load pivot units
+        $pivotUnitIds = $withdrawalRequest->commodities->pluck('pivot.unit_id')->filter()->unique();
+        $pivotUnits = \App\Models\Unit::whereIn('id', $pivotUnitIds)->get()->keyBy('id');
+
+        // Attach pivot units and selectable units to commodities
+        foreach ($withdrawalRequest->commodities as $commodity) {
+            if ($commodity->pivot->unit_id && isset($pivotUnits[$commodity->pivot->unit_id])) {
+                $commodity->pivot->unit = $pivotUnits[$commodity->pivot->unit_id];
+            }
+            $commodity->selectable_units = $this->commodityUnitService->getSelectableUnits($commodity);
+            
+            // Calculate already returned amount for this commodity
+            $commodity->already_returned = \App\Models\InventoryAdjustment::forWithdrawal($withdrawalRequest->id)
+                ->byType('sales_return')
+                ->where('commodity_id', $commodity->id)
+                ->sum('amount');
+        }
+
+        return view('dashboard.processes.withdrawal-request.sales-return', [
+            'request' => $withdrawalRequest,
+        ]);
+    }
+
+    /**
+     * Process sales return submission
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function salesReturnSubmit(\Illuminate\Http\Request $request, $id)
+    {
+        if (!auth()->user()->role->havePermission('cancel_withdrawal')) {
+            return redirect()->back()->withErrors('شما این دسترسی را ندارید.');
+        }
+
+        $withdrawalRequest = WithdrawalRequest::query()->findOrFail($id);
+
+        $validated = $request->validate([
+            'commodity_id' => ['required', 'array'],
+            'commodity_id.*' => ['required', 'exists:commodities,id'],
+            'return_amount' => ['required', 'array'],
+            'return_amount.*' => ['required', 'numeric', 'min:0.01'],
+            'unit_id' => ['required', 'array'],
+            'unit_id.*' => ['required', 'exists:units,id'],
+            'reason' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        // Prepare return data
+        $returnData = [];
+        foreach ($validated['commodity_id'] as $index => $commodityId) {
+            if ($validated['return_amount'][$index] > 0) {
+                $returnData[$commodityId] = [
+                    'amount' => $validated['return_amount'][$index],
+                    'unit_id' => $validated['unit_id'][$index],
+                    'reason' => $validated['reason'] ?? null,
+                ];
+            }
+        }
+
+        if (empty($returnData)) {
+            return redirect()->back()->withErrors('لطفاً حداقل یک کالا با مقدار بیشتر از صفر وارد کنید.');
+        }
+
+        try {
+            DB::transaction(function () use ($withdrawalRequest, $returnData) {
+                $this->service->processSalesReturn($withdrawalRequest, $returnData);
+            });
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors($e->getMessage());
+        }
+
+        return redirect(route('withdrawal-request.show', $withdrawalRequest))->with('successful', 'برگشت از فروش با موفقیت ثبت و موجودی بازگردانده شد.');
     }
 
 }

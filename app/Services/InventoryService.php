@@ -569,4 +569,122 @@ class InventoryService extends BaseService
             Cache::forget("product_formula_{$productId}");
         }
     }
+
+    /**
+     * Remove stock and create an adjustment record for withdrawals/sales
+     *
+     * @param int $commodityId
+     * @param int $unitId
+     * @param float $amount
+     * @param string $adjustmentType
+     * @param string|null $reason
+     * @param object|null $adjustable (WithdrawalRequest, Order, etc.)
+     * @return bool
+     */
+    public function removeStockWithAdjustment($commodityId, $unitId, $amount, $adjustmentType = 'withdrawal_approval', $reason = null, $adjustable = null)
+    {
+        return DB::transaction(function () use ($commodityId, $unitId, $amount, $adjustmentType, $reason, $adjustable) {
+            // Record the value before adjustment
+            $valueBefore = $this->calculateInventoryValue($commodityId, $unitId);
+
+            // Remove the stock
+            $this->removeStock($commodityId, $unitId, $amount);
+
+            // Record the value after adjustment
+            $valueAfter = $this->calculateInventoryValue($commodityId, $unitId);
+
+            // Create adjustment record
+            \App\Models\InventoryAdjustment::create([
+                'commodity_id' => $commodityId,
+                'unit_id' => $unitId,
+                'adjustment_type' => $adjustmentType,
+                'amount' => -$amount, // Negative for removal
+                'reason' => $reason,
+                'adjustable_type' => $adjustable ? get_class($adjustable) : null,
+                'adjustable_id' => $adjustable ? $adjustable->id : null,
+                'user_id' => auth()->id(),
+                'value_before' => $valueBefore,
+                'value_after' => $valueAfter,
+            ]);
+
+            return true;
+        });
+    }
+
+    /**
+     * Add stock and create an adjustment record for reversals/returns
+     *
+     * @param int $commodityId
+     * @param int $unitId
+     * @param float $amount
+     * @param string $adjustmentType
+     * @param string|null $reason
+     * @param object|null $adjustable (WithdrawalRequest, Order, etc.)
+     * @return bool
+     */
+    public function addStockWithAdjustment($commodityId, $unitId, $amount, $adjustmentType = 'withdrawal_cancellation', $reason = null, $adjustable = null)
+    {
+        return DB::transaction(function () use ($commodityId, $unitId, $amount, $adjustmentType, $reason, $adjustable) {
+            // Record the value before adjustment
+            $valueBefore = $this->calculateInventoryValue($commodityId, $unitId);
+
+            // Add the stock
+            $this->addStock($commodityId, $unitId, $amount);
+
+            // Record the value after adjustment
+            $valueAfter = $this->calculateInventoryValue($commodityId, $unitId);
+
+            // Create adjustment record
+            \App\Models\InventoryAdjustment::create([
+                'commodity_id' => $commodityId,
+                'unit_id' => $unitId,
+                'adjustment_type' => $adjustmentType,
+                'amount' => $amount, // Positive for addition
+                'reason' => $reason,
+                'adjustable_type' => $adjustable ? get_class($adjustable) : null,
+                'adjustable_id' => $adjustable ? $adjustable->id : null,
+                'user_id' => auth()->id(),
+                'value_before' => $valueBefore,
+                'value_after' => $valueAfter,
+            ]);
+
+            return true;
+        });
+    }
+
+    /**
+     * Get adjustments for a specific withdrawal request
+     *
+     * @param int $withdrawalId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getWithdrawalAdjustments($withdrawalId)
+    {
+        return \App\Models\InventoryAdjustment::forWithdrawal($withdrawalId)
+            ->with(['commodity', 'unit', 'user'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Calculate the current inventory value for a commodity in a specific unit
+     *
+     * @param int $commodityId
+     * @param int $unitId
+     * @return float
+     */
+    private function calculateInventoryValue($commodityId, $unitId)
+    {
+        $inventories = Inventory::where('commodity_id', $commodityId)
+            ->where('unit_id', $unitId)
+            ->where('amount', '>', 0)
+            ->get();
+
+        $totalValue = 0;
+        foreach ($inventories as $inventory) {
+            $totalValue += $inventory->amount * ($inventory->purchase_price ?? 0);
+        }
+
+        return $totalValue;
+    }
 }

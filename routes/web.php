@@ -75,6 +75,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('withdrawal-request/reject/{id}',[WithdrawalRequestController::class,'rejectRequest'])->name('reject.withdrawal');
 
+    Route::get('withdrawal-request/cancel/{id}',[WithdrawalRequestController::class,'cancelForm'])->name('cancel.withdrawal.form');
+    Route::post('withdrawal-request/cancel/{id}',[WithdrawalRequestController::class,'cancelSubmit'])->name('cancel.withdrawal.submit');
+
+    Route::get('withdrawal-request/sales-return/{id}',[WithdrawalRequestController::class,'salesReturnForm'])->name('sales-return.withdrawal.form');
+    Route::post('withdrawal-request/sales-return/{id}',[WithdrawalRequestController::class,'salesReturnSubmit'])->name('sales-return.withdrawal.submit');
+
     Route::get('production-request/approval/{id}',[ProductionRequestController::class,'approvalRequest'])->name('approval.production');
 
     Route::get('production-request/reject/{id}',[ProductionRequestController::class,'rejectRequest'])->name('reject.production');
