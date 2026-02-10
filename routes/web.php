@@ -75,6 +75,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('withdrawal-request/reject/{id}',[WithdrawalRequestController::class,'rejectRequest'])->name('reject.withdrawal');
 
+    Route::get('withdrawal-request/cancel/{id}',[WithdrawalRequestController::class,'cancelForm'])->name('cancel.withdrawal.form');
+    Route::post('withdrawal-request/cancel/{id}',[WithdrawalRequestController::class,'cancelSubmit'])->name('cancel.withdrawal.submit');
+
+    Route::get('withdrawal-request/sales-return/{id}',[WithdrawalRequestController::class,'salesReturnForm'])->name('sales-return.withdrawal.form');
+    Route::post('withdrawal-request/sales-return/{id}',[WithdrawalRequestController::class,'salesReturnSubmit'])->name('sales-return.withdrawal.submit');
+
     Route::get('production-request/approval/{id}',[ProductionRequestController::class,'approvalRequest'])->name('approval.production');
 
     Route::get('production-request/reject/{id}',[ProductionRequestController::class,'rejectRequest'])->name('reject.production');
@@ -94,6 +100,7 @@ Route::middleware('auth')->group(function () {
     Route::get('order/chart', [OrderController::class, 'chart'])->name('order.chart');
     Route::post('order/chart-data', [OrderController::class, 'getChartData'])->name('order.chart.data');
     Route::get('order/factory-status', [OrderController::class, 'factoryStatus'])->name('order.factory-status');
+    Route::post('order/factory-status-data', [OrderController::class, 'getFactoryStatusData'])->name('order.factory-status.data');
     Route::get('order/factory-status/customer/{id}', [OrderController::class, 'customerDetails'])->name('order.factory-status.customer');
     Route::resource('order',OrderController::class);
 

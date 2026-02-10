@@ -19,6 +19,12 @@
                     <h4 class="card-title mb-2">مواد اولیه مورد نیاز (سفارشات در حال پردازش) و موجودی</h4>
                     <p class="text-muted small mb-3">جدول بر اساس فیلترهای انتخاب شده در لیست سفارشات به‌روزرسانی می‌شود. فقط سفارشات با وضعیت "در حال پردازش" در محاسبات لحاظ می‌شوند.</p>
                     <div id="order-inventory-table-wrapper">
+                        <div id="chart-loading" class="text-center py-4" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="sr-only">در حال بارگذاری...</span>
+                            </div>
+                            <p class="mt-2 text-muted">در حال بارگذاری اطلاعات...</p>
+                        </div>
                         <div class="table-responsive">
                             <table id="order-inventory-table" class="table table-sm table-striped table-bordered mb-0">
                                 <thead>
@@ -220,33 +226,18 @@
             // Remove custom datepicker initialization for date_from and date_to
             // The global $(".usage").persianDatepicker() in bootstrap-datepicker.min.js will handle all .usage fields
 
-            var mockMode = false; // If true, generates mock data
-
             function getSelectedOrderData() {
                 var selectAllChecked = $('#select-all-orders').is(':checked');
                 
-                // When "همه" is checked: include ALL orders, track excluded ones
-                // When "همه" is unchecked: include only specifically checked orders
+                // When "همه" is checked: include ALL orders across ALL pages (no exclusions)
+                // When "همه" is unchecked: include only specifically checked orders on current page
                 
                 if (selectAllChecked) {
-                    // Collect excluded order IDs (unchecked individual checkboxes on current page)
-                    var excludedIds = [];
-                    $('#datatable-buttons-customer tbody tr').each(function() {
-                        var $row = $(this);
-                        var checkbox = $row.find('.order-checkbox');
-                        // If checkbox exists and is NOT checked, this order is excluded
-                        if (checkbox.length && !checkbox.is(':checked')) {
-                            var orderId = $row.data('order-id');
-                            if (orderId) {
-                                excludedIds.push(orderId);
-                            }
-                        }
-                    });
-                    
+                    // "همه" is checked = ALL orders, no exclusions
                     return {
                         selectAll: true,
-                        excludedIds: excludedIds,
-                        orderIds: [] // Not used when selectAll is true
+                        excludedIds: [],
+                        orderIds: []
                     };
                 } else {
                     // Collect only checked order IDs
@@ -298,9 +289,9 @@
                     $tbody.append(
                         '<tr>' +
                             '<td>' + name + '</td>' +
-                            '<td data-order="' + need + '">' + need + ' ' + unit + '</td>' +
-                            '<td data-order="' + inv + '">' + inv + ' ' + unit + '</td>' +
-                            '<td data-order="' + diff + '">' + diff + ' ' + unit + '</td>' +
+                            '<td data-order="' + need + '">' + need + '</td>' +
+                            '<td data-order="' + inv + '">' + inv + '</td>' +
+                            '<td data-order="' + diff + '">' + diff + '</td>' +
                             '<td>' + unit + '</td>' +
                             '<td>' + statusBadge + '</td>' +
                         '</tr>'
@@ -317,41 +308,55 @@
                 }
             }
 
-            // Initial table rendering with all orders (since 'select all' is checked and no date filter)
-            updateTable();
-
-            // Function to update table based on current filters
-            function updateTable() {
-                var selectedData = getSelectedOrderData();
-
-                // Use real data from the backend. Include current URL query params so server respects all filters.
+            // Initial table rendering
+            // Behavior: "همه" checkbox selects ALL orders matching current filters (ignores pagination)
+            // Filters respected: customer_id, status, search, date_from, date_to
+            // Filters ignored: page, per_page (pagination)
+            function loadInitialTable() {
+                var urlParams = new URLSearchParams(window.location.search);
+                
+                // Build payload with select_all: true to get ALL data (not just current page)
                 var payload = {
-                    select_all: selectedData.selectAll,
-                    excluded_ids: selectedData.excludedIds,
-                    order_ids: selectedData.orderIds,
-                    date_from: $('#date_from').val(),
-                    date_to: $('#date_to').val(),
+                    select_all: true,
+                    excluded_ids: [],
+                    order_ids: [],
+                    date_from: $('#date_from').val() || '',
+                    date_to: $('#date_to').val() || '',
                     _token: '{{ csrf_token() }}'
                 };
-
-                // Merge any existing query params from the URL (search, filters, per_page, etc.)
-                try {
-                    var urlParams = new URLSearchParams(window.location.search);
-                    urlParams.forEach(function(value, key) {
-                        // Don't overwrite explicit payload keys (like date_from/date_to)
-                        if (payload[key] === undefined) {
-                            payload[key] = value;
-                        }
-                    });
-                } catch (e) {
-                    // ignore if URLSearchParams not supported
+                
+                // Include filters from URL (these SHOULD be respected)
+                var filtersParam = urlParams.get('filters');
+                if (filtersParam) {
+                    payload.filters = filtersParam;
                 }
+                
+                var searchParam = urlParams.get('search');
+                if (searchParam) {
+                    payload.search = searchParam;
+                }
+                
+                // Override date inputs with URL params if present
+                var dateFromParam = urlParams.get('date_from');
+                var dateToParam = urlParams.get('date_to');
+                if (dateFromParam) {
+                    payload.date_from = dateFromParam;
+                }
+                if (dateToParam) {
+                    payload.date_to = dateToParam;
+                }
+
+                // Show loading indicator
+                $('#chart-loading').show();
+                $('#order-inventory-table').hide();
 
                 $.ajax({
                     url: '{{ route("order.chart.data") }}',
                     method: 'POST',
                     data: payload,
                     success: function(response) {
+                        $('#chart-loading').hide();
+                        $('#order-inventory-table').show();
                         renderTable({
                             names: response.names,
                             amounts: response.amounts,
@@ -360,12 +365,64 @@
                         });
                     },
                     error: function(xhr, status, error) {
+                        $('#chart-loading').hide();
+                        $('#order-inventory-table').show();
+                        console.error('AJAX Error:', {status: status, error: error, response: xhr.responseText});
+                        $('#order-inventory-table tbody').html('<tr><td colspan="6" class="text-center text-danger">خطا در دریافت اطلاعات</td></tr>');
+                    }
+                });
+            }
+
+            // Update table based on checkbox selections
+            // Respects: filters (customer_id, status), search, date_from, date_to
+            // Ignores: pagination (page, per_page)
+            function updateTable() {
+                var selectedData = getSelectedOrderData();
+                var urlParams = new URLSearchParams(window.location.search);
+
+                var payload = {
+                    select_all: selectedData.selectAll,
+                    excluded_ids: selectedData.excludedIds,
+                    order_ids: selectedData.orderIds,
+                    date_from: $('#date_from').val() || '',
+                    date_to: $('#date_to').val() || '',
+                    _token: '{{ csrf_token() }}'
+                };
+
+                // Include filters from URL (these SHOULD be respected)
+                var filtersParam = urlParams.get('filters');
+                if (filtersParam) {
+                    payload.filters = filtersParam;
+                }
+                
+                var searchParam = urlParams.get('search');
+                if (searchParam) {
+                    payload.search = searchParam;
+                }
+
+                // Show loading indicator
+                $('#chart-loading').show();
+                $('#order-inventory-table').hide();
+
+                $.ajax({
+                    url: '{{ route("order.chart.data") }}',
+                    method: 'POST',
+                    data: payload,
+                    success: function(response) {
+                        $('#chart-loading').hide();
+                        $('#order-inventory-table').show();
+                        renderTable({
+                            names: response.names,
+                            amounts: response.amounts,
+                            units: response.units,
+                            inventory: response.inventory
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        $('#chart-loading').hide();
+                        $('#order-inventory-table').show();
                         console.error('Error fetching table data:', xhr);
-                        console.error('Status:', status);
-                        console.error('Error:', error);
-                        console.error('Response Text:', xhr.responseText);
-                        // Show error message if AJAX fails
-                        $('#order-inventory-table tbody').html('<tr><td colspan="6" class="text-center text-danger">خطا در دریافت اطلاعات<br><small>Status: ' + status + '<br>Error: ' + error + '</small></td></tr>');
+                        $('#order-inventory-table tbody').html('<tr><td colspan="6" class="text-center text-danger">خطا در دریافت اطلاعات</td></tr>');
                     }
                 });
             }
@@ -397,41 +454,43 @@
             // Select all functionality for order checkboxes
             // When "همه" is checked: ALL orders across ALL pages are included (backend handles this)
             // When "همه" is unchecked: only individually checked orders on current page are included
+            var isUpdatingCheckboxes = false; // Flag to prevent cascading events
+            
             $('#select-all-orders').on('change', function() {
+                if (isUpdatingCheckboxes) return; // Prevent cascading
+                isUpdatingCheckboxes = true;
+                
                 var checked = $(this).is(':checked');
                 if (checked) {
                     // When "همه" is checked, uncheck all individual checkboxes
                     // This means "include all orders" with no exclusions
                     $('.order-checkbox').prop('checked', false);
-                } else {
-                    // When "همه" is unchecked, user must manually select orders
-                    $('.order-checkbox').prop('checked', false);
                 }
+                // When "همه" is unchecked, keep individual checkboxes as they are
+                
+                isUpdatingCheckboxes = false;
                 // Update table automatically when select all changes
                 updateTable();
             });
             
             $(document).on('change', '.order-checkbox', function() {
-                var selectAllChecked = $('#select-all-orders').is(':checked');
+                if (isUpdatingCheckboxes) return; // Prevent cascading
+                isUpdatingCheckboxes = true;
                 
-                if (selectAllChecked) {
-                    // When "همه" is checked and user checks/unchecks individual orders,
-                    // it means they want to exclude/include specific orders from "all"
-                    // Keep "همه" checked - the excluded_ids will handle the filtering
-                } else {
-                    // When "همه" is not checked, check if all visible are now checked
-                    var allCheckboxes = $('.order-checkbox');
-                    var checkedAll = allCheckboxes.length > 0 && allCheckboxes.filter(':checked').length === allCheckboxes.length;
-                    // Optionally auto-check "همه" if all visible are checked
-                    // (Disabled for now - user must explicitly check "همه" for cross-page selection)
+                var isChecked = $(this).is(':checked');
+                
+                if (isChecked) {
+                    // When user checks an individual checkbox, switch to specific selection mode
+                    // Uncheck "همه" to indicate we're now selecting specific orders
+                    $('#select-all-orders').prop('checked', false);
                 }
+                
+                isUpdatingCheckboxes = false;
                 // Update table automatically when individual checkboxes change
                 updateTable();
             });
-
-            // Remove client-side row filtering; server returns filtered rows now
             
-            // Update table when date filters change (with debounce) without client-side row filtering
+            // Update table when date filters change (with debounce)
             var dateUpdateTimeout;
             $('#date_from, #date_to').on('change', function() {
                 clearTimeout(dateUpdateTimeout);
@@ -439,6 +498,9 @@
                     updateTable();
                 }, 500);
             });
+
+            // Load initial table data (called after all functions are defined)
+            loadInitialTable();
         });
     </script>
 @endsection

@@ -70,6 +70,7 @@ class PermissionsSeeder extends Seeder
             ['title'=>'edit_withdrawal', 'name'=>'ویرایش فروش کالا '],
             ['title'=>'delete_withdrawal', 'name'=>'حذف فروش کالا '],
             ['title'=>'status_withdrawal', 'name'=>'تغییر وضعیت درخواست فروش'],
+            ['title'=>'cancel_withdrawal', 'name'=>'لغو درخواست فروش'],
 
             //activity permissions
             ['title'=>'read_activity', 'name'=>'مشاهده فعالیت ها'],

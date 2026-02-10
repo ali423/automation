@@ -72,6 +72,25 @@
                 </li>
                 @endif
 
+                @if(Gate::check('read_withdrawal') || Gate::check('create_withdrawal'))
+                <li
+                    @if($first_url_part=='withdrawal-request' )
+                    class="treeview active"
+                    @else
+                    class="treeview"
+                    @endif> <a href="javascript:void(0)"><i class="ti-shopping-cart-full"></i> <span>فروش فرآورده</span> <i
+                            class="fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        @can('read_withdrawal',App\Models\WithdrawalRequest::class)
+                        <li @if($first_url_part=='withdrawal-request' && $second_url_part=='index' ) class="active" @endif><a href="{{ route('withdrawal-request.index') }}">لیست درخواست ها</a></li>
+                        @endcan
+                        @can('create_withdrawal',App\Models\WithdrawalRequest::class)
+                        <li @if($first_url_part=='withdrawal-request' && $second_url_part=='create' ) class="active" @endif><a href="{{ route('withdrawal-request.create') }}">ثبت درخواست</a></li>
+                        @endcan
+                    </ul>
+                </li>
+                @endif
+
                 <!-- Other Tabs -->
                 @if(Gate::check('read_user') || Gate::check('create_user'))
                 <li
@@ -259,25 +278,6 @@
                         @endcan
                         @can('create_seller',App\Models\seller::class)
                         <li @if($first_url_part=='seller' && $second_url_part=='create' ) class="active" @endif><a href="{{ route('seller.create') }}">ثبت فروشنده</a></li>
-                        @endcan
-                    </ul>
-                </li>
-                @endif
-
-                @if(Gate::check('read_withdrawal') || Gate::check('create_withdrawal'))
-                <li
-                    @if($first_url_part=='withdrawal-request' )
-                    class="treeview active"
-                    @else
-                    class="treeview"
-                    @endif> <a href="javascript:void(0)"><i class="ti-shopping-cart-full"></i> <span>فروش فرآورده</span> <i
-                            class="fa fa-angle-left"></i></a>
-                    <ul class="treeview-menu">
-                        @can('read_withdrawal',App\Models\WithdrawalRequest::class)
-                        <li @if($first_url_part=='withdrawal-request' && $second_url_part=='index' ) class="active" @endif><a href="{{ route('withdrawal-request.index') }}">لیست درخواست ها</a></li>
-                        @endcan
-                        @can('create_withdrawal',App\Models\WithdrawalRequest::class)
-                        <li @if($first_url_part=='withdrawal-request' && $second_url_part=='create' ) class="active" @endif><a href="{{ route('withdrawal-request.create') }}">ثبت درخواست</a></li>
                         @endcan
                     </ul>
                 </li>

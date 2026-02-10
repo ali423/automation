@@ -60,6 +60,7 @@
                             $total_amount = 0;
                             // Pre-calculate main unit data once for all commodities
                             $mainUnitData = $request->getMainUnitAmountAttribute();
+                            $hasReturns = $request->commodities->sum('returned_amount') > 0;
                         @endphp
                         @foreach ($request->commodities as $commodity)
                             @include('dashboard.processes.withdrawal-request.partials.commodity-display', [
@@ -67,6 +68,42 @@
                                 'mainUnitData' => $mainUnitData
                             ])
                         @endforeach
+
+                        @if($hasReturns)
+                            <div class="col-xl-12 height-card box-margin">
+                                <div class="card border-info">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-info">
+                                            <i class="fa fa-undo"></i> خلاصه برگشت از فروش
+                                        </h5>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover">
+                                                <thead class="thead-light">
+                                                    <tr>
+                                                        <th>کالا</th>
+                                                        <th class="text-right">مقدار اصلی</th>
+                                                        <th class="text-right text-info">برگشتی</th>
+                                                        <th class="text-right text-success font-weight-bold">خالص فروش</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($request->commodities as $commodity)
+                                                        @if($commodity->returned_amount > 0)
+                                                            <tr>
+                                                                <td>{{ $commodity->title }}</td>
+                                                                <td class="text-right">{{ number_format($commodity->pivot->amount, 2) }}</td>
+                                                                <td class="text-right text-info font-weight-bold">{{ number_format($commodity->returned_amount, 2) }}</td>
+                                                                <td class="text-right text-success font-weight-bold">{{ number_format($commodity->net_amount, 2) }}</td>
+                                                            </tr>
+                                                        @endif
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
 
                         
                         @include('dashboard.processes.withdrawal-request.partials.comments', ['comments' => $request->comments])

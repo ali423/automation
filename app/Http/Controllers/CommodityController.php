@@ -161,6 +161,31 @@ class CommodityController extends Controller
     {
         // Build query with eager loading to fix N+1 query problem
         $query = Commodity::with(['unit', 'materials.unit']);
+
+        // Apply attribute filters if provided (AND logic)
+        if ($request->filled('filters')) {
+            $filters = $request->get('filters');
+            if (is_string($filters)) {
+                $filters = json_decode($filters, true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    $filters = [];
+                }
+            }
+            if (is_array($filters) && !empty($filters['attributes'])) {
+                $attributeIds = $filters['attributes'];
+                if (is_string($attributeIds)) {
+                    $attributeIds = array_filter(array_map('trim', explode(',', $attributeIds)));
+                }
+                if (is_array($attributeIds)) {
+                    $attributeIds = array_values(array_filter($attributeIds));
+                }
+                if (!empty($attributeIds)) {
+                    $query->whereHas('attributes', function ($q) use ($attributeIds) {
+                        $q->whereIn('attributes.id', $attributeIds);
+                    }, '=', count($attributeIds));
+                }
+            }
+        }
         
         // Use advanced pagination with search and filter capabilities
         $commodities = $this->getPaginatedResults($query, $request, 10, [
@@ -180,7 +205,9 @@ class CommodityController extends Controller
             'searchable_fields' => ['title', 'number', 'product_identifier'],
             'filterable_fields' => ['type', 'unit_id'],
             'per_page_options' => [5, 10, 25, 50, 100],
-            'search_placeholder' => 'جستجو در عنوان، شماره یا شناسه کالا...'
+            'search_placeholder' => 'جستجو در عنوان، شماره یا شناسه کالا...',
+            'attribute_filter' => true,
+            'attribute_filter_layout' => 'stacked'
         ];
         
         return view('dashboard.commodity.index', [

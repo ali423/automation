@@ -49,6 +49,12 @@
                 <div class="card-body">
                     <h4 class="card-title mb-2">وضعیت کارخانه</h4>
                     <div id="factory-table-wrapper">
+                        <div id="factory-chart-loading" class="text-center py-4" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="sr-only">در حال بارگذاری...</span>
+                            </div>
+                            <p class="mt-2 text-muted">در حال بارگذاری اطلاعات...</p>
+                        </div>
                         <div class="table-responsive">
                             <table id="factory-inventory-table" class="table table-sm table-striped table-bordered mb-0">
                                 <thead>
@@ -57,6 +63,7 @@
                                         <th>نیاز</th>
                                         <th>موجودی</th>
                                         <th>اختلاف</th>
+                                        <th>اختلاف بر اساس بسته بندی</th>
                                         <th>واحد</th>
                                         <th>وضعیت</th>
                                     </tr>
@@ -255,203 +262,229 @@
                 }
             });
 
-            // Load full dataset from backend - this contains ALL pending orders aggregated data
-            var factoryData = @json($warehouseChartData['orders']);
-            
-            // Default state: "\u0647\u0645\u0647" is checked, individual checkboxes unchecked
-            // When "\u0647\u0645\u0647" is checked, ALL orders across ALL pages are included
+            // Default state: "همه" is checked, individual checkboxes unchecked
+            // When "همه" is checked, ALL orders across ALL pages are included
             $('#select-all-factory').prop('checked', true);
-            var allRows = factoryDataTable.rows().nodes().to$();
-            allRows.find('.factory-checkbox').prop('checked', false);
-            
-            // Initial render - with "\u0647\u0645\u0647" checked, show ALL data
-            updateCharts();
+            $('.factory-checkbox').prop('checked', false);
 
-            // No client-side date filtering in factory view; server-side filters via shared controls
-
-            // Function to update table based on current filters
-            function updateCharts() {
-                var selectedData = getSelectedFactoryData();
+            // Initial table rendering
+            // Behavior: "همه" checkbox selects ALL orders matching current filters (ignores pagination)
+            // Filters respected: customer_id, status, search, date_from, date_to
+            // Filters ignored: page, per_page (pagination)
+            function loadInitialTable() {
+                var urlParams = new URLSearchParams(window.location.search);
                 
-                if (selectedData.names.length === 0) {
-                    renderFactoryTable({ names: [], orders: [], inventory: [], units: [] });
-                } else {
-                    renderFactoryTable({
-                        names: selectedData.names,
-                        orders: selectedData.orders,
-                        inventory: selectedData.inventory,
-                        units: selectedData.units
-                    });
+                // Build payload with select_all: true to get ALL data (not just current page)
+                var payload = {
+                    select_all: true,
+                    excluded_ids: [],
+                    order_ids: [],
+                    _token: '{{ csrf_token() }}'
+                };
+                
+                // Include filters from URL (these SHOULD be respected)
+                var filtersParam = urlParams.get('filters');
+                if (filtersParam) {
+                    payload.filters = filtersParam;
                 }
+                
+                var searchParam = urlParams.get('search');
+                if (searchParam) {
+                    payload.search = searchParam;
+                }
+                
+                var dateFromParam = urlParams.get('date_from');
+                var dateToParam = urlParams.get('date_to');
+                if (dateFromParam) {
+                    payload.date_from = dateFromParam;
+                }
+                if (dateToParam) {
+                    payload.date_to = dateToParam;
+                }
+
+                // Show loading indicator
+                $('#factory-chart-loading').show();
+                $('#factory-inventory-table').hide();
+
+                $.ajax({
+                    url: '{{ route("order.factory-status.data") }}',
+                    method: 'POST',
+                    data: payload,
+                    success: function(response) {
+                        $('#factory-chart-loading').hide();
+                        $('#factory-inventory-table').show();
+                        renderFactoryTable(response.orders || []);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#factory-chart-loading').hide();
+                        $('#factory-inventory-table').show();
+                        console.error('Error fetching factory data:', xhr);
+                        $('#factory-inventory-table tbody').html('<tr><td colspan="6" class="text-center text-danger">خطا در دریافت اطلاعات</td></tr>');
+                    }
+                });
+            }
+
+            // Update table based on checkbox selections
+            // Respects: filters (customer_id, status), search, date_from, date_to
+            // Ignores: pagination (page, per_page)
+            function updateTable() {
+                var selectedData = getSelectedFactoryData();
+                var urlParams = new URLSearchParams(window.location.search);
+
+                var payload = {
+                    select_all: selectedData.selectAll,
+                    excluded_ids: selectedData.excludedIds,
+                    order_ids: selectedData.orderIds,
+                    _token: '{{ csrf_token() }}'
+                };
+
+                // Include filters from URL (these SHOULD be respected)
+                var filtersParam = urlParams.get('filters');
+                if (filtersParam) {
+                    payload.filters = filtersParam;
+                }
+                
+                var searchParam = urlParams.get('search');
+                if (searchParam) {
+                    payload.search = searchParam;
+                }
+                
+                var dateFromParam = urlParams.get('date_from');
+                var dateToParam = urlParams.get('date_to');
+                if (dateFromParam) {
+                    payload.date_from = dateFromParam;
+                }
+                if (dateToParam) {
+                    payload.date_to = dateToParam;
+                }
+
+                // Show loading indicator
+                $('#factory-chart-loading').show();
+                $('#factory-inventory-table').hide();
+
+                $.ajax({
+                    url: '{{ route("order.factory-status.data") }}',
+                    method: 'POST',
+                    data: payload,
+                    success: function(response) {
+                        $('#factory-chart-loading').hide();
+                        $('#factory-inventory-table').show();
+                        renderFactoryTable(response.orders || []);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#factory-chart-loading').hide();
+                        $('#factory-inventory-table').show();
+                        console.error('Error fetching factory data:', xhr);
+                        $('#factory-inventory-table tbody').html('<tr><td colspan="6" class="text-center text-danger">خطا در دریافت اطلاعات</td></tr>');
+                    }
+                });
             }
 
             function getSelectedFactoryData() {
-                var data = {
-                    names: [],
-                    inventory: [],
-                    orders: [],
-                    units: []
-                };
-
                 var selectAllChecked = $('#select-all-factory').is(':checked');
-
+                
+                // When "همه" is checked: include ALL orders across ALL pages (no exclusions)
+                // When "همه" is unchecked: include only specifically checked orders on current page
+                
                 if (selectAllChecked) {
-                    // When "\u0647\u0645\u0647" is checked: include ALL orders from factoryData
-                    // Collect excluded order IDs (checked individual checkboxes mean "exclude from all")
-                    var excludedOrderIds = [];
-                    var allRows = factoryDataTable.rows().nodes().to$();
-                    allRows.each(function() {
+                    // "همه" is checked = ALL orders, no exclusions
+                    return {
+                        selectAll: true,
+                        excludedIds: [],
+                        orderIds: []
+                    };
+                } else {
+                    // Collect only checked order IDs
+                    var orderIds = [];
+                    $('#datatable-buttons-factory tbody tr').each(function() {
                         var $row = $(this);
                         var checkbox = $row.find('.factory-checkbox');
-                        // If checkbox is CHECKED, it means user wants to EXCLUDE this order
-                        if (checkbox.length && checkbox.prop('checked')) {
-                            var rowId = parseInt($row.data('order-id'));
-                            if (rowId && excludedOrderIds.indexOf(rowId) === -1) {
-                                excludedOrderIds.push(rowId);
+                        if (checkbox.length && checkbox.is(':checked')) {
+                            var orderId = $row.data('order-id');
+                            if (orderId) {
+                                orderIds.push(orderId);
                             }
                         }
                     });
                     
-                    // Process ALL factoryData, excluding specified orders
-                    if (factoryData.length > 0) {
-                        factoryData.forEach(function(item) {
-                            var selectedOrderedAmount = 0;
-                            var hasMatchingOrder = false;
-                            
-                            if (item.orderIds && Array.isArray(item.orderIds)) {
-                                // Include amounts from all orders EXCEPT excluded ones
-                                item.orderIds.forEach(function(orderId) {
-                                    var orderIdInt = parseInt(orderId);
-                                    // Include if NOT in excluded list
-                                    if (excludedOrderIds.indexOf(orderIdInt) === -1) {
-                                        hasMatchingOrder = true;
-                                        if (item.orderAmounts) {
-                                            var amount = item.orderAmounts[orderId] || item.orderAmounts[orderIdInt] || 0;
-                                            selectedOrderedAmount += parseFloat(amount) || 0;
-                                        }
-                                    }
-                                });
-                            } else {
-                                // Fallback for old data structure
-                                if (item.orderId && excludedOrderIds.indexOf(parseInt(item.orderId)) === -1) {
-                                    hasMatchingOrder = true;
-                                    selectedOrderedAmount = parseFloat(item.orderedAmount) || 0;
-                                }
-                            }
-                            
-                            if (hasMatchingOrder && selectedOrderedAmount > 0) {
-                                var existingIndex = data.names.indexOf(item.productName);
-                                if (existingIndex === -1) {
-                                    data.names.push(item.productName);
-                                    data.inventory.push(item.inventory);
-                                    data.orders.push(selectedOrderedAmount);
-                                    data.units.push(item.unitSymbol || item.unit);
-                                } else {
-                                    data.orders[existingIndex] = parseFloat(data.orders[existingIndex]) + selectedOrderedAmount;
-                                }
-                            }
-                        });
-                    }
-                } else {
-                    // When "\u0647\u0645\u0647" is unchecked: include only checked (selected) orders
-                    var selectedOrderIds = [];
-                    var allRows = factoryDataTable.rows().nodes().to$();
-                    var checkedRows = allRows.filter(function() {
-                        var checkbox = $(this).find('.factory-checkbox');
-                        return checkbox.length && checkbox.prop('checked');
-                    });
-
-                    checkedRows.each(function() {
-                        var $row = $(this);
-                        var rowId = parseInt($row.data('order-id'));
-                        if (rowId && selectedOrderIds.indexOf(rowId) === -1) {
-                            selectedOrderIds.push(rowId);
-                        }
-                    });
-                    
-                    // Process factoryData, including only selected orders
-                    if (selectedOrderIds.length > 0 && factoryData.length > 0) {
-                        factoryData.forEach(function(item) {
-                            var selectedOrderedAmount = 0;
-                            var hasMatchingOrder = false;
-                            
-                            if (item.orderIds && Array.isArray(item.orderIds)) {
-                                item.orderIds.forEach(function(orderId) {
-                                    var orderIdInt = parseInt(orderId);
-                                    if (selectedOrderIds.indexOf(orderIdInt) !== -1) {
-                                        hasMatchingOrder = true;
-                                        if (item.orderAmounts) {
-                                            var amount = item.orderAmounts[orderId] || item.orderAmounts[orderIdInt] || 0;
-                                            selectedOrderedAmount += parseFloat(amount) || 0;
-                                        }
-                                    }
-                                });
-                            } else {
-                                if (item.orderId && selectedOrderIds.indexOf(parseInt(item.orderId)) !== -1) {
-                                    hasMatchingOrder = true;
-                                    selectedOrderedAmount = parseFloat(item.orderedAmount) || 0;
-                                }
-                            }
-                            
-                            if (hasMatchingOrder && selectedOrderedAmount > 0) {
-                                var existingIndex = data.names.indexOf(item.productName);
-                                if (existingIndex === -1) {
-                                    data.names.push(item.productName);
-                                    data.inventory.push(item.inventory);
-                                    data.orders.push(selectedOrderedAmount);
-                                    data.units.push(item.unitSymbol || item.unit);
-                                } else {
-                                    data.orders[existingIndex] = parseFloat(data.orders[existingIndex]) + selectedOrderedAmount;
-                                }
-                            }
-                        });
-                    }
+                    return {
+                        selectAll: false,
+                        excludedIds: [],
+                        orderIds: orderIds
+                    };
                 }
-
-                return data;
             }
 
-            // Calculate button click handler
+            // Calculate button click handler: persist filters and reload page (server-side filtering)
             $('#calculate-factory').on('click', function() {
-                filterTableByDate();
-                updateCharts();
+                const url = new URL(window.location);
+                const df = $('#date_from').val();
+                const dt = $('#date_to').val();
+                if (df) { url.searchParams.set('date_from', df); } else { url.searchParams.delete('date_from'); }
+                if (dt) { url.searchParams.set('date_to', dt); } else { url.searchParams.delete('date_to'); }
+                url.searchParams.delete('page');
+                window.location.href = url.toString();
+            });
+            
+            // Clear filters button click handler: remove ALL filters and reload
+            $('#clear-filters').on('click', function() {
+                const url = new URL(window.location);
+                // Remove all filter-related query params
+                url.searchParams.delete('date_from');
+                url.searchParams.delete('date_to');
+                url.searchParams.delete('search');
+                url.searchParams.delete('filters');
+                url.searchParams.delete('page');
+                url.searchParams.delete('per_page');
+                window.location.href = url.toString();
             });
 
             // Select all functionality for factory checkboxes
-            // When "\u0647\u0645\u0647" is checked: ALL orders are included, individual checkboxes mark exclusions
-            // When "\u0647\u0645\u0647" is unchecked: only checked individual orders are included
+            // When "همه" is checked: ALL orders across ALL pages are included (backend handles this)
+            // When "همه" is unchecked: only individually checked orders on current page are included
+            var isUpdatingCheckboxes = false; // Flag to prevent cascading events
+            
             $('#select-all-factory').on('change', function() {
+                if (isUpdatingCheckboxes) return; // Prevent cascading
+                isUpdatingCheckboxes = true;
+                
                 var checked = $(this).is(':checked');
-                var allRows = factoryDataTable.rows().nodes().to$();
                 if (checked) {
-                    // When "\u0647\u0645\u0647" is checked, uncheck all individual checkboxes (no exclusions)
-                    allRows.find('.factory-checkbox').prop('checked', false);
-                } else {
-                    // When "\u0647\u0645\u0647" is unchecked, uncheck all (user must manually select)
-                    allRows.find('.factory-checkbox').prop('checked', false);
+                    // When "همه" is checked, uncheck all individual checkboxes
+                    // This means "include all orders" with no exclusions
+                    $('.factory-checkbox').prop('checked', false);
                 }
-                updateCharts();
+                // When "همه" is unchecked, keep individual checkboxes as they are
+                
+                isUpdatingCheckboxes = false;
+                // Update table automatically when select all changes
+                updateTable();
             });
             
             $(document).on('change', '.factory-checkbox', function() {
-                var selectAllChecked = $('#select-all-factory').is(':checked');
+                if (isUpdatingCheckboxes) return; // Prevent cascading
+                isUpdatingCheckboxes = true;
                 
-                if (selectAllChecked) {
-                    // When "\u0647\u0645\u0647" is checked, individual checkbox changes mean exclude/include
-                    // Keep "\u0647\u0645\u0647" checked - individual checkboxes mark exclusions
-                } else {
-                    // When "\u0647\u0645\u0647" is not checked, individual checkboxes mark inclusions
-                    // (Optional: auto-check "\u0647\u0645\u0647" if all visible are checked - disabled for now)
+                var isChecked = $(this).is(':checked');
+                
+                if (isChecked) {
+                    // When user checks an individual checkbox, switch to specific selection mode
+                    // Uncheck "همه" to indicate we're now selecting specific orders
+                    $('#select-all-factory').prop('checked', false);
                 }
-                updateCharts();
+                
+                isUpdatingCheckboxes = false;
+                // Update table automatically when individual checkboxes change
+                updateTable();
             });
+
+            // Load initial table data (called after all functions are defined)
+            loadInitialTable();
         });
 
         var inventoryDataTable = null;
         
         function renderFactoryTable(data) {
-            console.log('Rendering factory table with data:', data);
-            
             var $table = $('#factory-inventory-table');
             var $tbody = $table.find('tbody');
 
@@ -473,14 +506,18 @@
             // Clear table body
             $tbody.empty();
 
-            if (!data.names || data.names.length === 0) {
-                $tbody.append('<tr><td colspan="6" class="text-center text-muted">هیچ داده‌ای برای نمایش وجود ندارد</td></tr>');
+            if (!data || data.length === 0) {
+                $tbody.append('<tr><td colspan="7" class="text-center text-muted">هیچ داده‌ای برای نمایش وجود ندارد</td></tr>');
             } else {
-                data.names.forEach(function(name, idx) {
-                    var orders = (data.orders && data.orders[idx] !== undefined) ? parseFloat(data.orders[idx]) : 0;
-                    var inv = (data.inventory && data.inventory[idx] !== undefined) ? parseFloat(data.inventory[idx]) : 0;
-                    var unit = (data.units && data.units[idx]) ? data.units[idx] : '';
+                // Process the orders array from the backend
+                data.forEach(function(item) {
+                    var orders = parseFloat(item.orderedAmount) || 0;
+                    var inv = parseFloat(item.inventory) || 0;
+                    var unit = item.unitSymbol || item.unit || '';
+                    var name = item.productName || 'نامشخص';
                     var diff = inv - orders;
+                    var piecesPerBox = parseFloat(item.piecesPerBox) || 0;
+                    var packagingDiff = piecesPerBox > 0 ? Math.floor(diff / piecesPerBox) : 0;
                     var statusOk = inv >= orders;
                     var statusBadge = statusOk
                         ? '<span class="badge badge-success">کافی</span>'
@@ -489,9 +526,10 @@
                     $tbody.append(
                         '<tr>' +
                             '<td>' + name + '</td>' +
-                            '<td data-order="' + orders + '">' + orders + ' ' + unit + '</td>' +
-                            '<td data-order="' + inv + '">' + inv + ' ' + unit + '</td>' +
-                            '<td data-order="' + diff + '">' + diff + ' ' + unit + '</td>' +
+                            '<td data-order="' + orders + '">' + orders + '</td>' +
+                            '<td data-order="' + inv + '">' + inv + '</td>' +
+                            '<td data-order="' + diff + '">' + diff + '</td>' +
+                            '<td data-order="' + packagingDiff + '">' + packagingDiff + '</td>' +
                             '<td>' + unit + '</td>' +
                             '<td>' + statusBadge + '</td>' +
                         '</tr>'
@@ -507,7 +545,10 @@
                         paging: false,
                         searching: false,
                         info: false,
-                        order: [[1, 'desc']]
+                        order: [[1, 'desc']],
+                        columnDefs: [
+                            { targets: 4, className: 'dt-body-center' }
+                        ]
                     });
                 } catch(e) {
                     console.log('Error initializing table:', e);
