@@ -20,6 +20,7 @@ class Order extends Model
         'deadline',
         'status',
         'withdrawal_request_id',
+        'credit_validity_days',
     ];
 
     /**
@@ -106,6 +107,17 @@ class Order extends Model
     public function getCreatedDateAttribute()
     {
         return $this->created_at->format('Y-m-d');
+    }
+
+    /**
+     * Get the credit validity text for display
+     */
+    public function getCreditValidityTextAttribute()
+    {
+        if (!$this->credit_validity_days) {
+            return null;
+        }
+        return "مدت اعتبار این پیش فاکتور {$this->credit_validity_days} روز کاری است";
     }
 
     /**

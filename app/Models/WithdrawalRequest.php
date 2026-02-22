@@ -50,6 +50,14 @@ class WithdrawalRequest extends Model
     {
         return $this->belongsTo(Customer::class, 'customer_id');
     }
+
+    /**
+     * Get the related order
+     */
+    public function order()
+    {
+        return $this->hasOne(Order::class, 'withdrawal_request_id', 'id');
+    }
     
     public function getCreatedDateAttribute() {
         return $this->created_at->format('Y-m-d');

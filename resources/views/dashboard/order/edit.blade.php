@@ -69,6 +69,16 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="form-row m-3">
+                                <div class="form-group col">
+                                    <label for="credit_validity_days">مدت اعتبار (روز)</label>
+                                    <input type="number" name="credit_validity_days" id="credit_validity_days" class="form-control" 
+                                           min="1" value="{{ $order->credit_validity_days ?? '' }}">
+                                    <div class="invalid-feedback">
+                                        مدت اعتبار را به روز وارد کنید
+                                    </div>
+                                </div>
+                            </div>
                             <div id="order_formul" class="col-lg-12">
                                 <p>اطلاعات سفارش</p>
                                 @foreach($order->orderItems as $index => $item)
