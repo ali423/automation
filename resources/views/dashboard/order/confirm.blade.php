@@ -46,6 +46,14 @@
                                         {{ __('fields.customer') }} را انتخاب کنید
                                     </div>
                                 </div>
+                                <div class="form-group col">
+                                    <label for="credit_validity_days">مدت اعتبار (روز)</label>
+                                    <input type="number" id="credit_validity_days" class="form-control" name="credit_validity_days" 
+                                           min="1" value="{{ $order->credit_validity_days ?? '' }}">
+                                    <div class="invalid-feedback">
+                                        مدت اعتبار را به روز وارد کنید
+                                    </div>
+                                </div>
                             </div>
                             
                             <div id="product_formul" class="col-lg-12">

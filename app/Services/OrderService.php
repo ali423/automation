@@ -27,7 +27,8 @@ class OrderService extends BaseService
         $order = Order::create([
             'customer_id' => $data['customer_id'],
             'deadline' => $data['deadline'],
-            'status' => 'pending'
+            'status' => 'pending',
+            'credit_validity_days' => $data['credit_validity_days'] ?? null
         ]);
 
         // Create order items
@@ -115,6 +116,7 @@ class OrderService extends BaseService
         $order->update([
             'customer_id' => $data['customer_id'],
             'deadline' => $data['deadline'],
+            'credit_validity_days' => $data['credit_validity_days'] ?? $order->credit_validity_days,
         ]);
 
         // Update or create order items
