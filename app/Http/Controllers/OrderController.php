@@ -268,7 +268,7 @@ class OrderController extends Controller
             return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد. سفارش‌های تحویل شده قابل ویرایش نیستند.');
         }
         
-        $commodities = Commodity::query()->where('type', 'product')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->orderBy('title')->get();
+        $commodities = Commodity::query()->where('type', 'product')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit', 'attributes'])->orderBy('title')->get();
         $customers = Customer::query()->get();
         
         if (count($commodities) < 1) {
@@ -290,6 +290,7 @@ class OrderController extends Controller
                 'order' => $order,
                 'commodities' => $commoditiesWithUnits,
                 'customers' => $customers,
+                'attributes' => Attribute::orderBy('name')->get(),
             ]);
     }
 
