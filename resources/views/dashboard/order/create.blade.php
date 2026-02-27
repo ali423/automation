@@ -45,6 +45,7 @@
                                 <p>اطلاعات سفارش</p>
                                 @include('dashboard.order.partials.order-item-row', [
                                     'commodities' => $commodities,
+                                    'attributes' => $attributes ?? null,
                                     'index' => 0
                                 ])
                                 <div id="newRow"></div>
@@ -688,6 +689,18 @@
                 }
             }
             
+            // Renumber form field indices sequentially
+            function renumberFormIndices() {
+                $('#order_formul .form-row').each(function(index) {
+                    $(this).find('select[name^="commodity_id"]').attr('name', 'commodity_id[' + index + ']');
+                    $(this).find('select[name^="unit_id"]').attr('name', 'unit_id[' + index + ']');
+                    $(this).find('input[name^="packaging_count"]').attr('name', 'packaging_count[' + index + ']');
+                    $(this).find('input[name^="commodity_amount"]').attr('name', 'commodity_amount[' + index + ']');
+                    $(this).find('input[name^="price"]').attr('name', 'price[' + index + ']');
+                    $(this).find('input[name^="discount_percentage"]').attr('name', 'discount_percentage[' + index + ']');
+                });
+            }
+
             // Store attribute filter HTML template for new rows
             @if(isset($attributes) && $attributes->count() > 0)
             var attributeFilterHtml = `<div class="col-12 mb-2 attribute-filter-container">
@@ -743,6 +756,8 @@
                             @foreach ($commodities as $commodity)
                                 <option value="{{ $commodity->id }}"
                                         @if($commodity->discount_percentage !== null) data-discount="{{ $commodity->discount_percentage }}" @endif
+                                        data-unit-id="{{ $commodity->unit_id }}"
+                                        data-weight-per-unit="{{ $commodity->weight_per_unit ?? '' }}"
                                         data-pieces-per-box="{{ $commodity->pieces_per_box ?? '' }}"
                                         data-attributes="{{ $commodity->attributes->pluck('id')->join(',') }}">
                                     {{ $commodity->title }}
@@ -815,10 +830,12 @@
                     </div>
                 </div>`;
                 $('#newRow').append(html);
+                renumberFormIndices(); // Renumber indices after adding
             });
             // Remove row
             $(document).on('click', '.remove-row', function () {
                 $(this).closest('.form-row').remove();
+                renumberFormIndices(); // Renumber indices after removal
                 updateTotalWeight(); // Update total weight when row is removed
             });
         });

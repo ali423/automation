@@ -233,19 +233,35 @@
                 var commodity_id = $(this).val();
                 var priceInput = $row.find('#price');
                 var unitSelect = $row.find('#unit_id');
+                var helpText = $(this).closest('.form-group').find('.commodity-help-text');
                 var weightInput = $row.find('#weight');
                 var packagingInput = $row.find('#packaging_count');
                 var packagingGroup = $row.find('[id^="packaging_count_group_"]');
                 var piecesDisplay = $row.find('#pieces_per_box_display');
                 var piecesGroup = $row.find('[id^="pieces_per_box_group_"]');
+
+                if (helpText.length) {
+                    if (commodity_id) {
+                        var selectedText = $(this).find('option:selected').text();
+                        helpText.removeClass('text-danger')
+                            .text('کالای انتخاب شده: ' + selectedText);
+                    } else {
+                        helpText.removeClass('text-danger')
+                            .text('ابتدا نام کالا را جستجو کرده و سپس از لیست بالا انتخاب کنید.');
+                    }
+                }
                 
-                // Clear weight and commodity cache when commodity changes
+                // Clear weight, packaging display and commodity cache when commodity changes
                 weightInput.val('').removeClass('weight-calculating').data('weight-value', 0);
                 packagingInput.val('');
                 piecesDisplay.val('-');
                 packagingGroup.hide();
                 piecesGroup.hide();
                 delete commodityDataCache[$row.attr('data-row-id')];
+                
+                // Set loading states
+                unitSelect.prop('disabled', true).empty().append('<option value="">در حال بارگذاری...</option>');
+                priceInput.prop('disabled', true).attr('placeholder','در حال بارگذاری...');
 
                 // Get commodity meta from selected option
                 var selectedOption = $(this).find('option:selected');
@@ -259,8 +275,11 @@
                     piecesDisplay.val(piecesPerBox);
                     packagingGroup.show();
                     piecesGroup.show();
+                } else {
+                    packagingGroup.hide();
+                    piecesGroup.hide();
                 }
-                
+
                 // Get commodity units
                 $.ajax({
                     url: '/order/commodity-units/' + commodity_id,
@@ -273,6 +292,7 @@
                             response.units.forEach(function(unit) {
                                 unitSelect.append('<option value="' + unit.id + '">' + unit.name + ' (' + unit.symbol + ')</option>');
                             });
+                            unitSelect.prop('disabled', false);
                             
                             // Cache commodity data for weight calculation and packaging sync
                             commodityDataCache[rowId] = {
@@ -280,7 +300,12 @@
                                 weight_per_unit: response.commodity.weight_per_unit,
                                 pieces_per_box: piecesPerBox || response.commodity.pieces_per_box || null
                             };
+                        } else {
+                            unitSelect.empty().append('<option value="">خطا در بارگذاری</option>').prop('disabled', false);
                         }
+                    },
+                    error: function () {
+                        unitSelect.empty().append('<option value="">خطا در بارگذاری</option>').prop('disabled', false);
                     }
                 });
                 
@@ -290,9 +315,12 @@
                     type: 'get',
                     dataType: 'json',
                     success: function (response) {
-                        price = response['price'];
+                        price = (response && response.data) ? response.data.price : null;
                         var formattedPrice = price ? Math.round(parseFloat(price)).toString() : '';
-                        priceInput.val(formattedPrice);
+                        priceInput.val(formattedPrice).attr('placeholder','').prop('disabled', false);
+                    },
+                    error: function () {
+                        priceInput.val('').attr('placeholder','نامشخص').prop('disabled', false);
                     }
                 });
                 
@@ -356,21 +384,280 @@
                 }, 300);
                 $row.data('weight-debounce-timeout', timeout);
             });
+
+            // Commodity search triggered only on button click
+            $(document).on('click', '.btn-commodity-search', function () {
+                var $row = $(this).closest('.form-row');
+                var term = $row.find('.commodity-search-input').val().trim();
+                var $select = $row.find('#commodity_id');
+                var $help = $row.find('.commodity-help-text');
+
+                // Get selected attribute filters for THIS ROW (toggle buttons)
+                var selectedAttributes = [];
+                $row.find('.row-attribute-filter.btn-primary').each(function() {
+                    selectedAttributes.push($(this).data('attribute-id').toString());
+                });
+
+                // If search term is empty, restore original full list (if stored) and return
+                if (!term && selectedAttributes.length === 0) {
+                    var original = $select.data('original-options');
+                    if (original) {
+                        $select.html(original);
+                        $select.prop('disabled', false);
+                    }
+                    if ($help.length) {
+                        $help.removeClass('text-danger')
+                            .text('ابتدا نام کالا را جستجو کرده و سپس از لیست بالا انتخاب کنید.');
+                    }
+                    return;
+                }
+
+                if ($help.length) {
+                    $help.removeClass('text-danger')
+                        .text('در حال جستجوی کالا...');
+                }
+
+                // Store original options once so we can restore later
+                if (!$select.data('original-options')) {
+                    $select.data('original-options', $select.html());
+                }
+
+                $select.prop('disabled', true)
+                    .empty()
+                    .append('<option value="">در حال جستجو...</option>');
+
+                $.ajax({
+                    url: '{{ route('commodity.search') }}',
+                    type: 'get',
+                    dataType: 'json',
+                    data: { 
+                        search: term,
+                        attributes: selectedAttributes
+                    },
+                    success: function (data) {
+                        $select.empty();
+                        if (!data.length) {
+                            $select.append('<option value="">موردی یافت نشد</option>');
+                            if ($help.length) {
+                                $help.text('کالایی با این نام یافت نشد.');
+                            }
+                        } else {
+                            $select.append('<option value="">انتخاب کنید...</option>');
+                            data.forEach(function (item) {
+                                var option = $('<option></option>')
+                                    .attr('value', item.id)
+                                    .text(item.text);
+                                if (item.discount_percentage !== null && item.discount_percentage !== undefined) {
+                                    option.attr('data-discount', item.discount_percentage);
+                                }
+                                if (item.unit_id !== null && item.unit_id !== undefined) {
+                                    option.attr('data-unit-id', item.unit_id);
+                                }
+                                if (item.weight_per_unit !== null && item.weight_per_unit !== undefined) {
+                                    option.attr('data-weight-per-unit', item.weight_per_unit);
+                                }
+                                if (item.pieces_per_box !== null && item.pieces_per_box !== undefined) {
+                                    option.attr('data-pieces-per-box', item.pieces_per_box);
+                                }
+                                if (item.attributes !== null && item.attributes !== undefined) {
+                                    option.attr('data-attributes', item.attributes);
+                                }
+                                $select.append(option);
+                            });
+                            if ($help.length) {
+                                $help.text('لطفاً از لیست بالا یک کالا را انتخاب کنید.');
+                            }
+                        }
+                        $select.prop('disabled', false);
+                    },
+                    error: function () {
+                        $select.empty()
+                            .append('<option value="">خطا در جستجو</option>')
+                            .prop('disabled', false);
+                        if ($help.length) {
+                            $help.addClass('text-danger')
+                                .text('خطا در جستجو. دوباره تلاش کنید.');
+                        }
+                    }
+                });
+            });
+
+            // When user clears the search box, restore original full list (if any)
+            $(document).on('input', '.commodity-search-input', function () {
+                var $row = $(this).closest('.form-row');
+                var term = $(this).val().trim();
+                var $select = $row.find('#commodity_id');
+                var $help = $row.find('.commodity-help-text');
+
+                if (!term) {
+                    var original = $select.data('original-options');
+                    if (original) {
+                        $select.html(original);
+                        $select.prop('disabled', false);
+                    }
+                    if ($help.length) {
+                        $help.removeClass('text-danger')
+                            .text('ابتدا نام کالا را جستجو کرده و سپس از لیست بالا انتخاب کنید.');
+                    }
+                }
+            });
+
+            // Per-row attribute filter click handler
+            $(document).on('click', '.row-attribute-filter', function() {
+                var $btn = $(this);
+                var $row = $btn.closest('#inputFormRow');
+
+                // Toggle button state
+                if ($btn.hasClass('btn-primary')) {
+                    $btn.removeClass('btn-primary').addClass('btn-outline-primary');
+                } else {
+                    $btn.removeClass('btn-outline-primary').addClass('btn-primary');
+                }
+
+                // Apply filter to this row's commodity select
+                applyRowFilter($row);
+                // Update filter indicator for this row
+                updateRowFilterIndicator($row);
+            });
+
+            // Per-row clear filters button
+            $(document).on('click', '.clear-row-filters', function() {
+                var $row = $(this).closest('#inputFormRow');
+                $row.find('.row-attribute-filter').removeClass('btn-primary').addClass('btn-outline-primary');
+                applyRowFilter($row);
+                updateRowFilterIndicator($row);
+            });
+
+            // Per-row search in attributes
+            $(document).on('input', '.row-attribute-search', function() {
+                var $row = $(this).closest('#inputFormRow');
+                var q = $(this).val().toString().trim().toLowerCase();
+                $row.find('.row-attribute-filter').each(function() {
+                    var name = $(this).data('name').toString().toLowerCase();
+                    $(this).toggle(name.includes(q));
+                });
+            });
+
+            // Update filter indicator (icon color) for a specific row
+            function updateRowFilterIndicator($row) {
+                var count = $row.find('.row-attribute-filter.btn-primary').length;
+                var $icon = $row.find('.toggle-row-filter');
+                if (count > 0) {
+                    $icon.css('color', '#007bff');
+                } else {
+                    $icon.css('color', '#666');
+                }
+            }
+
+            // Apply filter to a specific row's commodity select
+            function applyRowFilter($row) {
+                var $select = $row.find('.commodity-select');
+                var currentValue = $select.val();
+
+                // Store original options if not already stored
+                if (!$select.data('original-options')) {
+                    $select.data('original-options', $select.html());
+                }
+
+                // Restore original options
+                $select.html($select.data('original-options'));
+
+                // Get selected attributes for this row
+                var selectedAttributes = [];
+                $row.find('.row-attribute-filter.btn-primary').each(function() {
+                    selectedAttributes.push($(this).data('attribute-id').toString());
+                });
+
+                // If no filters selected, keep all options
+                if (selectedAttributes.length === 0) {
+                    return;
+                }
+
+                // Filter options based on selected attributes
+                $select.find('option').each(function() {
+                    var $option = $(this);
+                    var optionValue = $option.val();
+
+                    if (!optionValue) {
+                        return; // Keep the empty "انتخاب کنید" option
+                    }
+
+                    var attrs = ($option.data('attributes') || '').toString().split(',').filter(Boolean);
+                    var hasAll = selectedAttributes.every(function(attrId) {
+                        return attrs.includes(attrId);
+                    });
+
+                    if (!hasAll) {
+                        $option.remove();
+                    }
+                });
+
+                // If current selection is no longer available, reset it
+                if (currentValue && $select.find('option[value="' + currentValue + '"]').length === 0) {
+                    $select.val('');
+                }
+            }
+
+            // Store attribute filter HTML template for new rows
+            @if(isset($attributes) && $attributes->count() > 0)
+            var attributeFilterHtml = `<div class="col-12 mb-2 attribute-filter-container">
+                <div class="d-inline-flex align-items-center" style="cursor: pointer;" onclick="$(this).closest('.attribute-filter-container').find('.filter-panel').slideToggle(200);">
+                    <i class="ti-filter toggle-row-filter" style="font-size: 12px; color: #666;"></i>
+                    <small style="margin-right: 6px; font-size: 11px; color: #333;">فیلتر ویژگی</small>
+                </div>
+                <div class="filter-panel mt-2" style="display: none;">
+                    <div class="card" style="background-color: #f8f9fa; border: 1px solid #e0e0e0;">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <input type="text" class="form-control form-control-sm row-attribute-search" placeholder="جستجو..." style="font-size: 12px; width: 150px;">
+                                <button type="button" class="btn btn-xs btn-secondary clear-row-filters" style="font-size: 11px; padding: 2px 8px;">پاک کردن</button>
+                            </div>
+                            <div class="d-flex flex-wrap gap-1 row-attribute-filters" style="max-height: 150px; overflow-y: auto; scrollbar-width: thin;">
+                                @foreach($attributes as $attribute)
+                                <button type="button" class="btn btn-xs btn-outline-primary row-attribute-filter" data-attribute-id="{{ $attribute->id }}" data-name="{{ $attribute->name }}" style="font-size: 11px; padding: 2px 8px; margin: 2px;">{{ $attribute->name }}</button>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            @else
+            var attributeFilterHtml = '';
+            @endif
+
             // Add row
             $('#addRow').click(function () {
                 var index = $('#order_formul .form-row').length;
                 var html = `<div id="inputFormRow" class="form-row shadow p-4 mb-3">
+                    ${attributeFilterHtml}
+                    <div class="col-12 mb-2">
+                        <div class="d-flex align-items-center">
+                            <input type="text"
+                                   class="form-control form-control-sm flex-grow-1 commodity-search-input"
+                                   placeholder="جستجو در نام کالا (مثلاً روغن موتور)">
+                            <button type="button"
+                                    class="btn btn-primary btn-sm btn-commodity-search ml-2">
+                                جستجو
+                            </button>
+                        </div>
+                        <small class="form-text text-muted commodity-help-text mt-1">
+                            ابتدا نام کالا را جستجو کرده و سپس از لیست بالا انتخاب کنید.
+                        </small>
+                    </div>
                     <div class="form-group col-md-3">
                         <label for="commodity_id">{{ __('fields.commodity.name')}}</label>
-                        <select id="commodity_id" class="form-control" name="commodity_id[${index}]" required>
-                            <option value="">انتخاب کنید</option>
+                        <select id="commodity_id" class="form-control form-control-sm commodity-select"
+                                style="max-height: 150px; overflow-y: auto;"
+                                name="commodity_id[${index}]" required>
+                            <option value="">انتخاب کنید...</option>
                             @foreach ($commodities as $commodity)
                                 <option value="{{ $commodity->id }}"
                                         @if($commodity->discount_percentage !== null) data-discount="{{ $commodity->discount_percentage }}" @endif
                                         data-unit-id="{{ $commodity->unit_id }}"
                                         data-weight-per-unit="{{ $commodity->weight_per_unit ?? '' }}"
-                                        data-pieces-per-box="{{ $commodity->pieces_per_box ?? '' }}">
-                                    {{$commodity->title}}
+                                        data-pieces-per-box="{{ $commodity->pieces_per_box ?? '' }}"
+                                        data-attributes="{{ $commodity->attributes->pluck('id')->join(',') }}">
+                                    {{ $commodity->title }}
                                 </option>
                             @endforeach
                         </select>
@@ -418,7 +705,7 @@
                     </div>
                     <div class="form-group col-md-2">
                         <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
-                        <input type="text" id="price" name="price[${index}]" value="" class="form-control"
+                        <input type="text" id="price" name="price[${index}]" value="" class="form-control price-input"
                                autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}">
                     </div>
                     <div class="form-group col-md-2">
