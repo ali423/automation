@@ -223,6 +223,7 @@ class OrderController extends Controller
             'discount_percentage' => $request->input('discount_percentage'),
             'packaging_count' => $request->input('packaging_count'),
             'commodity_amount' => $request->input('commodity_amount'),
+            'credit_validity_days' => $request->input('credit_validity_days'),
         ];
 
         $this->service->validationSecondLayer($data);
@@ -267,7 +268,7 @@ class OrderController extends Controller
             return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد. سفارش‌های تحویل شده قابل ویرایش نیستند.');
         }
         
-        $commodities = Commodity::query()->where('type', 'product')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit'])->orderBy('title')->get();
+        $commodities = Commodity::query()->where('type', 'product')->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit', 'attributes'])->orderBy('title')->get();
         $customers = Customer::query()->get();
         
         if (count($commodities) < 1) {
@@ -289,6 +290,7 @@ class OrderController extends Controller
                 'order' => $order,
                 'commodities' => $commoditiesWithUnits,
                 'customers' => $customers,
+                'attributes' => Attribute::orderBy('name')->get(),
             ]);
     }
 
@@ -315,6 +317,7 @@ class OrderController extends Controller
             'discount_percentage' => $request->input('discount_percentage'),
             'packaging_count' => $request->input('packaging_count'),
             'commodity_amount' => $request->input('commodity_amount'),
+            'credit_validity_days' => $request->input('credit_validity_days'),
         ];
         
         $this->service->validationSecondLayer($data);
@@ -384,7 +387,11 @@ class OrderController extends Controller
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
             }
-            $withdrawal = DB::transaction(function () use ($order, $data, $file) {
+            $withdrawal = DB::transaction(function () use ($order, $data, $file, $request) {
+                // Update credit validity days if provided
+                if ($request->has('credit_validity_days')) {
+                    $order->update(['credit_validity_days' => $request->input('credit_validity_days')]);
+                }
                 $this->service->updateStatus($order);
                 $withdrawal = $this->withdrawal_service->create($data, $file);
                 // Link order to withdrawal for future reference and display

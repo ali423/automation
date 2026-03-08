@@ -35,6 +35,7 @@ class OrderRequest extends FormRequest
             'commodity_amount' => ['required', 'array', 'min:1'],
             'discount_percentage' => ['nullable', 'array'],
             'packaging_count' => ['nullable', 'array'],
+            'credit_validity_days' => ['nullable', 'integer', 'min:1'],
             'commodity_id.*' => ['required', 'exists:commodities,id', 'distinct', Rule::exists('commodities', 'id')->where('type', 'product')],
             'unit_id.*' => ['required', 'exists:units,id'],
             'price.*' => ['nullable', 'numeric'],

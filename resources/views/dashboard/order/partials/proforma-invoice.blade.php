@@ -118,6 +118,13 @@
                                 @endforeach
                                 <tr>
                                     <td colspan="11" class="text-left" style="vertical-align: top">
+                                        @if($order->credit_validity_text)
+                                            <div class="mb-3 p-2" style="background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 4px;">
+                                                <p style="text-align: center; margin: 0; font-weight: bold;">
+                                                    {{ $order->credit_validity_text }}
+                                                </p>
+                                            </div>
+                                        @endif
                                         <div class="d-flex justify-content-between">
                                             <span>شرایط و نحوه تسویه: </span>
                                             <span>نقدی <span class="border" style="display:inline-block;width:15px;height:15px"></span></span>
