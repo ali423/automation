@@ -109,12 +109,7 @@ class InventoryService extends BaseService
                 $newAmount = $availableInThisRecord - $amountToRemove;
                 $remainingAmount -= $amountToRemove;
             
-                if ($newAmount == 0) {
-                    // Delete empty rows instead of keeping zero-amount records
-                    $inventory->delete();
-                } else {
-                    $inventory->update(['amount' => $newAmount]);
-                }
+                $inventory->update(['amount' => $newAmount]);
             }
 
             return true;
@@ -338,13 +333,9 @@ class InventoryService extends BaseService
             }
         }
 
-        if ($newAmount == 0) {
-            $inventory->delete();
-        } else {
-            $inventory->update([
-                'amount' => $newAmount
-            ]);
-        }
+        $inventory->update([
+            'amount' => $newAmount
+        ]);
 
         // No cache clearing needed since we removed caching mechanisms
 
