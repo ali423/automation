@@ -145,40 +145,142 @@ class WithdrawalRequestController extends Controller
      */
     public function show(WithdrawalRequest $withdrawalRequest)
     {
-        // Load the withdrawal request with commodities and their units
-        $withdrawalRequest->load(['commodities' => function ($query) {
-            $query->with('unit');
-        }]);
+        // Load the withdrawal request with commodities, units, and adjustments
+        $withdrawalRequest->load([
+            'commodities' => function ($query) {
+                $query->with('unit');
+            },
+            'adjustments' => function ($query) {
+                $query->with('commodity')->orderBy('created_at', 'desc');
+            }
+        ]);
         
         // Eager load all pivot units in a single query to avoid N+1 problem
         $pivotUnitIds = $withdrawalRequest->commodities->pluck('pivot.unit_id')->filter()->unique();
         $pivotUnits = \App\Models\Unit::whereIn('id', $pivotUnitIds)->get()->keyBy('id');
         
-        // Calculate returned amounts for each commodity
+        // Calculate returned and corrected amounts for each commodity (all in main unit)
         $returnedAmounts = [];
+        $correctionAmounts = [];
         if (in_array($withdrawalRequest->status, ['approvaled', 'done', 'cancelled'])) {
             foreach ($withdrawalRequest->commodities as $commodity) {
+                $originalAmountInMainUnit = $this->commodityUnitService->convertToMainUnit(
+                    $commodity,
+                    $commodity->pivot->amount,
+                    $commodity->pivot->unit_id
+                ) ?? 0;
+
+                // Get sales returns (when customer returns the item)
                 $returned = \App\Models\InventoryAdjustment::forWithdrawal($withdrawalRequest->id)
                     ->byType('sales_return')
                     ->where('commodity_id', $commodity->id)
                     ->sum('amount');
                 $returnedAmounts[$commodity->id] = $returned;
+                
+                // Get corrections (when we fix shipping discrepancies)
+                $corrections = \App\Models\InventoryAdjustment::forWithdrawal($withdrawalRequest->id)
+                    ->where('commodity_id', $commodity->id)
+                    ->where('adjustment_type', 'manual_adjustment')
+                    ->where('reason', 'like', '%[تصحیح ارسال%')
+                    ->sum('amount');
+                $correctionAmounts[$commodity->id] = $corrections;
+                $commodity->original_amount_main_unit = $originalAmountInMainUnit;
             }
         }
         
-        // Attach pivot units and return data to commodities
+        // Attach pivot units and return/correction data to commodities
         foreach ($withdrawalRequest->commodities as $commodity) {
             if ($commodity->pivot->unit_id && isset($pivotUnits[$commodity->pivot->unit_id])) {
                 $commodity->pivot->unit = $pivotUnits[$commodity->pivot->unit_id];
             }
-            // Attach returned amount
+            // Attach returned amount (from actual sales returns)
             $commodity->returned_amount = $returnedAmounts[$commodity->id] ?? 0;
-            // Calculate net amount (original - returned)
-            $commodity->net_amount = $commodity->pivot->amount - $commodity->returned_amount;
+            // Attach correction amount (from shipping corrections)
+            $commodity->correction_amount = $correctionAmounts[$commodity->id] ?? 0;
+            // Calculate effective shipped amount in main unit:
+            // original - sales returns - all shipping corrections
+            $originalAmountInMainUnit = $commodity->original_amount_main_unit ?? ($this->commodityUnitService->convertToMainUnit(
+                $commodity,
+                $commodity->pivot->amount,
+                $commodity->pivot->unit_id
+            ) ?? 0);
+            $commodity->net_amount = $originalAmountInMainUnit - $commodity->returned_amount - $commodity->correction_amount;
+        }
+
+        // Find commodities that were ADDED via corrections (not in original withdrawal)
+        $originalCommodityIds = $withdrawalRequest->commodities->pluck('id')->toArray();
+        $addedCommodities = [];
+        
+        if (in_array($withdrawalRequest->status, ['approvaled', 'done', 'cancelled'])) {
+            // Get all commodities from adjustments that aren't in original list
+            $adjustmentCommodityIds = $withdrawalRequest->adjustments
+                ->filter(function ($adjustment) {
+                    return $adjustment->adjustment_type === 'manual_adjustment'
+                        && str_contains($adjustment->reason ?? '', '[تصحیح ارسال:');
+                })
+                ->pluck('commodity_id')
+                ->unique()
+                ->diff($originalCommodityIds);
+            
+            // Build added commodities with their adjustment info
+            foreach ($adjustmentCommodityIds as $commodityId) {
+                $commodity = \App\Models\Commodity::find($commodityId);
+                if (!$commodity) continue;
+                
+                // Get total adjustments for this commodity
+                $adjustmentAmount = \App\Models\InventoryAdjustment::forWithdrawal($withdrawalRequest->id)
+                    ->where('commodity_id', $commodityId)
+                    ->where('reason', 'like', '%[تصحیح ارسال%')
+                    ->sum('amount');
+                
+                if ($adjustmentAmount != 0) {
+                    $commodity->adjustment_amount = $adjustmentAmount;
+                    $commodity->adjustment_type = 'added_via_correction';
+                    // Get the unit from the adjustment
+                    $lastAdjustment = \App\Models\InventoryAdjustment::forWithdrawal($withdrawalRequest->id)
+                        ->where('commodity_id', $commodityId)
+                        ->where('reason', 'like', '%[تصحیح ارسال%')
+                        ->latest()
+                        ->first();
+                    $commodity->unit_id_used = $lastAdjustment->unit_id;
+                    $addedCommodities[] = $commodity;
+                }
+            }
         }
         
+        // Build final effective request items for display/invoices (main unit basis)
+        $effectiveCommodities = collect();
+        foreach ($withdrawalRequest->commodities as $commodity) {
+            $effectiveAmount = max(0, (float) ($commodity->net_amount ?? 0));
+            $commodity->effective_amount = $effectiveAmount;
+            $commodity->effective_unit = $commodity->unit;
+            $commodity->effective_price = $commodity->pivot->price;
+            $effectiveCommodities->push($commodity);
+        }
+
+        foreach ($addedCommodities as $addedCommodity) {
+            $correctionSum = \App\Models\InventoryAdjustment::forWithdrawal($withdrawalRequest->id)
+                ->where('commodity_id', $addedCommodity->id)
+                ->where('adjustment_type', 'manual_adjustment')
+                ->where('reason', 'like', '%[تصحیح ارسال%')
+                ->sum('amount');
+            $returnedForAdded = \App\Models\InventoryAdjustment::forWithdrawal($withdrawalRequest->id)
+                ->byType('sales_return')
+                ->where('commodity_id', $addedCommodity->id)
+                ->sum('amount');
+
+            $addedCommodity->effective_amount = max(0, (-1 * $correctionSum) - $returnedForAdded);
+            $addedCommodity->effective_unit = $addedCommodity->unit;
+            $addedCommodity->effective_price = $addedCommodity->sales_price ?? null;
+            $effectiveCommodities->push($addedCommodity);
+        }
+
         return view('dashboard.processes.withdrawal-request.show', [
             'request' => $withdrawalRequest,
+            'addedCommodities' => $addedCommodities,
+            'effectiveCommodities' => $effectiveCommodities->filter(function ($commodity) {
+                return ($commodity->effective_amount ?? 0) > 0;
+            })->values(),
         ]);
     }
 
@@ -492,10 +594,15 @@ class WithdrawalRequestController extends Controller
             return redirect()->back()->withErrors('امکان برگشت از فروش تنها برای درخواست‌های تایید شده وجود دارد.');
         }
 
-        // Load commodities with their units for the form
-        $withdrawalRequest->load(['commodities' => function ($query) {
-            $query->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit']);
-        }]);
+        // Load commodities with their units and adjustments for the form
+        $withdrawalRequest->load([
+            'commodities' => function ($query) {
+                $query->with(['unit', 'unitConversions.fromUnit', 'unitConversions.toUnit']);
+            },
+            'adjustments' => function ($query) {
+                $query->with('commodity')->orderBy('created_at', 'desc');
+            }
+        ]);
 
         // Eager load pivot units
         $pivotUnitIds = $withdrawalRequest->commodities->pluck('pivot.unit_id')->filter()->unique();
@@ -515,8 +622,59 @@ class WithdrawalRequestController extends Controller
                 ->sum('amount');
         }
 
+        // Prepare commodities data for discrepancies section
+        $allCommodities = \App\Models\Commodity::all();
+        $commodityUnitsData = [];
+        
+        foreach ($allCommodities as $commodity) {
+            $commodityUnitsData[$commodity->id] = [];
+            
+            // Add main unit
+            if ($commodity->unit) {
+                $commodityUnitsData[$commodity->id][$commodity->unit_id] = [
+                    'id' => $commodity->unit_id,
+                    'name' => $commodity->unit->name,
+                    'symbol' => $commodity->unit->symbol
+                ];
+            }
+            
+            // Add conversion units
+            foreach ($commodity->unitConversions as $conversion) {
+                if ($conversion->toUnit) {
+                    $commodityUnitsData[$commodity->id][$conversion->toUnit->id] = [
+                        'id' => $conversion->toUnit->id,
+                        'name' => $conversion->toUnit->name,
+                        'symbol' => $conversion->toUnit->symbol
+                    ];
+                }
+            }
+        }
+
+        $allUnits = \App\Models\Unit::all();
+
+        // Identify commodities added via corrections (manual adjustments)
+        $originalCommodityIds = $withdrawalRequest->commodities->pluck('id')->toArray();
+        $addedCommodityIds = $withdrawalRequest->adjustments
+            ->filter(function ($adjustment) {
+                return $adjustment->adjustment_type === 'manual_adjustment'
+                    && str_contains($adjustment->reason ?? '', '[تصحیح ارسال:');
+            })
+            ->pluck('commodity_id')
+            ->unique()
+            ->diff($originalCommodityIds)
+            ->values()
+            ->toArray();
+
+        // Combine both lists for the request commodity IDs (original + added)
+        $requestCommodityIds = array_merge($originalCommodityIds, $addedCommodityIds);
+
         return view('dashboard.processes.withdrawal-request.sales-return', [
             'request' => $withdrawalRequest,
+            'allCommodities' => $allCommodities,
+            'allUnits' => $allUnits,
+            'commodityUnitsData' => $commodityUnitsData,
+            'requestCommodityIds' => $requestCommodityIds,
+            'addedCommodityIds' => $addedCommodityIds,
         ]);
     }
 
@@ -535,41 +693,106 @@ class WithdrawalRequestController extends Controller
 
         $withdrawalRequest = WithdrawalRequest::query()->findOrFail($id);
 
+        // Validate unified returns form
         $validated = $request->validate([
-            'commodity_id' => ['required', 'array'],
-            'commodity_id.*' => ['required', 'exists:commodities,id'],
-            'return_amount' => ['required', 'array'],
-            'return_amount.*' => ['required', 'numeric', 'min:0.01'],
-            'unit_id' => ['required', 'array'],
-            'unit_id.*' => ['required', 'exists:units,id'],
+            'return_type' => ['nullable', 'array'],
+            'return_type.*' => ['in:normal,add_back,deduct,qty_adjustment'],
+            'return_direction' => ['nullable', 'array'],
+            'return_direction.*' => ['nullable', 'in:increase,decrease'],
+            'return_commodity_id' => ['nullable', 'array'],
+            'return_commodity_id.*' => ['exists:commodities,id'],
+            'return_amount' => ['nullable', 'array'],
+            'return_amount.*' => ['numeric', 'min:0'],
+            'return_unit_id' => ['nullable', 'array'],
+            'return_unit_id.*' => ['exists:units,id'],
+            'return_reason' => ['nullable', 'array'],
+            'return_reason.*' => ['nullable', 'string', 'max:500'],
             'reason' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        // Prepare return data
-        $returnData = [];
-        foreach ($validated['commodity_id'] as $index => $commodityId) {
-            if ($validated['return_amount'][$index] > 0) {
-                $returnData[$commodityId] = [
+        // Separate returns from corrections
+        $returns = [];      // Items for sales_return
+        $corrections = [];  // Items for shipping_correction
+        $requestCommodityIds = $withdrawalRequest->commodities->pluck('id')->all();
+
+        if (!empty($validated['return_type'])) {
+            foreach ($validated['return_type'] as $index => $type) {
+                if (empty($validated['return_amount'][$index]) || $validated['return_amount'][$index] <= 0) {
+                    continue; // Skip empty rows
+                }
+
+                if (
+                    empty($validated['return_commodity_id'][$index]) ||
+                    empty($validated['return_unit_id'][$index]) ||
+                    empty($type)
+                ) {
+                    return redirect()->back()->withErrors('برای هر ردیف دارای مقدار، نوع، کالا و واحد الزامی است.')->withInput();
+                }
+
+                $item = [
+                    'commodity_id' => $validated['return_commodity_id'][$index],
                     'amount' => $validated['return_amount'][$index],
-                    'unit_id' => $validated['unit_id'][$index],
-                    'reason' => $validated['reason'] ?? null,
+                    'unit_id' => $validated['return_unit_id'][$index],
+                    'reason' => $validated['return_reason'][$index] ?? null,
+                    'direction' => $validated['return_direction'][$index] ?? 'decrease',
                 ];
+
+                // For these types, commodity must be from current withdrawal request.
+                if (in_array($type, ['normal', 'add_back', 'qty_adjustment']) && !in_array((int) $item['commodity_id'], $requestCommodityIds)) {
+                    return redirect()->back()->withErrors('کالای انتخابی برای این نوع باید از کالاهای همین درخواست باشد.')->withInput();
+                }
+
+                if ($type === 'normal') {
+                    $commodityId = $validated['return_commodity_id'][$index];
+                    if (isset($returns[$commodityId])) {
+                        // Aggregate duplicate normal rows for the same commodity
+                        if ((int) $returns[$commodityId]['unit_id'] !== (int) $item['unit_id']) {
+                            return redirect()->back()->withErrors('برای یک کالا در برگشت عادی، واحد باید یکسان باشد.')->withInput();
+                        }
+                        $returns[$commodityId]['amount'] += $item['amount'];
+                        if (!empty($item['reason'])) {
+                            $existingReason = $returns[$commodityId]['reason'] ?? '';
+                            $returns[$commodityId]['reason'] = trim($existingReason . ' | ' . $item['reason'], ' |');
+                        }
+                    } else {
+                        $returns[$commodityId] = $item;
+                    }
+                } else {
+                    // add_back, deduct, qty_adjustment are corrections
+                    $corrections[] = [
+                        'type' => $type,
+                        'commodity_id' => $item['commodity_id'],
+                        'amount' => $item['amount'],
+                        'unit_id' => $item['unit_id'],
+                        'reason' => $item['reason'],
+                        'direction' => $item['direction'],
+                    ];
+                }
             }
         }
 
-        if (empty($returnData)) {
-            return redirect()->back()->withErrors('لطفاً حداقل یک کالا با مقدار بیشتر از صفر وارد کنید.');
+        // Validate: at least one return or correction must exist
+        if (empty($returns) && empty($corrections)) {
+            return redirect()->back()->withErrors('لطفاً حداقل یک برگشت یا تصحیح ارسالی را وارد کنید.');
         }
 
         try {
-            DB::transaction(function () use ($withdrawalRequest, $returnData) {
-                $this->service->processSalesReturn($withdrawalRequest, $returnData);
+            DB::transaction(function () use ($withdrawalRequest, $corrections, $returns) {
+                // Step 1: Apply all corrections first
+                if (!empty($corrections)) {
+                    $this->service->applyShippingCorrections($withdrawalRequest, $corrections);
+                }
+                
+                // Step 2: Then process returns (only if returns has items)
+                if (!empty($returns)) {
+                    $this->service->processSalesReturn($withdrawalRequest, $returns);
+                }
             });
         } catch (\Exception $e) {
             return redirect()->back()->withErrors($e->getMessage());
         }
 
-        return redirect(route('withdrawal-request.show', $withdrawalRequest))->with('successful', 'برگشت از فروش با موفقیت ثبت و موجودی بازگردانده شد.');
+        return redirect(route('sales-return.withdrawal.form', $withdrawalRequest))->with('successful', 'برگشت و تصحیحات با موفقیت ثبت شدند.');
     }
 
 }

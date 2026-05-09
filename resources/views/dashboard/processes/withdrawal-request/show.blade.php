@@ -58,51 +58,69 @@
                         @php
                             $i = 1;
                             $total_amount = 0;
-                            // Pre-calculate main unit data once for all commodities
-                            $mainUnitData = $request->getMainUnitAmountAttribute();
-                            $hasReturns = $request->commodities->sum('returned_amount') > 0;
+                            // Effective state is rendered below; history stays in audit section.
                         @endphp
-                        @foreach ($request->commodities as $commodity)
+
+                        @foreach ($effectiveCommodities as $commodity)
                             @include('dashboard.processes.withdrawal-request.partials.commodity-display', [
-                                'commodity' => $commodity,
-                                'mainUnitData' => $mainUnitData
+                                'commodity' => $commodity
                             ])
                         @endforeach
 
-                        @if($hasReturns)
-                            <div class="col-xl-12 height-card box-margin">
-                                <div class="card border-info">
-                                    <div class="card-body">
-                                        <h5 class="card-title text-info">
-                                            <i class="fa fa-undo"></i> خلاصه برگشت از فروش
-                                        </h5>
-                                        <div class="table-responsive">
-                                            <table class="table table-sm table-hover">
-                                                <thead class="thead-light">
+                        {{-- Adjustments History Section --}}
+                        @php
+                            $relevantAdjustments = $request->adjustments->filter(function($adj) {
+                                return $adj->adjustment_type === 'sales_return' || 
+                                       (str_contains($adj->reason ?? '', '[تصحیح ارسال:'));
+                            });
+                        @endphp
+
+                        @if($relevantAdjustments->count() > 0)
+                        <div class="col-xl-12 height-card box-margin">
+                            <div class="card border-secondary">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fa fa-history"></i> تاریخچه برگشت و تصحیحات
+                                    </h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>نوع</th>
+                                                    <th>کالا</th>
+                                                    <th>مقدار</th>
+                                                    <th>تاریخ</th>
+                                                    <th>توضیحات</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($relevantAdjustments as $adjustment)
                                                     <tr>
-                                                        <th>کالا</th>
-                                                        <th class="text-right">مقدار اصلی</th>
-                                                        <th class="text-right text-info">برگشتی</th>
-                                                        <th class="text-right text-success font-weight-bold">خالص فروش</th>
+                                                        <td>
+                                                            @if($adjustment->adjustment_type === 'sales_return')
+                                                                <span class="badge badge-info">برگشت</span>
+                                                            @elseif(str_contains($adjustment->reason ?? '', '[تصحیح ارسال: برگشت]'))
+                                                                <span class="badge badge-success">برگشت تصحیح</span>
+                                                            @elseif(str_contains($adjustment->reason ?? '', '[تصحیح ارسال: کسر]'))
+                                                                <span class="badge badge-danger">کسر تصحیح</span>
+                                                            @elseif(str_contains($adjustment->reason ?? '', '[تصحیح ارسال: مقدار]'))
+                                                                <span class="badge badge-warning">تصحیح مقدار</span>
+                                                            @else
+                                                                <span class="badge badge-secondary">{{ $adjustment->adjustment_type }}</span>
+                                                            @endif
+                                                        </td>
+                                                        <td><strong>{{ $adjustment->commodity->title ?? '-' }}</strong></td>
+                                                        <td>{{ abs($adjustment->amount) }}</td>
+                                                        <td>{{ $adjustment->created_at->format('Y-m-d H:i') }}</td>
+                                                        <td><small>{{ $adjustment->reason ?: '-' }}</small></td>
                                                     </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach($request->commodities as $commodity)
-                                                        @if($commodity->returned_amount > 0)
-                                                            <tr>
-                                                                <td>{{ $commodity->title }}</td>
-                                                                <td class="text-right">{{ number_format($commodity->pivot->amount, 2) }}</td>
-                                                                <td class="text-right text-info font-weight-bold">{{ number_format($commodity->returned_amount, 2) }}</td>
-                                                                <td class="text-right text-success font-weight-bold">{{ number_format($commodity->net_amount, 2) }}</td>
-                                                            </tr>
-                                                        @endif
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
+                        </div>
                         @endif
 
                         

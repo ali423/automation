@@ -58,6 +58,16 @@ class WithdrawalRequest extends Model
     {
         return $this->hasOne(Order::class, 'withdrawal_request_id', 'id');
     }
+
+    /**
+     * Get all inventory adjustments related to this withdrawal request
+     * (corrections, returns, etc.)
+     */
+    public function adjustments()
+    {
+        return $this->morphMany(InventoryAdjustment::class, 'adjustable')
+            ->orderBy('created_at', 'desc');
+    }
     
     public function getCreatedDateAttribute() {
         return $this->created_at->format('Y-m-d');
