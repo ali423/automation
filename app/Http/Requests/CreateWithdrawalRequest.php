@@ -20,6 +20,26 @@ class CreateWithdrawalRequest extends FormRequest
     }
 
     /**
+     * @return void
+     */
+    protected function prepareForValidation()
+    {
+        $prices = $this->input('price', []);
+        if (!is_array($prices)) {
+            return;
+        }
+        $this->merge([
+            'price' => array_map(function ($v) {
+                if ($v === null || $v === '') {
+                    return null;
+                }
+
+                return is_string($v) ? trim($v) : $v;
+            }, $prices),
+        ]);
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array
@@ -35,7 +55,7 @@ class CreateWithdrawalRequest extends FormRequest
             'commodity_id.*' => ['required', 'exists:commodities,id', 'distinct'],
             'unit_id.*' => ['required', 'exists:units,id'],
             'amount.*' => ['required', 'numeric', 'min:0.01'],
-            'price.*' => ['nullable', 'numeric'],
+            'price.*' => ['nullable', 'regex:/^\d+(\.\d{1,5})?$/'],
             'file' => ['nullable', 'mimes:jpg,svg,png,jpeg,pdf,txt,zip,rar', 'max:5120'],
             'comment' => ['nullable', 'string'],
             'driver_name' => ['nullable', 'string', 'max:255'],
@@ -125,7 +145,7 @@ class CreateWithdrawalRequest extends FormRequest
             'amount.*.required' => 'مقدار کالا الزامی است.',
             'amount.*.numeric' => 'مقدار کالا باید عدد باشد.',
             'amount.*.min' => 'مقدار کالا باید بیشتر از صفر باشد.',
-            'price.*.numeric' => 'قیمت باید عدد باشد.',
+            'price.*.regex' => 'قیمت باید عدد مثبت با حداکثر ۵ رقم اعشار باشد.',
             'file.mimes' => 'فرمت فایل مجاز نیست.',
             'file.max' => 'حجم فایل نباید بیشتر از 5 مگابایت باشد.',
             // driver fields are captured at approval time; no required messages here

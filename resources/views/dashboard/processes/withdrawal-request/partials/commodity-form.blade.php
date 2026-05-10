@@ -43,7 +43,7 @@
     
     <div class="priceholder form-group col-md-4">
         <label> {{  __('fields.sell-price_per_unit') }}</label>
-        <input type="number" class="form-control price-input" min="1" name="price[{{ $index ?? 0 }}]"
+        <input type="number" class="form-control price-input" min="0" step="any" name="price[{{ $index ?? 0 }}]"
                autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}" pattern="[0-9 .]" 
                value="{{ $price ?? '' }}">
         <div class="invalid-feedback">{{ __('fields.sell-price_per_unit') }} را وارد کنید.</div>
