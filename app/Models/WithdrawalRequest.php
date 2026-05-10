@@ -31,6 +31,7 @@ class WithdrawalRequest extends Model
     public function commodities()
     {
         return $this->belongsToMany(Commodity::class, 'withdrawal_commodities', 'withdrawal_id', 'commodity_id')
+            ->using(WithdrawalCommodity::class)
             ->withPivot('amount', 'unit_id', 'price')
             ->with('unit');
     }
@@ -42,6 +43,7 @@ class WithdrawalRequest extends Model
     public function commoditiesWithPivotUnits()
     {
         return $this->belongsToMany(Commodity::class, 'withdrawal_commodities', 'withdrawal_id', 'commodity_id')
+            ->using(WithdrawalCommodity::class)
             ->withPivot('amount', 'unit_id', 'price')
             ->with('unit');
     }

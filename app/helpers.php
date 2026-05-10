@@ -127,3 +127,66 @@ if (!function_exists('default_product_identifier')) {
         return '2923649785421';
     }
 }
+
+if (!function_exists('format_tejarat_invoice_price_display')) {
+    /**
+     * Format a numeric string for the Tejarat invoice فـی column only: thousands separators,
+     * no float rounding — fractional digits are truncated beyond five places.
+     *
+     * @param mixed $value
+     * @return string
+     */
+    function format_tejarat_invoice_price_display($value)
+    {
+        if ($value === null || $value === '') {
+            return '-';
+        }
+        $s = is_string($value) ? trim($value) : (is_numeric($value) ? (string) $value : '');
+        if ($s === '' || !is_numeric($s)) {
+            return '-';
+        }
+        $neg = false;
+        if (isset($s[0]) && $s[0] === '-') {
+            $neg = true;
+            $s = substr($s, 1);
+        }
+        $parts = explode('.', $s, 2);
+        $intPart = $parts[0];
+        $frac = isset($parts[1]) ? $parts[1] : '';
+        if (strlen($frac) > 5) {
+            $frac = substr($frac, 0, 5);
+        }
+        $frac = rtrim($frac, '0');
+        $intWithSep = preg_replace('/\B(?=(\d{3})+(?!\d))/', ',', $intPart);
+        if ($frac === '') {
+            return ($neg ? '-' : '') . $intWithSep;
+        }
+
+        return ($neg ? '-' : '') . $intWithSep . '.' . $frac;
+    }
+}
+
+if (!function_exists('tejarat_fi_per_unit_truncated')) {
+    /**
+     * فی ÷ لیتراژ truncated to five fractional digits (no rounding). Uses BCMath.
+     *
+     * @param string $unitPrice
+     * @param string $litrage
+     * @return string|null
+     */
+    function tejarat_fi_per_unit_truncated($unitPrice, $litrage)
+    {
+        if ($litrage === '' || $litrage === null) {
+            return null;
+        }
+        $unitPrice = (string) $unitPrice;
+        $litrage = (string) $litrage;
+        if (!function_exists('bccomp') || bccomp($litrage, '0', 15) <= 0) {
+            return null;
+        }
+        $scaled = bcmul($unitPrice, '100000', 25);
+        $q = bcdiv($scaled, $litrage, 0);
+
+        return bcdiv($q, '100000', 5);
+    }
+}

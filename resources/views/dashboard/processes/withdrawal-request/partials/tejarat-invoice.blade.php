@@ -272,10 +272,13 @@
                                 <td>{{ $commodity->effective_unit ? $commodity->effective_unit->name : ($commodity->unit->name ?? 'نامشخص') }}</td>
                                 <td>{{ $totalLitrage !== null ? number_format($totalLitrage, 0, '.', ',') : '-' }}</td>
                                 <td>
-                                    @if($unitPrice !== null && $commodity->litrage > 0)
-                                        {{ number_format($unitPrice / $commodity->litrage, 5, '.', ',') }}
+                                    @if($unitPrice !== null && ($commodity->litrage ?? 0) > 0)
+                                        @php
+                                            $fiRaw = tejarat_fi_per_unit_truncated((string) $unitPrice, (string) ($commodity->litrage ?? '0'));
+                                        @endphp
+                                        {{ $fiRaw !== null ? format_tejarat_invoice_price_display($fiRaw) : '-' }}
                                     @else
-                                        {{ $unitPrice !== null ? number_format($unitPrice, 5, '.', ',') : '-' }}
+                                        {{ format_tejarat_invoice_price_display($unitPrice) }}
                                     @endif
                                 </td>
                                 <td>{{ $unitPrice !== null ? number_format(round($commodityVatAmount), 0) : '-' }}</td>
