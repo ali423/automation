@@ -273,9 +273,9 @@
                                 <td>{{ $totalLitrage !== null ? number_format($totalLitrage, 0, '.', ',') : '-' }}</td>
                                 <td>
                                     @if($unitPrice !== null && $commodity->litrage > 0)
-                                        {{ number_format($unitPrice / $commodity->litrage, 0) }}
+                                        {{ number_format($unitPrice / $commodity->litrage, 5, '.', ',') }}
                                     @else
-                                        {{ $unitPrice !== null ? number_format($unitPrice, 0) : '-' }}
+                                        {{ $unitPrice !== null ? number_format($unitPrice, 5, '.', ',') : '-' }}
                                     @endif
                                 </td>
                                 <td>{{ $unitPrice !== null ? number_format(round($commodityVatAmount), 0) : '-' }}</td>
