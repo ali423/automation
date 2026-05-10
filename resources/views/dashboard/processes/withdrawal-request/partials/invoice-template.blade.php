@@ -166,17 +166,18 @@
                                 $totalVatAmount = 0;
                                 $totalWithVat = 0;
                             @endphp
-                            @foreach($request->commodities as $commodity)
+                            @foreach($effectiveCommodities as $commodity)
                                 @php
-                                    $displayAmount = isset($commodity->net_amount) ? $commodity->net_amount : $commodity->pivot->amount;
+                                    $displayAmount = $commodity->effective_amount ?? 0;
+                                    $unitPrice = $commodity->effective_price ?? ($commodity->pivot->price ?? null);
                                     // Calculate packaging quantity only for non-documentation invoices
                                     $packagingQuantity = '-';
                                     $weight = null;
                                     if ($invoiceType !== 'documentation') {
                                         $piecesPerBox = $commodity->pieces_per_box ?? 1;
                                         if ($piecesPerBox > 0) {
-                                            // Convert to main unit (pieces) first, then divide by pieces per box
-                                            $amountInMainUnit = $commodityUnitService->convertToMainUnit($commodity, $displayAmount, $commodity->pivot->unit_id);
+                                            // Effective amount is already in main unit.
+                                            $amountInMainUnit = $displayAmount;
                                             // Packaging Quantity = Quantity (in pieces) ÷ Quantity per Package (pieces_per_box)
                                             $packagingQuantity = $amountInMainUnit !== null ? floor($amountInMainUnit / $piecesPerBox) : '-';
                                             if ($packagingQuantity !== '-') {
@@ -184,7 +185,7 @@
                                             }
                                         }
                                         // Calculate weight for customer and warehouse invoices
-                                        $weight = calculate_weight($commodity, $displayAmount, $commodity->pivot->unit_id);
+                                        $weight = calculate_weight($commodity, $displayAmount, $commodity->unit_id);
                                         if ($weight !== null) {
                                             $totalWeight += $weight;
                                             $hasValidWeight = true;
@@ -192,8 +193,8 @@
                                     }
                                     // Calculate VAT amount for documentation invoice
                                     $vatAmount = 0;
-                                    if ($invoiceType === 'documentation' && isset($commodity->pivot->price)) {
-                                        $lineTotal = $displayAmount * $commodity->pivot->price;
+                                    if ($invoiceType === 'documentation' && $unitPrice !== null) {
+                                        $lineTotal = $displayAmount * $unitPrice;
                                         $vatAmount = $lineTotal * vat_rate();
                                         $totalAmountNet += $lineTotal;
                                         $totalVatAmount += $vatAmount;
@@ -202,7 +203,7 @@
                                 <tr>
                                     <td scope="row">{{ $i }}</td>
                                     <td>{{ $commodity->title }}</td>
-                                    <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
+                                    <td>{{ $commodity->effective_unit ? $commodity->effective_unit->name : ($commodity->unit->name ?? 'نامشخص') }}</td>
                                     <td>{{ number_format($displayAmount, 0, '.', ',') }}</td>
                                     @if($invoiceType !== 'documentation')
                                         <td>
@@ -213,9 +214,9 @@
                                         </td>
                                     @endif
                                     @if($invoiceType === 'documentation')
-                                        <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price, 0) : '-' }}</td>
-                                        <td>{{ isset($commodity->pivot->price) ? number_format($displayAmount * $commodity->pivot->price, 0) : '-' }}</td>
-                                        <td>{{ isset($commodity->pivot->price) ? number_format($vatAmount, 0, '.', ',') : '0' }}</td>
+                                        <td>{{ $unitPrice !== null ? number_format($unitPrice, 0) : '-' }}</td>
+                                        <td>{{ $unitPrice !== null ? number_format($displayAmount * $unitPrice, 0) : '-' }}</td>
+                                        <td>{{ $unitPrice !== null ? number_format($vatAmount, 0, '.', ',') : '0' }}</td>
                                     @endif
                                 </tr>
                                 @php
