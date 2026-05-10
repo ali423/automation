@@ -82,94 +82,14 @@
                             <div id="order_formul" class="col-lg-12">
                                 <p>اطلاعات سفارش</p>
                                 @foreach($order->orderItems as $index => $item)
-                                <div id="inputFormRow" class="form-row shadow p-4 mb-3">
-                                    <div class="form-group col-md-3">
-                                        <label for="commodity_id">{{ __('fields.commodity.name')}}</label>
-                                        <select id="commodity_id" class="form-control" name="commodity_id[{{ $index }}]" required>
-                                            <option value="">انتخاب کنید</option>
-                                            @foreach ($commodities as $commodity)
-                                                <option value="{{ $commodity->id }}"
-                                                        @if($item->commodity_id == $commodity->id )
-                                                        selected
-                                                    @endif
-                                                        @if($commodity->discount_percentage !== null) data-discount="{{ $commodity->discount_percentage }}" @endif
-                                                        data-unit-id="{{ $commodity->unit_id }}"
-                                                        data-weight-per-unit="{{ $commodity->weight_per_unit ?? '' }}"
-                                                        data-pieces-per-box="{{ $commodity->pieces_per_box ?? '' }}"
-                                                >{{$commodity->title}}</option>
-                                            @endforeach
-                                        </select>
-                                        <div class="invalid-feedback">
-                                            {{ __('fields.commodity.name')}} را انتخاب کنید
-                                        </div>
-                                    </div>
-                                    <div class="form-group col-md-2">
-                                        <label for="unit_id"> {{ __('fields.unit') }}</label>
-                                        <select id="unit_id" class="form-control" name="unit_id[{{ $index }}]" data-selected-unit="{{ $item->unit_id }}" required>
-                                            <option value="">انتخاب کنید...</option>
-                                        </select>
-                                        <div class="invalid-feedback">{{ __('fields.unit') }} را انتخاب کنید</div>
-                                    </div>
-                                    <div class="form-group col-md-2" id="packaging_count_group_{{ $index }}" style="display: none;">
-                                        <label for="packaging_count">تعداد بسته</label>
-                                        <input type="number" id="packaging_count" 
-                                               name="packaging_count[{{ $index }}]" 
-                                               class="form-control packaging-count-input" 
-                                               min="1" step="1"
-                                               autocomplete="off" 
-                                               placeholder="مثال: 5"
-                                               value="{{ $item->packaging_count ?? '' }}">
-                                        <small class="form-text text-muted mt-1">
-                                            هنگام تغییر این مقدار، تعداد واحد خودکار محاسبه می‌شود.
-                                        </small>
-                                    </div>
-                                    <div class="form-group col-md-2" id="pieces_per_box_group_{{ $index }}" style="display: none;">
-                                        <label for="pieces_per_box_display">تعداد در کارتن</label>
-                                        <input type="text" id="pieces_per_box_display" 
-                                               class="form-control pieces-per-box-display" 
-                                               readonly
-                                               placeholder="-">
-                                        <small class="form-text text-muted mt-1">
-                                            از طرف کالا تعریف شده است.
-                                        </small>
-                                    </div>
-                                    <div class="form-group col-md-2">
-                                        <label for="amount"> {{  __('fields.commodity.amount') }}</label>
-                                        <input type="number" id="amount" min="1" name="commodity_amount[{{ $index }}]" class="form-control"
-                                               autocomplete="off" placeholder="{{  __('fields.commodity.amount') }}"
-                                               pattern="[0-9 .]" value="{{ $item->commodity_amount }}" required="">
-                                        <div class="invalid-feedback">
-                                            لطفاً {{  __('fields.commodity.amount') }} را وارد کنید.
-                                        </div>
-                                    </div>
-                                    <div class="form-group col-md-2">
-                                        <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
-                                        <input type="text" id="price" name="price[{{ $index }}]" value="{{ $item->price ?? '' }}" class="form-control price-input"
-                                               autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}">
-                                    </div>
-                                    <div class="form-group col-md-2">
-                                        <label for="discount_percentage">درصد تخفیف</label>
-                                        <input type="number" id="discount_percentage" name="discount_percentage[{{ $index }}]" 
-                                               value="{{ $item->discount_percentage }}" 
-                                               class="form-control discount-input" min="0" max="100" step="1"
-                                               autocomplete="off" placeholder="مثال: 10">
-                                    </div>
-                                    <div class="form-group col-md-2">
-                                        <label for="weight">وزن (کیلوگرم)</label>
-                                        <input type="text" id="weight" class="form-control" readonly
-                                               placeholder="وزن محاسبه می‌شود..." 
-                                               value="{{ $item->weight_kg !== null ? number_format($item->weight_kg, 0) . ' کیلوگرم' : 'وزن تعریف نشده' }}"
-                                               data-weight-value="{{ $item->weight_kg !== null ? $item->weight_kg : 0 }}">
-                                    </div>
-                                    @if($loop->count > 1)
-                                    <div class="form-group col-md-1">
-                                        <label>&nbsp;</label>
-                                        <button type="button" class="btn btn-danger btn-sm remove-row">
-                                            <i class="ti-close"></i>
-                                        </button>
-                                    </div>
-                                    @endif
-                                </div>
+                                    @include('dashboard.order.partials.order-item-row', [
+                                        'commodities' => $commodities,
+                                        'attributes' => $attributes ?? null,
+                                        'index' => $index,
+                                        'item' => $item,
+                                        'showRemove' => $order->orderItems->count() > 1,
+                                        'showAllCommodityOptions' => true,
+                                    ])
                                 @endforeach
                                 <div id="newRow"></div>
                                 <button id="addRow" type="button" class="btn btn-dfprimary mb-3">+ افزودن</button>

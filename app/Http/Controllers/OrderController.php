@@ -284,7 +284,9 @@ class OrderController extends Controller
             $commodity->selectable_units = $selectableUnits;
             return $commodity;
         });
-        
+
+        $order->load(['orderItems.commodity.attributes']);
+
         return view('dashboard.order.edit',
             [
                 'order' => $order,
