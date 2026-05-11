@@ -45,6 +45,59 @@
             }
         }
 
+        function getPiecesPerBoxFromSelection() {
+            const $opt = $('#product_id option:selected');
+            const v = $opt.data('pieces-per-box');
+            const n = Number(v);
+            return (n && n > 0) ? n : null;
+        }
+
+        function updatePackagingFieldsVisibility() {
+            const ppb = getPiecesPerBoxFromSelection();
+            if (ppb) {
+                $('#pieces_per_box_display').val(String(ppb));
+                $('#packaging_count_group').show();
+                $('#pieces_per_box_group').show();
+            } else {
+                $('#packaging_count').val('');
+                $('#pieces_per_box_display').val('-');
+                $('#packaging_count_group').hide();
+                $('#pieces_per_box_group').hide();
+            }
+        }
+
+        function syncAmountFromPackaging() {
+            const ppb = getPiecesPerBoxFromSelection();
+            if (!ppb) {
+                return;
+            }
+            const pc = parseInt($('#packaging_count').val(), 10);
+            if (!pc || pc <= 0) {
+                return;
+            }
+            const newAmount = pc * ppb;
+            $('#amount').val(String(newAmount));
+            const amount = parseFloat($('#amount').val()) || 0;
+            if (currentProductData && amount > 0) {
+                updateMaterialsDisplay(amount);
+            }
+        }
+
+        function syncPackagingFromAmount() {
+            const ppb = getPiecesPerBoxFromSelection();
+            if (!ppb) {
+                return;
+            }
+            const amountVal = parseFloat($('#amount').val());
+            if (!amountVal || amountVal <= 0) {
+                return;
+            }
+            const packagingVal = Math.floor(amountVal / ppb);
+            if (packagingVal > 0) {
+                $('#packaging_count').val(String(packagingVal));
+            }
+        }
+
         function filterProducts() {
             // Get selected attribute IDs
             const selectedAttributes = [];
@@ -57,6 +110,7 @@
 
             // If no filters selected, we're done
             if (selectedAttributes.length === 0) {
+                updatePackagingFieldsVisibility();
                 return;
             }
 
@@ -83,6 +137,7 @@
                     $option.remove();
                 }
             });
+            updatePackagingFieldsVisibility();
         }
 
         // Initialize with current values for edit form
@@ -92,6 +147,10 @@
         if (currentProductId) {
             const unitDisplay = $('#product_id').find('option:selected').data('unit');
             $('#unit-display').text(unitDisplay ? `(${unitDisplay})` : '');
+            updatePackagingFieldsVisibility();
+            if (getPiecesPerBoxFromSelection() && !$('#packaging_count').val()) {
+                syncPackagingFromAmount();
+            }
             loadProductMaterials(currentProductId);
             if (currentAmount > 0) {
                 // Wait for data to load, then update display
@@ -106,6 +165,12 @@
             const unitDisplay = $(this).find('option:selected').data('unit');
             
             $('#unit-display').text(unitDisplay ? `(${unitDisplay})` : '');
+            updatePackagingFieldsVisibility();
+            if (productId && getPiecesPerBoxFromSelection()) {
+                syncPackagingFromAmount();
+            } else {
+                $('#packaging_count').val('');
+            }
             
             if (productId) {
                 loadProductMaterials(productId);
@@ -115,11 +180,16 @@
         });
 
         $('#amount').on('input', function() {
+            syncPackagingFromAmount();
             const amount = parseFloat($(this).val()) || 0;
             
             if (currentProductData && amount > 0) {
                 updateMaterialsDisplay(amount);
             }
+        });
+
+        $(document).on('input', '#packaging_count', function() {
+            syncAmountFromPackaging();
         });
 
         function loadProductMaterials(productId) {

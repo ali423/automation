@@ -27,6 +27,7 @@ class CreateProductionRequest extends FormRequest
         return [
             'product_id' => 'required|exists:commodities,id',
             'amount' => 'required|numeric|min:0.001',
+            'packaging_count' => 'nullable|integer|min:1',
             'comment' => 'nullable|string|max:1000',
             'file' => 'nullable|file|mimes:jpg,jpeg,png,pdf,zip,rar|max:10240',
         ];
@@ -45,6 +46,8 @@ class CreateProductionRequest extends FormRequest
             'amount.required' => 'مقدار تولید الزامی است.',
             'amount.numeric' => 'مقدار تولید باید عدد باشد.',
             'amount.min' => 'مقدار تولید باید بیشتر از صفر باشد.',
+            'packaging_count.integer' => 'تعداد بسته باید عدد صحیح باشد.',
+            'packaging_count.min' => 'تعداد بسته باید حداقل یک باشد.',
             'comment.max' => 'توضیحات نمی‌تواند بیشتر از ۱۰۰۰ کاراکتر باشد.',
             'file.file' => 'فایل انتخاب شده معتبر نیست.',
             'file.mimes' => 'فایل باید از نوع تصویر، PDF، ZIP یا RAR باشد.',

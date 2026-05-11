@@ -16,6 +16,7 @@ class ProductionRequest extends Model
     protected $fillable = [
         'product_id',
         'production_amount',
+        'packaging_count',
         'unit_id',
         'description',
         'status',
@@ -26,6 +27,7 @@ class ProductionRequest extends Model
     protected $casts = [
         'production_amount' => 'decimal:2',
         'total_cost' => 'decimal:2',
+        'packaging_count' => 'integer',
     ];
 
     /**
