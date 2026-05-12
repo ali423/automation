@@ -243,16 +243,13 @@
                             $totalWithVat = 0;
                             $commodityUnitService = app(\App\Services\CommodityUnitService::class);
                         @endphp
-                        @foreach($request->commodities as $commodity)
+                        @foreach($effectiveCommodities as $commodity)
                             @php
-                                $displayAmount = isset($commodity->net_amount) ? $commodity->net_amount : $commodity->pivot->amount;
-                                // Calculate litrage: Convert amount to main unit, then multiply by litrage per unit
+                                $displayAmount = $commodity->effective_amount ?? 0;
+                                $unitPrice = $commodity->effective_price ?? ($commodity->pivot->price ?? null);
+                                // Calculate litrage from effective amount in main unit
                                 // Litrage = Amount (in main unit) × Volume per unit (litrage field)
-                                $amountInMainUnit = $commodityUnitService->convertToMainUnit(
-                                    $commodity,
-                                    $displayAmount,
-                                    $commodity->pivot->unit_id
-                                );
+                                $amountInMainUnit = $displayAmount;
                                 $volumePerUnit = $commodity->litrage ?? 0;
                                 $totalLitrage = ($amountInMainUnit !== null && $volumePerUnit > 0) 
                                     ? $amountInMainUnit * $volumePerUnit 
@@ -260,8 +257,8 @@
                                 
                                 // Calculate VAT amount for this commodity
                                 $commodityVatAmount = 0;
-                                if (isset($commodity->pivot->price)) {
-                                    $commodityTotal = $displayAmount * $commodity->pivot->price;
+                                if ($unitPrice !== null) {
+                                    $commodityTotal = $displayAmount * $unitPrice;
                                     $commodityVatAmount = $commodityTotal * vat_rate();
                                     $totalAmountNet += $commodityTotal;
                                 }
@@ -272,17 +269,20 @@
                                 <td>{{ $commodity->product_identifier ?? default_product_identifier() }}</td>
                                 <td>{{ $commodity->title }}</td>
                                 <td>{{ number_format($displayAmount, 0, '.', ',') }}</td>
-                                <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
+                                <td>{{ $commodity->effective_unit ? $commodity->effective_unit->name : ($commodity->unit->name ?? 'نامشخص') }}</td>
                                 <td>{{ $totalLitrage !== null ? number_format($totalLitrage, 0, '.', ',') : '-' }}</td>
                                 <td>
-                                    @if(isset($commodity->pivot->price) && $commodity->litrage > 0)
-                                        {{ number_format($commodity->pivot->price / $commodity->litrage, 0) }}
+                                    @if($unitPrice !== null && ($commodity->litrage ?? 0) > 0)
+                                        @php
+                                            $fiRaw = tejarat_fi_per_unit_truncated((string) $unitPrice, (string) ($commodity->litrage ?? '0'));
+                                        @endphp
+                                        {{ $fiRaw !== null ? format_tejarat_invoice_price_display($fiRaw) : '-' }}
                                     @else
-                                        {{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price, 0) : '-' }}
+                                        {{ format_tejarat_invoice_price_display($unitPrice) }}
                                     @endif
                                 </td>
-                                <td>{{ isset($commodity->pivot->price) ? number_format(round($commodityVatAmount), 0) : '-' }}</td>
-                                <td>{{ isset($commodity->pivot->price) ? number_format(round($displayAmount * $commodity->pivot->price * (1 + vat_rate())), 0) : '-' }}</td>
+                                <td>{{ $unitPrice !== null ? number_format(round($commodityVatAmount), 0) : '-' }}</td>
+                                <td>{{ $unitPrice !== null ? number_format(round($displayAmount * $unitPrice * (1 + vat_rate())), 0) : '-' }}</td>
                             </tr>
                             @php
                                 $i++;

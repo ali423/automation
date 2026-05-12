@@ -31,6 +31,7 @@ class WithdrawalRequest extends Model
     public function commodities()
     {
         return $this->belongsToMany(Commodity::class, 'withdrawal_commodities', 'withdrawal_id', 'commodity_id')
+            ->using(WithdrawalCommodity::class)
             ->withPivot('amount', 'unit_id', 'price')
             ->with('unit');
     }
@@ -42,6 +43,7 @@ class WithdrawalRequest extends Model
     public function commoditiesWithPivotUnits()
     {
         return $this->belongsToMany(Commodity::class, 'withdrawal_commodities', 'withdrawal_id', 'commodity_id')
+            ->using(WithdrawalCommodity::class)
             ->withPivot('amount', 'unit_id', 'price')
             ->with('unit');
     }
@@ -57,6 +59,16 @@ class WithdrawalRequest extends Model
     public function order()
     {
         return $this->hasOne(Order::class, 'withdrawal_request_id', 'id');
+    }
+
+    /**
+     * Get all inventory adjustments related to this withdrawal request
+     * (corrections, returns, etc.)
+     */
+    public function adjustments()
+    {
+        return $this->morphMany(InventoryAdjustment::class, 'adjustable')
+            ->orderBy('created_at', 'desc');
     }
     
     public function getCreatedDateAttribute() {

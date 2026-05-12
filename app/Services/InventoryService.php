@@ -109,12 +109,7 @@ class InventoryService extends BaseService
                 $newAmount = $availableInThisRecord - $amountToRemove;
                 $remainingAmount -= $amountToRemove;
             
-                if ($newAmount == 0) {
-                    // Delete empty rows instead of keeping zero-amount records
-                    $inventory->delete();
-                } else {
-                    $inventory->update(['amount' => $newAmount]);
-                }
+                $inventory->update(['amount' => $newAmount]);
             }
 
             return true;
@@ -338,13 +333,9 @@ class InventoryService extends BaseService
             }
         }
 
-        if ($newAmount == 0) {
-            $inventory->delete();
-        } else {
-            $inventory->update([
-                'amount' => $newAmount
-            ]);
-        }
+        $inventory->update([
+            'amount' => $newAmount
+        ]);
 
         // No cache clearing needed since we removed caching mechanisms
 
@@ -640,6 +631,40 @@ class InventoryService extends BaseService
                 'unit_id' => $unitId,
                 'adjustment_type' => $adjustmentType,
                 'amount' => $amount, // Positive for addition
+                'reason' => $reason,
+                'adjustable_type' => $adjustable ? get_class($adjustable) : null,
+                'adjustable_id' => $adjustable ? $adjustable->id : null,
+                'user_id' => auth()->id(),
+                'value_before' => $valueBefore,
+                'value_after' => $valueAfter,
+            ]);
+
+            return true;
+        });
+    }
+
+    /**
+     * Deduct stock from inventory with adjustment record
+     * Used for recording items that were shipped but not originally in the withdrawal
+     */
+    public function deductStockWithAdjustment($commodityId, $unitId, $amount, $adjustmentType = 'manual_adjustment', $reason = null, $adjustable = null)
+    {
+        return DB::transaction(function () use ($commodityId, $unitId, $amount, $adjustmentType, $reason, $adjustable) {
+            // Record the value before adjustment
+            $valueBefore = $this->calculateInventoryValue($commodityId, $unitId);
+
+            // Deduct the stock
+            $this->removeStock($commodityId, $unitId, $amount);
+
+            // Record the value after adjustment
+            $valueAfter = $this->calculateInventoryValue($commodityId, $unitId);
+
+            // Create adjustment record (store negative amount for deduction)
+            \App\Models\InventoryAdjustment::create([
+                'commodity_id' => $commodityId,
+                'unit_id' => $unitId,
+                'adjustment_type' => $adjustmentType,
+                'amount' => -$amount, // Negative for deduction
                 'reason' => $reason,
                 'adjustable_type' => $adjustable ? get_class($adjustable) : null,
                 'adjustable_id' => $adjustable ? $adjustable->id : null,

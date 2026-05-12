@@ -297,21 +297,35 @@ class WithdrawalRequestService extends BaseService
         }
 
         return DB::transaction(function () use ($withdrawalRequest, $cancelReason) {
-            // Get all adjustments for this withdrawal
-            $adjustments = \App\Models\InventoryAdjustment::forWithdrawal($withdrawalRequest->id)
-                ->removals() // Only get the removal adjustments
-                ->get();
+            // Get ALL adjustments for this withdrawal (both removals and additions)
+            // We need to reverse everything: corrections, returns, approvals, etc.
+            $adjustments = \App\Models\InventoryAdjustment::forWithdrawal($withdrawalRequest->id)->get();
 
-            // Reverse each removal adjustment by adding back the stock
+            // Reverse each adjustment by inverting its effect
             foreach ($adjustments as $adjustment) {
-                $this->inventoryService->addStockWithAdjustment(
-                    $adjustment->commodity_id,
-                    $adjustment->unit_id,
-                    abs($adjustment->amount), // Convert negative to positive
-                    'withdrawal_cancellation',
-                    $cancelReason ?? 'لغو درخواست شماره ' . $withdrawalRequest->number,
-                    $withdrawalRequest
-                );
+                // If adjustment was removal (negative), add stock back
+                // If adjustment was addition (positive), remove stock back
+                if ($adjustment->amount < 0) {
+                    // Removal: reverse by adding stock back
+                    $this->inventoryService->addStockWithAdjustment(
+                        $adjustment->commodity_id,
+                        $adjustment->unit_id,
+                        abs($adjustment->amount),
+                        'withdrawal_cancellation',
+                        $cancelReason ?? 'لغو درخواست شماره ' . $withdrawalRequest->number,
+                        $withdrawalRequest
+                    );
+                } else if ($adjustment->amount > 0) {
+                    // Addition: reverse by removing stock back
+                    $this->inventoryService->removeStockWithAdjustment(
+                        $adjustment->commodity_id,
+                        $adjustment->unit_id,
+                        abs($adjustment->amount),
+                        'withdrawal_cancellation',
+                        $cancelReason ?? 'لغو درخواست شماره ' . $withdrawalRequest->number,
+                        $withdrawalRequest
+                    );
+                }
             }
 
             // Update withdrawal status
@@ -323,8 +337,84 @@ class WithdrawalRequestService extends BaseService
         });
     }
 
-    /**
-     * Process a sales return (partial or full) for a withdrawal request
+        /**     * Apply shipping discrepancy corrections before processing returns
+     * Handles: items not shipped, items shipped but unrecorded, quantity mismatches
+     *
+     * @param WithdrawalRequest $withdrawalRequest
+     * @param array $corrections Format: [
+     *     ['type' => 'add_back', 'commodity_id' => X, 'amount' => Y, 'unit_id' => Z, 'reason' => 'optional'],
+     *     ['type' => 'deduct', 'commodity_id' => X, 'amount' => Y, 'unit_id' => Z, 'reason' => 'optional'],
+     *     ['type' => 'qty_adjustment', 'commodity_id' => X, 'amount' => Y, 'unit_id' => Z, 'reason' => 'optional']
+     * ]
+     * @return void
+     * @throws \Exception
+     */
+    public function applyShippingCorrections($withdrawalRequest, $corrections)
+    {
+        foreach ($corrections as $correction) {
+            $commodity = \App\Models\Commodity::find($correction['commodity_id']);
+            if (!$commodity) {
+                throw new \Exception("کالا با شناسه {$correction['commodity_id']} یافت نشد.");
+            }
+
+            // Convert amount to main unit for consistency
+            $correctionAmountInMainUnit = $this->commodityUnitService->convertToMainUnit(
+                $commodity,
+                $correction['amount'],
+                $correction['unit_id']
+            );
+
+            if ($correction['type'] === 'add_back') {
+                // Product was recorded but NOT shipped - return it to inventory
+                $this->inventoryService->addStockWithAdjustment(
+                    $correction['commodity_id'],
+                    $commodity->unit_id,
+                    $correctionAmountInMainUnit,
+                    'manual_adjustment',
+                    ($correction['reason'] ?? '') ? '[تصحیح ارسال: برگشت] ' . $correction['reason'] : '[تصحیح ارسال: برگشت] کالای ثبت شده اما ارسال نشده',
+                    $withdrawalRequest
+                );
+            }
+            else if ($correction['type'] === 'deduct') {
+                // Product WAS shipped but NOT recorded - deduct it retroactively
+                $this->inventoryService->deductStockWithAdjustment(
+                    $correction['commodity_id'],
+                    $commodity->unit_id,
+                    $correctionAmountInMainUnit,
+                    'manual_adjustment',
+                    ($correction['reason'] ?? '') ? '[تصحیح ارسال: کسر] ' . $correction['reason'] : '[تصحیح ارسال: کسر] کالای ارسال شده اما ثبت نشده',
+                    $withdrawalRequest
+                );
+            }
+            else if ($correction['type'] === 'qty_adjustment') {
+                $direction = $correction['direction'] ?? 'decrease';
+
+                if ($direction === 'increase') {
+                    // Increase shipped quantity retroactively (remove more stock)
+                    $this->inventoryService->deductStockWithAdjustment(
+                        $correction['commodity_id'],
+                        $commodity->unit_id,
+                        $correctionAmountInMainUnit,
+                        'manual_adjustment',
+                        ($correction['reason'] ?? '') ? '[تصحیح ارسال: مقدار] افزایش - ' . $correction['reason'] : '[تصحیح ارسال: مقدار] افزایش مقدار ارسالی',
+                        $withdrawalRequest
+                    );
+                } else {
+                    // Decrease shipped quantity (add stock back)
+                    $this->inventoryService->addStockWithAdjustment(
+                        $correction['commodity_id'],
+                        $commodity->unit_id,
+                        $correctionAmountInMainUnit,
+                        'manual_adjustment',
+                        ($correction['reason'] ?? '') ? '[تصحیح ارسال: مقدار] کاهش - ' . $correction['reason'] : '[تصحیح ارسال: مقدار] کاهش مقدار ارسالی',
+                        $withdrawalRequest
+                    );
+                }
+            }
+        }
+    }
+
+    /**     * Process a sales return (partial or full) for a withdrawal request
      *
      * @param WithdrawalRequest $withdrawalRequest
      * @param array $returnData Format: ['commodity_id' => ['amount' => X, 'unit_id' => Y, 'reason' => 'optional']]
@@ -350,12 +440,6 @@ class WithdrawalRequestService extends BaseService
                     throw new \Exception("کالا با شناسه {$commodityId} یافت نشد.");
                 }
 
-                // Check if this commodity was part of the original withdrawal
-                $originalCommodity = $withdrawalRequest->commodities->where('id', $commodityId)->first();
-                if (!$originalCommodity) {
-                    throw new \Exception("کالای {$commodity->title} در درخواست اصلی وجود نداشت.");
-                }
-
                 // Convert return amount to main unit for processing
                 $returnAmountInMainUnit = $this->commodityUnitService->convertToMainUnit(
                     $commodity,
@@ -363,12 +447,35 @@ class WithdrawalRequestService extends BaseService
                     $unitId
                 );
 
-                // Get original withdrawal amount in main unit for validation
-                $originalAmountInMainUnit = $this->commodityUnitService->convertToMainUnit(
-                    $originalCommodity,
-                    $originalCommodity->pivot->amount,
-                    $originalCommodity->pivot->unit_id
-                );
+                // Check if this commodity was part of the original withdrawal
+                $originalCommodity = $withdrawalRequest->commodities->where('id', $commodityId)->first();
+                
+                if ($originalCommodity) {
+                    // Normal case: commodity was in original withdrawal
+                    $originalAmountInMainUnit = $this->commodityUnitService->convertToMainUnit(
+                        $originalCommodity,
+                        $originalCommodity->pivot->amount,
+                        $originalCommodity->pivot->unit_id
+                    );
+                } else {
+                    // Special case: commodity NOT in original withdrawal
+                    // Check if it has a shipping correction adjustment (meaning it was shipped but unrecorded)
+                    // These are stored as manual_adjustment type with [تصحیح ارسال: کسر] prefix
+                    $correctionAdjustment = \App\Models\InventoryAdjustment::forWithdrawal($withdrawalRequest->id)
+                        ->where('commodity_id', $commodityId)
+                        ->where('reason', 'like', '%[تصحیح ارسال: کسر]%')
+                        ->first();
+
+                    if (!$correctionAdjustment) {
+                        throw new \Exception(
+                            "کالای {$commodity->title} در درخواست اصلی وجود ندارد و در تصحیحات ثبت نشده است. " .
+                            "ابتدا باید تصحیحات ارسالی را ثبت کنید."
+                        );
+                    }
+
+                    // Use the absolute value of the correction adjustment as the basis
+                    $originalAmountInMainUnit = abs($correctionAdjustment->amount);
+                }
 
                 // Calculate total already returned for this commodity
                 $alreadyReturned = \App\Models\InventoryAdjustment::forWithdrawal($withdrawalRequest->id)
@@ -379,8 +486,8 @@ class WithdrawalRequestService extends BaseService
                 // Validate return amount doesn't exceed original
                 if (($alreadyReturned + $returnAmountInMainUnit) > $originalAmountInMainUnit) {
                     throw new \Exception(
-                        "مقدار برگشتی {$commodity->title} بیش از مقدار اصلی است. " .
-                        "مقدار اصلی: {$originalAmountInMainUnit}, قبلاً برگشت داده شده: {$alreadyReturned}"
+                        "مقدار برگشتی {$commodity->title} بیش از مقدار است. " .
+                        "مقدار: {$originalAmountInMainUnit}, قبلاً برگشت داده شده: {$alreadyReturned}"
                     );
                 }
 

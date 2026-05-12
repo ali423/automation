@@ -57,7 +57,20 @@
         <select id="commodity_id" class="form-control form-control-sm commodity-select"
                 style="max-height: 150px; overflow-y: auto;"
                 name="commodity_id[{{ $index ?? 0 }}]" required>
-            @if(isset($item) && $item->commodity)
+            @if(!empty($showAllCommodityOptions))
+                <option value="">انتخاب کنید...</option>
+                @foreach ($commodities as $commodity)
+                    <option value="{{ $commodity->id }}"
+                            @if(isset($item) && (int) $item->commodity_id === (int) $commodity->id) selected @endif
+                            @if($commodity->discount_percentage !== null) data-discount="{{ $commodity->discount_percentage }}" @endif
+                            data-unit-id="{{ $commodity->unit_id }}"
+                            data-weight-per-unit="{{ $commodity->weight_per_unit ?? '' }}"
+                            data-pieces-per-box="{{ $commodity->pieces_per_box ?? '' }}"
+                            data-attributes="{{ $commodity->attributes->pluck('id')->join(',') }}">
+                        {{ $commodity->title }}
+                    </option>
+                @endforeach
+            @elseif(isset($item) && $item->commodity)
                 <option value="{{ $item->commodity_id }}" selected 
                         @if($item->commodity->discount_percentage !== null) data-discount="{{ $item->commodity->discount_percentage }}" @endif
                         data-unit-id="{{ $item->commodity->unit_id }}"
@@ -143,7 +156,10 @@
         <label for="weight">وزن (کیلوگرم)</label>
         <input type="text" id="weight" class="form-control" readonly
                placeholder="وزن محاسبه می‌شود..." 
-               value="{{ isset($item) && $item->weight_kg !== null ? number_format($item->weight_kg, 0) . ' کیلوگرم' : (isset($item) ? 'وزن تعریف نشده' : '') }}">
+               value="{{ isset($item) && $item->weight_kg !== null ? number_format($item->weight_kg, 0) . ' کیلوگرم' : (isset($item) ? 'وزن تعریف نشده' : '') }}"
+               @if(isset($item))
+               data-weight-value="{{ $item->weight_kg !== null ? $item->weight_kg : 0 }}"
+               @endif>
     </div>
     @if(isset($showRemove) && $showRemove)
         <div class="form-group col-md-1">

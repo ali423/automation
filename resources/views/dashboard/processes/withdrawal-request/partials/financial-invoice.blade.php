@@ -244,17 +244,18 @@
                             $vatAmount = 0;
                             $totalWithVat = 0;
                         @endphp
-                        @foreach($request->commodities as $commodity)
+                        @foreach($effectiveCommodities as $commodity)
                             @php
-                                $displayAmount = isset($commodity->net_amount) ? $commodity->net_amount : $commodity->pivot->amount;
-                                $lineTotal = isset($commodity->pivot->price) ? $displayAmount * $commodity->pivot->price : 0;
+                                $displayAmount = $commodity->effective_amount ?? 0;
+                                $unitPrice = $commodity->effective_price ?? ($commodity->pivot->price ?? null);
+                                $lineTotal = $unitPrice !== null ? $displayAmount * $unitPrice : 0;
                                 $totalAmountNet += $lineTotal;
                             @endphp
                             <tr>
                                 <td scope="row">{{ $i }}</td>
                                 <td>{{ $commodity->title }}</td>
                                 <td>{{ number_format($displayAmount, 0, '.', ',') }}</td>
-                                <td>{{ $commodity->pivot->unit ? $commodity->pivot->unit->name : 'نامشخص' }}</td>
+                                <td>{{ $commodity->effective_unit ? $commodity->effective_unit->name : ($commodity->unit->name ?? 'نامشخص') }}</td>
                                 <td>
                                     @if(isset($request->box_quantities[$commodity->id]) && $request->box_quantities[$commodity->id]['can_calculate'])
                                         {{ $request->box_quantities[$commodity->id]['boxes'] }}
@@ -269,8 +270,8 @@
                                         -
                                     @endif
                                 </td>
-                                <td>{{ isset($commodity->pivot->price) ? number_format($commodity->pivot->price, 0) : '-' }}</td>
-                                <td>{{ isset($commodity->pivot->price) ? number_format($lineTotal, 0) : '-' }}</td>
+                                <td>{{ $unitPrice !== null ? number_format($unitPrice, 0) : '-' }}</td>
+                                <td>{{ $unitPrice !== null ? number_format($lineTotal, 0) : '-' }}</td>
                             </tr>
                             @php
                                 $i++;
