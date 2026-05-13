@@ -29,6 +29,18 @@
                                 <input type="text" value="{{ number_format($request->production_amount, 2) }} {{ $request->unit ? $request->unit->name : '' }}" class="form-control" disabled>
                             </div>
                         </div>
+                        @if($request->product && ($request->product->pieces_per_box ?? 0) > 0)
+                        <div class="form-row col-md-12">
+                            <div class="form-group col-md-3">
+                                <label>تعداد بسته</label>
+                                <input type="text" class="form-control" value="{{ $request->packaging_count !== null ? $request->packaging_count : '—' }}" disabled>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label>تعداد در کارتن</label>
+                                <input type="text" class="form-control" value="{{ $request->product->pieces_per_box }}" disabled>
+                            </div>
+                        </div>
+                        @endif
                         <div class="form-row col-md-12">
                             <div class="form-group col-md-3">
                                 <label>{{ __('fields.unit') }}</label>
