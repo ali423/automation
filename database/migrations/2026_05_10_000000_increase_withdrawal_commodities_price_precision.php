@@ -1,18 +1,18 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
 
 class IncreaseWithdrawalCommoditiesPricePrecision extends Migration
 {
     /**
-     * Increase stored unit price precision for withdrawal lines (Tejarat invoice فـی).
+     * Superseded by 2026_05_13_000000_fix_withdrawal_commodities_price_decimal_precision.
+     * DECIMAL(18,5) was too narrow for DECIMAL(25,2) production data; keep migration record only.
      *
      * @return void
      */
     public function up()
     {
-        DB::statement('ALTER TABLE withdrawal_commodities MODIFY price DECIMAL(18,5) NULL');
+        //
     }
 
     /**
@@ -20,6 +20,6 @@ class IncreaseWithdrawalCommoditiesPricePrecision extends Migration
      */
     public function down()
     {
-        DB::statement('ALTER TABLE withdrawal_commodities MODIFY price DECIMAL(10,2) NULL');
+        //
     }
 }
