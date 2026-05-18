@@ -247,11 +247,12 @@
         };
 
         function getAllowedCommoditiesByType(type) {
+            if (type === 'deduct') {
+                return allCommodities.filter(c => c.type === 'product');
+            }
             if (['normal', 'add_back', 'qty_adjustment'].includes(type)) {
-                // For these types, return original + added commodities
                 return allCommodities.filter(c => requestCommodityIds.includes(c.id));
             }
-            // For 'deduct', return all commodities
             return allCommodities;
         }
 

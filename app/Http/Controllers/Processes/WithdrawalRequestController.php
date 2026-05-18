@@ -742,6 +742,13 @@ class WithdrawalRequestController extends Controller
                     return redirect()->back()->withErrors('کالای انتخابی برای این نوع باید از کالاهای همین درخواست باشد.')->withInput();
                 }
 
+                if ($type === 'deduct') {
+                    $commodity = \App\Models\Commodity::find($item['commodity_id']);
+                    if (!$commodity || $commodity->type !== 'product') {
+                        return redirect()->back()->withErrors('برای «ارسال شده اما ثبت نشده» فقط فرآورده قابل انتخاب است.')->withInput();
+                    }
+                }
+
                 if ($type === 'normal') {
                     $commodityId = $validated['return_commodity_id'][$index];
                     if (isset($returns[$commodityId])) {
