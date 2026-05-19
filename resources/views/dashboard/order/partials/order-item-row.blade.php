@@ -2,6 +2,7 @@
      @if(isset($item) && $item->commodity)
          data-commodity-unit-id="{{ $item->commodity->unit_id }}"
          data-commodity-weight-per-unit="{{ $item->commodity->weight_per_unit ?? '' }}"
+         data-initial-commodity-id="{{ $item->commodity_id }}"
      @endif>
     
     {{-- Attribute Filters (per row) --}}
@@ -142,7 +143,7 @@
     <div class="form-group col-md-2">
         <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
         <input type="text" id="price" name="price[{{ $index ?? 0 }}]" 
-               value="{{ isset($item) && $item->price ? number_format($item->price, 0) : '' }}" class="form-control price-input"
+               value="{{ isset($item) && $item->price ? number_format($item->original_price, 0) : '' }}" class="form-control price-input"
                autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}">
     </div>
     <div class="form-group col-md-2">
