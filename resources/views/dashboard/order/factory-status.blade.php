@@ -10,53 +10,32 @@
     <link rel="stylesheet" href="{{ asset('css/datatables-td.css') }}">
     <link rel="stylesheet" href="{{ asset('css/bootstrap-datepicker.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/default-assets/daterange-picker.css') }}">
-    <style>
-        .summary-card {
-            transition: transform 0.2s ease-in-out;
-            margin-bottom: 15px;
-        }
-        .summary-card:hover {
-            transform: translateY(-2px);
-        }
-        .summary-card .card-body {
-            padding: 15px;
-        }
-        .summary-card h6 {
-            font-size: 0.8rem;
-            margin-bottom: 8px;
-            opacity: 0.9;
-        }
-        .summary-card h4 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0;
-        }
-        @media (max-width: 768px) {
-            .summary-card h4 {
-                font-size: 1.2rem;
-            }
-            .summary-card h6 {
-                font-size: 0.7rem;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/order-report-pages.css') }}">
 @endsection
 
 @section('content')
-    <div class="row">
+    <div class="order-report-page">
+    <div class="row g-4">
         <div class="col-12 box-margin">
-            <div class="card">
+            <div class="card order-report-section-card">
+                <div class="card-header">
+                    <h4 class="order-report-section-title mb-0">وضعیت کارخانه</h4>
+                    <p class="order-report-section-desc text-muted small mt-2">خلاصه نیاز و موجودی محصولات بر اساس سفارشات فیلترشده.</p>
+                </div>
                 <div class="card-body">
-                    <h4 class="card-title mb-2">وضعیت کارخانه</h4>
-                    <div id="factory-table-wrapper">
+                    <div class="order-report-hint">
+                        <i class="ti-info-alt"></i>
+                        <span>این جدول با تغییر فیلترها یا انتخاب سفارش‌ها در بخش پایین به‌روز می‌شود.</span>
+                    </div>
+                    <div id="factory-table-wrapper" class="order-report-table-block">
                         <div id="factory-chart-loading" class="text-center py-4" style="display: none;">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="sr-only">در حال بارگذاری...</span>
                             </div>
-                            <p class="mt-2 text-muted">در حال بارگذاری اطلاعات...</p>
+                            <p class="mt-3 mb-0 text-muted">در حال بارگذاری اطلاعات...</p>
                         </div>
                         <div class="table-responsive">
-                            <table id="factory-inventory-table" class="table table-sm table-striped table-bordered mb-0">
+                            <table id="factory-inventory-table" class="table table-striped table-bordered mb-0">
                                 <thead>
                                     <tr>
                                         <th>محصول / مواد</th>
@@ -76,17 +55,22 @@
             </div>
         </div>
         <div class="col-12 box-margin">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="card-title mb-2">ارزیابی تحویل سفارشات بر اساس موجودی انبار</h4>
-                    
-                    <!-- Orders Summary -->
-                    @include('dashboard.order.partials.order-summary-stats', ['summaryStats' => $summaryStats])
-                    
-                    {{-- Pagination Controls (match index/chart pattern; no date range) --}}
-                    <x-pagination-controls :paginator="$pendingOrders" :options="$options" />
-                    <div id="filter-status" class="text-info small mb-2" style="display: none;"></div>
-                    <table id="datatable-buttons-factory" class="table table-striped dt-responsive nowrap w-100">
+            <div class="card order-report-section-card">
+                <div class="card-header">
+                    <h4 class="order-report-section-title mb-0">ارزیابی تحویل سفارشات</h4>
+                    <p class="order-report-section-desc text-muted small mt-2">بر اساس موجودی انبار و سفارشات در حال پردازش.</p>
+                </div>
+                <div class="card-body pb-0">
+                    <div class="order-report-summary">
+                        @include('dashboard.order.partials.order-summary-stats', ['summaryStats' => $summaryStats])
+                    </div>
+                    <div class="order-report-filters-wrap">
+                        <x-pagination-controls :paginator="$pendingOrders" :options="$options" />
+                    </div>
+                    <hr class="order-report-divider">
+                    <div id="filter-status" class="text-info small mb-3" style="display: none;"></div>
+                    <div class="order-report-table-block">
+                    <table id="datatable-buttons-factory" class="table table-striped dt-responsive nowrap w-100 mb-0">
                         <thead class="text-center">
                             <tr>
                                 <th>
@@ -136,12 +120,14 @@
                             @endif
                         </tbody>
                     </table>
+                    </div>
                 </div>
                 <div class="card-footer">
                     <x-pagination-navigation :paginator="$pendingOrders" />
                 </div>
             </div>
         </div>
+    </div>
     </div>
 @endsection
 
@@ -157,10 +143,28 @@
     <script src="{{ asset('js/default-assets/jszip.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/pdfmake/pdfmake.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/pdfmake/vfs_fonts.js') }}"></script>
+    <script src="{{ asset('js/default-assets/buttons.html5.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/button.print.min.js') }}"></script>
     <script src="{{ asset('js/default-assets/dataTables.sorting.persian.js') }}"></script>
 
     <script>
+        var inventoryTableButtons = [
+            { extend: 'copy', text: 'کپی', className: 'btn btn-outline-primary btn-sm' },
+            {
+                extend: 'pdf',
+                text: 'pdf',
+                className: 'btn btn-outline-primary btn-sm',
+                customize: function(doc) {
+                    doc.defaultStyle.font = 'IRANSansWeb';
+                    doc.styles.tableBodyEven.alignment = 'center';
+                    doc.styles.tableBodyOdd.alignment = 'center';
+                }
+            },
+            { extend: 'excel', className: 'btn btn-outline-primary btn-sm' },
+            { extend: 'csv', className: 'btn btn-outline-primary btn-sm' },
+            { extend: 'print', text: 'پرینت', className: 'btn btn-outline-primary btn-sm' }
+        ];
+
         $(document).ready(function() {
             pdfMake.fonts = {
                 Roboto: {
@@ -185,7 +189,7 @@
                 buttons: [                    {
                         extend: 'copy',
                         text: "کپی",
-                        className: 'btn btn-outline-primary',
+                        className: 'btn btn-outline-primary btn-sm',
                         exportOptions: {
                             columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
@@ -197,7 +201,7 @@
                     {
                         extend: 'pdf',
                         text: 'pdf',
-                        className: 'btn btn-outline-primary',
+                        className: 'btn btn-outline-primary btn-sm',
                         exportOptions: {
                             columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
@@ -214,7 +218,7 @@
                     },
                     {
                         extend: 'excel',
-                        className: 'btn btn-outline-primary',
+                        className: 'btn btn-outline-primary btn-sm',
                         exportOptions: {
                             columns: [6, 5, 4, 3, 2, 1, 0],
                             modifier: {
@@ -224,7 +228,7 @@
                     },
                     {
                         extend: 'csv',
-                        className: 'btn btn-outline-primary',
+                        className: 'btn btn-outline-primary btn-sm',
                         exportOptions: {
                             columns: [6, 5, 4, 3, 2, 1, 0],
                             modifier: {
@@ -235,7 +239,7 @@
                     {
                         extend: 'print',
                         text: "پرینت",
-                        className: 'btn btn-outline-primary',
+                        className: 'btn btn-outline-primary btn-sm',
                         exportOptions: {
                             columns: [0, 1, 2, 3, 4, 5, 6, 7],
                             modifier: {
@@ -542,10 +546,12 @@
                 try {
                     inventoryDataTable = $table.DataTable({
                         destroy: true,  // Allow reinitialization
+                        dom: 'Bfrtip',
                         paging: false,
                         searching: false,
                         info: false,
                         order: [[1, 'desc']],
+                        buttons: inventoryTableButtons,
                         columnDefs: [
                             { targets: 4, className: 'dt-body-center' }
                         ]
