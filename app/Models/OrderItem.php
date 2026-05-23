@@ -56,6 +56,32 @@ class OrderItem extends Model
     }
 
     /**
+     * Attach matching inventory records to order items (commodity_id + unit_id).
+     *
+     * @param iterable<OrderItem> $orderItems
+     */
+    public static function loadInventoriesForItems(iterable $orderItems): void
+    {
+        $items = collect($orderItems);
+
+        if ($items->isEmpty()) {
+            return;
+        }
+
+        $inventories = Inventory::query()
+            ->whereIn('commodity_id', $items->pluck('commodity_id')->unique()->filter()->values())
+            ->get()
+            ->keyBy(fn (Inventory $inventory) => $inventory->commodity_id . '_' . $inventory->unit_id);
+
+        foreach ($items as $item) {
+            $item->setRelation(
+                'inventory',
+                $inventories->get($item->commodity_id . '_' . $item->unit_id)
+            );
+        }
+    }
+
+    /**
      * Calculate the total price for this item
      */
     public function getTotalPriceAttribute()

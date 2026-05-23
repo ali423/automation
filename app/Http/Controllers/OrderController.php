@@ -8,6 +8,7 @@ use App\Models\Attribute;
 use App\Models\Commodity;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\WithdrawalRequest;
 use App\Services\OrderService;
 use App\Services\Processes\WithdrawalRequestService;
@@ -250,7 +251,9 @@ class OrderController extends Controller
     {
         // Load the order with all necessary relationships
         $order->load(['customer', 'orderItems.commodity', 'orderItems.unit', 'comments.user', 'files.user', 'activities.user']);
-        
+
+        OrderItem::loadInventoriesForItems($order->orderItems);
+
         // Add calculated properties
         $order->items_count = $order->orderItems->count();
         

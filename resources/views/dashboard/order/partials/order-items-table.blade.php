@@ -32,8 +32,10 @@
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>
-                                    @if($item->commodity)
-                                        <a href="{{ route('commodity.show', $item->commodity) }}">{{ $item->commodity->title }}</a>
+                                    @if($item->commodity && $item->inventory)
+                                        <a href="{{ route('inventory.show', $item->inventory) }}">{{ $item->commodity->title }}</a>
+                                    @elseif($item->commodity)
+                                        {{ $item->commodity->title }}
                                     @else
                                         کالا حذف شده
                                     @endif
