@@ -41,7 +41,7 @@
                 className: 'btn btn-outline-primary',
                 exportOptions: {
                     // Export without price; hide price from non-Excel exports
-                    columns: [5, 3, 2, 1, 0],
+                    columns: [6, 5, 3, 2, 1, 0],
                     modifier: {
                         page: 'current'
                     },
@@ -54,7 +54,7 @@
                     className: 'btn btn-outline-primary',
                 exportOptions: {
                     // Export without price
-                    columns: [5, 3, 2, 1, 0],
+                    columns: [6, 5, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         },
@@ -62,7 +62,7 @@
                     },
                     customize: function (doc) {
                         doc.defaultStyle.font = "IRANSansWeb";
-                    doc.content[1].table.widths = ['20%', '20%', '20%', '20%', '20%'];
+                    doc.content[1].table.widths = ['16.66%', '16.66%', '16.66%', '16.66%', '16.66%', '16.66%'];
                         doc.styles.tableBodyEven.alignment = 'center';
                         doc.styles.tableBodyOdd.alignment = 'center';
                     }
@@ -72,7 +72,7 @@
                     className: 'btn btn-outline-primary',
                 exportOptions: {
                     // Excel includes price column (hidden in UI)
-                    columns: [5, 4, 3, 2, 1, 0],
+                    columns: [6, 5, 4, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         }
@@ -83,7 +83,7 @@
                     className: 'btn btn-outline-primary',
                 exportOptions: {
                     // CSV without price
-                    columns: [5, 3, 2, 1, 0],
+                    columns: [6, 5, 3, 2, 1, 0],
                         modifier: {
                             page: 'current'
                         }
@@ -95,7 +95,7 @@
                     className: 'btn btn-outline-primary',
                 exportOptions: {
                     // Print without price and without details
-                    columns: [0, 1, 2, 3, 5],
+                    columns: [0, 1, 2, 3, 5, 6],
                         modifier: {
                             page: 'current'
                         },

@@ -7,6 +7,7 @@ return [
     'comp_name' => 'نام شرکت',
     'address' => 'آدرس',
     'warning_limit' => 'حد هشدار',
+    'warning_difference' => 'اختلاف با حد هشدار',
     'sell-price' => 'قیمت فروش',
     'sell-price_per_unit' => 'قیمت فروش هر واحد کالا',
     'sales_price' => 'قیمت فروش',

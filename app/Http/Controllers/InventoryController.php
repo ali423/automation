@@ -34,7 +34,7 @@ class InventoryController extends Controller
     {
         // Build query with eager loading to fix N+1 query problem
         // Removed amount > 0 filter to include zero inventory items (issue #76)
-        $query = Inventory::with(['commodity', 'unit']);
+        $query = Inventory::with(['commodity.unit', 'unit']);
         
         /**
          * Apply filters in proper order for correct AND logic:
@@ -120,9 +120,32 @@ class InventoryController extends Controller
      */
     private function preCalculateFinancialData($inventories)
     {
-        // Pre-calculate financial data to avoid N+1 queries in views
-        $inventories->getCollection()->transform(function ($inventory) {
+        $collection = $inventories->getCollection();
+
+        $commodityUnitPairs = $collection
+            ->filter(fn ($inventory) => $inventory->commodity && $inventory->commodity->unit_id)
+            ->unique('commodity_id')
+            ->map(fn ($inventory) => [
+                'material_id' => $inventory->commodity_id,
+                'unit_id' => $inventory->commodity->unit_id,
+            ])
+            ->values()
+            ->all();
+
+        $stockLevels = $this->service->getBatchStockLevels($commodityUnitPairs);
+
+        $collection->transform(function ($inventory) use ($stockLevels) {
             $inventory->financial_data = $this->service->calculateFinancialData($inventory);
+
+            $commodity = $inventory->commodity;
+            if ($commodity && $commodity->unit_id) {
+                $key = $commodity->id . '_' . $commodity->unit_id;
+                $stock = $stockLevels[$key] ?? 0;
+                $inventory->warning_difference = $stock - ($commodity->warning_limit ?? 0);
+            } else {
+                $inventory->warning_difference = null;
+            }
+
             return $inventory;
         });
     }
