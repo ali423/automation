@@ -229,20 +229,28 @@
                     }
                 });
                 
-                // Get commodity price
-                $.ajax({
-                    url: '/inventory-ajax/' + commodity_id,
-                    type: 'get',
-                    dataType: 'json',
-                    success: function (response) {
-                        price = (response && response.data) ? response.data.price : null;
-                        var formattedPrice = price ? Math.round(parseFloat(price)).toString() : '';
-                        priceInput.val(formattedPrice).attr('placeholder','').prop('disabled', false);
-                    },
-                    error: function () {
-                        priceInput.val('').attr('placeholder','نامشخص').prop('disabled', false);
-                    }
-                });
+                // Get commodity price (skip overwrite when re-selecting the same item on edit)
+                var initialCommodityId = $row.data('initial-commodity-id');
+                var isSameExistingCommodity = initialCommodityId
+                    && String(commodity_id) === String(initialCommodityId);
+
+                if (isSameExistingCommodity) {
+                    priceInput.prop('disabled', false).attr('placeholder', '');
+                } else {
+                    $.ajax({
+                        url: '/inventory-ajax/' + commodity_id,
+                        type: 'get',
+                        dataType: 'json',
+                        success: function (response) {
+                            price = (response && response.data) ? response.data.price : null;
+                            var formattedPrice = price ? Math.round(parseFloat(price)).toString() : '';
+                            priceInput.val(formattedPrice).attr('placeholder', '').prop('disabled', false);
+                        },
+                        error: function () {
+                            priceInput.val('').attr('placeholder', 'نامشخص').prop('disabled', false);
+                        }
+                    });
+                }
                 
                 // Pre-fill discount from commodity
                 var $discountInput = $row.find('#discount_percentage');

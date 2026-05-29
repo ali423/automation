@@ -110,7 +110,7 @@ class ProductionRequestController extends Controller
      */
     public function store(CreateProductionRequest $request)
     {
-        $data = $request->only('product_id', 'amount', 'comment');
+        $data = $request->only('product_id', 'amount', 'packaging_count', 'comment');
         $this->service->validationSecondLayer($data);
         $check_production = $this->service->checkProductionData($data);
         
@@ -203,7 +203,7 @@ class ProductionRequestController extends Controller
             return redirect()->back()->withErrors('در این مرحله امکان ویرایش وجود ندارد. درخواست‌های تایید شده، رد شده، منقضی شده یا تکمیل شده قابل ویرایش نیستند.');
         }
 
-        $data = $request->only('product_id', 'amount', 'comment');
+        $data = $request->only('product_id', 'amount', 'packaging_count', 'comment');
         
         $file = null;
         if ($request->hasFile('file')) {

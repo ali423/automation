@@ -1,5 +1,5 @@
 @if($summaryStats['totalOrders'] > 0)
-    <div class="row mb-3">
+    <div class="row g-3 mb-0">
         @if(isset($summaryStats['canDeliverCount']))
             <div class="col-md-2">
                 <div class="card bg-primary text-white text-center summary-card">

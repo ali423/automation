@@ -98,7 +98,9 @@
             @foreach ($materials as $material)
                 <div class="form-group col-md-5">
                     <label>{{ __('fields.commodity.material_type') }}</label>
-                    <input type="text" value="{{ $material->title }}" class="form-control" disabled>
+                    <div class="form-control d-flex align-items-center" style="background-color: #e9ecef;">
+                        <a href="{{ route('commodity.show', $material) }}">{{ $material->title }}</a>
+                    </div>
                 </div>
                 <div class="form-group col-md-3">
                     <label>{{ __('fields.commodity.material_amount') }}</label>

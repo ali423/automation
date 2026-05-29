@@ -8,6 +8,7 @@ use App\Models\Attribute;
 use App\Models\Commodity;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\WithdrawalRequest;
 use App\Services\OrderService;
 use App\Services\Processes\WithdrawalRequestService;
@@ -147,6 +148,7 @@ class OrderController extends Controller
                 $ordersQuery->where('customer_id', (int)$filters['customer_id']);
             }
         }
+        $this->applyOrderAttributeFilter($ordersQuery, $filters);
 
         $perPage = (int) $request->query('per_page', 10);
         $orders = $ordersQuery->paginate($perPage)->appends($request->query());
@@ -165,7 +167,11 @@ class OrderController extends Controller
             'status_options' => [
                 'pending' => __('fields.order.status.pending'),
                 'done' => __('fields.order.status.done'),
-            ]
+            ],
+            'show_date_range' => true,
+            'attribute_filter' => true,
+            'attribute_filter_layout' => 'stacked',
+            'relaxed_ui' => true,
         ];
 
         return view('dashboard.order.chart', [
@@ -245,7 +251,9 @@ class OrderController extends Controller
     {
         // Load the order with all necessary relationships
         $order->load(['customer', 'orderItems.commodity', 'orderItems.unit', 'comments.user', 'files.user', 'activities.user']);
-        
+
+        OrderItem::loadInventoriesForItems($order->orderItems);
+
         // Add calculated properties
         $order->items_count = $order->orderItems->count();
         
@@ -480,6 +488,7 @@ class OrderController extends Controller
                 $ordersQuery->where('customer_id', (int)$filters['customer_id']);
             }
         }
+        $this->applyOrderAttributeFilter($ordersQuery, $filters);
 
         // Handle order selection:
         // - If select_all is true: get ALL filtered orders, optionally excluding specific IDs
@@ -636,6 +645,7 @@ class OrderController extends Controller
         if (!empty($filters['customer_id'])) {
             $ordersQuery->where('customer_id', (int)$filters['customer_id']);
         }
+        $this->applyOrderAttributeFilter($ordersQuery, $filters);
 
         // Apply date filtering
         $dateFrom = $request->input('date_from');
@@ -727,6 +737,50 @@ class OrderController extends Controller
         return response()->json([
             'orders' => $chartData
         ]);
+    }
+
+    /**
+     * Parse attribute IDs from filters (comma-separated string or array).
+     *
+     * @param array $filters
+     * @return array
+     */
+    private function parseAttributeFilterIds(array $filters): array
+    {
+        if (empty($filters['attributes'])) {
+            return [];
+        }
+
+        $attributeIds = $filters['attributes'];
+        if (is_string($attributeIds)) {
+            $attributeIds = array_filter(array_map('trim', explode(',', $attributeIds)));
+        }
+        if (is_array($attributeIds)) {
+            return array_values(array_filter($attributeIds));
+        }
+
+        return [];
+    }
+
+    /**
+     * Filter orders that have at least one item whose commodity has ALL selected attributes.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param array $filters
+     * @return void
+     */
+    private function applyOrderAttributeFilter($query, array $filters): void
+    {
+        $attributeIds = $this->parseAttributeFilterIds($filters);
+        if (empty($attributeIds)) {
+            return;
+        }
+
+        $query->whereHas('orderItems.commodity', function ($q) use ($attributeIds) {
+            $q->whereHas('attributes', function ($subQ) use ($attributeIds) {
+                $subQ->whereIn('attributes.id', $attributeIds);
+            }, '=', count($attributeIds));
+        });
     }
 
     /**
@@ -922,6 +976,7 @@ class OrderController extends Controller
             }
             // Note: deliverability status ('deliverable'/'undeliverable') is applied after computing can_deliver
         }
+        $this->applyOrderAttributeFilter($ordersQuery, $filters);
 
         // Apply date filtering (chart-like) based on query date_from/date_to
         $dateFrom = $request->query('date_from');
@@ -1046,6 +1101,9 @@ class OrderController extends Controller
                 'undeliverable' => 'غیر قابل تحویل',
             ],
             'show_date_range' => true,
+            'attribute_filter' => true,
+            'attribute_filter_layout' => 'stacked',
+            'relaxed_ui' => true,
         ];
 
         return view('dashboard.order.factory-status', [
@@ -1088,6 +1146,7 @@ class OrderController extends Controller
         if (!empty($filters['customer_id'])) {
             $ordersQuery->where('customer_id', (int)$filters['customer_id']);
         }
+        $this->applyOrderAttributeFilter($ordersQuery, $filters);
 
         // Apply date filtering
         if ($dateFrom || $dateTo) {

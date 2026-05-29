@@ -36,6 +36,7 @@ class ProductionRequestService extends BaseService
         $productionRequest = ProductionRequest::create([
             'product_id' => $product->id,
             'production_amount' => $data['amount'],
+            'packaging_count' => $this->normalizePackagingCount($data['packaging_count'] ?? null),
             'unit_id' => $product->unit_id,
             'description' => $data['description'] ?? null,
             'status' => 'awaiting_approval',
@@ -81,6 +82,7 @@ class ProductionRequestService extends BaseService
             $productionRequest->update([
                 'product_id' => $product->id,
                 'production_amount' => $data['amount'],
+                'packaging_count' => $this->normalizePackagingCount($data['packaging_count'] ?? null),
                 'unit_id' => $product->unit_id,
                 'description' => $data['description'] ?? $productionRequest->description,
                 'total_cost' => $totalCost,
@@ -90,9 +92,10 @@ class ProductionRequestService extends BaseService
             $productionRequest->materials()->detach(); // Remove existing materials
             $this->bulkAttachMaterials($productionRequest, $materials);
         } else {
-            // Only update description
+            // Description and/or packaging (amount and product unchanged)
             $productionRequest->update([
                 'description' => $data['description'] ?? $productionRequest->description,
+                'packaging_count' => $this->normalizePackagingCount($data['packaging_count'] ?? null),
             ]);
         }
 
@@ -638,5 +641,18 @@ class ProductionRequestService extends BaseService
     {
         // No caching to clear since we removed most caching mechanisms
         return true;
+    }
+
+    /**
+     * Persist packaging count only when a positive integer is provided.
+     */
+    private function normalizePackagingCount($value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        $int = (int) $value;
+
+        return $int > 0 ? $int : null;
     }
 }

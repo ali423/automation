@@ -30,7 +30,7 @@
 @endif
 
 <div class="form-row m-3">
-    <div class="form-group col-md-6">
+    <div class="form-group col-md-4">
         <label for="product_id">{{ __('fields.production-request.product_id') }}</label>
         <select id="product_id" class="form-control" name="product_id" required>
             <option value="">انتخاب کنید</option>
@@ -39,6 +39,7 @@
                         {{ (isset($request) && $request->product_id == $product->id) ? 'selected' : '' }}
                         data-materials="{{ $product->materials->count() }}"
                         data-unit="{{ $product->unit ? $product->unit->symbol : '' }}"
+                        data-pieces-per-box="{{ $product->pieces_per_box ?? '' }}"
                         data-attributes="{{ $product->attributes->pluck('id')->join(',') }}">
                     {{ $product->title }}
                 </option>
@@ -48,12 +49,22 @@
             محصول را انتخاب کنید
         </div>
     </div>
-    <div class="form-group col-md-6">
+    <div class="form-group col-md-4">
         <label for="amount">{{ __('fields.production-request.production_amount') }} <span id="unit-display"></span></label>
         <input type="number" class="form-control" id="amount" name="amount" min="0.001" step="0.001" 
                value="{{ old('amount', isset($request) ? $request->production_amount : '') }}" required>
         <div class="invalid-feedback">
             مقدار تولید را وارد کنید
         </div>
+    </div>
+    <div class="form-group col-md-2" id="packaging_count_group" style="display: none;">
+        <label for="packaging_count">تعداد بسته</label>
+        <input type="number" class="form-control" id="packaging_count" name="packaging_count" min="1" step="1"
+               value="{{ old('packaging_count', isset($request) ? $request->packaging_count : '') }}"
+               autocomplete="off" placeholder="">
+    </div>
+    <div class="form-group col-md-2" id="pieces_per_box_group" style="display: none;">
+        <label for="pieces_per_box_display">تعداد در کارتن</label>
+        <input type="text" class="form-control" id="pieces_per_box_display" readonly placeholder="-">
     </div>
 </div>

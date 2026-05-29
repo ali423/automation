@@ -31,7 +31,15 @@
                         @foreach($order->orderItems as $index => $item)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $item->commodity ? $item->commodity->title : 'کالا حذف شده' }}</td>
+                                <td>
+                                    @if($item->commodity && $item->inventory)
+                                        <a href="{{ route('inventory.show', $item->inventory) }}">{{ $item->commodity->title }}</a>
+                                    @elseif($item->commodity)
+                                        {{ $item->commodity->title }}
+                                    @else
+                                        کالا حذف شده
+                                    @endif
+                                </td>
                                 <td>{{ number_format($item->commodity_amount) }}</td>
                                 <td>{{ $item->unit_symbol }}</td>
                                 <td>{{ number_format($item->price) }} ریال</td>

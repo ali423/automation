@@ -52,7 +52,8 @@ Route::get('/production/inventory', function (Request $request) {
         'product' => [
             'id' => $product->id,
             'title' => $product->title,
-            'unit' => $product->unit ? $product->unit->symbol : ''
+            'unit' => $product->unit ? $product->unit->symbol : '',
+            'pieces_per_box' => $product->pieces_per_box,
         ],
         'materials' => $materialsData
     ]);

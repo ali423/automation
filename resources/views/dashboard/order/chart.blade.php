@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title', 'لیست سفارشات')
+@section('title', 'نمودار سفارشات')
 @section('page_styles')
     <!-- These plugins only need for the run this page -->
     <link rel="stylesheet" href="{{ asset('css/default-assets/datatables.bootstrap4.css') }}">
@@ -9,24 +9,32 @@
     <link rel="stylesheet" href="{{ asset('css/datatables-td.css') }}">
     <link rel="stylesheet" href="{{ asset('css/bootstrap-datepicker.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/default-assets/daterange-picker.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/order-report-pages.css') }}">
 @endsection
 
 @section('content')
-    <div class="row">
+    <div class="order-report-page">
+    <div class="row g-4">
         <div class="col-12 box-margin">
-            <div class="card">
+            <div class="card order-report-section-card">
+                <div class="card-header">
+                    <h4 class="order-report-section-title mb-0">مواد اولیه مورد نیاز و موجودی</h4>
+                    <p class="order-report-section-desc text-muted small mt-2">بر اساس سفارشات انتخاب‌شده در بخش پایین و فیلترهای اعمال‌شده محاسبه می‌شود.</p>
+                </div>
                 <div class="card-body">
-                    <h4 class="card-title mb-2">مواد اولیه مورد نیاز (سفارشات در حال پردازش) و موجودی</h4>
-                    <p class="text-muted small mb-3">جدول بر اساس فیلترهای انتخاب شده در لیست سفارشات به‌روزرسانی می‌شود. فقط سفارشات با وضعیت "در حال پردازش" در محاسبات لحاظ می‌شوند.</p>
-                    <div id="order-inventory-table-wrapper">
+                    <div class="order-report-hint">
+                        <i class="ti-info-alt"></i>
+                        <span>فقط سفارشات با وضعیت «در حال پردازش» در محاسبات لحاظ می‌شوند. با تغییر فیلترها یا انتخاب سفارش‌ها، این جدول به‌روز می‌شود.</span>
+                    </div>
+                    <div id="order-inventory-table-wrapper" class="order-report-table-block">
                         <div id="chart-loading" class="text-center py-4" style="display: none;">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="sr-only">در حال بارگذاری...</span>
                             </div>
-                            <p class="mt-2 text-muted">در حال بارگذاری اطلاعات...</p>
+                            <p class="mt-3 mb-0 text-muted">در حال بارگذاری اطلاعات...</p>
                         </div>
                         <div class="table-responsive">
-                            <table id="order-inventory-table" class="table table-sm table-striped table-bordered mb-0">
+                            <table id="order-inventory-table" class="table table-striped table-bordered mb-0">
                                 <thead>
                                     <tr>
                                         <th>مواد اولیه</th>
@@ -45,14 +53,19 @@
             </div>
         </div>
         <div class="col-12 box-margin">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="card-title mb-2">لیست سفارشات</h4>
-                    {{-- Pagination Controls (match index view) --}}
-                    <x-pagination-controls :paginator="$orders" :options="$options" />
-                    <!-- Date range inputs moved into pagination-controls component -->
-                    <div id="filter-status" class="text-info small mb-2" style="display: none;"></div>
-                    <table id="datatable-buttons-customer" class="table table-striped dt-responsive nowrap w-100">
+            <div class="card order-report-section-card">
+                <div class="card-header">
+                    <h4 class="order-report-section-title mb-0">لیست سفارشات</h4>
+                    <p class="order-report-section-desc text-muted small mt-2">فیلترها را اعمال کنید یا سفارش‌های مورد نظر را انتخاب کنید.</p>
+                </div>
+                <div class="card-body pb-0">
+                    <div class="order-report-filters-wrap">
+                        <x-pagination-controls :paginator="$orders" :options="$options" />
+                    </div>
+                    <hr class="order-report-divider">
+                    <div id="filter-status" class="text-info small mb-3" style="display: none;"></div>
+                    <div class="order-report-table-block">
+                    <table id="datatable-buttons-customer" class="table table-striped dt-responsive nowrap w-100 mb-0">
                         <thead class="text-center">
                             <tr>
                                 <th>
@@ -89,12 +102,14 @@
                             @endforeach
                         </tbody>
                     </table>
-                    <div class="card-footer">
-                        <x-pagination-navigation :paginator="$orders" />
                     </div>
+                </div>
+                <div class="card-footer">
+                    <x-pagination-navigation :paginator="$orders" />
                 </div>
             </div>
         </div>
+    </div>
     </div>
 @endsection
 
@@ -131,6 +146,23 @@
                 }
             };
 
+            var inventoryTableButtons = [
+                { extend: 'copy', text: 'کپی', className: 'btn btn-outline-primary btn-sm' },
+                {
+                    extend: 'pdf',
+                    text: 'pdf',
+                    className: 'btn btn-outline-primary btn-sm',
+                    customize: function(doc) {
+                        doc.defaultStyle.font = 'IRANSansWeb';
+                        doc.styles.tableBodyEven.alignment = 'center';
+                        doc.styles.tableBodyOdd.alignment = 'center';
+                    }
+                },
+                { extend: 'excel', className: 'btn btn-outline-primary btn-sm' },
+                { extend: 'csv', className: 'btn btn-outline-primary btn-sm' },
+                { extend: 'print', text: 'پرینت', className: 'btn btn-outline-primary btn-sm' }
+            ];
+
             $('#datatable-buttons-customer').DataTable({
                 dom: 'Bfrtip',
                 paging: false,
@@ -139,7 +171,7 @@
                 buttons: [                    {
                         extend: 'copy',
                         text: "کپی",
-                        className: 'btn btn-outline-primary',
+                        className: 'btn btn-outline-primary btn-sm',
                         exportOptions: {
                             columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
@@ -151,7 +183,7 @@
                     {
                         extend: 'pdf',
                         text: 'pdf',
-                        className: 'btn btn-outline-primary',
+                        className: 'btn btn-outline-primary btn-sm',
                         exportOptions: {
                             columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
@@ -168,7 +200,7 @@
                     },
                     {
                         extend: 'excel',
-                        className: 'btn btn-outline-primary',
+                        className: 'btn btn-outline-primary btn-sm',
                         exportOptions: {
                             columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
@@ -178,7 +210,7 @@
                     },
                     {
                         extend: 'csv',
-                        className: 'btn btn-outline-primary',
+                        className: 'btn btn-outline-primary btn-sm',
                         exportOptions: {
                             columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
@@ -189,7 +221,7 @@
                     {
                         extend: 'print',
                         text: "پرینت",
-                        className: 'btn btn-outline-primary',
+                        className: 'btn btn-outline-primary btn-sm',
                         exportOptions: {
                             columns: [0, 1, 2, 3, 4, 5, 6, 7],
                             modifier: {
@@ -300,10 +332,12 @@
 
                 if ($.fn.DataTable) {
                     $table.DataTable({
+                        dom: 'Bfrtip',
                         paging: false,
                         searching: false,
                         info: false,
-                        order: [[1, 'desc']]
+                        order: [[1, 'desc']],
+                        buttons: inventoryTableButtons
                     });
                 }
             }

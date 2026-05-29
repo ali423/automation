@@ -35,17 +35,18 @@
 
     $showAttributeFilter = !empty($options['attribute_filter']);
     $attributeFilterLayout = $options['attribute_filter_layout'] ?? 'inline';
+    $relaxedUi = !empty($options['relaxed_ui']);
 @endphp
 
 {{-- Compact search and filter controls --}}
-<div class="mb-3">
+<div class="{{ $relaxedUi ? 'mb-0' : 'mb-3' }}">
     {{-- Active Filters Display --}}
     @if(!empty($currentFilters) || request('search'))
         @php
             $activeFilterCount = count($currentFilters) + (request('search') ? 1 : 0);
         @endphp
-        <div class="mb-2">
-            <small class="text-dark">
+        <div class="mb-3 {{ $relaxedUi ? 'p-2 px-3 rounded' : 'mb-2' }}" @if($relaxedUi) style="background:#fff;border:1px solid #e9ecef;" @endif>
+            <small class="text-dark d-block mb-2">
                 <i class="ti-filter text-primary"></i> فیلترهای فعال ({{ $activeFilterCount }}):
                 @if(request('search'))
                     <span class="badge bg-primary text-white ms-1">جستجو: {{ request('search') }}</span>
