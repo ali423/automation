@@ -349,7 +349,7 @@ class WithdrawalRequestService extends BaseService
      * @return void
      * @throws \Exception
      */
-    public function applyShippingCorrections($withdrawalRequest, $corrections)
+    public function applyShippingCorrections($withdrawalRequest, $corrections, array $originalCommodityIds = [])
     {
         foreach ($corrections as $correction) {
             $commodity = \App\Models\Commodity::find($correction['commodity_id']);
@@ -385,6 +385,8 @@ class WithdrawalRequestService extends BaseService
                     ($correction['reason'] ?? '') ? '[تصحیح ارسال: کسر] ' . $correction['reason'] : '[تصحیح ارسال: کسر] کالای ارسال شده اما ثبت نشده',
                     $withdrawalRequest
                 );
+
+                $this->syncDeductLinePricing($withdrawalRequest, $correction, $commodity, $originalCommodityIds);
             }
             else if ($correction['type'] === 'qty_adjustment') {
                 $direction = $correction['direction'] ?? 'decrease';
@@ -504,5 +506,67 @@ class WithdrawalRequestService extends BaseService
 
             return true;
         });
+    }
+
+    /**
+     * Persist pricing for products added via "sent but not recorded" (deduct) corrections.
+     */
+    protected function syncDeductLinePricing($withdrawalRequest, array $correction, Commodity $commodity, array $originalCommodityIds): void
+    {
+        $commodityId = (int) $correction['commodity_id'];
+
+        if (in_array($commodityId, $originalCommodityIds, true)) {
+            return;
+        }
+
+        $pricing = $this->resolveDeductPrice(
+            $commodity,
+            $correction['price'] ?? null,
+            $correction['discount_percentage'] ?? null
+        );
+
+        $existing = $withdrawalRequest->commodities()->where('commodity_id', $commodityId)->first();
+
+        if ($existing) {
+            return;
+        }
+
+        $withdrawalRequest->commodities()->attach($commodityId, [
+            'amount' => 0,
+            'unit_id' => $correction['unit_id'],
+            'price' => $pricing['price'],
+            'discount_percentage' => $pricing['discount_percentage'],
+        ]);
+    }
+
+    /**
+     * Resolve unit price and discount for a deduct correction (mirrors order item logic).
+     *
+     * @return array{price: float|int, discount_percentage: int|null}
+     */
+    protected function resolveDeductPrice(Commodity $commodity, $basePrice, $discountPercentage): array
+    {
+        $basePrice = ($basePrice !== null && $basePrice !== '')
+            ? (float) $basePrice
+            : (float) ($commodity->sales_price ?? 0);
+
+        $itemDiscount = $discountPercentage;
+        if ($itemDiscount === '' || $itemDiscount === null) {
+            $itemDiscount = ($commodity->type === 'product')
+                ? ($commodity->discount_percentage ?? null)
+                : null;
+        } else {
+            $itemDiscount = (int) $itemDiscount;
+        }
+
+        $finalPrice = $basePrice;
+        if ($itemDiscount !== null && $itemDiscount > 0 && $commodity->type === 'product') {
+            $finalPrice = $basePrice * (1 - $itemDiscount / 100);
+        }
+
+        return [
+            'price' => $finalPrice,
+            'discount_percentage' => $itemDiscount,
+        ];
     }
 }

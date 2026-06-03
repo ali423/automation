@@ -166,7 +166,7 @@
                                     <ul class="mb-0 mt-2">
                                         <li><strong>برگشت عادی:</strong> مشتری محصول را برگردانده</li>
                                         <li><strong>ثبت‌شده اما ارسال نشده:</strong> محصول ثبت شده بود ولی واقعاً ارسال نشد</li>
-                                        <li><strong>ارسال شده اما ثبت نشده:</strong> محصول ارسال شد ولی در سیستم ثبت نشده بود</li>
+                                        <li><strong>ارسال شده اما ثبت نشده:</strong> محصول ارسال شد ولی در سیستم ثبت نشده بود (برای کالای جدید، قیمت و درصد تخفیف قابل تنظیم است)</li>
                                         <li><strong>تصحیح مقدار:</strong> محصول با مقدار اشتباه ارسال شد (افزایش/کاهش)</li>
                                     </ul>
                                 </div>
@@ -218,7 +218,10 @@
         const commodityUnitsData = @json($commodityUnitsData);
         // Include both original commodities and those added via corrections
         const requestCommodityIds = @json($requestCommodityIds ?? $request->commodities->pluck('id')->values());
+        const originalCommodityIds = @json($originalCommodityIds ?? $request->commodities->pluck('id')->values());
         const addedCommodityIds = @json($addedCommodityIds ?? []);
+
+        const commodityById = Object.fromEntries(allCommodities.map(c => [String(c.id), c]));
 
         let returnRowCounter = 0;
 
@@ -283,7 +286,7 @@
                     <div class="form-row">
                         <div class="form-group col-md-2">
                             <label>نوع برگشت</label>
-                            <select name="return_type[]" class="form-control form-control-sm type-select" onchange="updateTypeDescription(this); updateCommodityOptionsByType(this); toggleDirectionField(this);">
+                            <select name="return_type[]" class="form-control form-control-sm type-select" onchange="updateTypeDescription(this); updateCommodityOptionsByType(this); toggleDirectionField(this); togglePricingFields(this);">
                                 <option value="">انتخاب کنید...</option>
                                 ${typeOptions}
                             </select>
@@ -292,7 +295,7 @@
 
                         <div class="form-group col-md-3">
                             <label>کالا</label>
-                            <select name="return_commodity_id[]" class="form-control form-control-sm commodity-select" onchange="updateCommodityUnits(this)">
+                            <select name="return_commodity_id[]" class="form-control form-control-sm commodity-select" onchange="updateCommodityUnits(this); updateCommodityPricing(this);">
                                 <option value="">انتخاب کنید...</option>
                                 ${commodityOptions}
                             </select>
@@ -323,6 +326,21 @@
                             <label>دلیل</label>
                             <input type="text" name="return_reason[]" class="form-control form-control-sm" 
                                    placeholder="مثلاً: معیوب">
+                        </div>
+                    </div>
+                    <div class="form-row pricing-wrapper d-none mt-2">
+                        <div class="col-12">
+                            <small class="text-muted">قیمت و تخفیف برای کالای جدید (ارسال شده اما ثبت نشده)</small>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label>قیمت واحد</label>
+                            <input type="number" name="return_price[]" class="form-control form-control-sm price-input"
+                                   step="0.01" min="0" placeholder="قیمت پایه">
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label>درصد تخفیف</label>
+                            <input type="number" name="return_discount_percentage[]" class="form-control form-control-sm discount-input"
+                                   min="0" max="100" step="1" placeholder="مثال: 10">
                         </div>
                     </div>
                 </div>
@@ -363,12 +381,63 @@
             const stillAllowed = allowedCommodities.some(c => String(c.id) === String(previousCommodity));
             if (stillAllowed) {
                 commoditySelect.value = previousCommodity;
+                updateCommodityPricing(commoditySelect);
             } else {
                 commoditySelect.value = '';
                 const allUnitsOptions = allUnits
                     .map(unit => `<option value="${unit.id}">${unit.name}</option>`)
                     .join('');
                 unitSelect.innerHTML = allUnitsOptions;
+            }
+
+            togglePricingFields(typeSelect);
+        }
+
+        function isNewProductDeductRow(row) {
+            const type = row.querySelector('.type-select')?.value;
+            const commodityId = row.querySelector('.commodity-select')?.value;
+            return type === 'deduct'
+                && commodityId
+                && !originalCommodityIds.map(String).includes(String(commodityId));
+        }
+
+        function togglePricingFields(typeSelect) {
+            const row = typeSelect.closest('.return-item');
+            const pricingWrapper = row.querySelector('.pricing-wrapper');
+            const priceInput = row.querySelector('.price-input');
+            const discountInput = row.querySelector('.discount-input');
+            const showPricing = isNewProductDeductRow(row);
+
+            if (showPricing) {
+                pricingWrapper.classList.remove('d-none');
+            } else {
+                pricingWrapper.classList.add('d-none');
+                priceInput.value = '';
+                discountInput.value = '';
+            }
+        }
+
+        function updateCommodityPricing(commoditySelect) {
+            const row = commoditySelect.closest('.return-item');
+            const commodityId = commoditySelect.value;
+            const priceInput = row.querySelector('.price-input');
+            const discountInput = row.querySelector('.discount-input');
+            const commodity = commodityById[String(commodityId)];
+
+            togglePricingFields(row.querySelector('.type-select'));
+
+            if (!isNewProductDeductRow(row) || !commodity) {
+                return;
+            }
+
+            if (commodity.sales_price !== null && commodity.sales_price !== undefined) {
+                priceInput.value = commodity.sales_price;
+            }
+
+            if (commodity.discount_percentage !== null && commodity.discount_percentage !== undefined) {
+                discountInput.value = commodity.discount_percentage;
+            } else {
+                discountInput.value = '';
             }
         }
 

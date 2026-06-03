@@ -16,5 +16,6 @@ class WithdrawalCommodity extends Pivot
         'unit_id' => 'integer',
         'amount' => 'decimal:2',
         'price' => 'decimal:5',
+        'discount_percentage' => 'integer',
     ];
 }

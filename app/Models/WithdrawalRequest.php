@@ -32,7 +32,7 @@ class WithdrawalRequest extends Model
     {
         return $this->belongsToMany(Commodity::class, 'withdrawal_commodities', 'withdrawal_id', 'commodity_id')
             ->using(WithdrawalCommodity::class)
-            ->withPivot('amount', 'unit_id', 'price')
+            ->withPivot('amount', 'unit_id', 'price', 'discount_percentage')
             ->with('unit');
     }
     
@@ -44,7 +44,7 @@ class WithdrawalRequest extends Model
     {
         return $this->belongsToMany(Commodity::class, 'withdrawal_commodities', 'withdrawal_id', 'commodity_id')
             ->using(WithdrawalCommodity::class)
-            ->withPivot('amount', 'unit_id', 'price')
+            ->withPivot('amount', 'unit_id', 'price', 'discount_percentage')
             ->with('unit');
     }
     
