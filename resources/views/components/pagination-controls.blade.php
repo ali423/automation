@@ -413,6 +413,30 @@
 
 
 <script>
+/**
+ * Build filters payload for chart/factory AJAX requests.
+ * Supports ?filters={"attributes":"1,2"} and ?filters[attributes]=1,2 (after pagination).
+ */
+window.getFiltersPayloadForAjax = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const raw = urlParams.get('filters');
+    if (raw) {
+        return raw;
+    }
+    const filters = {};
+    for (const [key, value] of urlParams.entries()) {
+        const match = key.match(/^filters\[(.+)\]$/);
+        if (match && value !== '') {
+            filters[match[1]] = value;
+        }
+    }
+    const attrInput = document.getElementById('attribute-filter-input');
+    if (attrInput && attrInput.value) {
+        filters.attributes = attrInput.value;
+    }
+    return Object.keys(filters).length > 0 ? JSON.stringify(filters) : null;
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     // Per page change handler
     const perPageSelect = document.getElementById('per-page');
