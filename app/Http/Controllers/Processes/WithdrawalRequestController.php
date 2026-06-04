@@ -271,7 +271,16 @@ class WithdrawalRequestController extends Controller
 
             $addedCommodity->effective_amount = max(0, (-1 * $correctionSum) - $returnedForAdded);
             $addedCommodity->effective_unit = $addedCommodity->unit;
-            $addedCommodity->effective_price = $addedCommodity->sales_price ?? null;
+
+            $pivotLine = $withdrawalRequest->commodities->firstWhere('id', $addedCommodity->id);
+            if ($pivotLine && $pivotLine->pivot->price !== null) {
+                $addedCommodity->effective_price = $pivotLine->pivot->price;
+                $addedCommodity->discount_percentage = $pivotLine->pivot->discount_percentage;
+            } else {
+                $addedCommodity->effective_price = $addedCommodity->sales_price ?? null;
+                $addedCommodity->discount_percentage = null;
+            }
+
             $effectiveCommodities->push($addedCommodity);
         }
 
@@ -674,6 +683,7 @@ class WithdrawalRequestController extends Controller
             'allUnits' => $allUnits,
             'commodityUnitsData' => $commodityUnitsData,
             'requestCommodityIds' => $requestCommodityIds,
+            'originalCommodityIds' => $originalCommodityIds,
             'addedCommodityIds' => $addedCommodityIds,
         ]);
     }
@@ -707,13 +717,18 @@ class WithdrawalRequestController extends Controller
             'return_unit_id.*' => ['exists:units,id'],
             'return_reason' => ['nullable', 'array'],
             'return_reason.*' => ['nullable', 'string', 'max:500'],
+            'return_price' => ['nullable', 'array'],
+            'return_price.*' => ['nullable', 'numeric', 'min:0'],
+            'return_discount_percentage' => ['nullable', 'array'],
+            'return_discount_percentage.*' => ['nullable', 'integer', 'min:0', 'max:100'],
             'reason' => ['nullable', 'string', 'max:1000'],
         ]);
 
         // Separate returns from corrections
         $returns = [];      // Items for sales_return
         $corrections = [];  // Items for shipping_correction
-        $requestCommodityIds = $withdrawalRequest->commodities->pluck('id')->all();
+        $originalCommodityIds = $withdrawalRequest->commodities->pluck('id')->all();
+        $requestCommodityIds = $originalCommodityIds;
 
         if (!empty($validated['return_type'])) {
             foreach ($validated['return_type'] as $index => $type) {
@@ -735,6 +750,8 @@ class WithdrawalRequestController extends Controller
                     'unit_id' => $validated['return_unit_id'][$index],
                     'reason' => $validated['return_reason'][$index] ?? null,
                     'direction' => $validated['return_direction'][$index] ?? 'decrease',
+                    'price' => $validated['return_price'][$index] ?? null,
+                    'discount_percentage' => $validated['return_discount_percentage'][$index] ?? null,
                 ];
 
                 // For these types, commodity must be from current withdrawal request.
@@ -784,10 +801,10 @@ class WithdrawalRequestController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($withdrawalRequest, $corrections, $returns) {
+            DB::transaction(function () use ($withdrawalRequest, $corrections, $returns, $originalCommodityIds) {
                 // Step 1: Apply all corrections first
                 if (!empty($corrections)) {
-                    $this->service->applyShippingCorrections($withdrawalRequest, $corrections);
+                    $this->service->applyShippingCorrections($withdrawalRequest, $corrections, $originalCommodityIds);
                 }
                 
                 // Step 2: Then process returns (only if returns has items)
@@ -799,7 +816,7 @@ class WithdrawalRequestController extends Controller
             return redirect()->back()->withErrors($e->getMessage());
         }
 
-        return redirect(route('sales-return.withdrawal.form', $withdrawalRequest))->with('successful', 'برگشت و تصحیحات با موفقیت ثبت شدند.');
+        return redirect(route('withdrawal-request.show', $withdrawalRequest))->with('successful', 'برگشت و تصحیحات با موفقیت ثبت شدند.');
     }
 
 }
