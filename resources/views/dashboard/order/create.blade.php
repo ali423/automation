@@ -635,6 +635,8 @@
                 // If selected unit is main unit, we can safely set the amount
                 if (selectedUnit === mainUnitId) {
                     amountInput.val(mainAmount);
+                } else if (!mainUnitId) {
+                    return;
                 } else {
                     // Need to convert from main unit to selected unit via AJAX
                     var commodityId = $row.find('#commodity_id').val();
@@ -648,15 +650,8 @@
                         dataType: 'json',
                         success: function(response) {
                             if (response.success && response.converted_amount !== null) {
-                                amountInput.val(response.converted_amount_rounded);
-                            } else {
-                                // Conversion failed, fallback to main amount
-                                amountInput.val(mainAmount);
+                                amountInput.val(Math.round(response.converted_amount));
                             }
-                        },
-                        error: function() {
-                            // On error, fallback to main amount
-                            amountInput.val(mainAmount);
                         }
                     });
                 }
@@ -680,12 +675,33 @@
                     return;
                 }
 
-                // Only sync packaging when we are in the main unit (no client-side conversion)
-                if (selectedUnit === mainUnitId) {
-                    var packagingVal = Math.floor(amountVal / piecesPerBox);
+                function setPackagingFromMainAmount(mainAmount) {
+                    var packagingVal = Math.floor(mainAmount / piecesPerBox);
                     if (packagingVal > 0) {
                         packagingInput.val(packagingVal);
                     }
+                }
+
+                if (selectedUnit === mainUnitId) {
+                    setPackagingFromMainAmount(amountVal);
+                } else if (!mainUnitId) {
+                    return;
+                } else {
+                    var commodityId = $row.find('#commodity_id').val();
+                    if (!commodityId) {
+                        return;
+                    }
+
+                    $.ajax({
+                        url: '/order/convert-amount/' + commodityId + '/' + amountVal + '/' + selectedUnit + '/' + mainUnitId,
+                        type: 'get',
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success && response.converted_amount !== null) {
+                                setPackagingFromMainAmount(response.converted_amount);
+                            }
+                        }
+                    });
                 }
             }
             

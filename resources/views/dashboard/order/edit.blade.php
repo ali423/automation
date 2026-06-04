@@ -710,6 +710,8 @@
                 // If selected unit is main unit, we can safely set the amount
                 if (selectedUnit === mainUnitId) {
                     amountInput.val(mainAmount);
+                } else if (!mainUnitId) {
+                    return;
                 } else {
                     // Need to convert from main unit to selected unit via AJAX
                     var commodityId = $row.find('#commodity_id').val();
@@ -723,15 +725,8 @@
                         dataType: 'json',
                         success: function(response) {
                             if (response.success && response.converted_amount !== null) {
-                                amountInput.val(response.converted_amount_rounded);
-                            } else {
-                                // Conversion failed, fallback to main amount
-                                amountInput.val(mainAmount);
+                                amountInput.val(Math.round(response.converted_amount));
                             }
-                        },
-                        error: function() {
-                            // On error, fallback to main amount
-                            amountInput.val(mainAmount);
                         }
                     });
                 }
@@ -755,12 +750,33 @@
                     return;
                 }
 
-                // Only sync packaging when we are in the main unit (no client-side conversion)
-                if (selectedUnit === mainUnitId) {
-                    var packagingVal = Math.floor(amountVal / piecesPerBox);
+                function setPackagingFromMainAmount(mainAmount) {
+                    var packagingVal = Math.floor(mainAmount / piecesPerBox);
                     if (packagingVal > 0) {
                         packagingInput.val(packagingVal);
                     }
+                }
+
+                if (selectedUnit === mainUnitId) {
+                    setPackagingFromMainAmount(amountVal);
+                } else if (!mainUnitId) {
+                    return;
+                } else {
+                    var commodityId = $row.find('#commodity_id').val();
+                    if (!commodityId) {
+                        return;
+                    }
+
+                    $.ajax({
+                        url: '/order/convert-amount/' + commodityId + '/' + amountVal + '/' + selectedUnit + '/' + mainUnitId,
+                        type: 'get',
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success && response.converted_amount !== null) {
+                                setPackagingFromMainAmount(response.converted_amount);
+                            }
+                        }
+                    });
                 }
             }
 
@@ -941,11 +957,21 @@
                         dataType: 'json',
                         success: function (response) {
                             if (response.success) {
+                                var rowId = $row.attr('data-row-id');
+                                var selectedOption = commoditySelect.find('option:selected');
+                                var piecesPerBox = selectedOption.data('pieces-per-box');
+
                                 // Clear and populate unit options
                                 unitSelect.empty().append('<option value="">انتخاب کنید...</option>');
                                 response.units.forEach(function(unit) {
                                     unitSelect.append('<option value="' + unit.id + '">' + unit.name + ' (' + unit.symbol + ')</option>');
                                 });
+
+                                commodityDataCache[rowId] = {
+                                    unit_id: response.commodity.unit_id,
+                                    weight_per_unit: response.commodity.weight_per_unit,
+                                    pieces_per_box: piecesPerBox || response.commodity.pieces_per_box || null
+                                };
                                 
                                 // Set the selected unit value for existing items
                                 if (currentUnitId) {
@@ -953,6 +979,10 @@
                                     // Verify the value was set (it might fail if unitId doesn't exist in options)
                                     var actualUnitId = unitSelect.val();
                                     if (actualUnitId && actualUnitId === currentUnitId) {
+                                        if ($row.find('#packaging_count').val()) {
+                                            syncAmountFromPackaging($row);
+                                        }
+
                                         // Check if we already have a valid weight value from server
                                         var existingWeight = $row.find('#weight').data('weight-value');
                                         
