@@ -273,7 +273,7 @@
 
             // Initial table rendering
             // Behavior: "همه" checkbox selects ALL orders matching current filters (ignores pagination)
-            // Filters respected: customer_id, status, search, date_from, date_to
+            // Filters respected: customer_id, status, attributes, search, date_from, date_to
             // Filters ignored: page, per_page (pagination)
             function loadInitialTable() {
                 var urlParams = new URLSearchParams(window.location.search);
@@ -286,17 +286,16 @@
                     _token: '{{ csrf_token() }}'
                 };
                 
-                // Include filters from URL (these SHOULD be respected)
-                var filtersParam = urlParams.get('filters');
-                if (filtersParam) {
-                    payload.filters = filtersParam;
+                var filtersPayload = window.getFiltersPayloadForAjax && window.getFiltersPayloadForAjax();
+                if (filtersPayload) {
+                    payload.filters = filtersPayload;
                 }
-                
+
                 var searchParam = urlParams.get('search');
                 if (searchParam) {
                     payload.search = searchParam;
                 }
-                
+
                 var dateFromParam = urlParams.get('date_from');
                 var dateToParam = urlParams.get('date_to');
                 if (dateFromParam) {
@@ -329,7 +328,7 @@
             }
 
             // Update table based on checkbox selections
-            // Respects: filters (customer_id, status), search, date_from, date_to
+            // Respects: filters (customer_id, status, attributes), search, date_from, date_to
             // Ignores: pagination (page, per_page)
             function updateTable() {
                 var selectedData = getSelectedFactoryData();
@@ -342,17 +341,16 @@
                     _token: '{{ csrf_token() }}'
                 };
 
-                // Include filters from URL (these SHOULD be respected)
-                var filtersParam = urlParams.get('filters');
-                if (filtersParam) {
-                    payload.filters = filtersParam;
+                var filtersPayload = window.getFiltersPayloadForAjax && window.getFiltersPayloadForAjax();
+                if (filtersPayload) {
+                    payload.filters = filtersPayload;
                 }
-                
+
                 var searchParam = urlParams.get('search');
                 if (searchParam) {
                     payload.search = searchParam;
                 }
-                
+
                 var dateFromParam = urlParams.get('date_from');
                 var dateToParam = urlParams.get('date_to');
                 if (dateFromParam) {
