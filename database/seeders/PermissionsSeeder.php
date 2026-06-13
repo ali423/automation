@@ -93,6 +93,7 @@ class PermissionsSeeder extends Seeder
             ['title'=>'edit_production', 'name'=>'ویرایش درخواست تولید'],
             ['title'=>'delete_production', 'name'=>'حذف درخواست تولید'],
             ['title'=>'status_production', 'name'=>'تغییر وضعیت درخواست تولید'],
+            ['title'=>'cancel_production', 'name'=>'لغو درخواست تولید'],
 
                 //inventory permissions
             ['title'=>'create_inventory', 'name'=>'اضافه کردن موجودی'],

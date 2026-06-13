@@ -199,15 +199,22 @@ class ProductionRequestService extends BaseService
             }
         }
 
-        // Apply all inventory updates in batch
-        $this->applyBatchInventoryUpdates($inventoryUpdates);
+        // Apply all inventory updates in batch with adjustment records
+        $this->applyBatchInventoryUpdates($inventoryUpdates, $productionRequest);
 
         // Step 2: Add the final product to inventory
-        $this->inventoryService->addStock(
+        $unitCost = $productionRequest->production_amount > 0
+            ? $productionRequest->total_cost / $productionRequest->production_amount
+            : 0;
+
+        $this->inventoryService->addStockWithAdjustment(
             $productionRequest->product_id,
             $productionRequest->unit_id,
             $productionRequest->production_amount,
-            $productionRequest->total_cost / $productionRequest->production_amount
+            'production_approval',
+            $productionRequest->number,
+            $productionRequest,
+            $unitCost
         );
 
         // Step 3: Update production request status
@@ -238,16 +245,90 @@ class ProductionRequestService extends BaseService
     /**
      * Apply batch inventory updates efficiently
      */
-    private function applyBatchInventoryUpdates($updates)
+    private function applyBatchInventoryUpdates($updates, $productionRequest)
     {
         foreach ($updates as $update) {
             if ($update['amount_change'] != 0) {
-                $this->inventoryService->removeStock(
+                $this->inventoryService->removeStockWithAdjustment(
                     $update['commodity_id'],
                     $update['unit_id'],
-                    abs($update['amount_change'])
+                    abs($update['amount_change']),
+                    'production_approval',
+                    $productionRequest->number,
+                    $productionRequest
                 );
             }
+        }
+    }
+
+    /**
+     * Cancel a production request and reverse inventory changes
+     */
+    public function cancelProduction($productionRequest, $cancelReason = null)
+    {
+        if (!in_array($productionRequest->status, ['approved', 'approvaled', 'done'])) {
+            throw new \Exception('تنها درخواست‌های تایید شده یا تکمیل شده را می‌توان لغو کرد.');
+        }
+
+        return DB::transaction(function () use ($productionRequest, $cancelReason) {
+            $reason = $cancelReason ?? 'لغو درخواست تولید شماره ' . $productionRequest->number;
+            $adjustments = \App\Models\InventoryAdjustment::forProduction($productionRequest->id)->get();
+
+            if ($adjustments->isNotEmpty()) {
+                foreach ($adjustments as $adjustment) {
+                    if ($adjustment->amount < 0) {
+                        $this->inventoryService->addStockWithAdjustment(
+                            $adjustment->commodity_id,
+                            $adjustment->unit_id,
+                            abs($adjustment->amount),
+                            'production_cancellation',
+                            $reason,
+                            $productionRequest
+                        );
+                    } elseif ($adjustment->amount > 0) {
+                        $this->inventoryService->removeStockWithAdjustment(
+                            $adjustment->commodity_id,
+                            $adjustment->unit_id,
+                            abs($adjustment->amount),
+                            'production_cancellation',
+                            $reason,
+                            $productionRequest
+                        );
+                    }
+                }
+            } else {
+                $this->cancelProductionLegacy($productionRequest, $reason);
+            }
+
+            $productionRequest->update(['status' => 'cancelled']);
+
+            return true;
+        });
+    }
+
+    /**
+     * Reverse inventory for approved requests created before adjustment tracking
+     */
+    private function cancelProductionLegacy($productionRequest, $reason)
+    {
+        $this->inventoryService->removeStockWithAdjustment(
+            $productionRequest->product_id,
+            $productionRequest->unit_id,
+            $productionRequest->production_amount,
+            'production_cancellation',
+            $reason,
+            $productionRequest
+        );
+
+        foreach ($productionRequest->materials as $material) {
+            $this->inventoryService->addStockWithAdjustment(
+                $material->id,
+                $material->pivot->unit_id,
+                $material->pivot->required_amount,
+                'production_cancellation',
+                $reason,
+                $productionRequest
+            );
         }
     }
 

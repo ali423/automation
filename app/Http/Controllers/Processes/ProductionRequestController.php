@@ -64,6 +64,7 @@ class ProductionRequestController extends Controller
                 'rejected' => __('fields.production-request.status.rejected'),
                 'expired' => __('fields.production-request.status.expired'),
                 'done' => __('fields.production-request.status.done'),
+                'cancelled' => __('fields.production-request.status.cancelled'),
             ]
         ];
         
@@ -299,4 +300,49 @@ class ProductionRequestController extends Controller
         
         return redirect(route('production-request.show', $productionRequest))->with('successful', 'درخواست تولید رد شد.');
     }
-} 
+
+    /**
+     * Show cancel form for a production request
+     */
+    public function cancelForm($id)
+    {
+        if (!auth()->user()->role->havePermission('cancel_production')) {
+            return redirect()->back()->withErrors('شما این دسترسی را ندارید.');
+        }
+
+        $productionRequest = ProductionRequest::query()->findOrFail($id);
+        if (!in_array($productionRequest->status, ['approved', 'approvaled', 'done'])) {
+            return redirect()->back()->withErrors('در این مرحله امکان لغو وجود ندارد.');
+        }
+
+        return view('dashboard.processes.production-request.cancel', [
+            'request' => $productionRequest,
+        ]);
+    }
+
+    /**
+     * Cancel a production request and reverse inventory
+     */
+    public function cancelSubmit(Request $request, $id)
+    {
+        if (!auth()->user()->role->havePermission('cancel_production')) {
+            return redirect()->back()->withErrors('شما این دسترسی را ندارید.');
+        }
+
+        $productionRequest = ProductionRequest::query()->findOrFail($id);
+
+        $validated = $request->validate([
+            'reason' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        try {
+            DB::transaction(function () use ($productionRequest, $validated) {
+                $this->service->cancelProduction($productionRequest, $validated['reason'] ?? null);
+            });
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors($e->getMessage());
+        }
+
+        return redirect(route('production-request.show', $productionRequest))->with('successful', 'درخواست با موفقیت لغو و موجودی بازگردانده شد.');
+    }
+}

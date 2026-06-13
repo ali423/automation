@@ -613,14 +613,14 @@ class InventoryService extends BaseService
      * @param object|null $adjustable (WithdrawalRequest, Order, etc.)
      * @return bool
      */
-    public function addStockWithAdjustment($commodityId, $unitId, $amount, $adjustmentType = 'withdrawal_cancellation', $reason = null, $adjustable = null)
+    public function addStockWithAdjustment($commodityId, $unitId, $amount, $adjustmentType = 'withdrawal_cancellation', $reason = null, $adjustable = null, $purchasePrice = null)
     {
-        return DB::transaction(function () use ($commodityId, $unitId, $amount, $adjustmentType, $reason, $adjustable) {
+        return DB::transaction(function () use ($commodityId, $unitId, $amount, $adjustmentType, $reason, $adjustable, $purchasePrice) {
             // Record the value before adjustment
             $valueBefore = $this->calculateInventoryValue($commodityId, $unitId);
 
             // Add the stock
-            $this->addStock($commodityId, $unitId, $amount);
+            $this->addStock($commodityId, $unitId, $amount, $purchasePrice);
 
             // Record the value after adjustment
             $valueAfter = $this->calculateInventoryValue($commodityId, $unitId);

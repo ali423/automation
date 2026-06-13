@@ -135,6 +135,7 @@ class ProductionRequest extends Model
             'rejected' => 'رد شده',
             'expired' => 'منقضی شده',
             'done' => 'تکمیل شده',
+            'cancelled' => 'لغو شده',
         ][$this->status] ?? 'نامشخص';
     }
 
@@ -156,6 +157,11 @@ class ProductionRequest extends Model
     public function getCanBeRejectedAttribute()
     {
         return $this->status === 'awaiting_approval';
+    }
+
+    public function getCanBeCancelledAttribute()
+    {
+        return in_array($this->status, ['approved', 'approvaled', 'done']);
     }
 
     // Financial calculations - simplified
@@ -198,6 +204,7 @@ class ProductionRequest extends Model
         unset($array['is_deletable']);
         unset($array['can_be_approved']);
         unset($array['can_be_rejected']);
+        unset($array['can_be_cancelled']);
         unset($array['total_input_cost']);
         unset($array['total_output_value']);
         unset($array['profit']);
