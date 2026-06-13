@@ -452,7 +452,7 @@ class OrderController extends Controller
         }
 
         // Start with base query
-        $ordersQuery = Order::with(['orderItems.commodity.materials.unit', 'orderItems.unit']);
+        $ordersQuery = Order::with(['orderItems.commodity.materials.unit', 'orderItems.commodity.attributes', 'orderItems.unit']);
 
         // If no explicit status filter provided, default to pending orders only
         if (empty($filters['status'])) {
@@ -532,6 +532,7 @@ class OrderController extends Controller
 
         $rawMaterialMap = [];
         $inventoryData = [];
+        $attributeIds = $this->parseAttributeFilterIds($filters);
 
         // Calculate raw materials required for all selected orders
         foreach ($orders as $order) {
@@ -540,6 +541,10 @@ class OrderController extends Controller
                 
                 if (!$product || $product->type !== 'product') {
                     continue; // Skip if not a product or commodity doesn't exist
+                }
+
+                if (!$this->commodityMatchesAttributeFilter($product, $attributeIds)) {
+                    continue;
                 }
 
                 // Get the product formula (raw materials)
@@ -628,7 +633,7 @@ class OrderController extends Controller
 
         // Build query with filters - same as factoryStatus() pagination query
         $ordersQuery = Order::where('status', 'pending')
-            ->with(['orderItems.commodity', 'orderItems.unit', 'customer']);
+            ->with(['orderItems.commodity.attributes', 'orderItems.unit', 'customer']);
 
         // Apply search filter
         if (!empty($search)) {
@@ -688,9 +693,14 @@ class OrderController extends Controller
 
         // Aggregate by commodity_id + unit_id combination (same logic as getWarehouseChartData)
         $aggregatedData = [];
+        $attributeIds = $this->parseAttributeFilterIds($filters);
         
         foreach ($orders as $order) {
             foreach ($order->orderItems as $item) {
+                if (!$this->commodityMatchesAttributeFilter($item->commodity, $attributeIds)) {
+                    continue;
+                }
+
                 // Create a unique key for commodity+unit combination
                 $key = $item->commodity_id . '_' . $item->unit_id;
                 
@@ -760,6 +770,31 @@ class OrderController extends Controller
         }
 
         return [];
+    }
+
+    /**
+     * Check if a commodity has ALL of the selected attributes.
+     *
+     * @param \App\Models\Commodity|null $commodity
+     * @param array $attributeIds
+     * @return bool
+     */
+    private function commodityMatchesAttributeFilter($commodity, array $attributeIds): bool
+    {
+        if (empty($attributeIds)) {
+            return true;
+        }
+        if (!$commodity) {
+            return false;
+        }
+
+        $commodityAttributeIds = $commodity->relationLoaded('attributes')
+            ? $commodity->attributes->pluck('id')->map(fn ($id) => (int) $id)->all()
+            : $commodity->attributes()->pluck('attributes.id')->map(fn ($id) => (int) $id)->all();
+
+        $requiredIds = array_map('intval', $attributeIds);
+
+        return empty(array_diff($requiredIds, $commodityAttributeIds));
     }
 
     /**
@@ -1129,7 +1164,7 @@ class OrderController extends Controller
     {
         // Build query with filters - same as factoryStatus() pagination query
         $ordersQuery = Order::where('status', 'pending')
-            ->with(['orderItems.commodity', 'orderItems.unit', 'customer']);
+            ->with(['orderItems.commodity.attributes', 'orderItems.unit', 'customer']);
 
         // Apply search filter
         if (!empty($search)) {
@@ -1168,9 +1203,14 @@ class OrderController extends Controller
 
         // Aggregate by commodity_id + unit_id combination
         $aggregatedData = [];
+        $attributeIds = $this->parseAttributeFilterIds($filters);
         
         foreach ($orders as $order) {
             foreach ($order->orderItems as $item) {
+                if (!$this->commodityMatchesAttributeFilter($item->commodity, $attributeIds)) {
+                    continue;
+                }
+
                 // Create a unique key for commodity+unit combination
                 $key = $item->commodity_id . '_' . $item->unit_id;
                 
