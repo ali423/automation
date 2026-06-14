@@ -67,6 +67,10 @@
     margin-top: 0;
 }
 
+.order-report-page .order-report-filters-card .order-report-filters-wrap {
+    margin-bottom: 0;
+}
+
 .order-report-page .card-body.pb-0 .order-report-table-block {
     padding-bottom: 1.5rem;
 }
