@@ -70,6 +70,15 @@ class InventoryAdjustment extends Model
     }
 
     /**
+     * Get adjustments for a specific production request
+     */
+    public function scopeForProduction($query, $productionId)
+    {
+        return $query->where('adjustable_type', ProductionRequest::class)
+            ->where('adjustable_id', $productionId);
+    }
+
+    /**
      * Get only removal adjustments (negative amounts)
      */
     public function scopeRemovals($query)

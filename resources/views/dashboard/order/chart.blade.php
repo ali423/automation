@@ -16,10 +16,24 @@
     <div class="order-report-page">
     <div class="row g-4">
         <div class="col-12 box-margin">
+            <div class="card order-report-section-card order-report-filters-card">
+                <div class="card-header">
+                    <h4 class="order-report-section-title mb-0">فیلترها</h4>
+                    <p class="order-report-section-desc text-muted small mt-2">فیلترها را اعمال کنید یا سفارش‌های مورد نظر را در جدول پایین انتخاب کنید.</p>
+                </div>
+                <div class="card-body">
+                    <div class="order-report-filters-wrap">
+                        <x-pagination-controls :paginator="$orders" :options="$options" />
+                    </div>
+                    <div id="filter-status" class="text-info small mt-3 mb-0" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 box-margin">
             <div class="card order-report-section-card">
                 <div class="card-header">
                     <h4 class="order-report-section-title mb-0">مواد اولیه مورد نیاز و موجودی</h4>
-                    <p class="order-report-section-desc text-muted small mt-2">بر اساس سفارشات انتخاب‌شده در بخش پایین و فیلترهای اعمال‌شده محاسبه می‌شود.</p>
+                    <p class="order-report-section-desc text-muted small mt-2">بر اساس سفارشات انتخاب‌شده و فیلترهای اعمال‌شده محاسبه می‌شود.</p>
                 </div>
                 <div class="card-body">
                     <div class="order-report-hint">
@@ -56,14 +70,9 @@
             <div class="card order-report-section-card">
                 <div class="card-header">
                     <h4 class="order-report-section-title mb-0">لیست سفارشات</h4>
-                    <p class="order-report-section-desc text-muted small mt-2">فیلترها را اعمال کنید یا سفارش‌های مورد نظر را انتخاب کنید.</p>
+                    <p class="order-report-section-desc text-muted small mt-2">سفارش‌های مورد نظر را انتخاب کنید تا جدول بالا به‌روز شود.</p>
                 </div>
                 <div class="card-body pb-0">
-                    <div class="order-report-filters-wrap">
-                        <x-pagination-controls :paginator="$orders" :options="$options" />
-                    </div>
-                    <hr class="order-report-divider">
-                    <div id="filter-status" class="text-info small mb-3" style="display: none;"></div>
                     <div class="order-report-table-block">
                     <table id="datatable-buttons-customer" class="table table-striped dt-responsive nowrap w-100 mb-0">
                         <thead class="text-center">

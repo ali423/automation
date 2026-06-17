@@ -12,6 +12,9 @@
                         onclick="return confirm('آیا از حذف این درخواست مطمئن هستید؟');">حذف</button>
             </form>
         @endif
+        @if (auth()->user()->role->havePermission('cancel_production') && $request->can_be_cancelled)
+            <a href="{{ route('cancel.production.form', $request) }}" class="btn btn-warning px-1">لغو کامل درخواست</a>
+        @endif
     </div>
     <div class="col-md-6 text-md-right">
         @if($request->can_be_approved)

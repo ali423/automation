@@ -17,6 +17,20 @@
     <div class="order-report-page">
     <div class="row g-4">
         <div class="col-12 box-margin">
+            <div class="card order-report-section-card order-report-filters-card">
+                <div class="card-header">
+                    <h4 class="order-report-section-title mb-0">فیلترها</h4>
+                    <p class="order-report-section-desc text-muted small mt-2">فیلترها را اعمال کنید یا سفارش‌های مورد نظر را در جدول پایین انتخاب کنید.</p>
+                </div>
+                <div class="card-body">
+                    <div class="order-report-filters-wrap">
+                        <x-pagination-controls :paginator="$pendingOrders" :options="$options" />
+                    </div>
+                    <div id="filter-status" class="text-info small mt-3 mb-0" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 box-margin">
             <div class="card order-report-section-card">
                 <div class="card-header">
                     <h4 class="order-report-section-title mb-0">وضعیت کارخانه</h4>
@@ -25,7 +39,7 @@
                 <div class="card-body">
                     <div class="order-report-hint">
                         <i class="ti-info-alt"></i>
-                        <span>این جدول با تغییر فیلترها یا انتخاب سفارش‌ها در بخش پایین به‌روز می‌شود.</span>
+                        <span>این جدول با تغییر فیلترها یا انتخاب سفارش‌ها به‌روز می‌شود.</span>
                     </div>
                     <div id="factory-table-wrapper" class="order-report-table-block">
                         <div id="factory-chart-loading" class="text-center py-4" style="display: none;">
@@ -64,11 +78,7 @@
                     <div class="order-report-summary">
                         @include('dashboard.order.partials.order-summary-stats', ['summaryStats' => $summaryStats])
                     </div>
-                    <div class="order-report-filters-wrap">
-                        <x-pagination-controls :paginator="$pendingOrders" :options="$options" />
-                    </div>
                     <hr class="order-report-divider">
-                    <div id="filter-status" class="text-info small mb-3" style="display: none;"></div>
                     <div class="order-report-table-block">
                     <table id="datatable-buttons-factory" class="table table-striped dt-responsive nowrap w-100 mb-0">
                         <thead class="text-center">

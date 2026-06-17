@@ -115,6 +115,7 @@ return [
             'rejected' => 'رد شده',
             'expired' => 'منقضی شده',
             'done' => 'تکمیل شده',
+            'cancelled' => 'لغو شده',
         ],
     ],
     'order' => [

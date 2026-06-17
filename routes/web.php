@@ -85,6 +85,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('production-request/reject/{id}',[ProductionRequestController::class,'rejectRequest'])->name('reject.production');
 
+    Route::get('production-request/cancel/{id}',[ProductionRequestController::class,'cancelForm'])->name('cancel.production.form');
+    Route::post('production-request/cancel/{id}',[ProductionRequestController::class,'cancelSubmit'])->name('cancel.production.submit');
+
 
 
     Route::get('order/confirm/{order}',[OrderController::class,'confirm'])->name('order.confirm');
