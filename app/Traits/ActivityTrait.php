@@ -18,7 +18,11 @@ trait ActivityTrait
 
     public function getModelDetailAttribute()
     {
-        return config('enums.models')[get_class($this)];
+        return config('enums.models')[get_class($this)] ?? [
+            'fa_name' => class_basename($this),
+            'url' => null,
+            'relations' => [],
+        ];
     }
 
     public function getCreatorUserAttribute()
@@ -488,14 +492,6 @@ trait ActivityTrait
     }
 
     static function getRelatedData($item,$relationName,$pivotIdsAttributes){
-        // Log the incoming parameters for debugging
-        \Log::info('ActivityTrait getRelatedData called with:', [
-            'item_class' => get_class($item),
-            'relationName' => $relationName,
-            'relationName_type' => gettype($relationName),
-            'pivotIdsAttributes' => $pivotIdsAttributes
-        ]);
-
         // Ensure $relationName is a string
         if (!is_string($relationName)) {
             \Log::warning('ActivityTrait getRelatedData: relationName is not a string: ' . var_export($relationName, true));
