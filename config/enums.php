@@ -37,6 +37,20 @@ return [
                         'unit_id' => 'واحد ماده'
                     ],
                 ],
+                'attributes' => [
+                    'fa_name' => 'ویژگی‌ها',
+                    'primary_key' => 'attribute_id',
+                ],
+            ]
+        ],
+        'App\Models\Attribute' => [
+            'fa_name' => 'ویژگی‌ها',
+            'url' => 'attribute',
+            'relations' => [
+                'commodities' => [
+                    'fa_name' => 'کالاها',
+                    'primary_key' => 'attribute_id',
+                ],
             ]
         ],
         'App\Models\ImportingRequest' => [
