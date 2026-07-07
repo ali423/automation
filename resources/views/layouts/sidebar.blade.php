@@ -91,6 +91,23 @@
                 </li>
                 @endif
 
+                @if(Gate::check('read_inventory'))
+                <li
+                    @if($first_url_part=='inventory' )
+                    class="treeview active"
+                    @else
+                    class="treeview"
+                    @endif>
+                    <a href="javascript:void(0)"><i class="ti-package"></i> <span>مدیریت موجودی</span> <i
+                            class="fa fa-angle-left"></i></a>
+                    <ul class="treeview-menu">
+                        @can('read_inventory',App\Models\Inventory::class)
+                        <li @if($first_url_part=='inventory' && $second_url_part=='index' ) class="active" @endif><a href="{{ route('inventory.index') }}">لیست موجودی ها</a></li>
+                        @endcan
+                    </ul>
+                </li>
+                @endif
+
                 <!-- Other Tabs -->
                 @if(Gate::check('read_user') || Gate::check('create_user'))
                 <li
@@ -225,22 +242,6 @@
                         <li @if($first_url_part=='unit-conversion' && $second_url_part=='create' ) class="active" @endif>
                             <a href="{{ route('unit-conversion.create') }}">افزودن تبدیل جدید</a>
                         </li>
-                        @endcan
-                    </ul>
-                </li>
-                @endif
-                @if(Gate::check('read_inventory'))
-                <li
-                    @if($first_url_part=='inventory' )
-                    class="treeview active"
-                    @else
-                    class="treeview"
-                    @endif>
-                    <a href="javascript:void(0)"><i class="ti-package"></i> <span>مدیریت موجودی</span> <i
-                            class="fa fa-angle-left"></i></a>
-                    <ul class="treeview-menu">
-                        @can('read_inventory',App\Models\Inventory::class)
-                        <li @if($first_url_part=='inventory' && $second_url_part=='index' ) class="active" @endif><a href="{{ route('inventory.index') }}">لیست موجودی ها</a></li>
                         @endcan
                     </ul>
                 </li>
