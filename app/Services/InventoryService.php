@@ -324,10 +324,12 @@ class InventoryService extends BaseService
         $quantity = $data['quantity'];
         $reason = $data['reason'];
 
+        $oldAmount = $inventory->amount;
+
         if ($adjustmentType === 'add') {
-            $newAmount = $inventory->amount + $quantity;
+            $newAmount = $oldAmount + $quantity;
         } else {
-            $newAmount = $inventory->amount - $quantity;
+            $newAmount = $oldAmount - $quantity;
             if ($newAmount < 0) {
                 throw new \Exception('مقدار موجودی نمی‌تواند منفی باشد');
             }
@@ -340,7 +342,7 @@ class InventoryService extends BaseService
         // No cache clearing needed since we removed caching mechanisms
 
         // Log the adjustment
-        $this->logStockAdjustment($inventory, $adjustmentType, $quantity, $reason);
+        $this->logStockAdjustment($inventory, $adjustmentType, $quantity, $reason, $oldAmount);
 
         return $inventory;
     }
@@ -348,7 +350,7 @@ class InventoryService extends BaseService
     /**
      * Log stock adjustment for audit trail
      */
-    private function logStockAdjustment($inventory, $adjustmentType, $quantity, $reason)
+    private function logStockAdjustment($inventory, $adjustmentType, $quantity, $reason, $oldAmount)
     {
         // Use the existing ActivityTrait system with 'update' action
         $reason = $reason ?: 'بدون دلیل';
@@ -360,7 +362,7 @@ class InventoryService extends BaseService
                 'operation' => $adjustmentType,
                 'quantity' => $quantity,
                 'reason' => $reason,
-                'old_amount' => $inventory->getOriginal('amount'),
+                'old_amount' => $oldAmount,
                 'new_amount' => $inventory->amount,
                 'description' => "Stock adjustment: {$adjustmentType} {$quantity} units. Reason: {$reason}"
             ]),
