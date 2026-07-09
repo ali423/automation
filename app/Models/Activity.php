@@ -23,6 +23,11 @@ class Activity extends Model
         'relation_name',
     ];
 
+    public function scopeManualStockAdjustments($query)
+    {
+        return $query->where('data->adjustment_type', 'stock_adjustment');
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

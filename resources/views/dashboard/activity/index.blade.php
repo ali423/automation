@@ -15,9 +15,16 @@
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-2">لیست فعالیت ها</h4>
+                    <h4 class="card-title mb-2">
+                        @if(!empty($manualStockAdjustmentsOnly))
+                            تاریخچه تنظیمات دستی موجودی
+                        @else
+                            لیست فعالیت ها
+                        @endif
+                    </h4>
                     <table id="datatable-buttons" class="table table-striped dt-responsive nowrap w-100">
                         <thead class="text-center">
+                            @if(empty($manualStockAdjustmentsOnly))
                             <tr>
                                 <th colspan="6">
                                     {{-- to set active change btn-outline-dfprimary ==> btn-dfprimary --}}
@@ -25,6 +32,7 @@
                                     <a href="?action[]=User" class="btn btn-outline-dfprimary shadow">User<span> &#8595;&#8593;</span></a>
                                 </th>
                             </tr>
+                            @endif
                             <tr>
                                 <th>ردیف</th>
                                 <th>کاربر انجام دهنده</th>
