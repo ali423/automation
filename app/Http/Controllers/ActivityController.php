@@ -25,8 +25,13 @@ class ActivityController extends Controller
         $object_type=$request->get('object_type');
         $query=Activity::query()->orderBy('id', 'DESC');
         $name_space = substr("App\Models\Role", 0,11);
+        $manualStockAdjustmentsOnly = false;
         if (!empty($object_id) && !empty($object_type) ){
             $query=$query->Where('record_change_type',$name_space.$object_type)->where('record_change_id',$object_id);
+            if ($object_type === 'Inventory') {
+                $query = $query->manualStockAdjustments();
+                $manualStockAdjustmentsOnly = true;
+            }
         }elseif (!empty($models)){
             foreach ($models as $model){
                $query=$query->orWhere('record_change_type',$name_space.$model);
@@ -35,6 +40,7 @@ class ActivityController extends Controller
         return view('dashboard.activity.index',
             [
                 'activities'=>$query->get(),
+                'manualStockAdjustmentsOnly' => $manualStockAdjustmentsOnly,
             ]);
     }
     /**
