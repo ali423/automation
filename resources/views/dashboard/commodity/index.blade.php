@@ -17,15 +17,7 @@
                 <div class="card-body">
                     <h4 class="card-title mb-3">لیست کالا ها</h4>
 
-                    {{-- Tabs header --}}
-                    <ul class="nav nav-tabs mb-3">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">لیست کالاها</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('commodity.prices', request()->query()) }}">قیمت‌ها</a>
-                        </li>
-                    </ul>
+                    @include('dashboard.commodity.partials.price-tabs', ['activeTab' => 'index'])
                     
                     {{-- Pagination Controls --}}
                     <x-pagination-controls :paginator="$commodities" :options="$options" />

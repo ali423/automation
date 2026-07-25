@@ -118,4 +118,51 @@ class CommodityService extends BaseService
             return true;
         }
     }
+
+    /**
+     * Bulk-update product sales prices (and optional discount) without touching formulas.
+     *
+     * @param  array<int, array{id:int, sales_price:int, discount_percentage?:int|null}>  $items
+     */
+    public function bulkUpdateSalesPrices(array $items): int
+    {
+        return DB::transaction(function () use ($items) {
+            $updated = 0;
+
+            foreach ($items as $item) {
+                $updated += Commodity::query()
+                    ->where('id', $item['id'])
+                    ->where('type', 'product')
+                    ->update([
+                        'sales_price' => $item['sales_price'],
+                        'discount_percentage' => $item['discount_percentage'] ?? null,
+                    ]);
+            }
+
+            return $updated;
+        });
+    }
+
+    /**
+     * Bulk-update material purchase prices without touching product formulas.
+     *
+     * @param  array<int, array{id:int, purchase_price:float|int|string}>  $items
+     */
+    public function bulkUpdatePurchasePrices(array $items): int
+    {
+        return DB::transaction(function () use ($items) {
+            $updated = 0;
+
+            foreach ($items as $item) {
+                $updated += Commodity::query()
+                    ->where('id', $item['id'])
+                    ->where('type', 'material')
+                    ->update([
+                        'purchase_price' => $item['purchase_price'],
+                    ]);
+            }
+
+            return $updated;
+        });
+    }
 }

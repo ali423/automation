@@ -51,8 +51,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('settings',SettingsController::class)->except(['destroy']);
     Route::patch('settings/{setting}/toggle', [SettingsController::class, 'toggle'])->name('settings.toggle');
 
-    // Prices tab and data (client-side export support) - keep BEFORE resource to avoid route shadowing
+    // Prices tabs - keep BEFORE resource to avoid route shadowing
     Route::get('commodity/prices', [CommodityController::class, 'prices'])->name('commodity.prices');
+    Route::put('commodity/prices', [CommodityController::class, 'updatePrices'])->name('commodity.prices.update');
+    Route::get('commodity/material-prices', [CommodityController::class, 'materialPrices'])->name('commodity.material-prices');
+    Route::put('commodity/material-prices', [CommodityController::class, 'updateMaterialPrices'])->name('commodity.material-prices.update');
     Route::get('commodity/search', [CommodityController::class, 'search'])->name('commodity.search');
     Route::get('commodity/attributes', [CommodityController::class, 'getAttributes'])->name('commodity.attributes');
     Route::resource('commodity',CommodityController::class);
