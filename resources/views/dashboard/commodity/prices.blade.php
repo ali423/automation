@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title', 'قیمت‌ها')
+@section('title', 'قیمت محصولات')
 @section('page_styles')
     <link rel="stylesheet" href="{{ asset('css/default-assets/datatables.bootstrap4.css') }}">
     <link rel="stylesheet" href="{{ asset('css/default-assets/responsive.bootstrap4.css') }}">
@@ -74,23 +74,26 @@
         <div class="col-12 box-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-3">قیمت‌ها</h4>
+                    <h4 class="card-title mb-3">قیمت محصولات</h4>
 
-                    {{-- Tabs header --}}
-                    <ul class="nav nav-tabs mb-3">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('commodity.index', request()->query()) }}">لیست کالاها</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">قیمت‌ها</a>
-                        </li>
-                    </ul>
+                    @include('dashboard.commodity.partials.price-tabs', ['activeTab' => 'product-prices'])
 
                     {{-- Filters --}}
                     {{-- Pagination Controls (with filters/search) --}}
                     @isset($commodities)
                         <x-pagination-controls :paginator="$commodities" :options="$options" />
                     @endisset
+
+                    @if(!empty($canEditPrices))
+                        <form method="POST" action="{{ route('commodity.prices.update', request()->query()) }}" id="bulk-product-prices-form">
+                            @csrf
+                            @method('PUT')
+                            <div class="d-flex justify-content-end mb-3">
+                                <button type="submit" class="btn btn-primary">
+                                    ذخیره تغییرات
+                                </button>
+                            </div>
+                    @endif
 
                     <div class="table-responsive">
                         <table id="datatable-buttons-commodity-prices" class="table table-striped dt-responsive nowrap w-100">
@@ -110,14 +113,45 @@
                                 @isset($commodities)
                                     @php($i = ($commodities->currentPage() - 1) * $commodities->perPage() + 1)
                                     @foreach($commodities as $c)
-                                        <tr class="sortable-row" data-id="{{ $c->id }}" data-carton-price="{{ $c->carton_price }}">
+                                        <tr class="sortable-row"
+                                            data-id="{{ $c->id }}"
+                                            data-carton-price="{{ $c->carton_price }}"
+                                            data-pieces-per-box="{{ $c->pieces_per_box }}">
                                             <td><input type="checkbox" class="row-select" value="{{ $c->id }}" data-id="{{ $c->id }}"></td>
                                             <td><span class="sortable-handle">⋮⋮</span></td>
                                             <td>{{ $i }}</td>
                                             <td>{{ $c->title }}</td>
                                             <td>{{ number_format($c->base_price ?? 0) }}</td>
-                                            <td>{{ $c->sales_price !== null ? number_format($c->sales_price, 0) : '-' }}</td>
-                                            <td>{{ $c->discount_percentage !== null ? $c->discount_percentage . '%' : '-' }}</td>
+                                            <td>
+                                                @if(!empty($canEditPrices))
+                                                    <input type="hidden" name="prices[{{ $loop->index }}][id]" value="{{ $c->id }}">
+                                                    <input type="number"
+                                                           step="1"
+                                                           min="0"
+                                                           name="prices[{{ $loop->index }}][sales_price]"
+                                                           class="form-control form-control-sm text-center sales-price-input"
+                                                           data-original="{{ old('prices.'.$loop->index.'.sales_price', $c->sales_price !== null ? (int) $c->sales_price : 0) }}"
+                                                           value="{{ old('prices.'.$loop->index.'.sales_price', $c->sales_price !== null ? (int) $c->sales_price : 0) }}"
+                                                           required>
+                                                @else
+                                                    {{ $c->sales_price !== null ? number_format($c->sales_price, 0) : '-' }}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if(!empty($canEditPrices))
+                                                    <input type="number"
+                                                           step="1"
+                                                           min="0"
+                                                           max="100"
+                                                           name="prices[{{ $loop->index }}][discount_percentage]"
+                                                           class="form-control form-control-sm text-center discount-input"
+                                                           data-original="{{ old('prices.'.$loop->index.'.discount_percentage', $c->discount_percentage !== null ? (int) $c->discount_percentage : '') }}"
+                                                           value="{{ old('prices.'.$loop->index.'.discount_percentage', $c->discount_percentage !== null ? (int) $c->discount_percentage : '') }}"
+                                                           placeholder="-">
+                                                @else
+                                                    {{ $c->discount_percentage !== null ? $c->discount_percentage . '%' : '-' }}
+                                                @endif
+                                            </td>
                                             <td>{{ $c->unit ? $c->unit->name : '-' }}</td>
                                         </tr>
                                         @php($i++)
@@ -126,6 +160,10 @@
                             </tbody>
                         </table>
                     </div>
+
+                    @if(!empty($canEditPrices))
+                        </form>
+                    @endif
                 </div>
                 @isset($commodities)
                     <div class="card-footer">
@@ -150,8 +188,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="{{ asset('js/default-assets/dataTables.sorting.persian.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="{{ asset('js/commodity-bulk-price-save.js') }}"></script>
     <script type="text/javascript">
         $(document).ready(function () {
+            bindDirtyOnlyPriceForm('#bulk-product-prices-form', 'product');
+
             pdfMake.fonts = {
                 Roboto: {
                     normal: 'Roboto-Regular.ttf',
@@ -290,14 +331,24 @@
                                 }
                                 rowData.push(unit);
                                 
-                                // Get final price with VAT (column 5 now shows VAT-included) - second column
-                                var finalPrice = row[5] || '-';
+                                // Get final price - prefer live input value when editable
+                                var trNode = filteredNodes[index];
+                                var salesInput = trNode ? $(trNode).find('.sales-price-input') : $();
+                                var finalPrice = salesInput.length
+                                    ? Number(salesInput.val() || 0).toLocaleString('fa-IR')
+                                    : (row[5] || '-');
                                 rowData.push(finalPrice);
                                 
                                 // Use server-calculated carton price from row's data attribute - third column
-                                var trNode = filteredNodes[index];
-                                var cartonAttr = trNode ? trNode.getAttribute('data-carton-price') : null;
-                                var cartonPrice = cartonAttr ? parseFloat(cartonAttr) : NaN;
+                                // Prefer recalculated value from current sales price input when present
+                                var piecesPerBox = trNode ? parseFloat(trNode.getAttribute('data-pieces-per-box')) : NaN;
+                                var cartonPrice;
+                                if (salesInput.length && !isNaN(piecesPerBox) && piecesPerBox > 0) {
+                                    cartonPrice = Number(salesInput.val() || 0) * piecesPerBox;
+                                } else {
+                                    var cartonAttr = trNode ? trNode.getAttribute('data-carton-price') : null;
+                                    cartonPrice = cartonAttr ? parseFloat(cartonAttr) : NaN;
+                                }
                                 var boxPrice = (!isNaN(cartonPrice) && cartonPrice > 0) ? cartonPrice.toLocaleString('fa-IR') : '-';
                                 rowData.push(boxPrice);
                                 
@@ -394,10 +445,20 @@
                                     // Inject carton price coming from server into the exported data for PDF
                                     if (column === 5) {
                                         var tr = node && node.parentNode ? node.parentNode : null;
-                                        var cartonAttr = tr ? tr.getAttribute('data-carton-price') : null;
-                                        var cartonPrice = cartonAttr ? parseFloat(cartonAttr) : NaN;
+                                        var salesInput = tr ? $(tr).find('.sales-price-input') : $();
+                                        var salesText = salesInput.length
+                                            ? Number(salesInput.val() || 0).toLocaleString()
+                                            : data;
+                                        var piecesPerBox = tr ? parseFloat(tr.getAttribute('data-pieces-per-box')) : NaN;
+                                        var cartonPrice;
+                                        if (salesInput.length && !isNaN(piecesPerBox) && piecesPerBox > 0) {
+                                            cartonPrice = Number(salesInput.val() || 0) * piecesPerBox;
+                                        } else {
+                                            var cartonAttr = tr ? tr.getAttribute('data-carton-price') : null;
+                                            cartonPrice = cartonAttr ? parseFloat(cartonAttr) : NaN;
+                                        }
                                         var cartonText = (!isNaN(cartonPrice) && cartonPrice > 0) ? cartonPrice.toLocaleString() : '-';
-                                        return data + '|' + cartonText;
+                                        return salesText + '|' + cartonText;
                                     }
                                     return data;
                                 }
@@ -768,6 +829,17 @@
             $('#select-all').on('change', function () {
                 const checked = $(this).is(':checked');
                 $('.row-select').prop('checked', checked);
+            });
+
+            // Keep carton price attribute in sync when editing sales price
+            $(document).on('input', '.sales-price-input', function () {
+                var tr = this.closest('tr');
+                if (!tr) return;
+                var pieces = parseFloat(tr.getAttribute('data-pieces-per-box'));
+                var sales = Number(this.value || 0);
+                if (!isNaN(pieces) && pieces > 0) {
+                    tr.setAttribute('data-carton-price', String(sales * pieces));
+                }
             });
         });
 
