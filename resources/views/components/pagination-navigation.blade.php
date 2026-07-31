@@ -2,19 +2,21 @@
 
 @php
     // Helper function to preserve all query parameters
-    function getPageUrl($paginator, $page) {
-        $currentParams = request()->query();
-        unset($currentParams['page']); // Remove page parameter as it will be set by paginator
+    if (!function_exists('getPageUrl')) {
+        function getPageUrl($paginator, $page) {
+            $currentParams = request()->query();
+            unset($currentParams['page']); // Remove page parameter as it will be set by paginator
 
-        // Keep filters as a single JSON param so AJAX can read urlParams.get('filters')
-        if (isset($currentParams['filters']) && is_array($currentParams['filters'])) {
-            $currentParams['filters'] = json_encode($currentParams['filters'], JSON_UNESCAPED_UNICODE);
+            // Keep filters as a single JSON param so AJAX can read urlParams.get('filters')
+            if (isset($currentParams['filters']) && is_array($currentParams['filters'])) {
+                $currentParams['filters'] = json_encode($currentParams['filters'], JSON_UNESCAPED_UNICODE);
+            }
+
+            // Build URL with all current parameters
+            $url = request()->url() . '?' . http_build_query(array_merge($currentParams, ['page' => $page]));
+            
+            return $url;
         }
-
-        // Build URL with all current parameters
-        $url = request()->url() . '?' . http_build_query(array_merge($currentParams, ['page' => $page]));
-        
-        return $url;
     }
 @endphp
 

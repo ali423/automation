@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BulkUpdateMaterialPricesRequest;
+use App\Http\Requests\BulkUpdateProductPricesRequest;
 use App\Http\Requests\CommodityRequest;
 use App\Http\Requests\CommodityUpdateRequest;
 use App\Models\Attribute;
@@ -146,10 +148,68 @@ class CommodityController extends Controller
             'commodities' => $commodities,
             'options' => $options,
             'units' => $units,
+            'canEditPrices' => auth()->user()->role->havePermission('edit_commodity'),
         ]);
     }
 
-    // Removed client-side pricesData endpoint; using server-side pagination and filters exclusively
+    /**
+     * Persist bulk product sales price updates from the prices tab.
+     */
+    public function updatePrices(BulkUpdateProductPricesRequest $request)
+    {
+        $this->authorize('update', new Commodity());
+
+        $updated = $this->service->bulkUpdateSalesPrices($request->validated()['prices']);
+
+        return redirect()
+            ->route('commodity.prices', $request->query())
+            ->with('successful', "قیمت {$updated} محصول بروزرسانی شد.");
+    }
+
+    /**
+     * Material purchase prices tab (editable bulk list).
+     */
+    public function materialPrices(Request $request)
+    {
+        $this->authorize('viewAny', Commodity::class);
+
+        $options = [
+            'searchable_fields' => ['title', 'number'],
+            'filterable_fields' => ['unit_id'],
+            'sortable_fields' => [],
+            'default_sort_field' => 'id',
+            'default_sort_direction' => 'desc',
+            'max_per_page' => 100,
+            'per_page_options' => [5, 10, 25, 50, 100],
+            'search_placeholder' => 'جستجو در عنوان یا شماره ماده...'
+        ];
+
+        $query = Commodity::with(['unit'])->where('type', 'material');
+        $commodities = $this->getPaginatedResults($query, $request, 10, $options);
+
+        $units = Unit::select('id', 'name', 'symbol')->orderBy('name')->get();
+
+        return view('dashboard.commodity.material-prices', [
+            'commodities' => $commodities,
+            'options' => $options,
+            'units' => $units,
+            'canEditPrices' => auth()->user()->role->havePermission('edit_commodity'),
+        ]);
+    }
+
+    /**
+     * Persist bulk material purchase price updates.
+     */
+    public function updateMaterialPrices(BulkUpdateMaterialPricesRequest $request)
+    {
+        $this->authorize('update', new Commodity());
+
+        $updated = $this->service->bulkUpdatePurchasePrices($request->validated()['prices']);
+
+        return redirect()
+            ->route('commodity.material-prices', $request->query())
+            ->with('successful', "قیمت {$updated} ماده اولیه بروزرسانی شد.");
+    }
 
     /**
      * Display a listing of the resource.
