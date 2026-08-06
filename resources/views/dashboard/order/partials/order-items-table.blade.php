@@ -15,6 +15,8 @@
                             <th>کالا</th>
                             <th>مقدار</th>
                             <th>واحد</th>
+                            <th>تعداد کارتن</th>
+                            <th>تعداد در کارتن</th>
                             <th>قیمت واحد</th>
                             @if($hasDiscount)
                                 <th>تخفیف</th>
@@ -29,6 +31,10 @@
                     </thead>
                     <tbody>
                         @foreach($order->orderItems as $index => $item)
+                            @php
+                                $boxInfo = $order->box_quantities[$item->commodity_id] ?? null;
+                                $canShowBoxes = $boxInfo && !empty($boxInfo['can_calculate']);
+                            @endphp
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>
@@ -42,6 +48,8 @@
                                 </td>
                                 <td>{{ number_format($item->commodity_amount) }}</td>
                                 <td>{{ $item->unit_symbol }}</td>
+                                <td>{{ $canShowBoxes ? $boxInfo['boxes'] : '-' }}</td>
+                                <td>{{ $canShowBoxes ? $boxInfo['pieces_per_box'] : '-' }}</td>
                                 <td>{{ number_format($item->price) }} ریال</td>
                                 @if($hasDiscount)
                                     <td>
@@ -69,7 +77,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="{{ $hasDiscount ? '6' : '5' }}" class="text-left">مجموع کل:</th>
+                            <th colspan="{{ $hasDiscount ? '8' : '7' }}" class="text-left">مجموع کل:</th>
                             <th>{{ number_format($order->total_price) }} ریال</th>
                             <th>{{ number_format($order->total_vat_amount) }} ریال</th>
                             <th>{{ number_format($order->total_price_with_vat) }} ریال</th>
