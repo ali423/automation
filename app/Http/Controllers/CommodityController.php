@@ -124,12 +124,15 @@ class CommodityController extends Controller
             'default_sort_direction' => 'desc',
             'max_per_page' => 100,
             'per_page_options' => [5, 10, 25, 50, 100],
-            'search_placeholder' => 'جستجو در عنوان، شماره یا شناسه کالا...'
+            'search_placeholder' => 'جستجو در عنوان، شماره یا شناسه کالا...',
+            'attribute_filter' => true,
+            'attribute_filter_layout' => 'stacked',
         ];
 
         // Build query
         $query = Commodity::with(['unit', 'materials.unit'])
             ->where('type', 'product');
+        $this->applyAttributeFilters($query, $request);
         $commodities = $this->getPaginatedResults($query, $request, 10, $options);
 
         // Pre-calc for current page
@@ -181,10 +184,13 @@ class CommodityController extends Controller
             'default_sort_direction' => 'desc',
             'max_per_page' => 100,
             'per_page_options' => [5, 10, 25, 50, 100],
-            'search_placeholder' => 'جستجو در عنوان یا شماره ماده...'
+            'search_placeholder' => 'جستجو در عنوان یا شماره ماده...',
+            'attribute_filter' => true,
+            'attribute_filter_layout' => 'stacked',
         ];
 
         $query = Commodity::with(['unit'])->where('type', 'material');
+        $this->applyAttributeFilters($query, $request);
         $commodities = $this->getPaginatedResults($query, $request, 10, $options);
 
         $units = Unit::select('id', 'name', 'symbol')->orderBy('name')->get();
@@ -221,31 +227,7 @@ class CommodityController extends Controller
     {
         // Build query with eager loading to fix N+1 query problem
         $query = Commodity::with(['unit', 'materials.unit']);
-
-        // Apply attribute filters if provided (AND logic)
-        if ($request->filled('filters')) {
-            $filters = $request->get('filters');
-            if (is_string($filters)) {
-                $filters = json_decode($filters, true);
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    $filters = [];
-                }
-            }
-            if (is_array($filters) && !empty($filters['attributes'])) {
-                $attributeIds = $filters['attributes'];
-                if (is_string($attributeIds)) {
-                    $attributeIds = array_filter(array_map('trim', explode(',', $attributeIds)));
-                }
-                if (is_array($attributeIds)) {
-                    $attributeIds = array_values(array_filter($attributeIds));
-                }
-                if (!empty($attributeIds)) {
-                    $query->whereHas('attributes', function ($q) use ($attributeIds) {
-                        $q->whereIn('attributes.id', $attributeIds);
-                    }, '=', count($attributeIds));
-                }
-            }
-        }
+        $this->applyAttributeFilters($query, $request);
         
         // Use advanced pagination with search and filter capabilities
         $commodities = $this->getPaginatedResults($query, $request, 10, [
@@ -276,6 +258,48 @@ class CommodityController extends Controller
         ]);
     }
     
+    /**
+     * Apply attribute filters (AND logic: commodity must have ALL selected attributes).
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param Request $request
+     * @return void
+     */
+    private function applyAttributeFilters($query, Request $request): void
+    {
+        if (!$request->filled('filters')) {
+            return;
+        }
+
+        $filters = $request->get('filters');
+        if (is_string($filters)) {
+            $filters = json_decode($filters, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $filters = [];
+            }
+        }
+
+        if (!is_array($filters) || empty($filters['attributes'])) {
+            return;
+        }
+
+        $attributeIds = $filters['attributes'];
+        if (is_string($attributeIds)) {
+            $attributeIds = array_filter(array_map('trim', explode(',', $attributeIds)));
+        }
+        if (is_array($attributeIds)) {
+            $attributeIds = array_values(array_filter($attributeIds));
+        }
+
+        if (empty($attributeIds)) {
+            return;
+        }
+
+        $query->whereHas('attributes', function ($q) use ($attributeIds) {
+            $q->whereIn('attributes.id', $attributeIds);
+        }, '=', count($attributeIds));
+    }
+
     /**
      * Pre-calculate base prices for multiple commodities efficiently
      *
