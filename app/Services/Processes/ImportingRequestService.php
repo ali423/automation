@@ -109,11 +109,6 @@ class ImportingRequestService extends BaseService
             // Get the selected unit ID directly from the pivot
             $selectedUnitId = $selected_commodity->pivot->unit_id;
             
-            // Update commodity purchase price
-            $selected_commodity->update([
-                'purchase_price' => $selected_commodity->pivot->purchase_price
-            ]);
-            
             // Convert amount to main unit for inventory storage
             $amountInMainUnit = $this->commodityUnitService->convertToMainUnit(
                 $selected_commodity,
