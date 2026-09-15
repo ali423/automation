@@ -23,6 +23,7 @@ class OrderService extends BaseService
     public function create($data)
     {
         $user = auth()->user();
+        $canEditPrice = $user && $user->role && $user->role->havePermission('edit_order_price');
         
         $order = Order::create([
             'customer_id' => $data['customer_id'],
@@ -47,7 +48,7 @@ class OrderService extends BaseService
                 }
                 
                 // Determine base price: prefer provided price; fallback to commodity sales_price
-                $providedPrice = $data['price'][$index] ?? null;
+                $providedPrice = $canEditPrice ? ($data['price'][$index] ?? null) : null;
                 $commodity = Commodity::find($commodityId);
                 $fallbackPrice = $commodity ? ($commodity->sales_price ?? 0) : 0;
                 $basePrice = ($providedPrice !== null && $providedPrice !== '') ? $providedPrice : $fallbackPrice;
@@ -111,6 +112,8 @@ class OrderService extends BaseService
     public function update(Order $order, $data)
     {
         $user = auth()->user();
+        $canEditPrice = $user && $user->role && $user->role->havePermission('edit_order_price');
+        $existingItems = $order->orderItems->values();
         
         // Update main order data
         $order->update([
@@ -139,10 +142,16 @@ class OrderService extends BaseService
                 }
                 
                 // Determine base price: prefer provided price; fallback to commodity sales_price
-                $providedPrice = $data['price'][$index] ?? null;
+                $providedPrice = $canEditPrice ? ($data['price'][$index] ?? null) : null;
                 $commodity = Commodity::find($commodityId);
                 $fallbackPrice = $commodity ? ($commodity->sales_price ?? 0) : 0;
-                $basePrice = ($providedPrice !== null && $providedPrice !== '') ? $providedPrice : $fallbackPrice;
+                $existingItem = $existingItems->get($index);
+                $existingPrice = $existingItem && (int) $existingItem->commodity_id === (int) $commodityId
+                    ? $existingItem->original_price
+                    : null;
+                $basePrice = ($providedPrice !== null && $providedPrice !== '')
+                    ? $providedPrice
+                    : ($canEditPrice ? $fallbackPrice : ($existingPrice ?? $fallbackPrice));
                 
                 // Get discount from request (user override) or fall back to commodity discount
                 $itemDiscount = $data['discount_percentage'][$index] ?? null;

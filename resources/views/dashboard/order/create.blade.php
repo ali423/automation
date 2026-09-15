@@ -46,7 +46,8 @@
                                 @include('dashboard.order.partials.order-item-row', [
                                     'commodities' => $commodities,
                                     'attributes' => $attributes ?? null,
-                                    'index' => 0
+                                    'index' => 0,
+                                    'canEditOrderPrice' => $canEditOrderPrice,
                                 ])
                                 <div id="newRow"></div>
                                 <button id="addRow" type="button" class="btn btn-dfprimary mb-3">+ افزودن</button>
@@ -824,7 +825,7 @@
                     </div>
                     <div class="form-group col-md-2">
                         <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
-                        <input type="text" id="price" name="price[${index}]" value="" class="form-control price-input"
+                        <input type="text" id="price" name="price[${index}]" value="" class="form-control price-input" {{ $canEditOrderPrice ? '' : 'readonly' }}
                                autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}">
                     </div>
                     <div class="form-group col-md-2">
