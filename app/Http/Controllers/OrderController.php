@@ -209,6 +209,7 @@ class OrderController extends Controller
                 'commodities' => $commoditiesWithUnits,
                 'customers' => $customers,
                 'attributes' => Attribute::orderBy('name')->get(),
+                'canEditOrderPrice' => auth()->user()->role->havePermission('edit_order_price'),
             ]);
     }
 
@@ -301,6 +302,7 @@ class OrderController extends Controller
                 'commodities' => $commoditiesWithUnits,
                 'customers' => $customers,
                 'attributes' => Attribute::orderBy('name')->get(),
+                'canEditOrderPrice' => auth()->user()->role->havePermission('edit_order_price'),
             ]);
     }
 

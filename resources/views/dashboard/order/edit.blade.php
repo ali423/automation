@@ -89,6 +89,7 @@
                                         'item' => $item,
                                         'showRemove' => $order->orderItems->count() > 1,
                                         'showAllCommodityOptions' => true,
+                                        'canEditOrderPrice' => $canEditOrderPrice,
                                     ])
                                 @endforeach
                                 <div id="newRow"></div>
@@ -633,7 +634,7 @@
                     </div>
                     <div class="form-group col-md-2">
                         <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
-                        <input type="text" id="price" name="price[${index}]" value="" class="form-control price-input"
+                        <input type="text" id="price" name="price[${index}]" value="" class="form-control price-input" {{ $canEditOrderPrice ? '' : 'readonly' }}
                                autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}">
                     </div>
                     <div class="form-group col-md-2">
