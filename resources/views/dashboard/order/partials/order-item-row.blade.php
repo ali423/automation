@@ -144,6 +144,7 @@
         <label for="price"> {{  __('fields.sell-price_per_unit') }}</label>
         <input type="text" id="price" name="price[{{ $index ?? 0 }}]" 
                value="{{ isset($item) && $item->price ? number_format($item->original_price, 0) : '' }}" class="form-control price-input"
+             @if(isset($canEditOrderPrice) && !$canEditOrderPrice) readonly @endif
                autocomplete="off" placeholder="{{  __('fields.sell-price_per_unit') }}">
     </div>
     <div class="form-group col-md-2">
