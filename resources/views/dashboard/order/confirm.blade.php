@@ -92,7 +92,8 @@
                                                 <div class="form-group col-md-2">
                                                     <label for="price_{{ $loop->index }}">{{ __('fields.sell-price') }}</label>
                                                     <input type="number" id="price_{{ $loop->index }}" value="{{ $item->price }}" name="price[{{ $loop->index }}]"
-                                                        class="form-control" placeholder="{{ __('fields.sell-price') }}" step="0.01" required>
+                                                        class="form-control" placeholder="{{ __('fields.sell-price') }}" step="0.01" required
+                                                        @if(!$canEditOrderPrice) readonly @endif>
                                                     <div class="invalid-feedback">{{ __('fields.sell-price') }} را انتخاب کنید</div>
                                                 </div>
                                                 <div class="form-group col-md-2">

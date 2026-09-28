@@ -377,6 +377,7 @@ class OrderController extends Controller
         return view('dashboard.order.confirm',
             [
                 'order' => $order,
+                'canEditOrderPrice' => auth()->user()->role->havePermission('edit_order_price'),
             ]);
     }
 
@@ -389,6 +390,14 @@ class OrderController extends Controller
      */
     public function confirmStore(CreateWithdrawalRequest $request, Order $order){
         $data = $request->only('commodity_id', 'unit_id', 'amount', 'comment','price','customer_id');
+
+        if (!auth()->user()->role->havePermission('edit_order_price')) {
+            $orderItems = $order->orderItems->keyBy('commodity_id');
+            foreach ($data['commodity_id'] as $index => $commodityId) {
+                $orderItem = $orderItems->get($commodityId);
+                $data['price'][$index] = $orderItem ? $orderItem->price : 0;
+            }
+        }
         
         // Debug: Log the extracted data
         \Log::info('OrderController::confirmStore - Extracted data:', $data);
