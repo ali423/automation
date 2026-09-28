@@ -113,7 +113,7 @@ class OrderService extends BaseService
     {
         $user = auth()->user();
         $canEditPrice = $user && $user->role && $user->role->havePermission('edit_order_price');
-        $existingItems = $order->orderItems->values();
+        $existingItems = $order->orderItems->keyBy('commodity_id');
         
         // Update main order data
         $order->update([
@@ -145,10 +145,8 @@ class OrderService extends BaseService
                 $providedPrice = $canEditPrice ? ($data['price'][$index] ?? null) : null;
                 $commodity = Commodity::find($commodityId);
                 $fallbackPrice = $commodity ? ($commodity->sales_price ?? 0) : 0;
-                $existingItem = $existingItems->get($index);
-                $existingPrice = $existingItem && (int) $existingItem->commodity_id === (int) $commodityId
-                    ? $existingItem->original_price
-                    : null;
+                $existingItem = $existingItems->get($commodityId);
+                $existingPrice = $existingItem ? $existingItem->original_price : null;
                 $basePrice = ($providedPrice !== null && $providedPrice !== '')
                     ? $providedPrice
                     : ($canEditPrice ? $fallbackPrice : ($existingPrice ?? $fallbackPrice));
