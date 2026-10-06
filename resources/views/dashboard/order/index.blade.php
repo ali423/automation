@@ -26,6 +26,7 @@
                                 <th>ردیف</th>
                                 <th> {{ __('fields.customer') }}</th>
                                 <th>تعداد کالا</th>
+                                <th>وزن سفارش</th>
                                 <th>{{ __('fields.created_at') }}</th>
                                 <th>{{ __('fields.status') }}</th>
                                 <th>{{ __('fields.creator') }}</th>
@@ -40,6 +41,7 @@
                                     <td>{{ $i }}</td>
                                     <td>{{ $order->customer ? $order->customer->name : 'مشتری حذف شده' }}</td>
                                     <td>{{ $order->items_count }} کالا</td>
+                                    <td>{{ $order->total_weight_kg !== null ? number_format($order->total_weight_kg, 0) . ' کیلوگرم' : 'نامشخص' }}</td>
                                     <td>{{ jdate($order->created_at)->format('Y/m/d') }}</td>
                                     <td>{{ __('fields.order.status.' . $order->status) }}</td>
                                     @if(isset($order->creator_user))
@@ -108,7 +110,7 @@
                         text: "کپی",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [6, 5, 4, 3, 2, 1, 0],
+                            columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
@@ -120,7 +122,7 @@
                         text: 'pdf',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [6, 5, 4, 3, 2, 1, 0],
+                            columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             },
@@ -128,7 +130,7 @@
                         },
                         customize: function(doc) {
                             doc.defaultStyle.font = "IRANSansWeb";
-                            doc.content[1].table.widths = ['8%', '12%', '12%', '15%', '15%', '12%', '12%', '14%'];
+                            doc.content[1].table.widths = ['8%', '12%', '12%', '12%', '14%', '14%', '12%', '16%'];
                             doc.styles.tableBodyEven.alignment = 'center';
                             doc.styles.tableBodyOdd.alignment = 'center';
                         }
@@ -137,7 +139,7 @@
                         extend: 'excel',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [6, 5, 4, 3, 2, 1, 0],
+                            columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             }
@@ -147,7 +149,7 @@
                         extend: 'csv',
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [6, 5, 4, 3, 2, 1, 0],
+                            columns: [7, 6, 5, 4, 3, 2, 1, 0],
                             modifier: {
                                 page: 'current'
                             }
@@ -158,7 +160,7 @@
                         text: "پرینت",
                         className: 'btn btn-outline-primary',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5, 6],
+                            columns: [0, 1, 2, 3, 4, 5, 6, 7],
                             modifier: {
                                 page: 'current'
                             },
