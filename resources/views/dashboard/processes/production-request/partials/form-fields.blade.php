@@ -49,22 +49,28 @@
             محصول را انتخاب کنید
         </div>
     </div>
-    <div class="form-group col-md-4">
-        <label for="amount">{{ __('fields.production-request.production_amount') }} <span id="unit-display"></span></label>
-        <input type="number" class="form-control" id="amount" name="amount" min="0.001" step="0.001" 
-               value="{{ old('amount', isset($request) ? $request->production_amount : '') }}" required>
-        <div class="invalid-feedback">
-            مقدار تولید را وارد کنید
-        </div>
-    </div>
     <div class="form-group col-md-2" id="packaging_count_group" style="display: none;">
         <label for="packaging_count">تعداد بسته</label>
         <input type="number" class="form-control" id="packaging_count" name="packaging_count" min="1" step="1"
                value="{{ old('packaging_count', isset($request) ? $request->packaging_count : '') }}"
                autocomplete="off" placeholder="">
+        <small class="form-text text-muted mt-1" id="packaging_count_hint" style="display: none;">
+            مقدار تولید از روی تعداد بسته محاسبه می‌شود.
+        </small>
     </div>
     <div class="form-group col-md-2" id="pieces_per_box_group" style="display: none;">
         <label for="pieces_per_box_display">تعداد در کارتن</label>
         <input type="text" class="form-control" id="pieces_per_box_display" readonly placeholder="-">
+    </div>
+    <div class="form-group col-md-4">
+        <label for="amount">{{ __('fields.production-request.production_amount') }} <span id="unit-display"></span></label>
+        <input type="number" class="form-control" id="amount" name="amount" min="0.001" step="0.001"
+               value="{{ old('amount', isset($request) ? $request->production_amount : '') }}" required>
+        <div class="invalid-feedback" id="amount-invalid-feedback">
+            مقدار تولید را وارد کنید
+        </div>
+        <small class="form-text text-muted mt-1" id="amount_packaging_hint" style="display: none;">
+            از تعداد بسته × تعداد در کارتن محاسبه می‌شود و قابل ویرایش نیست.
+        </small>
     </div>
 </div>

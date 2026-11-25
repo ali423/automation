@@ -52,17 +52,38 @@
             return (n && n > 0) ? n : null;
         }
 
+        function isPackagingEntryMode() {
+            return getPiecesPerBoxFromSelection() !== null;
+        }
+
+        function setProductionAmountEditable(editable) {
+            const $amount = $('#amount');
+            if (editable) {
+                $amount.prop('readonly', false).removeAttr('tabindex');
+                $('#amount_packaging_hint').hide();
+                $('#packaging_count_hint').hide();
+                $('#packaging_count').prop('required', false);
+            } else {
+                $amount.prop('readonly', true).attr('tabindex', '-1');
+                $('#amount_packaging_hint').show();
+                $('#packaging_count_hint').show();
+                $('#packaging_count').prop('required', true);
+            }
+        }
+
         function updatePackagingFieldsVisibility() {
             const ppb = getPiecesPerBoxFromSelection();
             if (ppb) {
                 $('#pieces_per_box_display').val(String(ppb));
                 $('#packaging_count_group').show();
                 $('#pieces_per_box_group').show();
+                setProductionAmountEditable(false);
             } else {
                 $('#packaging_count').val('');
                 $('#pieces_per_box_display').val('-');
                 $('#packaging_count_group').hide();
                 $('#pieces_per_box_group').hide();
+                setProductionAmountEditable(true);
             }
         }
 
@@ -73,6 +94,10 @@
             }
             const pc = parseInt($('#packaging_count').val(), 10);
             if (!pc || pc <= 0) {
+                $('#amount').val('');
+                if (currentProductData) {
+                    updateMaterialsDisplay(0);
+                }
                 return;
             }
             const newAmount = pc * ppb;
@@ -84,6 +109,9 @@
         }
 
         function syncPackagingFromAmount() {
+            if (isPackagingEntryMode()) {
+                return;
+            }
             const ppb = getPiecesPerBoxFromSelection();
             if (!ppb) {
                 return;
@@ -148,8 +176,8 @@
             const unitDisplay = $('#product_id').find('option:selected').data('unit');
             $('#unit-display').text(unitDisplay ? `(${unitDisplay})` : '');
             updatePackagingFieldsVisibility();
-            if (getPiecesPerBoxFromSelection() && !$('#packaging_count').val()) {
-                syncPackagingFromAmount();
+            if (isPackagingEntryMode()) {
+                syncAmountFromPackaging();
             }
             loadProductMaterials(currentProductId);
             if (currentAmount > 0) {
@@ -166,9 +194,10 @@
             
             $('#unit-display').text(unitDisplay ? `(${unitDisplay})` : '');
             updatePackagingFieldsVisibility();
-            if (productId && getPiecesPerBoxFromSelection()) {
-                syncPackagingFromAmount();
-            } else {
+            if (productId && isPackagingEntryMode()) {
+                $('#packaging_count').val('');
+                $('#amount').val('');
+            } else if (!isPackagingEntryMode()) {
                 $('#packaging_count').val('');
             }
             
@@ -180,6 +209,9 @@
         });
 
         $('#amount').on('input', function() {
+            if (isPackagingEntryMode()) {
+                return;
+            }
             syncPackagingFromAmount();
             const amount = parseFloat($(this).val()) || 0;
             
